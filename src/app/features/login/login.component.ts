@@ -93,6 +93,7 @@ import { AuthService } from '../../core/services/auth.service';
     .login-screen {
       display: flex; width: 100vw; height: 100vh;
       font-family: 'Inter', sans-serif; background: white;
+      @media (max-width: 1024px) { flex-direction: column; overflow-y: auto; }
     }
 
     /* BRANDING SIDE */
@@ -100,7 +101,8 @@ import { AuthService } from '../../core/services/auth.service';
       flex: 1.2; background: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=2070') center/cover;
       position: relative; display: flex; flex-direction: column; justify-content: space-between;
       padding: 60px; color: white;
-      @media (max-width: 1024px) { display: none; }
+      @media (max-width: 1024px) { padding: 40px; min-height: 400px; flex: none; }
+      @media (max-width: 640px) { padding: 30px; min-height: 300px; }
 
       .overlay {
         position: absolute; top:0; left:0; width:100%; height:100%;

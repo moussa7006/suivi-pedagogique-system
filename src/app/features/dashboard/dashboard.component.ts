@@ -112,12 +112,11 @@ import { CommonModule } from '@angular/common';
     .header-section {
       h1 { margin: 0; font-size: 1.8rem; font-weight: 700; }
       p { margin: 4px 0 0; color: #64748b; }
-    }
-
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 24px;
+      @media (max-width: 640px) { grid-template-columns: 1fr; gap: 16px; }
     }
 
     .stat-card {
@@ -132,10 +131,15 @@ import { CommonModule } from '@angular/common';
       border: 1px solid rgba(226, 232, 240, 0.5);
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       cursor: pointer;
+      @media (max-width: 640px) { padding: 16px; gap: 12px; }
+    ...
+    .content-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      @media (max-width: 1100px) { grid-template-columns: 1fr; }
+    }
 
-      &:hover {
-        transform: translateY(-8px);
-        background: white;
         box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
         border-color: var(--primary-color);
 
