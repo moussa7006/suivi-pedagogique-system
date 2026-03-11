@@ -1,23 +1,27 @@
 <div class="layout-wrapper" [class.no-sidebar]="!showSidebar">
   
-  <div class="layout-sidebar" *ngIf="showSidebar">
+  <!-- Overlay pour mobile -->
+  <div class="layout-mask" [class.active]="mobileMenuOpen" (click)="closeMobileMenu()"></div>
+
+  <!-- Sidebar -->
+  <div class="layout-sidebar" *ngIf="showSidebar" [class.mobile-active]="mobileMenuOpen">
     <div class="sidebar-logo">
       <span>PEDAGO-SUIVI</span>
     </div>
     <ul class="sidebar-menu">
-      <li routerLink="/dashboard" routerLinkActive="active">
+      <li routerLink="/dashboard" routerLinkActive="active" (click)="closeMobileMenu()">
         <i class="pi pi-th-large"></i> <span>Tableau de bord</span>
       </li>
-      <li routerLink="/teachers" routerLinkActive="active">
+      <li routerLink="/teachers" routerLinkActive="active" (click)="closeMobileMenu()">
         <i class="pi pi-users"></i> <span>Enseignants</span>
       </li>
-      <li routerLink="/qr-generator" routerLinkActive="active">
+      <li routerLink="/qr-generator" routerLinkActive="active" (click)="closeMobileMenu()">
         <i class="pi pi-qrcode"></i> <span>Générer QR Code</span>
       </li>
-      <li routerLink="/attendance" routerLinkActive="active">
+      <li routerLink="/attendance" routerLinkActive="active" (click)="closeMobileMenu()">
         <i class="pi pi-check-square"></i> <span>Emargements</span>
       </li>
-      <li routerLink="/pedagogy" routerLinkActive="active">
+      <li routerLink="/pedagogy" routerLinkActive="active" (click)="closeMobileMenu()">
         <i class="pi pi-book"></i> <span>Cahiers de textes</span>
       </li>
     </ul>
@@ -30,20 +34,29 @@
   </div>
 
   <div class="layout-main">
+    <!-- Topbar -->
     <div class="layout-topbar" *ngIf="showSidebar">
-      <div class="topbar-search">
-        <i class="pi pi-search"></i>
-        <input type="text" placeholder="Rechercher...">
+      <!-- Bouton Menu pour Mobile -->
+      <div class="menu-button" (click)="toggleMobileMenu()">
+        <i class="pi pi-bars"></i>
       </div>
-      <div class="topbar-actions">
-        <i class="pi pi-bell notification-badge"></i>
-        <div class="user-profile">
-          <img src="https://ui-avatars.com/api/?name=Admin+Mali&background=007bff&color=fff" alt="Profile">
-          <span>Admin Mali</span>
+
+      <div class="topbar-right">
+        <div class="topbar-search">
+          <i class="pi pi-search"></i>
+          <input type="text" placeholder="Rechercher...">
+        </div>
+        <div class="topbar-actions">
+          <i class="pi pi-bell notification-badge"></i>
+          <div class="user-profile">
+            <img src="https://ui-avatars.com/api/?name=Admin+Mali&background=007bff&color=fff" alt="Profile">
+            <span>Admin Mali</span>
+          </div>
         </div>
       </div>
     </div>
     
+    <!-- Contenu Principal -->
     <div class="layout-content">
       <router-outlet></router-outlet>
     </div>

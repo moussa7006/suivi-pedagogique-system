@@ -13,14 +13,23 @@ import { AuthService } from './core/services/auth.service';
 })
 export class App {
   showSidebar: boolean = true;
+  mobileMenuOpen: boolean = false;
 
   constructor(private router: Router, private authService: AuthService) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      // Masquer la barre latérale sur la page de login
       this.showSidebar = !event.url.includes('/login');
+      this.mobileMenuOpen = false; // Ferme le menu au changement de page
     });
+  }
+
+  toggleMobileMenu() {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  closeMobileMenu() {
+    this.mobileMenuOpen = false;
   }
 
   logout() {
