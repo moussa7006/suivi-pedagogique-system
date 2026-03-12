@@ -12,75 +12,80 @@ import { LessonService } from '../../core/services/lesson.service';
     <ion-header class="ion-no-border">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button defaultHref="/home"></ion-back-button>
+          <ion-back-button defaultHref="/home" text=""></ion-back-button>
         </ion-buttons>
         <ion-title>Cahier de Textes</ion-title>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="lesson-page">
-      <div class="header-info">
-        <ion-chip color="success" class="status-chip">
-          <ion-icon name="checkmark-circle"></ion-icon>
-          <ion-label>Émargement validé</ion-label>
-        </ion-chip>
-        <h1>Détails de la séance</h1>
-        <p>Veuillez résumer le contenu pédagogique dispensé aujourd'hui.</p>
+    <ion-content class="lesson-entry-content">
+      <div class="status-banner">
+        <div class="success-icon">
+          <ion-icon name="checkmark-done-circle"></ion-icon>
+        </div>
+        <div class="banner-text">
+          <h3>Émargement Validé</h3>
+          <p>Vous pouvez maintenant remplir votre séance.</p>
+        </div>
       </div>
 
-      <div class="form-container">
+      <div class="form-wrapper">
         <form [formGroup]="lessonForm" (ngSubmit)="onSubmit()">
           
-          <div class="form-group">
-            <ion-item lines="none" class="pro-select">
-              <ion-label position="stacked">Matière</ion-label>
-              <ion-select formControlName="subjectId" placeholder="Sélectionner la matière" interface="action-sheet">
-                <ion-select-option [value]="1">Algorithmique</ion-select-option>
-                <ion-select-option [value]="2">Programmation Java</ion-select-option>
-                <ion-select-option [value]="3">Bases de données</ion-select-option>
-              </ion-select>
-            </ion-item>
+          <div class="form-card">
+            <div class="card-title">Informations Séance</div>
+            
+            <div class="input-item">
+              <ion-label>Matière dispensée</ion-label>
+              <div class="select-box">
+                <ion-select formControlName="subjectId" placeholder="Choisir la matière" interface="action-sheet">
+                  <ion-select-option [value]="1">Algorithmique</ion-select-option>
+                  <ion-select-option [value]="2">Programmation Java</ion-select-option>
+                  <ion-select-option [value]="3">Bases de données</ion-select-option>
+                </ion-select>
+              </div>
+            </div>
+
+            <div class="input-item">
+              <ion-label>Chapitre ou Thème</ion-label>
+              <div class="input-box">
+                <input type="text" formControlName="chapter" placeholder="Ex: Les Arbres Binaires">
+              </div>
+            </div>
           </div>
 
-          <div class="form-group">
-            <ion-item lines="none" class="pro-input">
-              <ion-label position="stacked">Chapitre / Titre</ion-label>
-              <ion-input formControlName="chapter" placeholder="Ex: Les Arbres Binaires"></ion-input>
-            </ion-item>
-          </div>
-
-          <div class="form-group">
-            <ion-item lines="none" class="pro-textarea">
-              <ion-label position="stacked">Résumé du contenu</ion-label>
-              <ion-textarea 
+          <div class="form-card">
+            <div class="card-title">Contenu Pédagogique</div>
+            <div class="textarea-box">
+              <textarea 
                 formControlName="summary" 
-                placeholder="Décrivez brièvement les points abordés..."
-                [autoGrow]="true"
-                rows="4">
-              </ion-textarea>
-            </ion-item>
+                placeholder="Décrivez les points clés abordés durant cette séance..."
+                rows="5">
+              </textarea>
+            </div>
           </div>
 
-          <div class="form-group duration-selector">
-            <ion-label class="range-label">Durée de la séance (Heures)</ion-label>
-            <div class="range-display">{{ lessonForm.get('duration')?.value }}h</div>
-            <ion-range 
-              formControlName="duration" 
-              [min]="1" [max]="6" [step]="1" [snaps]="true" 
-              color="primary">
-              <ion-icon slot="start" size="small" name="time-outline"></ion-icon>
-              <ion-icon slot="end" name="time"></ion-icon>
-            </ion-range>
+          <div class="form-card">
+            <div class="card-title">Heures de cours : <span>{{ lessonForm.get('duration')?.value }}h</span></div>
+            <div class="range-wrapper">
+              <ion-range 
+                formControlName="duration" 
+                [min]="1" [max]="6" [step]="1" [snaps]="true" 
+                color="primary">
+                <ion-label slot="start">1h</ion-label>
+                <ion-label slot="end">6h</ion-label>
+              </ion-range>
+            </div>
           </div>
 
           <div class="action-footer">
             <ion-button 
               type="submit" 
               expand="block" 
-              class="submit-btn" 
+              class="finish-btn" 
               [disabled]="lessonForm.invalid || isLoading">
-              <span *ngIf="!isLoading">Valider la séance</span>
-              <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+              <span *ngIf="!isLoading">Terminer la séance</span>
+              <ion-spinner *ngIf="isLoading" name="dots"></ion-spinner>
             </ion-button>
           </div>
         </form>
@@ -88,38 +93,56 @@ import { LessonService } from '../../core/services/lesson.service';
     </ion-content>
   `,
   styles: [`
-    .lesson-page { --background: #f8fafc; }
+    .lesson-entry-content { --background: #f8fafc; }
 
-    .header-info {
-      padding: 30px 20px; text-align: left; background: white; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px;
-      margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    .status-banner {
+      background: #059669; color: white; padding: 25px 20px;
+      display: flex; align-items: center; gap: 15px;
+      border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+      margin-bottom: 20px;
       
-      .status-chip { margin-bottom: 12px; font-weight: 700; height: 32px; font-size: 0.8rem; }
-      h1 { font-weight: 800; color: #1e293b; font-size: 1.8rem; margin: 0; letter-spacing: -0.5px; }
-      p { color: #64748b; font-size: 0.95rem; margin-top: 8px; line-height: 1.5; }
+      .success-icon { font-size: 3rem; }
+      .banner-text {
+        h3 { margin: 0; font-size: 1.2rem; font-weight: 800; }
+        p { margin: 2px 0 0; font-size: 0.85rem; opacity: 0.9; }
+      }
     }
 
-    .form-container { padding: 0 20px 40px; }
+    .form-wrapper { padding: 0 15px 40px; }
 
-    .form-group { margin-bottom: 20px; }
+    .form-card {
+      background: white; border-radius: 20px; padding: 20px;
+      margin-bottom: 15px; border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
 
-    .pro-select, .pro-input, .pro-textarea {
-      --background: white; border: 1px solid #e2e8f0; border-radius: 18px; padding: 10px 16px;
-      ion-label { color: #2563eb; font-weight: 700; font-size: 0.85rem !important; margin-bottom: 8px; }
-      ion-input, ion-select, ion-textarea { font-weight: 600; font-size: 1rem; color: #1e293b; --padding-start: 0; }
+      .card-title { font-size: 0.85rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;
+        span { color: #2563eb; float: right; font-size: 1rem; }
+      }
     }
 
-    .duration-selector {
-      background: white; border-radius: 18px; padding: 20px; border: 1px solid #e2e8f0; text-align: center;
-      .range-label { display: block; color: #64748b; font-weight: 700; font-size: 0.85rem; margin-bottom: 15px; }
-      .range-display { font-size: 2.2rem; font-weight: 800; color: #2563eb; margin-bottom: 10px; }
+    .input-item {
+      margin-bottom: 15px;
+      ion-label { display: block; font-size: 0.8rem; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
+      .input-box, .select-box {
+        background: #f1f5f9; border-radius: 12px; padding: 12px 15px;
+        input, ion-select { width: 100%; border: none; background: transparent; font-weight: 600; color: #1e293b; outline: none; }
+      }
     }
+
+    .textarea-box {
+      background: #f1f5f9; border-radius: 15px; padding: 15px;
+      textarea { width: 100%; border: none; background: transparent; font-size: 1rem; font-weight: 500; color: #1e293b; outline: none; resize: none; }
+    }
+
+    .range-wrapper { padding: 0 10px; }
 
     .action-footer { margin-top: 30px; }
 
-    .submit-btn {
-      --background: #1e293b; --border-radius: 18px; --padding-top: 20px; --padding-bottom: 20px;
-      font-weight: 800; text-transform: none; font-size: 1.1rem; box-shadow: 0 10px 20px rgba(30,41,59,0.2);
+    .finish-btn {
+      --background: #1e293b; --color: white; --border-radius: 18px;
+      --padding-top: 22px; --padding-bottom: 22px;
+      font-weight: 800; text-transform: none; font-size: 1.1rem;
+      box-shadow: 0 10px 20px rgba(30,41,59,0.2);
     }
   `]
 })
@@ -147,7 +170,7 @@ export class LessonEntryComponent {
     if (this.lessonForm.valid) {
       this.isLoading = true;
       const loading = await this.loadingCtrl.create({
-        message: 'Envoi du cahier de textes...',
+        message: 'Enregistrement...',
         spinner: 'dots'
       });
       await loading.present();
@@ -169,11 +192,11 @@ export class LessonEntryComponent {
 
   async showSuccess() {
     const toast = await this.toastCtrl.create({
-      message: 'Séance enregistrée avec succès !',
+      message: 'Séance enregistrée !',
       duration: 3000,
       color: 'success',
       position: 'top',
-      icon: 'checkmark-circle'
+      icon: 'checkmark-done-circle'
     });
     await toast.present();
   }
