@@ -36,22 +36,40 @@
   <div class="layout-main">
     <!-- Topbar -->
     <div class="layout-topbar" *ngIf="showSidebar">
-      <!-- Bouton Menu pour Mobile -->
-      <div class="menu-button" (click)="toggleMobileMenu()">
-        <i class="pi pi-bars"></i>
+      <div class="topbar-left">
+        <div class="menu-button" (click)="toggleMobileMenu()">
+          <i class="pi pi-bars"></i>
+        </div>
+        <div class="topbar-search">
+          <i class="pi pi-search"></i>
+          <input type="text" placeholder="Rechercher une information...">
+        </div>
       </div>
 
       <div class="topbar-right">
-        <div class="topbar-search">
-          <i class="pi pi-search"></i>
-          <input type="text" placeholder="Rechercher...">
-        </div>
-        <div class="topbar-actions">
-          <i class="pi pi-bell notification-badge"></i>
-          <div class="user-profile">
-            <img src="https://ui-avatars.com/api/?name=Admin+Mali&background=007bff&color=fff" alt="Profile">
-            <span>Admin Mali</span>
+        <div class="action-icons">
+          <div class="icon-btn">
+            <i class="pi pi-envelope"></i>
           </div>
+          <div class="icon-btn">
+            <i class="pi pi-bell"></i>
+            <span class="pulse-badge"></span>
+          </div>
+          <div class="icon-btn">
+            <i class="pi pi-cog"></i>
+          </div>
+        </div>
+
+        <div class="user-anchor">
+          <div class="user-info">
+            <span class="user-name">Admin Mali</span>
+            <span class="user-role">Super Administrateur</span>
+          </div>
+          <div class="avatar-wrapper">
+            <img src="https://ui-avatars.com/api/?name=Admin+Mali&background=2563eb&color=fff" alt="Profile">
+            <div class="status-indicator online"></div>
+          </div>
+          <i class="pi pi-chevron-down"></i>
         </div>
       </div>
     </div>
