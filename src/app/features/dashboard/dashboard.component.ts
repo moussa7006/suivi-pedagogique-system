@@ -112,6 +112,8 @@ import { CommonModule } from '@angular/common';
     .header-section {
       h1 { margin: 0; font-size: 1.8rem; font-weight: 700; }
       p { margin: 4px 0 0; color: #64748b; }
+    }
+
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -132,16 +134,10 @@ import { CommonModule } from '@angular/common';
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       cursor: pointer;
       @media (max-width: 640px) { padding: 16px; gap: 12px; }
-    ...
-    .content-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 24px;
-      @media (max-width: 1100px) { grid-template-columns: 1fr; }
-    }
 
+      &:hover {
         box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-        border-color: var(--primary-color);
+        border-color: #3b82f6;
 
         .icon-box {
           transform: scale(1.1) rotate(5deg);
@@ -194,6 +190,15 @@ import { CommonModule } from '@angular/common';
       display: grid;
       grid-template-columns: 2fr 1fr;
       gap: 24px;
+      @media (max-width: 1100px) { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      h3 { margin: 0 0 20px; font-size: 1.1rem; color: #1e293b; }
     }
 
     .fake-chart {
