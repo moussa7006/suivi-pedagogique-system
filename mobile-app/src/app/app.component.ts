@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { Component, OnInit } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { IonicModule, MenuController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
+import { AuthService, User } from './core/services/auth.service';
 import { 
   schoolOutline, 
   qrCodeOutline, 
@@ -25,14 +26,20 @@ import {
   standalone: true,
   imports: [IonicModule, RouterLink, RouterLinkActive, CommonModule],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   public appPages = [
     { title: 'Accueil', url: '/home', icon: 'home-outline' },
     { title: 'Scanner QR Code', url: '/scan', icon: 'qr-code-outline' },
     { title: 'Cahier de Textes', url: '/lesson-entry', icon: 'book-outline' },
   ];
+  
+  public user: User | null = null;
 
-  constructor() {
+  constructor(
+    private authService: AuthService, 
+    private router: Router,
+    private menuCtrl: MenuController
+  ) {
     addIcons({ 
       schoolOutline, 
       qrCodeOutline, 
@@ -47,5 +54,17 @@ export class AppComponent {
       time,
       closeCircleOutline
     });
+  }
+
+  ngOnInit() {
+    this.authService.currentUser.subscribe(user => {
+      this.user = user;
+    });
+  }
+
+  async logout() {
+    await this.menuCtrl.close(); // Ferme le menu avant de déconnecter
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }
