@@ -12,16 +12,24 @@ import { AuthService } from './core/services/auth.service';
   styleUrl: './app.scss'
 })
 export class App {
-  showSidebar: boolean = true;
+  showSidebar: boolean = false;
   mobileMenuOpen: boolean = false;
 
   constructor(private router: Router, private authService: AuthService) {
+    // Vérification immédiate de l'URL actuelle
+    this.updateSidebarVisibility(this.router.url);
+
+    // Suivi des changements de navigation futurs
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      this.showSidebar = !event.url.includes('/login');
-      this.mobileMenuOpen = false; // Ferme le menu au changement de page
+      this.updateSidebarVisibility(event.urlAfterRedirects || event.url);
+      this.mobileMenuOpen = false;
     });
+  }
+
+  private updateSidebarVisibility(url: string) {
+    this.showSidebar = !url.includes('/login');
   }
 
   toggleMobileMenu() {
