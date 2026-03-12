@@ -9,194 +9,244 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="login-screen">
-      <!-- CÔTÉ GAUCHE : BRANDING & INSPIRATION -->
-      <div class="branding-side">
-        <div class="overlay"></div>
-        <div class="content">
-          <div class="logo-wrapper">
-             <i class="pi pi-verified"></i>
-             <span>SYSTEME DE SUIVI PEDAGOGIQUE</span>
-          </div>
-          <div class="hero-text">
-            <h1>L'excellence par la <span>transparence</span>.</h1>
-            <p>Plateforme officielle de gestion et de suivi de l'assiduité des enseignants universitaires du Mali.</p>
-          </div>
-          <div class="features-mini">
-            <div class="f-item"><i class="pi pi-qrcode"></i> QR Code Dynamique</div>
-            <div class="f-item"><i class="pi pi-map-marker"></i> Géolocalisation GPS</div>
-            <div class="f-item"><i class="pi pi-chart-bar"></i> Statistiques Temps Réel</div>
-          </div>
-        </div>
-        <div class="footer-branding">
-          REPULIQUE DU MALI • UN PEUPLE - UN BUT - UNE FOI
-        </div>
-      </div>
+    <div class="portal-env">
+      <!-- Image de fond avec overlay progressif -->
+      <div class="bg-scene"></div>
+      <div class="bg-overlay"></div>
 
-      <!-- CÔTÉ DROIT : FORMULAIRE -->
-      <div class="form-side">
-        <div class="login-box">
-          <div class="form-header">
-            <h2>Bon retour !</h2>
-            <p>Veuillez vous identifier pour accéder à l'administration.</p>
-          </div>
+      <div class="main-card-wrapper">
+        <div class="portal-card">
+          <!-- Côté Gauche : Identité Visuelle -->
+          <div class="info-panel">
+            <div class="panel-pattern"></div>
+            <div class="panel-content">
+              <div class="state-header">
+                <div class="flag-pill">
+                  <span class="v"></span><span class="j"></span><span class="r"></span>
+                </div>
+                <span class="state-name">RÉPUBLIQUE DU MALI</span>
+              </div>
+              
+              <div class="branding-hero">
+                <div class="big-icon">
+                  <i class="pi pi-shield"></i>
+                </div>
+                <h1>PEDAGO<span>SUIVI</span></h1>
+                <p>Système Intégré de Gestion de la Performance Pédagogique Nationale.</p>
+              </div>
 
-          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-            <div class="input-group" [class.focused]="activeField === 'user'">
-              <label>Identifiant</label>
-              <div class="input-wrapper">
-                <i class="pi pi-user"></i>
-                <input 
-                  type="text" 
-                  formControlName="username" 
-                  placeholder="admin_mali"
-                  (focus)="activeField = 'user'"
-                  (blur)="activeField = ''">
+              <div class="panel-footer">
+                <div class="footer-stat">
+                  <span class="n">2026</span>
+                  <span class="t">ÉDITION OFFICIELLE</span>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div class="input-group" [class.focused]="activeField === 'pass'">
-              <label>Mot de passe</label>
-              <div class="input-wrapper">
+          <!-- Côté Droit : Formulaire de Connexion -->
+          <div class="auth-panel">
+            <div class="auth-container">
+              <div class="auth-header">
+                <h2>Bienvenue</h2>
+                <p>Authentifiez-vous pour accéder au tableau de bord sécurisé.</p>
+              </div>
+
+              <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="portal-form">
+                <div class="form-field" [class.focused]="activeField === 'user'">
+                  <label>Identifiant Agent</label>
+                  <div class="input-group">
+                    <i class="pi pi-user"></i>
+                    <input 
+                      type="text" 
+                      formControlName="username" 
+                      placeholder="Nom d'utilisateur"
+                      (focus)="activeField = 'user'"
+                      (blur)="activeField = ''">
+                  </div>
+                </div>
+
+                <div class="form-field" [class.focused]="activeField === 'pass'">
+                  <label>Mot de passe</label>
+                  <div class="input-group">
+                    <i class="pi pi-lock"></i>
+                    <input 
+                      [type]="showPassword ? 'text' : 'password'" 
+                      formControlName="password" 
+                      placeholder="••••••••"
+                      (focus)="activeField = 'pass'"
+                      (blur)="activeField = ''">
+                    <button type="button" class="eye-toggle" (click)="showPassword = !showPassword">
+                      <i class="pi" [ngClass]="showPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-options">
+                  <label class="remember-me">
+                    <input type="checkbox">
+                    <span class="check-ui"></span>
+                    Mémoriser la session
+                  </label>
+                  <a href="#" class="help-link">Besoin d'aide ?</a>
+                </div>
+
+                <button type="submit" class="portal-btn" [disabled]="loginForm.invalid || isLoading">
+                  <span *ngIf="!isLoading">CONNEXION AU PORTAIL</span>
+                  <div *ngIf="isLoading" class="portal-spinner"></div>
+                </button>
+              </form>
+
+              <div class="security-badge">
                 <i class="pi pi-lock"></i>
-                <input 
-                  type="password" 
-                  formControlName="password" 
-                  placeholder="••••••••"
-                  (focus)="activeField = 'pass'"
-                  (blur)="activeField = ''">
+                <span>SÉCURISÉ PAR L'ÉTAT DU MALI - CHIFFREMENT DE BOUT EN BOUT</span>
               </div>
             </div>
-
-            <div class="options">
-              <label class="check-container">
-                <input type="checkbox"> Se souvenir de moi
-              </label>
-              <a href="#" class="link">Besoin d'aide ?</a>
-            </div>
-
-            <button type="submit" class="submit-btn" [disabled]="loginForm.invalid || isLoading">
-              <span *ngIf="!isLoading">Accéder au Dashboard</span>
-              <i *ngIf="isLoading" class="pi pi-spin pi-spinner"></i>
-            </button>
-          </form>
-
-          <div class="security-note">
-             <i class="pi pi-lock"></i>
-             Connexion sécurisée par cryptage SSL 256-bit
           </div>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .login-screen {
-      display: flex; width: 100vw; height: 100vh;
-      font-family: 'Inter', sans-serif; background: white;
-      @media (max-width: 1024px) { flex-direction: column; overflow-y: auto; }
+    :host { --primary: #1e3a8a; --accent: #fbbf24; --green: #059669; }
+
+    .portal-env {
+      height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden; font-family: 'Inter', sans-serif;
+      background: #020617;
     }
 
-    /* BRANDING SIDE */
-    .branding-side {
-      flex: 1.2; background: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=2070') center/cover;
-      position: relative; display: flex; flex-direction: column; justify-content: space-between;
-      padding: 60px; color: white;
-      @media (max-width: 1024px) { padding: 40px; min-height: 400px; flex: none; }
-      @media (max-width: 640px) { padding: 30px; min-height: 300px; }
+    /* Background Scene */
+    .bg-scene {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2069') center/cover;
+      filter: blur(5px) grayscale(0.5); transform: scale(1.1);
+    }
+    .bg-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, rgba(2, 6, 23, 0.9) 0%, rgba(2, 6, 23, 0.7) 100%);
+    }
 
-      .overlay {
-        position: absolute; top:0; left:0; width:100%; height:100%;
-        background: linear-gradient(135deg, rgba(30, 58, 138, 0.95) 0%, rgba(88, 28, 135, 0.9) 100%);
+    .main-card-wrapper { position: relative; z-index: 10; width: 100%; max-width: 1000px; padding: 20px; animation: cardReveal 1s ease-out; }
+
+    .portal-card {
+      display: flex; background: white; border-radius: 30px; overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.6); min-height: 600px;
+      @media (max-width: 900px) { flex-direction: column; }
+    }
+
+    /* INFO PANEL (GAUCHE) */
+    .info-panel {
+      flex: 1; background: linear-gradient(145deg, #064e3b 0%, #0f172a 100%);
+      position: relative; display: flex; color: white; padding: 60px;
+      @media (max-width: 900px) { padding: 40px; min-height: 250px; }
+
+      .panel-pattern {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background-image: radial-gradient(rgba(251, 191, 36, 0.1) 1px, transparent 1px);
+        background-size: 30px 30px; opacity: 0.5;
       }
 
-      .content { position: relative; z-index: 2; }
-      
-      .logo-wrapper {
-        display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.1rem;
-        letter-spacing: 1px; margin-bottom: 80px;
-        i { font-size: 1.8rem; color: #60a5fa; }
-      }
+      .panel-content { position: relative; z-index: 5; display: flex; flex-direction: column; width: 100%; }
 
-      .hero-text {
-        h1 { font-size: 3.5rem; font-weight: 900; line-height: 1.1; margin-bottom: 24px;
-          span { color: #60a5fa; }
+      .state-header {
+        display: flex; align-items: center; gap: 12px; margin-bottom: 60px;
+        .flag-pill {
+          display: flex; height: 10px; width: 24px; border-radius: 2px; overflow: hidden;
+          span { flex: 1; } .v { background: #00913f; } .j { background: #f8d317; } .r { background: #ce1126; }
         }
-        p { font-size: 1.2rem; line-height: 1.6; opacity: 0.9; max-width: 500px; }
+        .state-name { font-weight: 800; font-size: 0.8rem; letter-spacing: 2px; opacity: 0.8; }
       }
 
-      .features-mini {
-        display: flex; gap: 30px; margin-top: 60px;
-        .f-item {
-          display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem;
-          background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 99px;
-          i { color: #60a5fa; }
+      .branding-hero {
+        margin-top: 20px;
+        .big-icon { font-size: 3rem; color: var(--accent); margin-bottom: 20px; }
+        h1 { font-size: 3rem; font-weight: 900; letter-spacing: -1px; margin: 0; line-height: 1;
+          span { color: var(--accent); }
+        }
+        p { font-size: 1.1rem; opacity: 0.7; margin-top: 20px; line-height: 1.5; max-width: 300px; }
+      }
+
+      .panel-footer {
+        margin-top: auto;
+        .footer-stat {
+          display: flex; flex-direction: column;
+          .n { font-size: 1.5rem; font-weight: 900; color: var(--accent); }
+          .t { font-size: 0.7rem; font-weight: 700; opacity: 0.5; letter-spacing: 2px; }
         }
       }
-
-      .footer-branding { position: relative; z-index: 2; font-size: 0.8rem; letter-spacing: 3px; opacity: 0.6; }
     }
 
-    /* FORM SIDE */
-    .form-side {
-      flex: 1; display: flex; align-items: center; justify-content: center;
-      background: #ffffff; padding: 40px;
+    /* AUTH PANEL (DROITE) */
+    .auth-panel {
+      flex: 1.2; background: white; padding: 60px; display: flex; align-items: center;
+      @media (max-width: 900px) { padding: 40px; }
     }
 
-    .login-box { width: 100%; max-width: 420px; animation: slideUp 0.6s ease-out; }
+    .auth-container { width: 100%; max-width: 400px; margin: 0 auto; }
 
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-    .form-header {
+    .auth-header {
       margin-bottom: 40px;
-      h2 { font-size: 2.2rem; font-weight: 800; color: #1e293b; margin: 0 0 10px; }
-      p { color: #64748b; font-size: 1rem; }
+      h2 { font-size: 2.2rem; font-weight: 900; color: #0f172a; margin: 0 0 10px; }
+      p { color: #64748b; font-size: 1rem; line-height: 1.5; }
     }
 
-    .input-group {
+    .form-field {
       margin-bottom: 24px;
-      label { display: block; font-weight: 700; font-size: 0.9rem; color: #475569; margin-bottom: 10px; }
-      .input-wrapper {
+      label { display: block; font-weight: 700; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
+      .input-group {
         position: relative; display: flex; align-items: center;
-        i { position: absolute; left: 16px; color: #94a3b8; transition: color 0.3s; }
+        i:not(.pi-eye) { position: absolute; left: 16px; color: #94a3b8; transition: all 0.3s; }
+        .eye-toggle { position: absolute; right: 10px; background: none; border: none; color: #94a3b8; cursor: pointer; padding: 8px; &:hover { color: var(--primary); } }
         input {
           width: 100%; padding: 16px 16px 16px 48px; border-radius: 12px;
-          border: 2px solid #f1f5f9; background: #f8fafc; outline: none;
-          font-size: 1rem; font-weight: 500; transition: all 0.3s;
+          border: 2px solid #f1f5f9; background: #f8fafc; font-size: 1rem; font-weight: 500;
+          transition: all 0.3s; outline: none;
           &::placeholder { color: #cbd5e1; }
         }
       }
       &.focused {
-        label { color: #2563eb; }
-        .input-wrapper i { color: #2563eb; }
-        .input-wrapper input { border-color: #2563eb; background: white; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1); }
+        label { color: var(--primary); }
+        .input-group i { color: var(--primary); }
+        .input-group input { border-color: var(--primary); background: white; box-shadow: 0 10px 20px -5px rgba(30, 58, 138, 0.1); }
       }
     }
 
-    .options {
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
-      .check-container { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #64748b; font-weight: 500; cursor: pointer; }
-      .link { color: #2563eb; text-decoration: none; font-weight: 700; font-size: 0.9rem; &:hover { text-decoration: underline; } }
+    .form-options {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px;
+      .remember-me { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.85rem; color: #64748b; font-weight: 600;
+        input { display: none; }
+        .check-ui { width: 18px; height: 18px; border: 2px solid #e2e8f0; border-radius: 5px; transition: 0.2s; position: relative; }
+        input:checked + .check-ui { background: var(--primary); border-color: var(--primary); }
+        input:checked + .check-ui::after { content: "✓"; position: absolute; color: white; font-size: 12px; left: 3px; top: -1px; }
+      }
+      .help-link { color: var(--primary); text-decoration: none; font-weight: 700; font-size: 0.85rem; }
     }
 
-    .submit-btn {
-      width: 100%; padding: 18px; border-radius: 14px; border: none;
-      background: #1e293b; color: white; font-weight: 800; font-size: 1.1rem;
-      cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 15px -3px rgba(30, 41, 59, 0.2);
-      &:hover:not(:disabled) { background: #0f172a; transform: translateY(-2px); box-shadow: 0 20px 25px -5px rgba(30, 41, 59, 0.3); }
-      &:disabled { opacity: 0.6; cursor: not-allowed; }
+    .portal-btn {
+      width: 100%; padding: 20px; border-radius: 14px; border: none;
+      background: #0f172a; color: white; font-weight: 800; font-size: 1rem; letter-spacing: 1px;
+      cursor: pointer; transition: all 0.3s;
+      &:hover:not(:disabled) { background: #000; transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
+      &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
 
-    .security-note {
-      margin-top: 40px; display: flex; align-items: center; justify-content: center; gap: 8px;
-      color: #94a3b8; font-size: 0.8rem; font-weight: 500;
-      i { font-size: 0.9rem; }
+    .security-badge {
+      margin-top: 40px; text-align: center; color: #cbd5e1; font-size: 0.65rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 1px;
+      i { font-size: 0.9rem; color: var(--green); }
     }
+
+    @keyframes cardReveal { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+    .portal-spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.2); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; margin: 0 auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   `]
 })
 export class LoginComponent {
   loginForm: FormGroup;
   isLoading: boolean = false;
   activeField: string = '';
+  showPassword: boolean = false;
 
   constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
     this.loginForm = this.fb.group({
