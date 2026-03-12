@@ -1,10 +1,10 @@
 <ion-app>
-  <ion-split-pane contentId="main-content">
-    <ion-menu contentId="main-content" type="overlay">
+  <ion-split-pane [disabled]="!user" contentId="main-content">
+    <ion-menu *ngIf="user" contentId="main-content" type="overlay">
       <ion-content>
         <ion-list id="inbox-list">
           <ion-list-header>PEDAGO-MOBILE</ion-list-header>
-          <ion-note>Dr. Alou Diarra</ion-note>
+          <ion-note>{{ user.fullName }}</ion-note>
 
           <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages; let i = index">
             <ion-item routerDirection="forward" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
@@ -12,6 +12,13 @@
               <ion-label>{{ p.title }}</ion-label>
             </ion-item>
           </ion-menu-toggle>
+        </ion-list>
+
+        <ion-list id="labels-list">
+          <ion-item (click)="logout()" lines="none" detail="false" class="logout-item" button>
+            <ion-icon slot="start" name="log-out-outline" color="danger"></ion-icon>
+            <ion-label color="danger">Déconnexion</ion-label>
+          </ion-item>
         </ion-list>
       </ion-content>
     </ion-menu>
