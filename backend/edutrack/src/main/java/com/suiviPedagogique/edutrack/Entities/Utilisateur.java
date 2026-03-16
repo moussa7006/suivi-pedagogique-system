@@ -14,7 +14,11 @@ import lombok.NoArgsConstructor;
 public class Utilisateur {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(unique = true)
+    private String matricule;
 
     private String nom;
 
