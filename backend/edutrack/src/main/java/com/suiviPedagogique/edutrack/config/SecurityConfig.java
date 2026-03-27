@@ -1,12 +1,11 @@
-package com.suiviPedagogique.edutrack.Config;
+package com.suiviPedagogique.edutrack.config;
 
-import com.suiviPedagogique.edutrack.Security.CustomUserDetailsService;
-import com.suiviPedagogique.edutrack.Security.JwtAuthenticationFilter;
+import com.suiviPedagogique.edutrack.security.CustomUserDetailsService;
+import com.suiviPedagogique.edutrack.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -57,7 +56,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Configuration CORS
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // Autoriser Swagger
-                        .requestMatchers("/api/auth/register").permitAll() // Autoriser l'inscription publique
+                        .requestMatchers("/api/auth/register").hasRole("ADMIN") // Restreindre l'inscription à l'ADMIN
                         .requestMatchers("/api/auth/login").permitAll() // Autoriser la connexion
                         .anyRequest().authenticated() // Tout le reste nécessite d'être connecté
                 )

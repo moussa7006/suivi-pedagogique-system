@@ -1,14 +1,13 @@
-package com.suiviPedagogique.edutrack.Controllers;
+package com.suiviPedagogique.edutrack.controllers;
 
 
 import com.suiviPedagogique.edutrack.Dto.LoginRequest;
 import com.suiviPedagogique.edutrack.Dto.RegistrationRequest;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
-import com.suiviPedagogique.edutrack.Services.AuthService;
-import com.suiviPedagogique.edutrack.Security.JwtUtil;
+import com.suiviPedagogique.edutrack.services.AuthService;
+import com.suiviPedagogique.edutrack.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

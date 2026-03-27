@@ -1,7 +1,7 @@
-package com.suiviPedagogique.edutrack.Security;
+package com.suiviPedagogique.edutrack.security;
 
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
-import com.suiviPedagogique.edutrack.Repositories.UtilisateurRepository;
+import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
