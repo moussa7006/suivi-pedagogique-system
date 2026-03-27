@@ -1,7 +1,6 @@
-package com.suiviPedagogique.edutrack.Security;
+package com.suiviPedagogique.edutrack.security;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;

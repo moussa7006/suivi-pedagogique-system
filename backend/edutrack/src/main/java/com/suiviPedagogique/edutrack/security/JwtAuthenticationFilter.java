@@ -1,4 +1,4 @@
-package com.suiviPedagogique.edutrack.Security;
+package com.suiviPedagogique.edutrack.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

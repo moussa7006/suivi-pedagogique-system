@@ -1,4 +1,4 @@
-package com.suiviPedagogique.edutrack.Repositories;
+package com.suiviPedagogique.edutrack.repositories;
 
 import com.suiviPedagogique.edutrack.Entities.Classe;
 import org.springframework.data.jpa.repository.JpaRepository;

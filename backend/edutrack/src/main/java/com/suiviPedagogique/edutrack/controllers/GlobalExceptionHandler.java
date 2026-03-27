@@ -1,4 +1,4 @@
-package com.suiviPedagogique.edutrack.Controllers;
+package com.suiviPedagogique.edutrack.controllers;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

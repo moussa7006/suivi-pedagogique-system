@@ -1,4 +1,4 @@
-package com.suiviPedagogique.edutrack.Repositories;
+package com.suiviPedagogique.edutrack.repositories;
 
 import com.suiviPedagogique.edutrack.Entities.Seance;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+
 import java.util.Optional;
 
 @Repository
@@ -18,5 +19,5 @@ public interface SeanceRepository extends JpaRepository<Seance, Integer> {
     List<Seance> findByDate(LocalDate date);
 
     // Trouver une séance par son Token QR Code
-    //Optional<Seance> findByTokenQRCode(String token);
+    Optional<Seance> findByTokenQRCode(String tokenQRCode);
 }

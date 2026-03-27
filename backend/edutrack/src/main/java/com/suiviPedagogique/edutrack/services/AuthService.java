@@ -1,13 +1,13 @@
-package com.suiviPedagogique.edutrack.Services;
+package com.suiviPedagogique.edutrack.services;
 
 import com.suiviPedagogique.edutrack.Dto.LoginRequest;
 import com.suiviPedagogique.edutrack.Dto.RegistrationRequest;
 import com.suiviPedagogique.edutrack.Entities.Administrateur;
 import com.suiviPedagogique.edutrack.Entities.Enseignant;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
-import com.suiviPedagogique.edutrack.Repositories.AdministrateurRepository;
-import com.suiviPedagogique.edutrack.Repositories.EnseignantRepository;
-import com.suiviPedagogique.edutrack.Repositories.UtilisateurRepository;
+import com.suiviPedagogique.edutrack.repositories.AdministrateurRepository;
+import com.suiviPedagogique.edutrack.repositories.EnseignantRepository;
+import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,12 +47,12 @@ public class AuthService {
         if (roleDemande.equals("ADMIN")) {
             Administrateur admin = new Administrateur();
             remplirDonneesDeBase(admin, requestdto, motDePasseCrypte);
-            return administrateurRepository.saveAndFlush(admin);
+            return administrateurRepository.save(admin);
 
         } else if (roleDemande.equals("ENSEIGNANT")) {
             Enseignant enseignant = new Enseignant();
             remplirDonneesDeBase(enseignant, requestdto, motDePasseCrypte);
-            return enseignantRepository.saveAndFlush(enseignant);
+            return enseignantRepository.save(enseignant);
 
         } else {
             throw new IllegalArgumentException("Erreur : Rôle non valide. Utilisez ADMIN ou ENSEIGNANT.");
