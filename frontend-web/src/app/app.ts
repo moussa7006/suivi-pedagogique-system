@@ -9,23 +9,26 @@ import { AuthService } from './core/services/auth.service';
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
 export class App {
   showSidebar: boolean = false;
   mobileMenuOpen: boolean = false;
 
-  constructor(private router: Router, private authService: AuthService) {
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+  ) {
     // Vérification immédiate de l'URL actuelle
     this.updateSidebarVisibility(this.router.url);
 
     // Suivi des changements de navigation futurs
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      this.updateSidebarVisibility(event.urlAfterRedirects || event.url);
-      this.mobileMenuOpen = false;
-    });
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        this.updateSidebarVisibility(event.urlAfterRedirects || event.url);
+        this.mobileMenuOpen = false;
+      });
   }
 
   private updateSidebarVisibility(url: string) {

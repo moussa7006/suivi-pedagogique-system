@@ -17,30 +17,37 @@ import { QRCodeComponent } from 'angularx-qrcode';
       <div class="grid-layout">
         <!-- Section Paramètres -->
         <div class="card settings-card">
-          <h3>Configuration de la Session</h3>
+          <h3><i class="pi pi-cog"></i> Configuration de la Session</h3>
+
           <div class="form-group">
-            <label>Matière</label>
-            <select [(ngModel)]="selectedSubject">
+            <label for="subject"><i class="pi pi-book"></i> Matière</label>
+            <select id="subject" [(ngModel)]="selectedSubject">
               <option value="Algorithmique">Algorithmique - Amphi 500</option>
               <option value="Java">Programmation Java - Salle 12</option>
               <option value="Bases de données">Bases de données - Amphi A</option>
             </select>
           </div>
+
           <div class="form-group">
-            <label>Enseignant</label>
-            <input type="text" disabled value="Dr. Alou Diarra">
+            <label for="teacher"><i class="pi pi-user"></i> Enseignant</label>
+            <input id="teacher" type="text" disabled value="Dr. Alou Diarra" />
           </div>
+
           <div class="form-group">
-            <label>Durée de validité (secondes)</label>
-            <input type="number" [(ngModel)]="refreshInterval" min="10" max="300">
+            <label for="duration"><i class="pi pi-clock"></i> Durée de validité (secondes)</label>
+            <input id="duration" type="number" [(ngModel)]="refreshInterval" min="10" max="300" />
           </div>
-          
-          <div class="session-status" [ngClass]="{'active': isRunning}">
+
+          <div class="session-status" [ngClass]="{ active: isRunning }">
             <div class="status-dot"></div>
             <span>{{ isRunning ? 'Session en cours...' : 'Session en attente' }}</span>
           </div>
 
-          <button class="btn" [ngClass]="isRunning ? 'btn-danger' : 'btn-primary'" (click)="toggleSession()">
+          <button
+            class="btn"
+            [ngClass]="isRunning ? 'btn-danger' : 'btn-primary'"
+            (click)="toggleSession()"
+          >
             <i class="pi" [ngClass]="isRunning ? 'pi-stop-circle' : 'pi-play-circle'"></i>
             {{ isRunning ? 'Arrêter la session' : 'Démarrer la session' }}
           </button>
@@ -53,19 +60,29 @@ import { QRCodeComponent } from 'angularx-qrcode';
               <div class="timer-ring">
                 <svg viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="45" class="bg-ring"></circle>
-                  <circle cx="50" cy="50" r="45" class="progress-ring" 
-                    [style.stroke-dashoffset]="dashOffset"></circle>
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    class="progress-ring"
+                    [style.stroke-dashoffset]="dashOffset"
+                  ></circle>
                 </svg>
                 <span class="timer-text">{{ timeLeft }}s</span>
               </div>
               <div class="qrcode-box">
                 <qrcode [qrdata]="qrData" [width]="280" [errorCorrectionLevel]="'M'"></qrcode>
               </div>
-              <p class="qr-payload">ID: {{ qrData.split('-')[1] }} | Ver: {{ qrData.split('-')[2] }}</p>
+              <p class="qr-payload">
+                ID: {{ qrData.split('-')[1] }} | Ver: {{ qrData.split('-')[2] }}
+              </p>
             } @else {
               <div class="placeholder">
-                <i class="pi pi-lock"></i>
-                <p>Démarrez la session pour générer le QR Code</p>
+                <div class="placeholder-icon">
+                  <i class="pi pi-shield"></i>
+                </div>
+                <p class="placeholder-text">Démarrez la session pour générer le QR Code</p>
+                <p class="placeholder-sub">Le code sera actualisé automatiquement</p>
               </div>
             }
           </div>
@@ -74,107 +91,530 @@ import { QRCodeComponent } from 'angularx-qrcode';
 
       <!-- Logs de session -->
       <div class="card logs-card">
-        <h3>Historique des scans récents</h3>
-        <div class="log-item success">
-          <i class="pi pi-check-circle"></i>
-          <span><strong>K. Keita</strong> a émargé avec succès (Position GPS validée)</span>
-          <span class="time">14:32:05</span>
+        <div class="logs-header">
+          <h3><i class="pi pi-history"></i> Historique des scans récents</h3>
+          <span class="log-count">{{ todayLogs.length }} événements</span>
         </div>
-        <div class="log-item warning">
-          <i class="pi pi-exclamation-triangle"></i>
-          <span>Tentative d'émargement hors zone détectée (Utilisateur: M. Diallo)</span>
-          <span class="time">14:31:12</span>
+        <div class="log-list">
+          <div class="log-item success">
+            <div class="log-icon">
+              <i class="pi pi-check-circle"></i>
+            </div>
+            <div class="log-content">
+              <span class="log-message"
+                ><strong>K. Keita</strong> a émargé avec succès (Position GPS validée)</span
+              >
+              <span class="log-time">14:32:05</span>
+            </div>
+          </div>
+          <div class="log-item warning">
+            <div class="log-icon">
+              <i class="pi pi-exclamation-triangle"></i>
+            </div>
+            <div class="log-content">
+              <span class="log-message"
+                >Tentative d'émargement hors zone détectée (Utilisateur: M. Diallo)</span
+              >
+              <span class="log-time">14:31:12</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   `,
-  styles: [`
-    .qr-container { display: flex; flex-direction: column; gap: 24px; }
-    .page-header { h1 { margin: 0; font-size: 1.7rem; } p { color: #64748b; margin-top: 4px; } }
+  styles: [
+    `
+      .qr-container {
+        display: flex;
+        flex-direction: column;
+        padding: clamp(12px, 3vw, 24px);
+        gap: clamp(12px, 3vw, 24px);
+        max-width: 100%;
 
-    .grid-layout { display: grid; grid-template-columns: 350px 1fr; gap: 24px; }
-
-    .form-group {
-      margin-bottom: 20px;
-      label { display: block; margin-bottom: 8px; font-weight: 600; color: #475569; }
-      select, input {
-        width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0;
-        background: #f8fafc; font-size: 1rem;
+        @media (max-width: 480px) {
+          gap: 14px;
+          padding: 12px 8px;
+        }
       }
-    }
 
-    .session-status {
-      display: flex; align-items: center; gap: 10px; margin: 24px 0;
-      padding: 12px; border-radius: 10px; background: #f1f5f9; color: #64748b; font-weight: 600;
-      .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #94a3b8; }
-      &.active {
-        background: #dcfce7; color: #166534;
-        .status-dot { background: #22c55e; animation: pulse 1.5s infinite; }
+      .page-header {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        flex-wrap: wrap;
+
+        h1 {
+          margin: 0;
+          font-size: clamp(1.1rem, 3vw, 1.6rem);
+          font-weight: 800;
+          color: #0f172a;
+          letter-spacing: -0.02em;
+
+          @media (max-width: 480px) {
+            font-size: 1.3rem;
+          }
+        }
+
+        p {
+          margin: 0;
+          color: #64748b;
+          font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+          font-weight: 500;
+        }
       }
-    }
 
-    @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
+      .grid-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
 
-    .btn {
-      width: 100%; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 10px; border: none; transition: all 0.2s;
-      &.btn-primary { background: var(--primary-color); color: white; }
-      &.btn-danger { background: #ef4444; color: white; }
-      &:hover { transform: translateY(-2px); opacity: 0.9; }
-    }
-
-    .qr-display-card {
-      display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;
-      min-height: 500px;
-    }
-
-    .qr-wrapper {
-      display: flex; flex-direction: column; align-items: center; gap: 32px;
-      transition: all 0.5s ease;
-      &.blurred { filter: grayscale(1) opacity(0.5); }
-    }
-
-    .qrcode-box {
-      padding: 20px; background: white; border-radius: 20px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;
-    }
-
-    .qr-payload { font-family: monospace; color: #94a3b8; font-size: 0.8rem; }
-
-    .placeholder {
-      text-align: center; color: #94a3b8;
-      i { font-size: 4rem; margin-bottom: 16px; opacity: 0.3; }
-      p { font-weight: 500; }
-    }
-
-    /* Timer Ring Animation */
-    .timer-ring {
-      position: absolute; top: 20px; right: 20px; width: 60px; height: 60px;
-      svg { transform: rotate(-90deg); }
-      circle { fill: none; stroke-width: 8; stroke-linecap: round; }
-      .bg-ring { stroke: #f1f5f9; }
-      .progress-ring {
-        stroke: var(--primary-color); stroke-dasharray: 283;
-        transition: stroke-dashoffset 1s linear;
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr;
+        }
       }
-      .timer-text {
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        font-weight: 700; font-size: 0.9rem; color: var(--primary-color);
-      }
-    }
 
-    .logs-card {
-      h3 { margin-bottom: 20px; }
-      .log-item {
-        display: flex; align-items: center; gap: 12px; padding: 12px;
-        border-radius: 10px; margin-bottom: 8px; border-left: 4px solid #cbd5e1;
-        background: #f8fafc; font-size: 0.9rem;
-        &.success { border-color: #22c55e; i { color: #22c55e; } }
-        &.warning { border-color: #f59e0b; i { color: #f59e0b; } }
-        .time { margin-left: auto; color: #94a3b8; font-size: 0.8rem; }
+      .card {
+        background: white;
+        border: 2px solid rgba(226, 232, 240, 0.8);
+        border-radius: 14px;
+        padding: 20px;
+        transition:
+          transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+          box-shadow 0.25s ease,
+          border-color 0.25s ease;
+
+        &:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+          border-color: rgba(59, 130, 246, 0.2);
+        }
       }
-    }
-  `]
+
+      .settings-card {
+        h3 {
+          margin: 0 0 20px;
+          font-size: 1.05rem;
+          font-weight: 700;
+          color: #1e293b;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          i {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+          }
+        }
+      }
+
+      .form-group {
+        margin-bottom: 18px;
+
+        label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 6px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: #475569;
+
+          i {
+            color: #94a3b8;
+            font-size: 0.85rem;
+          }
+        }
+
+        select,
+        input {
+          width: 100%;
+          padding: 10px 14px;
+          border-radius: 10px;
+          border: 2px solid rgba(226, 232, 240, 0.8);
+          background: white;
+          font-size: 0.9rem;
+          color: #0f172a;
+          transition: all 0.2s ease;
+
+          &:focus {
+            outline: none;
+            border-color: rgba(37, 99, 235, 0.6);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: rgba(241, 245, 249, 0.8);
+          }
+        }
+
+        select {
+          cursor: pointer;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 12px center;
+          padding-right: 40px;
+        }
+      }
+
+      .session-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 20px 0;
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: rgba(241, 245, 249, 0.6);
+        color: #64748b;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: 1px solid rgba(226, 232, 240, 0.6);
+        transition: all 0.3s ease;
+
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #94a3b8;
+          flex-shrink: 0;
+        }
+
+        &.active {
+          background: rgba(220, 252, 231, 0.8);
+          color: #166534;
+          border: 1px solid rgba(187, 240, 208, 0.5);
+
+          .status-dot {
+            background: #22c55e;
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+          }
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+        }
+        50% {
+          opacity: 0.6;
+          transform: scale(1.15);
+          box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+        }
+      }
+
+      .btn {
+        width: 100%;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: none;
+        transition:
+          transform 0.2s ease,
+          background-color 0.2s ease,
+          box-shadow 0.2s ease;
+
+        i {
+          font-size: 1.05rem;
+        }
+
+        &.btn-primary {
+          background: var(--primary-color);
+          color: white;
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+
+          &:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+          }
+
+          &:active {
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        &.btn-danger {
+          background: #ef4444;
+          color: white;
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+
+          &:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+          }
+        }
+      }
+
+      .qr-display-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        min-height: 480px;
+      }
+
+      .qr-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 32px;
+        transition: all 0.4s ease;
+        width: 100%;
+        max-width: 380px;
+
+        &.blurred {
+          filter: grayscale(0.7) opacity(0.5);
+        }
+      }
+
+      .qrcode-box {
+        padding: 20px;
+        border-radius: 14px;
+        border: 2px dashed rgba(226, 232, 240, 0.9);
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+
+        .session-active & {
+          border: 2px solid rgba(37, 99, 235, 0.3);
+          background: white;
+        }
+      }
+
+      .qr-payload {
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        color: #94a3b8;
+        font-size: 0.78rem;
+        background: rgba(241, 245, 249, 0.6);
+        padding: 6px 14px;
+        border-radius: 8px;
+        border: 1px solid rgba(226, 232, 240, 0.5);
+        letter-spacing: 0.02em;
+      }
+
+      .placeholder {
+        text-align: center;
+        padding: 48px 32px;
+
+        .placeholder-icon {
+          width: 80px;
+          height: 80px;
+          margin: 0 auto 20px;
+          border-radius: 14px;
+          border: 2px dashed rgba(226, 232, 240, 0.9);
+          background: #f8fafc;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          i {
+            font-size: 2.2rem;
+            color: rgba(37, 99, 235, 0.45);
+          }
+        }
+
+        .placeholder-text {
+          font-weight: 600;
+          color: #475569;
+          font-size: 0.95rem;
+          margin: 0 0 6px;
+        }
+
+        .placeholder-sub {
+          font-size: 0.82rem;
+          color: #94a3b8;
+          font-weight: 500;
+          margin: 0;
+        }
+      }
+
+      .timer-ring {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+
+        svg {
+          transform: rotate(-90deg);
+          width: 100%;
+          height: 100%;
+        }
+
+        circle {
+          fill: none;
+          stroke-width: 6;
+          stroke-linecap: round;
+        }
+
+        .bg-ring {
+          stroke: rgba(241, 245, 249, 0.7);
+        }
+
+        .progress-ring {
+          stroke: var(--primary-color);
+          stroke-dasharray: 283;
+          transition: stroke-dashoffset 1s linear;
+          filter: drop-shadow(0 2px 3px rgba(37, 99, 235, 0.25));
+        }
+
+        .timer-text {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-weight: 700;
+          font-size: 0.85rem;
+          color: var(--primary-color);
+          background: white;
+          border-radius: 50%;
+          width: 38px;
+          height: 38px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+      }
+
+      .logs-card {
+        padding: 20px;
+
+        .logs-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 16px;
+
+          h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            i {
+              color: #64748b;
+              font-size: 1.05rem;
+            }
+          }
+
+          .log-count {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+            background: rgba(241, 245, 249, 0.6);
+            padding: 4px 10px;
+            border-radius: 999px;
+          }
+        }
+
+        .log-list {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .log-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 12px;
+          border-radius: 10px;
+          margin-bottom: 8px;
+          background: rgba(248, 250, 252, 0.5);
+          border: 1px solid transparent;
+          transition:
+            background 0.2s ease,
+            border-color 0.2s ease;
+
+          &:hover {
+            background: rgba(37, 99, 235, 0.03);
+            border-color: rgba(37, 99, 235, 0.08);
+          }
+
+          .log-icon {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            background: white;
+            border: 1px solid rgba(226, 232, 240, 0.5);
+          }
+
+          .log-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+
+            .log-message {
+              font-size: 0.85rem;
+              color: #334155;
+              line-height: 1.35;
+
+              strong {
+                color: #0f172a;
+                font-weight: 600;
+              }
+            }
+
+            .log-time {
+              font-size: 0.72rem;
+              color: #94a3b8;
+              font-weight: 600;
+            }
+          }
+
+          &.success {
+            .log-icon {
+              color: #22c55e;
+              border-color: rgba(34, 197, 94, 0.25);
+            }
+          }
+
+          &.warning {
+            .log-icon {
+              color: #f59e0b;
+              border-color: rgba(245, 158, 11, 0.25);
+            }
+          }
+        }
+      }
+
+      @media (max-width: 768px) {
+        .grid-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .qr-display-card {
+          min-height: 400px;
+        }
+      }
+    `,
+  ],
 })
 export class QrGeneratorComponent implements OnInit, OnDestroy {
   qrData: string = '';
@@ -184,6 +624,10 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   selectedSubject: string = 'Algorithmique';
   timer: any;
   dashOffset: number = 0;
+  todayLogs: any[] = [
+    { id: 1, type: 'success' },
+    { id: 2, type: 'warning' },
+  ];
 
   ngOnInit() {}
 
@@ -215,10 +659,9 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   startTimer() {
     this.timeLeft = this.refreshInterval;
     if (this.timer) clearInterval(this.timer);
-    
+
     this.timer = setInterval(() => {
       this.timeLeft--;
-      // Animation du cercle (dasharray de 283 pour un cercle de r=45)
       this.dashOffset = 283 - (this.timeLeft / this.refreshInterval) * 283;
 
       if (this.timeLeft <= 0) {
@@ -229,9 +672,8 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   }
 
   generateNewCode() {
-    // On simule un payload sécurisé : Matière + Timestamp + ID Aléatoire
     const timestamp = Date.now();
     const randomSalt = Math.random().toString(36).substring(7);
-    this.qrData = `SESSION-${this.selectedSubject.substring(0,3).toUpperCase()}-${timestamp}-${randomSalt}`;
+    this.qrData = `SESSION-${this.selectedSubject.substring(0, 3).toUpperCase()}-${timestamp}-${randomSalt}`;
   }
 }
