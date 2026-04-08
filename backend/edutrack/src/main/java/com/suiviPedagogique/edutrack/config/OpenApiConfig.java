@@ -10,10 +10,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(title = "EduTrack API", version = "v1", description = "Documentation de l'API EduTrack"),
-        security = @SecurityRequirement(name = "bearerAuth")
+        security = @SecurityRequirement(name = "verifierToken")
 )
 @SecurityScheme(
-        name = "bearerAuth",
+        name = "verifierToken",
         type = SecuritySchemeType.HTTP,
         scheme = "bearer",
         bearerFormat = "JWT"

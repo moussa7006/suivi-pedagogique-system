@@ -23,6 +23,7 @@ public class Emargement {
     private String latitudeGPS;
     private String longitudeGPS;
     private Boolean estLocalisee;
+    private Boolean estConfirme = false;
 
     @OneToOne(mappedBy = "emargement")
     private Seance seance;

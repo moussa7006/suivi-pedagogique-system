@@ -20,22 +20,22 @@ public class MatiereController {
         return ResponseEntity.status(201).body(matiereService.createMatiere(dto));
     }
 
-    @GetMapping("/lister toutes les matieres")
+    @GetMapping
     public ResponseEntity<List<MatiereDto>> getAllMatieres() {
         return ResponseEntity.ok(matiereService.getAllMatieres());
     }
 
-    @GetMapping("/lister par classe")
+    @GetMapping("/{id}")
     public ResponseEntity<MatiereDto> getMatiereById(@PathVariable Integer id) {
         return ResponseEntity.ok(matiereService.getMatiereById(id));
     }
 
-    @PutMapping("/modifier une matiere")
+    @PutMapping("/{id}")
     public ResponseEntity<MatiereDto> updateMatiere(@PathVariable Integer id, @RequestBody MatiereDto dto) {
         return ResponseEntity.ok(matiereService.updateMatiere(id, dto));
     }
 
-    @DeleteMapping("/supprimer une matiere")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMatiere(@PathVariable Integer id) {
         matiereService.deleteMatiere(id);
         return ResponseEntity.noContent().build();
