@@ -18,31 +18,31 @@ public class SeanceController {
         this.seanceService = seanceService;
     }
 
-    @PostMapping("/creer")
+    @PostMapping
     public ResponseEntity<SeanceDto> createSeance(@RequestBody SeanceDto dto) {
         SeanceDto created = seanceService.createSeance(dto);
         return ResponseEntity.ok(created);
     }
 
-    @PutMapping("/modifier")
+    @PutMapping("/{id}")
     public ResponseEntity<SeanceDto> updateSeance(@PathVariable Integer id, @RequestBody SeanceDto dto) {
         SeanceDto updated = seanceService.updateSeance(id, dto);
         return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/supprimer")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSeance(@PathVariable Integer id) {
         seanceService.deleteSeance(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/lister")
+    @GetMapping
     public ResponseEntity<List<SeanceDto>> getAllSeances() {
         List<SeanceDto> seances = seanceService.getAllSeances();
         return ResponseEntity.ok(seances);
     }
 
-    @GetMapping("/lister par id")
+    @GetMapping("/{id}")
     public ResponseEntity<SeanceDto> getSeanceById(@PathVariable Integer id) {
         SeanceDto seance = seanceService.getSeanceById(id);
         return ResponseEntity.ok(seance);

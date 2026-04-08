@@ -79,6 +79,7 @@ public class EmargementService {
         emargement.setLatitudeGPS(request.getLatitudeGPS());
         emargement.setLongitudeGPS(request.getLongitudeGPS());
         emargement.setEstLocalisee(true);
+        emargement.setEstConfirme(false);
 
         emargementRepository.save(emargement);
         seance.setEmargement(emargement);
