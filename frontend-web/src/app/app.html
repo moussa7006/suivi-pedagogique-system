@@ -1,12 +1,12 @@
 <div class="layout-wrapper" [class.no-sidebar]="!showSidebar">
-  
   <!-- Overlay pour mobile -->
   <div class="layout-mask" [class.active]="mobileMenuOpen" (click)="closeMobileMenu()"></div>
 
   <!-- Sidebar -->
   <div class="layout-sidebar" *ngIf="showSidebar" [class.mobile-active]="mobileMenuOpen">
     <div class="sidebar-logo">
-      <span>PEDAGO-SUIVI</span>
+      <img src="/assets/images/intec.png" alt="Logo INTEC" class="brand-logo-sidebar" />
+      <span>INTEC-PEDAGO</span>
     </div>
     <ul class="sidebar-menu">
       <li routerLink="/dashboard" routerLinkActive="active" (click)="closeMobileMenu()">
@@ -25,11 +25,11 @@
         <i class="pi pi-book"></i> <span>Cahiers de textes</span>
       </li>
     </ul>
-    
+
     <div class="sidebar-footer">
-       <div class="logout-btn" (click)="logout()">
-          <i class="pi pi-power-off"></i> <span>Déconnexion</span>
-       </div>
+      <div class="logout-btn" (click)="logout()">
+        <i class="pi pi-power-off"></i> <span>Déconnexion</span>
+      </div>
     </div>
   </div>
 
@@ -40,9 +40,10 @@
         <div class="menu-button" (click)="toggleMobileMenu()">
           <i class="pi pi-bars"></i>
         </div>
+
         <div class="topbar-search">
           <i class="pi pi-search"></i>
-          <input type="text" placeholder="Rechercher une information...">
+          <input type="text" placeholder="Rechercher une information..." />
         </div>
       </div>
 
@@ -66,14 +67,17 @@
             <span class="user-role">Super Administrateur</span>
           </div>
           <div class="avatar-wrapper">
-            <img src="https://ui-avatars.com/api/?name=Admin+Mali&background=2563eb&color=fff" alt="Profile">
+            <img
+              src="https://ui-avatars.com/api/?name=Admin+Mali&background=2563eb&color=fff"
+              alt="Profile"
+            />
             <div class="status-indicator online"></div>
           </div>
           <i class="pi pi-chevron-down"></i>
         </div>
       </div>
     </div>
-    
+
     <!-- Contenu Principal -->
     <div class="layout-content">
       <router-outlet></router-outlet>
