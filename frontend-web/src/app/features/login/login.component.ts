@@ -127,6 +127,7 @@ import { AuthService } from '../../core/services/auth.service';
       .login-page {
         display: flex;
         height: 100vh;
+        min-height: 100vh;
         overflow: hidden;
         font-family:
           'Inter',
@@ -248,39 +249,54 @@ import { AuthService } from '../../core/services/auth.service';
         align-items: center;
         justify-content: center;
         color: white;
-        padding: 60px;
+        padding: 40px;
         text-align: center;
         height: 100%;
+
+        @media (max-height: 700px) {
+          padding: 24px;
+        }
       }
 
       .brand-icon {
-        width: 128px;
-        height: 128px;
-        border-radius: 24px;
+        width: 100px;
+        height: 100px;
+        border-radius: 20px;
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(12px);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 36px;
+        margin-bottom: 24px;
         border: 1px solid rgba(255, 255, 255, 0.3);
         animation: slideIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
         box-shadow: 0 10px 24px rgba(2, 6, 23, 0.2);
 
+        @media (max-height: 700px) {
+          width: 72px;
+          height: 72px;
+          margin-bottom: 16px;
+        }
+
         img {
-          width: 108px;
-          height: 108px;
+          width: 80%;
+          height: 80%;
           object-fit: contain;
           border-radius: 14px;
         }
       }
 
       .branding-content h1 {
-        font-size: 2.2rem;
+        font-size: clamp(1.4rem, 3vw, 2.2rem);
         font-weight: 800;
         margin: 0 0 12px;
         letter-spacing: -0.03em;
         line-height: 1.2;
+
+        @media (max-height: 700px) {
+          font-size: 1.3rem;
+          margin: 0 0 8px;
+        }
       }
 
       .branding-content > p {
@@ -294,9 +310,14 @@ import { AuthService } from '../../core/services/auth.service';
       .brand-features {
         display: flex;
         flex-direction: column;
-        gap: 16px;
-        margin-top: 48px;
+        gap: 12px;
+        margin-top: 32px;
         align-items: flex-start;
+
+        @media (max-height: 700px) {
+          margin-top: 20px;
+          gap: 8px;
+        }
       }
 
       .feature {
@@ -315,12 +336,13 @@ import { AuthService } from '../../core/services/auth.service';
       .login-auth {
         flex: 1;
         display: flex;
-        align-items: center;
+        align-items: stretch;
         justify-content: center;
         background: #fff;
         position: relative;
-        padding: 24px;
-        overflow: hidden;
+        padding: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
       }
 
       .login-auth::before {
@@ -346,11 +368,15 @@ import { AuthService } from '../../core/services/auth.service';
 
       .auth-container {
         width: 100%;
-        max-width: 420px;
-        padding: 40px;
+        max-width: 480px;
+        padding: 0 40px;
         animation: slideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
         position: relative;
         z-index: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 100vh;
       }
 
       @keyframes slideIn {
@@ -367,17 +393,18 @@ import { AuthService } from '../../core/services/auth.service';
       .auth-header {
         margin-bottom: 32px;
         text-align: center;
+        flex-shrink: 0;
       }
 
       .auth-mobile-logo {
         display: none;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 14px;
+        margin: 0 auto 12px;
 
         img {
-          width: 90px;
-          height: 90px;
+          width: 64px;
+          height: 64px;
           object-fit: contain;
           border-radius: 14px;
           background: #fff;
@@ -385,26 +412,41 @@ import { AuthService } from '../../core/services/auth.service';
           border: 1px solid rgba(226, 232, 240, 0.9);
           box-shadow: 0 6px 14px rgba(2, 6, 23, 0.08);
         }
+
+        @media (max-height: 600px) {
+          display: none;
+        }
       }
       .auth-header h2 {
-        font-size: 1.9rem;
+        font-size: 1.75rem;
         font-weight: 800;
         color: #0f172a;
-        margin: 0 0 8px;
+        margin: 0 0 6px;
         letter-spacing: -0.025em;
+
+        @media (max-height: 700px) {
+          font-size: 1.4rem;
+          margin: 0 0 4px;
+        }
       }
       .auth-header p {
         color: #64748b;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         margin: 0;
         font-weight: 400;
+
+        @media (max-height: 700px) {
+          font-size: 0.82rem;
+        }
       }
 
       /* Form */
       .portal-form {
         display: flex;
         flex-direction: column;
-        gap: 22px;
+        gap: 20px;
+        flex: 1;
+        justify-content: center;
       }
       .form-group {
         display: flex;
@@ -416,6 +458,11 @@ import { AuthService } from '../../core/services/auth.service';
         font-weight: 650;
         color: #374151;
         letter-spacing: 0.01em;
+
+        @media (max-height: 700px) {
+          font-size: 0.76rem;
+          margin-bottom: 2px;
+        }
       }
 
       .input-wrapper {
@@ -440,7 +487,7 @@ import { AuthService } from '../../core/services/auth.service';
 
       .input-wrapper input {
         width: 100%;
-        padding: 13px 16px 13px 46px;
+        padding: 12px 16px 12px 46px;
         border: 2px solid #e2e8f0;
         border-radius: 14px;
         font-size: 0.95rem;
@@ -449,6 +496,11 @@ import { AuthService } from '../../core/services/auth.service';
         outline: none;
         color: #0f172a;
         font-weight: 500;
+
+        @media (max-height: 700px) {
+          padding: 10px 14px 10px 42px;
+          font-size: 0.9rem;
+        }
       }
       .input-wrapper input:hover {
         border-color: #cbd5e1;
@@ -532,6 +584,7 @@ import { AuthService } from '../../core/services/auth.service';
         align-items: center;
         justify-content: center;
         gap: 10px;
+        flex-shrink: 0;
       }
       .btn-connect:hover:not(:disabled) {
         transform: translateY(-3px) scale(1.02);
@@ -582,7 +635,9 @@ import { AuthService } from '../../core/services/auth.service';
 
       /* Security Footer */
       .security-footer {
-        margin-top: 32px;
+        margin-top: auto;
+        padding-top: 28px;
+        padding-bottom: 24px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -591,36 +646,158 @@ import { AuthService } from '../../core/services/auth.service';
         color: #94a3b8;
         font-weight: 500;
         letter-spacing: 0.02em;
+        flex-shrink: 0;
       }
       .security-footer i {
         color: #f59e0b;
         font-size: 0.95rem;
       }
 
-      /* Responsive */
+      /* Responsive - Tablet */
       @media (max-width: 900px) {
+        .login-page {
+          height: auto;
+          min-height: 100vh;
+        }
+
         .login-branding {
           display: none;
         }
+
         .login-auth {
-          padding: 20px;
+          width: 100%;
+          height: 100vh;
+          padding: 0;
+          align-items: center;
         }
+
         .auth-container {
-          padding: 24px;
+          padding: 0 24px;
+          min-height: 100vh;
         }
+
         .auth-mobile-logo {
           display: flex;
         }
+
         .auth-header h2 {
-          font-size: 1.6rem;
+          font-size: 1.5rem;
         }
       }
+
+      /* Responsive - Mobile */
       @media (max-width: 480px) {
-        .auth-container {
-          padding: 16px;
+        .login-page {
+          height: 100vh;
+          min-height: 100vh;
         }
+
+        .login-auth {
+          min-height: 100vh;
+          padding: 0;
+          align-items: center;
+          overflow-y: auto;
+        }
+
+        .auth-container {
+          padding: 20px 16px;
+          max-width: 100%;
+          min-height: 100vh;
+        }
+
+        .auth-header {
+          margin-bottom: 20px;
+        }
+
+        .auth-mobile-logo {
+          margin: 0 auto 10px;
+
+          img {
+            width: 52px;
+            height: 52px;
+          }
+        }
+
         .auth-header h2 {
-          font-size: 1.4rem;
+          font-size: 1.3rem;
+        }
+
+        .auth-header p {
+          font-size: 0.82rem;
+        }
+
+        .portal-form {
+          gap: 14px;
+        }
+
+        .form-group label {
+          font-size: 0.78rem;
+        }
+
+        .input-wrapper input {
+          padding: 11px 14px 11px 42px;
+          font-size: 0.9rem;
+        }
+
+        .btn-connect {
+          padding: 12px 18px;
+          font-size: 0.92rem;
+        }
+
+        .security-footer {
+          margin-top: 16px;
+          font-size: 0.72rem;
+        }
+      }
+
+      /* Responsive - Very small phones */
+      @media (max-width: 360px), (max-height: 580px) {
+        .login-auth {
+          min-height: 100vh;
+          align-items: center;
+          overflow-y: auto;
+        }
+
+        .auth-container {
+          padding: 16px 14px;
+          min-height: auto;
+        }
+
+        .auth-mobile-logo {
+          display: none;
+        }
+
+        .auth-header {
+          margin-bottom: 16px;
+        }
+
+        .auth-header h2 {
+          font-size: 1.2rem;
+        }
+
+        .portal-form {
+          gap: 12px;
+        }
+
+        .input-wrapper input {
+          padding: 10px 12px 10px 38px;
+          font-size: 0.88rem;
+          border-radius: 10px;
+        }
+
+        .input-wrapper .icon-left {
+          left: 12px;
+          font-size: 0.9rem;
+        }
+
+        .btn-connect {
+          padding: 11px 16px;
+          font-size: 0.88rem;
+          border-radius: 10px;
+        }
+
+        .security-footer {
+          margin-top: 12px;
         }
       }
     `,

@@ -4,6 +4,8 @@ export interface Teacher {
   lastName: string;
   matricule: string;
   email: string;
+  telephone: string;
+  adresse: string;
   department: string;
   subjects: string[];
   status: 'Actif' | 'En congé' | 'Inactif';
