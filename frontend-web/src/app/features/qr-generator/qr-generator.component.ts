@@ -10,14 +10,14 @@ import { QRCodeComponent } from 'angularx-qrcode';
   template: `
     <div class="qr-container">
       <div class="page-header">
-        <h1>Générateur de QR Code Dynamique</h1>
-        <p>Sécurisez l'émargement avec des codes à durée limitée</p>
+        <h1>Générer la Séance du Jour</h1>
+        <p>Créez un QR Code pour la séance d'aujourd'hui et suivez les émargements en temps réel</p>
       </div>
 
       <div class="grid-layout">
         <!-- Section Paramètres -->
         <div class="card settings-card">
-          <h3><i class="pi pi-cog"></i> Configuration de la Session</h3>
+          <h3><i class="pi pi-cog"></i> Détails de la Séance</h3>
 
           <div class="form-group">
             <label for="subject"><i class="pi pi-book"></i> Matière</label>
@@ -25,6 +25,8 @@ import { QRCodeComponent } from 'angularx-qrcode';
               <option value="Algorithmique">Algorithmique - Amphi 500</option>
               <option value="Java">Programmation Java - Salle 12</option>
               <option value="Bases de données">Bases de données - Amphi A</option>
+              <option value="Mathématiques">Mathématiques - Salle 8</option>
+              <option value="Physique">Physique - Labo 1</option>
             </select>
           </div>
 
@@ -34,13 +36,28 @@ import { QRCodeComponent } from 'angularx-qrcode';
           </div>
 
           <div class="form-group">
+            <label for="date"><i class="pi pi-calendar"></i> Date</label>
+            <input id="date" type="text" disabled [value]="todayDate" />
+          </div>
+
+          <div class="form-group">
+            <label for="timeSlot"><i class="pi pi-clock"></i> Heure</label>
+            <select id="timeSlot" [(ngModel)]="selectedTimeSlot">
+              <option value="08:00 - 10:00">08:00 - 10:00</option>
+              <option value="10:00 - 12:00">10:00 - 12:00</option>
+              <option value="14:00 - 16:00">14:00 - 16:00</option>
+              <option value="16:00 - 18:00">16:00 - 18:00</option>
+            </select>
+          </div>
+
+          <div class="form-group">
             <label for="duration"><i class="pi pi-clock"></i> Durée de validité (secondes)</label>
             <input id="duration" type="number" [(ngModel)]="refreshInterval" min="10" max="300" />
           </div>
 
           <div class="session-status" [ngClass]="{ active: isRunning }">
             <div class="status-dot"></div>
-            <span>{{ isRunning ? 'Session en cours...' : 'Session en attente' }}</span>
+            <span>{{ isRunning ? 'Séance en cours...' : 'Séance en attente' }}</span>
           </div>
 
           <button
@@ -49,7 +66,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
             (click)="toggleSession()"
           >
             <i class="pi" [ngClass]="isRunning ? 'pi-stop-circle' : 'pi-play-circle'"></i>
-            {{ isRunning ? 'Arrêter la session' : 'Démarrer la session' }}
+            {{ isRunning ? 'Terminer la séance' : 'Lancer la séance' }}
           </button>
         </div>
 
@@ -74,7 +91,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
                 <qrcode [qrdata]="qrData" [width]="280" [errorCorrectionLevel]="'M'"></qrcode>
               </div>
               <p class="qr-payload">
-                ID: {{ qrData.split('-')[1] }} | Ver: {{ qrData.split('-')[2] }}
+                Séance: {{ selectedSubject }} • Aujourd'hui • {{ selectedTimeSlot }}
               </p>
             } @else {
               <div class="placeholder">
@@ -92,7 +109,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
       <!-- Logs de session -->
       <div class="card logs-card">
         <div class="logs-header">
-          <h3><i class="pi pi-history"></i> Historique des scans récents</h3>
+          <h3><i class="pi pi-history"></i> Derniers scans d'émargement</h3>
           <span class="log-count">{{ todayLogs.length }} événements</span>
         </div>
         <div class="log-list">
@@ -102,20 +119,32 @@ import { QRCodeComponent } from 'angularx-qrcode';
             </div>
             <div class="log-content">
               <span class="log-message"
-                ><strong>K. Keita</strong> a émargé avec succès (Position GPS validée)</span
+                ><strong>Dr. Alou Diarra</strong> a émargé avec succès (Cahier de textes validé
+                automatiquement)</span
               >
-              <span class="log-time">14:32:05</span>
+              <span class="log-time">08:15</span>
             </div>
           </div>
-          <div class="log-item warning">
+          <div class="log-item success">
             <div class="log-icon">
-              <i class="pi pi-exclamation-triangle"></i>
+              <i class="pi pi-check-circle"></i>
             </div>
             <div class="log-content">
               <span class="log-message"
-                >Tentative d'émargement hors zone détectée (Utilisateur: M. Diallo)</span
+                ><strong>K. Barry</strong> a scanné le QR Code (Cahier de textes déjà rempli)</span
               >
-              <span class="log-time">14:31:12</span>
+              <span class="log-time">08:12</span>
+            </div>
+          </div>
+          <div class="log-item blocked">
+            <div class="log-icon">
+              <i class="pi pi-times-circle"></i>
+            </div>
+            <div class="log-content">
+              <span class="log-message"
+                ><strong>F. Coulibaly</strong> — Scan refusé : cahier de textes non rempli</span
+              >
+              <span class="log-time">08:10</span>
             </div>
           </div>
         </div>
@@ -601,6 +630,15 @@ import { QRCodeComponent } from 'angularx-qrcode';
               border-color: rgba(245, 158, 11, 0.25);
             }
           }
+
+          &.blocked {
+            background: rgba(254, 226, 226, 0.6);
+
+            .log-icon {
+              color: #ef4444;
+              border-color: rgba(239, 68, 68, 0.25);
+            }
+          }
         }
       }
 
@@ -622,12 +660,23 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   timeLeft: number = 30;
   refreshInterval: number = 30;
   selectedSubject: string = 'Algorithmique';
+  selectedTimeSlot: string = '08:00 - 10:00';
   timer: any;
   dashOffset: number = 0;
   todayLogs: any[] = [
     { id: 1, type: 'success' },
-    { id: 2, type: 'warning' },
+    { id: 2, type: 'success' },
+    { id: 3, type: 'blocked' },
   ];
+
+  get todayDate(): string {
+    return new Date().toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  }
 
   ngOnInit() {}
 
@@ -674,6 +723,6 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   generateNewCode() {
     const timestamp = Date.now();
     const randomSalt = Math.random().toString(36).substring(7);
-    this.qrData = `SESSION-${this.selectedSubject.substring(0, 3).toUpperCase()}-${timestamp}-${randomSalt}`;
+    this.qrData = `SEANCE-${this.selectedSubject.substring(0, 3).toUpperCase()}-${this.selectedTimeSlot.split(' - ')[0].replace(':', '')}-${timestamp}-${randomSalt}`;
   }
 }

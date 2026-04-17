@@ -20,9 +20,11 @@ interface Activity {
   color: string;
 }
 
-interface ChartData {
+interface DayStat {
   label: string;
+  short: string;
   value: number;
+  color: string;
 }
 
 @Component({
@@ -63,18 +65,67 @@ interface ChartData {
 
       <!-- Main Content -->
       <section class="content-grid">
-        <!-- Chart -->
+        <!-- Circular Chart -->
         <div class="card chart-card">
           <div class="card-header">
-            <h3>Taux d'assiduité hebdomadaire</h3>
+            <h3><i class="pi pi-chart-pie"></i> Taux d'assiduité hebdomadaire</h3>
+            <span class="card-badge">{{ averageRate }}% en moyenne</span>
           </div>
-          <div class="simple-chart">
-            <div class="chart-bars">
-              <div class="bar-col" *ngFor="let d of chartData">
-                <div class="bar" [style.height]="d.value + '%'">
-                  <span class="bar-value">{{ d.value }}%</span>
+
+          <div class="circular-chart-wrapper">
+            <!-- SVG Donut -->
+            <div class="donut-container">
+              <svg viewBox="0 0 200 200" class="donut-svg">
+                <!-- Background circle -->
+                <circle cx="100" cy="100" r="80" fill="none" stroke="#f1f5f9" stroke-width="18" />
+
+                <!-- Segments -->
+                <circle
+                  *ngFor="let seg of donutSegments; let i = index"
+                  cx="100"
+                  cy="100"
+                  r="80"
+                  fill="none"
+                  [attr.stroke]="seg.color"
+                  stroke-width="18"
+                  [attr.stroke-dasharray]="seg.dashArray"
+                  [attr.stroke-dashoffset]="seg.dashOffset"
+                  stroke-linecap="round"
+                  class="donut-segment"
+                  [style.--delay]="i * 150 + 'ms'"
+                />
+              </svg>
+
+              <!-- Center text -->
+              <div class="donut-center">
+                <span class="donut-percent"
+                  >{{ averageRate }}<span class="donut-percent-sign">%</span></span
+                >
+                <span class="donut-label">Assiduité</span>
+              </div>
+            </div>
+
+            <!-- Legend + daily breakdown -->
+            <div class="daily-breakdown">
+              <h4 class="breakdown-title">Détail par jour</h4>
+              <div class="breakdown-list">
+                <div class="breakdown-item" *ngFor="let day of dayStats; let i = index">
+                  <div class="breakdown-left">
+                    <span class="breakdown-dot" [style]="'background: ' + day.color"></span>
+                    <span class="breakdown-name">{{ day.label }}</span>
+                  </div>
+                  <div class="breakdown-right">
+                    <div class="breakdown-bar-track">
+                      <div
+                        class="breakdown-bar-fill"
+                        [style.width.%]="day.value"
+                        [style.background]="day.color"
+                        [style.animation-delay]="i * 100 + 'ms'"
+                      ></div>
+                    </div>
+                    <span class="breakdown-value">{{ day.value }}%</span>
+                  </div>
                 </div>
-                <span class="bar-label">{{ d.label }}</span>
               </div>
             </div>
           </div>
@@ -111,23 +162,12 @@ interface ChartData {
       .dashboard {
         display: flex;
         flex-direction: column;
-        gap: 24px;
-        padding: 24px;
-        max-width: 1400px;
+        gap: 32px;
+        max-width: 1440px;
         width: 100%;
         margin: 0 auto;
         opacity: 0;
         animation: fadeIn 0.5s ease forwards;
-
-        @media (max-width: 768px) {
-          padding: 16px;
-          gap: 18px;
-        }
-
-        @media (max-width: 480px) {
-          padding: 12px 8px;
-          gap: 14px;
-        }
       }
 
       @keyframes fadeIn {
@@ -141,7 +181,7 @@ interface ChartData {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        padding: 8px 0;
+        padding: 4px 0;
 
         @media (max-width: 640px) {
           flex-direction: column;
@@ -149,20 +189,18 @@ interface ChartData {
         }
 
         h1 {
-          margin: 0 0 4px;
-          font-size: clamp(1.2rem, 4vw, 1.6rem);
-          font-weight: 700;
+          margin: 0 0 6px;
+          font-size: 1.85rem;
+          font-weight: 800;
           color: #0f172a;
           letter-spacing: -0.02em;
-          word-break: break-word;
         }
 
         p {
           margin: 0;
-          font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+          font-size: 1rem;
           color: #64748b;
-          font-weight: 400;
-          word-break: break-word;
+          font-weight: 500;
         }
       }
 
@@ -175,43 +213,43 @@ interface ChartData {
 
         align-items: center;
         gap: 8px;
-        padding: 8px 14px;
+        padding: 10px 16px;
         background: #fff;
         border: 1px solid var(--border-color);
-        border-radius: 10px;
-        font-size: 0.8rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
         font-weight: 500;
         color: #475569;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
         i {
           color: var(--primary-color);
-          font-size: 0.9rem;
+          font-size: 0.95rem;
         }
       }
 
       /* ========== Stats Grid ========== */
       .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           grid-template-columns: repeat(2, 1fr);
-          gap: 12px;
+          gap: 16px;
         }
 
         @media (max-width: 480px) {
           grid-template-columns: 1fr;
-          gap: 10px;
+          gap: 14px;
         }
       }
 
       .stat-card {
         background: #fff;
         border: 2px solid rgba(226, 232, 240, 0.7);
-        border-radius: 14px;
-        padding: 20px;
+        border-radius: 18px;
+        padding: 26px;
         display: flex;
         align-items: center;
         gap: 16px;
@@ -271,13 +309,13 @@ interface ChartData {
       }
 
       .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.15rem;
+        font-size: 1.3rem;
         color: var(--c);
         background: color-mix(in srgb, var(--c) 12%, white);
         flex-shrink: 0;
@@ -293,7 +331,7 @@ interface ChartData {
       }
 
       .stat-label {
-        font-size: 0.8rem;
+        font-size: 0.88rem;
         font-weight: 500;
         color: #64748b;
       }
@@ -305,8 +343,8 @@ interface ChartData {
       }
 
       .stat-value {
-        font-size: 1.35rem;
-        font-weight: 700;
+        font-size: 1.65rem;
+        font-weight: 800;
         color: #0f172a;
         line-height: 1;
         transition: color 0.3s ease;
@@ -330,8 +368,8 @@ interface ChartData {
       /* ========== Content Grid ========== */
       .content-grid {
         display: grid;
-        grid-template-columns: 2fr 1.2fr;
-        gap: 20px;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 24px;
         min-width: 0;
 
         @media (max-width: 900px) {
@@ -343,8 +381,8 @@ interface ChartData {
       .card {
         background: #fff;
         border: 1px solid rgba(226, 232, 240, 0.7);
-        border-radius: 14px;
-        padding: 24px;
+        border-radius: 18px;
+        padding: 32px;
         min-width: 0;
         overflow: hidden;
         transition:
@@ -362,74 +400,228 @@ interface ChartData {
       }
 
       .card-header {
-        margin-bottom: 16px;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
 
         h3 {
           margin: 0;
-          font-size: 1rem;
-          font-weight: 600;
+          font-size: 1.15rem;
+          font-weight: 700;
           color: #1e293b;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          i {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+          }
         }
       }
 
-      /* ========== Simple Chart ========== */
-      .simple-chart {
-        padding: 8px 0;
+      .card-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 16px;
+        border-radius: 999px;
+        background: rgba(34, 197, 94, 0.1);
+        color: #166534;
+        font-size: 0.82rem;
+        font-weight: 700;
       }
 
-      .chart-bars {
+      /* ========== Circular Chart ========== */
+      .circular-chart-wrapper {
         display: flex;
-        align-items: flex-end;
-        gap: clamp(12px, 3vw, 24px);
-        height: clamp(120px, 25vw, 160px);
-        padding: 0 4px;
+        align-items: center;
+        gap: 36px;
+
+        @media (max-width: 680px) {
+          flex-direction: column;
+          gap: 28px;
+        }
       }
 
-      .bar-col {
+      .donut-container {
+        position: relative;
+        width: 250px;
+        height: 250px;
+        flex-shrink: 0;
+
+        @media (max-width: 480px) {
+          width: 180px;
+          height: 180px;
+        }
+      }
+
+      .donut-svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+      }
+
+      .donut-segment {
+        opacity: 0;
+        animation: donutAppear 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        animation-delay: var(--delay, 0ms);
+        transition:
+          filter 0.2s ease,
+          opacity 0.2s ease;
+      }
+
+      .donut-segment:hover {
+        filter: brightness(1.15) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+        opacity: 0.9;
+      }
+
+      @keyframes donutAppear {
+        from {
+          opacity: 0;
+          stroke-dashoffset: 503;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .donut-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
         display: flex;
         flex-direction: column;
-        flex: 1;
-        min-width: 0;
         align-items: center;
-        gap: 6px;
+        gap: 2px;
       }
 
-      .bar {
-        width: 100%;
-        max-width: 48px;
-        background: linear-gradient(180deg, #3b82f6, #93c5fd);
-        border-radius: 8px 8px 4px 4px;
-        display: flex;
-        justify-content: flex-start;
-        padding-top: 4px;
-        transition:
-          transform 0.2s ease,
-          box-shadow 0.2s ease,
-          filter 0.2s ease;
-        position: relative;
-        min-height: 8px;
+      .donut-percent {
+        font-size: 3.2rem;
+        font-weight: 900;
+        color: #0f172a;
+        line-height: 1;
+        letter-spacing: -0.03em;
 
-        &:hover {
-          transform: scaleY(1.03) translateY(-3px);
-          box-shadow: 0 8px 16px rgba(59, 130, 246, 0.4);
-          filter: brightness(1.1);
+        @media (max-width: 480px) {
+          font-size: 2rem;
         }
       }
 
-      .bar-value {
-        font-size: clamp(0.55rem, 1.5vw, 0.65rem);
+      .donut-percent-sign {
+        font-size: 1.4rem;
         font-weight: 700;
-        color: #fff;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-        line-height: 1;
+        color: #64748b;
+        margin-left: 2px;
+
+        @media (max-width: 480px) {
+          font-size: 1rem;
+        }
       }
 
-      .bar-label {
-        font-size: clamp(0.65rem, 2vw, 0.75rem);
+      .donut-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      /* ========== Daily Breakdown ========== */
+      .daily-breakdown {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .breakdown-title {
+        font-size: 0.88rem;
+        font-weight: 700;
         color: #64748b;
-        font-weight: 500;
-        text-align: center;
-        white-space: nowrap;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 0 0 16px 0;
+      }
+
+      .breakdown-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .breakdown-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 0;
+
+        &:not(:last-child) {
+          border-bottom: 1px solid rgba(241, 245, 249, 0.9);
+        }
+      }
+
+      .breakdown-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 80px;
+      }
+
+      .breakdown-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .breakdown-name {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #334155;
+      }
+
+      .breakdown-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .breakdown-bar-track {
+        flex: 1;
+        height: 10px;
+        background: #f1f5f9;
+        border-radius: 999px;
+        overflow: hidden;
+        min-width: 60px;
+      }
+
+      .breakdown-bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        animation: barGrow 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        animation-fill-mode: both;
+        transform-origin: left;
+      }
+
+      @keyframes barGrow {
+        from {
+          width: 0% !important;
+        }
+      }
+
+      .breakdown-value {
+        font-size: 0.92rem;
+        font-weight: 800;
+        color: #0f172a;
+        min-width: 38px;
+        text-align: right;
       }
 
       /* ========== Activity List ========== */
@@ -442,8 +634,8 @@ interface ChartData {
       .activity-item {
         display: flex;
         align-items: flex-start;
-        gap: 12px;
-        padding: 12px 0;
+        gap: 14px;
+        padding: 14px 0;
         border-bottom: 1px solid rgba(241, 245, 249, 0.9);
 
         &:last-child {
@@ -453,30 +645,30 @@ interface ChartData {
       }
 
       .activity-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
         background: color-mix(in srgb, var(--bg) 12%, white);
         color: var(--bg);
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 700;
-        font-size: 0.75rem;
+        font-size: 0.85rem;
         flex-shrink: 0;
       }
 
       .activity-body {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 3px;
         min-width: 0;
       }
 
       .activity-text {
-        font-size: 0.85rem;
+        font-size: 0.92rem;
         color: #334155;
-        line-height: 1.35;
+        line-height: 1.4;
 
         strong {
           color: #0f172a;
@@ -485,7 +677,7 @@ interface ChartData {
       }
 
       .activity-time {
-        font-size: 0.72rem;
+        font-size: 0.78rem;
         color: #94a3b8;
         font-weight: 500;
       }
@@ -539,14 +731,45 @@ export class DashboardComponent {
     },
   ];
 
-  chartData: ChartData[] = [
-    { label: 'Lun', value: 80 },
-    { label: 'Mar', value: 60 },
-    { label: 'Mer', value: 90 },
-    { label: 'Jeu', value: 75 },
-    { label: 'Ven', value: 85 },
-    { label: 'Sam', value: 70 },
+  dayStats: DayStat[] = [
+    { label: 'Lundi', short: 'Lun', value: 80, color: '#3b82f6' },
+    { label: 'Mardi', short: 'Mar', value: 60, color: '#8b5cf6' },
+    { label: 'Mercredi', short: 'Mer', value: 90, color: '#22c55e' },
+    { label: 'Jeudi', short: 'Jeu', value: 75, color: '#f59e0b' },
+    { label: 'Vendredi', short: 'Ven', value: 85, color: '#06b6d4' },
+    { label: 'Samedi', short: 'Sam', value: 70, color: '#f97316' },
   ];
+
+  averageRate: number = 0;
+  donutSegments: { color: string; dashArray: string; dashOffset: number }[] = [];
+
+  constructor() {
+    this.computeDonut();
+  }
+
+  private computeDonut(): void {
+    const total = this.dayStats.reduce((s, d) => s + d.value, 0);
+    this.averageRate = Math.round(total / this.dayStats.length);
+
+    const circumference = 2 * Math.PI * 80; // r=80
+    let cumOffset = 0;
+
+    this.donutSegments = this.dayStats.map((day) => {
+      const ratio = day.value / total;
+      const segmentLength = circumference * ratio;
+      const gap = 6;
+      const dashLength = Math.max(0, segmentLength - gap);
+      const dashArray = `${dashLength} ${circumference - dashLength}`;
+      const dashOffset = -(cumOffset + gap / 2);
+      cumOffset += segmentLength;
+
+      return {
+        color: day.color,
+        dashArray,
+        dashOffset,
+      };
+    });
+  }
 
   activities: Activity[] = [
     {

@@ -1,14 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-interface AttendanceLog {
+interface ScanLog {
   id: number;
   teacherName: string;
   subject: string;
   time: string;
   location: string;
-  status: 'Présent' | 'En retard' | 'Absent';
   method: 'QR Code' | 'Manuel';
+  status: 'success' | 'blocked';
 }
 
 @Component({
@@ -19,104 +19,130 @@ interface AttendanceLog {
     <div class="attendance-page">
       <div class="page-header">
         <div class="header-left">
-          <h1><i class="pi pi-clipboard-check"></i> Suivi des Émargements</h1>
-          <p>Historique des présences enregistrées aujourd'hui ({{ todayLogs.length }} séances)</p>
+          <div class="header-icon">
+            <i class="pi pi-clipboard-check"></i>
+          </div>
+          <div>
+            <h1>Historique des Émargements</h1>
+            <p>Liste des enseignants ayant scanné le QR Code pour émarger</p>
+          </div>
         </div>
         <div class="header-actions">
-          <button class="btn btn-outline"><i class="pi pi-download"></i> Exporter</button>
-          <button class="btn btn-outline"><i class="pi pi-filter"></i> Filtres</button>
+          <button class="btn btn-outline">
+            <i class="pi pi-download"></i> <span class="btn-text">Exporter</span>
+          </button>
+          <button class="btn btn-outline">
+            <i class="pi pi-filter"></i> <span class="btn-text">Filtres</span>
+          </button>
         </div>
       </div>
 
       <div class="stats-row">
-        <div class="mini-stat">
-          <div class="stat-icon green">
-            <i class="pi pi-check-circle"></i>
-          </div>
-          <div class="stat-content">
-            <span class="val">92%</span>
-            <span class="lab">Taux de présence</span>
+        <div class="stat-card" style="--accent: #22c55e">
+          <div class="stat-icon green"><i class="pi pi-check-circle"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">92%</span>
+            <span class="stat-label">Taux de présence</span>
           </div>
         </div>
-        <div class="mini-stat">
-          <div class="stat-icon blue">
-            <i class="pi pi-book"></i>
-          </div>
-          <div class="stat-content">
-            <span class="val">42</span>
-            <span class="lab">Séances validées</span>
+        <div class="stat-card" style="--accent: #3b82f6">
+          <div class="stat-icon blue"><i class="pi pi-book"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">28</span>
+            <span class="stat-label">Cahiers validés</span>
           </div>
         </div>
-        <div class="mini-stat">
-          <div class="stat-icon orange">
-            <i class="pi pi-clock"></i>
-          </div>
-          <div class="stat-content">
-            <span class="val">3</span>
-            <span class="lab">Retards</span>
+        <div class="stat-card" style="--accent: #ef4444">
+          <div class="stat-icon red"><i class="pi pi-ban"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">3</span>
+            <span class="stat-label">Scans bloqués</span>
           </div>
         </div>
       </div>
 
       <div class="table-card">
-        <div class="table-header">
-          <h3>Émargements du jour</h3>
-          <span class="record-count">{{ todayLogs.length }} enregistrements</span>
+        <div class="table-top">
+          <h3>Scans d'émargement du jour</h3>
+          <span class="record-count">{{ scanLogs.length }} enregistrements</span>
         </div>
-        <table class="attendance-table">
-          <thead>
-            <tr>
-              <th>Enseignant</th>
-              <th>Matière / Lieu</th>
-              <th>Heure</th>
-              <th>Méthode</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (log of todayLogs; track log.id) {
+
+        <div class="table-scroll">
+          <table class="attendance-table">
+            <thead>
               <tr>
-                <td>
-                  <div class="teacher-cell">
-                    <div class="teacher-avatar">{{ getInitials(log.teacherName) }}</div>
-                    <div class="teacher-name">
-                      <strong>{{ log.teacherName }}</strong>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div class="sub-info">
-                    <span class="subject">{{ log.subject }}</span>
-                    <small class="location"
-                      ><i class="pi pi-map-marker"></i> {{ log.location }}</small
-                    >
-                  </div>
-                </td>
-                <td>
-                  <span class="time-cell"> <i class="pi pi-clock"></i> {{ log.time }} </span>
-                </td>
-                <td>
-                  <span
-                    class="method-tag"
-                    [ngClass]="log.method === 'QR Code' ? 'qr-method' : 'manual-method'"
-                  >
-                    <i
-                      class="pi"
-                      [ngClass]="log.method === 'QR Code' ? 'pi-qrcode' : 'pi-pencil'"
-                    ></i>
-                    {{ log.method }}
-                  </span>
-                </td>
-                <td>
-                  <span class="status-pill" [ngClass]="getStatusClass(log.status)">
-                    <span class="status-dot"></span>
-                    {{ log.status }}
-                  </span>
-                </td>
+                <th>Enseignant</th>
+                <th>Matière / Lieu</th>
+                <th>Heure</th>
+                <th>Méthode</th>
+                <th>Statut</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (log of scanLogs; track log.id) {
+                <tr [ngClass]="log.status === 'success' ? 'row-success' : 'row-blocked'">
+                  <td>
+                    <div class="teacher-cell">
+                      <div
+                        class="teacher-avatar"
+                        [ngClass]="log.status === 'success' ? 'avatar-ok' : 'avatar-blocked'"
+                      >
+                        {{ getInitials(log.teacherName) }}
+                      </div>
+                      <span class="teacher-name">{{ log.teacherName }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="sub-info">
+                      <span class="subject">{{ log.subject }}</span>
+                      <small class="location"
+                        ><i class="pi pi-map-marker"></i> {{ log.location }}</small
+                      >
+                    </div>
+                  </td>
+                  <td>
+                    <span class="time-cell"><i class="pi pi-clock"></i> {{ log.time }}</span>
+                  </td>
+                  <td>
+                    <span
+                      class="method-tag"
+                      [ngClass]="log.method === 'QR Code' ? 'qr-method' : 'manual-method'"
+                    >
+                      <i
+                        class="pi"
+                        [ngClass]="log.method === 'QR Code' ? 'pi-qrcode' : 'pi-pencil'"
+                      ></i>
+                      {{ log.method }}
+                    </span>
+                  </td>
+                  <td>
+                    @if (log.status === 'success') {
+                      <div class="status-cell">
+                        <span class="status-pill present">
+                          <span class="status-dot"></span>
+                          Émargé
+                        </span>
+                        <span class="auto-badge"
+                          ><i class="pi pi-check-circle"></i> Cahier auto-validé</span
+                        >
+                      </div>
+                    } @else {
+                      <div class="status-cell">
+                        <span class="status-pill blocked">
+                          <span class="status-dot"></span>
+                          Bloqué
+                        </span>
+                        <span class="block-reason"
+                          ><i class="pi pi-exclamation-circle"></i> Cahier manquant</span
+                        >
+                      </div>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   `,
@@ -126,48 +152,51 @@ interface AttendanceLog {
         display: flex;
         flex-direction: column;
         gap: 24px;
-
-        @media (max-width: 768px) {
-          gap: 18px;
-        }
-
-        @media (max-width: 480px) {
-          gap: 14px;
-        }
       }
 
+      /* ===== HEADER ===== */
       .page-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        gap: 12px;
+        align-items: center;
+        gap: 16px;
         flex-wrap: wrap;
 
         .header-left {
+          display: flex;
+          align-items: center;
+          gap: 16px;
           flex: 1;
-          min-width: 220px;
+          min-width: 0;
 
-          h1 {
-            margin: 0 0 4px;
-            font-size: clamp(1.1rem, 3vw, 1.75rem);
-            font-weight: 800;
-            color: #0f172a;
-            letter-spacing: -0.02em;
+          .header-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(22, 163, 74, 0.1), rgba(34, 197, 94, 0.05));
             display: flex;
             align-items: center;
-            gap: 12px;
-            word-break: break-word;
+            justify-content: center;
+            flex-shrink: 0;
 
             i {
-              color: var(--primary-color);
-              font-size: clamp(1.2rem, 3vw, 1.6rem);
+              font-size: 1.3rem;
+              color: #16a34a;
             }
           }
 
+          h1 {
+            margin: 0;
+            font-size: clamp(1.1rem, 3vw, 1.6rem);
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+          }
+
           p {
-            color: #64748b;
             margin: 4px 0 0;
-            font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+            color: #64748b;
+            font-size: 0.9rem;
             font-weight: 500;
           }
         }
@@ -176,30 +205,64 @@ interface AttendanceLog {
           display: flex;
           gap: 10px;
           flex-shrink: 0;
+        }
+      }
 
-          @media (max-width: 600px) {
-            width: 100%;
-            justify-content: flex-start;
+      /* ===== BUTTONS ===== */
+      .btn {
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: none;
+        transition: all 0.2s ease;
+
+        i {
+          font-size: 0.95rem;
+        }
+
+        &.btn-outline {
+          background: white;
+          border: 1.5px solid rgba(226, 232, 240, 0.9);
+          color: #475569;
+
+          &:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.04);
           }
         }
       }
 
-      .btn {
-        padding: 11px 18px;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        cursor: pointer;
+      @media (max-width: 640px) {
+        .btn .btn-text {
+          display: none;
+        }
+        .btn {
+          padding: 10px 12px;
+        }
+      }
+
+      /* ===== STATS ===== */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+      }
+
+      .stat-card {
+        background: white;
+        border-radius: 14px;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        padding: 20px;
         display: flex;
         align-items: center;
-        gap: 8px;
-        border: none;
-        transition:
-          transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-          box-shadow 0.2s ease,
-          background-color 0.2s ease,
-          border-color 0.2s ease,
-          color 0.2s ease;
+        gap: 14px;
+        transition: all 0.25s ease;
         position: relative;
         overflow: hidden;
 
@@ -207,151 +270,89 @@ interface AttendanceLog {
           content: '';
           position: absolute;
           top: 0;
-          left: -100%;
-          width: 100%;
+          left: 0;
+          width: 4px;
           height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-          transition: left 0.4s ease;
+          background: var(--accent);
+          border-radius: 4px 0 0 4px;
+          transform: scaleY(0);
+          transition: transform 0.3s ease;
         }
 
-        i {
-          font-size: 1rem;
-          transition: transform 0.2s ease;
-        }
+        &:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 10px 24px rgba(2, 6, 23, 0.07);
+          border-color: color-mix(in srgb, var(--accent) 30%, white);
 
-        &.btn-outline {
-          background: white;
-          border: 2px solid rgba(226, 232, 240, 0.8);
-          color: #475569;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-
-          &:hover {
-            transform: translateY(-3px) scale(1.02);
-            background: var(--primary-color);
-            border-color: var(--primary-color);
-            color: #fff;
-            box-shadow:
-              0 10px 20px rgba(37, 99, 235, 0.2),
-              0 4px 8px rgba(37, 99, 235, 0.1);
-
-            &::before {
-              left: 100%;
-            }
-
-            i {
-              transform: rotate(6deg) scale(1.1);
-            }
+          &::before {
+            transform: scaleY(1);
           }
-
-          &:active {
-            transform: translateY(-1px) scale(1);
-            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+          .stat-icon {
+            transform: scale(1.08);
           }
         }
-      }
 
-      .stats-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 16px;
-
-        @media (max-width: 768px) {
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-          gap: 12px;
-        }
-
-        @media (max-width: 480px) {
-          grid-template-columns: 1fr;
-        }
-
-        .mini-stat {
-          background: white;
-          padding: 18px 20px;
-          border-radius: 14px;
-          border: 2px solid rgba(226, 232, 240, 0.9);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        .stat-icon {
+          width: 46px;
+          height: 46px;
+          border-radius: 12px;
           display: flex;
           align-items: center;
-          gap: 14px;
-          transition:
-            transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-            box-shadow 0.3s ease,
-            border-color 0.3s ease;
+          justify-content: center;
+          font-size: 1.2rem;
+          flex-shrink: 0;
+          transition: transform 0.2s ease;
 
-          &:hover {
-            transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-            border-color: rgba(59, 130, 246, 0.25);
+          &.green {
+            background: rgba(220, 252, 231, 0.7);
+            color: #166534;
+          }
+          &.blue {
+            background: rgba(219, 234, 254, 0.7);
+            color: #1d4ed8;
+          }
+          &.red {
+            background: rgba(254, 226, 226, 0.7);
+            color: #991b1b;
+          }
+        }
+
+        .stat-info {
+          display: flex;
+          flex-direction: column;
+
+          .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1;
           }
 
-          .stat-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            flex-shrink: 0;
-
-            &.green {
-              background: rgba(220, 252, 231, 0.8);
-              color: #166534;
-            }
-
-            &.blue {
-              background: rgba(219, 234, 254, 0.8);
-              color: #1d4ed8;
-            }
-
-            &.orange {
-              background: rgba(254, 237, 195, 0.8);
-              color: #b45309;
-            }
-          }
-
-          .stat-content {
-            display: flex;
-            flex-direction: column;
-
-            .val {
-              font-size: 1.6rem;
-              font-weight: 800;
-              color: #0f172a;
-              line-height: 1;
-            }
-
-            .lab {
-              font-size: 0.8rem;
-              color: #64748b;
-              font-weight: 600;
-              margin-top: 4px;
-            }
+          .stat-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-top: 4px;
           }
         }
       }
 
+      /* ===== TABLE CARD ===== */
       .table-card {
         background: white;
         border-radius: 16px;
         border: 1px solid rgba(226, 232, 240, 0.9);
-        box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
+        box-shadow: 0 4px 16px rgba(2, 6, 23, 0.04);
         overflow: hidden;
-        overflow-x: auto;
-
-        &:hover {
-          box-shadow: 0 14px 40px rgba(2, 6, 23, 0.08);
-          border-color: rgba(59, 130, 246, 0.15);
-        }
       }
 
-      .table-header {
+      .table-top {
         padding: 20px 24px;
-        background: rgba(248, 250, 252, 0.6);
-        border-bottom: 1px solid rgba(241, 245, 249, 0.9);
         display: flex;
         justify-content: space-between;
         align-items: center;
+        border-bottom: 1px solid rgba(241, 245, 249, 0.9);
+        background: rgba(248, 250, 252, 0.5);
 
         h3 {
           margin: 0;
@@ -370,47 +371,59 @@ interface AttendanceLog {
         }
       }
 
+      .table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* ===== TABLE ===== */
       .attendance-table {
         width: 100%;
         border-collapse: collapse;
+        min-width: 700px;
 
-        thead {
-          th {
-            padding: 14px 20px;
-            background: rgba(148, 163, 184, 0.08);
-            text-align: left;
-            color: #475569;
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            border-bottom: 2px solid rgba(226, 232, 240, 0.8);
+        thead th {
+          padding: 14px 20px;
+          background: rgba(248, 250, 252, 0.8);
+          text-align: left;
+          color: #475569;
+          font-size: 0.78rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          border-bottom: 2px solid rgba(226, 232, 240, 0.8);
+        }
+
+        tbody tr {
+          transition: all 0.15s ease;
+          border-bottom: 1px solid rgba(241, 245, 249, 0.9);
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          &:hover {
+            background: rgba(37, 99, 235, 0.025);
+          }
+
+          &.row-success {
+            border-left: 3px solid #22c55e;
+          }
+
+          &.row-blocked {
+            border-left: 3px solid #ef4444;
           }
         }
 
-        tbody {
-          tr {
-            transition: background-color 0.15s ease;
-            border-bottom: 1px solid rgba(241, 245, 249, 0.8);
-
-            &:last-child {
-              border-bottom: none;
-            }
-
-            &:hover {
-              background: rgba(37, 99, 235, 0.03);
-            }
-          }
-
-          td {
-            padding: 18px 20px;
-            vertical-align: middle;
-            color: #334155;
-            font-size: 0.9rem;
-          }
+        tbody td {
+          padding: 16px 20px;
+          vertical-align: middle;
+          color: #334155;
+          font-size: 0.88rem;
         }
       }
 
+      /* ===== TABLE CELLS ===== */
       .teacher-cell {
         display: flex;
         align-items: center;
@@ -420,23 +433,29 @@ interface AttendanceLog {
           width: 40px;
           height: 40px;
           border-radius: 12px;
-          background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(148, 163, 184, 0.08));
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: 700;
           font-size: 0.85rem;
-          color: var(--primary-color);
-          border: 2px solid rgba(255, 255, 255, 0.9);
           flex-shrink: 0;
+          border: 2px solid rgba(255, 255, 255, 0.9);
+
+          &.avatar-ok {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
+            color: #166534;
+          }
+
+          &.avatar-blocked {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+            color: #991b1b;
+          }
         }
 
         .teacher-name {
-          strong {
-            color: #0f172a;
-            font-weight: 700;
-            font-size: 0.95rem;
-          }
+          font-weight: 700;
+          color: #0f172a;
+          font-size: 0.92rem;
         }
       }
 
@@ -448,18 +467,18 @@ interface AttendanceLog {
         .subject {
           color: #0f172a;
           font-weight: 600;
-          font-size: 0.9rem;
+          font-size: 0.88rem;
         }
 
         .location {
           color: #94a3b8;
-          font-size: 0.8rem;
+          font-size: 0.78rem;
           display: flex;
           align-items: center;
           gap: 5px;
 
           i {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
           }
         }
       }
@@ -470,7 +489,7 @@ interface AttendanceLog {
         gap: 8px;
         font-weight: 600;
         color: #334155;
-        font-size: 0.9rem;
+        font-size: 0.88rem;
 
         i {
           color: #94a3b8;
@@ -493,9 +512,9 @@ interface AttendanceLog {
         }
 
         &.qr-method {
-          background: rgba(37, 99, 235, 0.08);
+          background: rgba(219, 234, 254, 0.7);
           color: #2563eb;
-          border-color: rgba(37, 99, 235, 0.25);
+          border-color: rgba(37, 99, 235, 0.2);
         }
 
         &.manual-method {
@@ -505,8 +524,14 @@ interface AttendanceLog {
         }
       }
 
+      .status-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
       .status-pill {
-        padding: 6px 14px;
+        padding: 5px 14px;
         border-radius: 999px;
         font-size: 0.8rem;
         font-weight: 700;
@@ -514,6 +539,7 @@ interface AttendanceLog {
         align-items: center;
         gap: 7px;
         border: 1px solid;
+        width: fit-content;
 
         .status-dot {
           width: 7px;
@@ -533,18 +559,7 @@ interface AttendanceLog {
           }
         }
 
-        &.en-retard {
-          background: rgba(254, 249, 195, 0.85);
-          color: #854d0e;
-          border-color: rgba(253, 230, 138, 0.6);
-
-          .status-dot {
-            background: #eab308;
-            box-shadow: 0 0 8px rgba(234, 179, 8, 0.5);
-          }
-        }
-
-        &.absent {
+        &.blocked {
           background: rgba(254, 226, 226, 0.85);
           color: #991b1b;
           border-color: rgba(254, 202, 202, 0.6);
@@ -556,7 +571,51 @@ interface AttendanceLog {
         }
       }
 
+      .auto-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #166534;
+        background: rgba(220, 252, 231, 0.5);
+        padding: 3px 8px;
+        border-radius: 6px;
+        width: fit-content;
+
+        i {
+          font-size: 0.75rem;
+        }
+      }
+
+      .block-reason {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #991b1b;
+        background: rgba(254, 226, 226, 0.5);
+        padding: 3px 8px;
+        border-radius: 6px;
+        width: fit-content;
+
+        i {
+          font-size: 0.75rem;
+        }
+      }
+
+      /* ===== RESPONSIVE ===== */
       @media (max-width: 768px) {
+        .page-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .stats-row {
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+
         .table-card {
           overflow-x: auto;
 
@@ -565,56 +624,71 @@ interface AttendanceLog {
           }
         }
 
-        .page-header {
-          flex-direction: column;
-          align-items: flex-start;
+        .status-cell {
+          gap: 4px;
+        }
 
-          .header-actions {
-            width: 100%;
-          }
+        .auto-badge,
+        .block-reason {
+          font-size: 0.68rem;
+          padding: 2px 6px;
         }
       }
 
       @media (max-width: 480px) {
-        .header-left h1 {
-          font-size: 1.3rem;
+        .page-header .header-left h1 {
+          font-size: 1.2rem;
+        }
+
+        .page-header .header-left .header-icon {
+          width: 40px;
+          height: 40px;
 
           i {
-            display: none;
+            font-size: 1.1rem;
           }
+        }
+
+        .stats-row {
+          grid-template-columns: 1fr;
+        }
+
+        .auto-badge,
+        .block-reason {
+          font-size: 0.65rem;
         }
       }
     `,
   ],
 })
-export class AttendanceComponent implements OnInit {
-  todayLogs: AttendanceLog[] = [
+export class AttendanceComponent {
+  scanLogs: ScanLog[] = [
     {
       id: 1,
       teacherName: 'Dr. Alou Diarra',
       subject: 'Algorithmique',
       time: '08:05',
       location: 'Amphi 500',
-      status: 'Présent',
+      status: 'success',
       method: 'QR Code',
     },
     {
       id: 2,
       teacherName: 'K. Barry',
       subject: 'Mathématiques',
-      time: '10:45',
+      time: '08:12',
       location: 'Salle 12',
-      status: 'En retard',
+      status: 'success',
       method: 'QR Code',
     },
     {
       id: 3,
       teacherName: 'F. Coulibaly',
-      subject: 'Informatique',
-      time: '14:00',
+      subject: 'Bases de données',
+      time: '08:10',
       location: 'Amphi A',
-      status: 'Présent',
-      method: 'Manuel',
+      status: 'blocked',
+      method: 'QR Code',
     },
     {
       id: 4,
@@ -622,14 +696,19 @@ export class AttendanceComponent implements OnInit {
       subject: 'Physique',
       time: '--:--',
       location: 'Labo 1',
-      status: 'Absent',
+      status: 'blocked',
       method: 'Manuel',
     },
+    {
+      id: 5,
+      teacherName: 'S. Keita',
+      subject: 'Droit Civil',
+      time: '10:30',
+      location: 'Salle 8',
+      status: 'success',
+      method: 'QR Code',
+    },
   ];
-
-  constructor() {}
-
-  ngOnInit() {}
 
   getInitials(name: string): string {
     const parts = name.split(' ');
@@ -637,18 +716,5 @@ export class AttendanceComponent implements OnInit {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
-  }
-
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'Présent':
-        return 'present';
-      case 'En retard':
-        return 'en-retard';
-      case 'Absent':
-        return 'absent';
-      default:
-        return '';
-    }
   }
 }
