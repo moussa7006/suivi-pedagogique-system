@@ -57,7 +57,9 @@ public class SeanceService {
         seance.setHeureDebut(dto.getHeureDebut());
         seance.setHeureFin(dto.getHeureFin());
         seance.setSalle(dto.getSalle());
-        seance.setTokenQRCode(java.util.UUID.randomUUID().toString());
+        
+        // Le token QRCode sera généré par le ScheduleJobService
+        seance.setTokenQRCode(null);
 
         // Set administrateur to current admin
         Administrateur admin = administrateurRepository.findById(currentUser.getId())

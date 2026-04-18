@@ -20,4 +20,7 @@ public interface SeanceRepository extends JpaRepository<Seance, Integer> {
 
     // Trouver une séance par son Token QR Code
     Optional<Seance> findByTokenQRCode(String tokenQRCode);
+
+    @org.springframework.data.jpa.repository.Query("SELECT s FROM Seance s WHERE s.date = CURRENT_DATE AND s.tokenQRCode IS NULL")
+    List<Seance> findSeancesForTodayWithoutToken();
 }

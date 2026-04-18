@@ -53,4 +53,8 @@ public class Seance {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "cahier_de_texte_id", referencedColumnName = "id")
     private CahierDeTexte cahierDeTexte;
+
+    @ManyToOne
+    @JoinColumn(name = "emploi_du_temps_id")
+    private EmploiDuTemps emploiDuTemps;
 }

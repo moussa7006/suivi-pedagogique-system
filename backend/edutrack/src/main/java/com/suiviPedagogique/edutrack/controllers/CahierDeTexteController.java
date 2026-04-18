@@ -1,4 +1,4 @@
-package com.suiviPedagogique.edutrack.Controllers;
+package com.suiviPedagogique.edutrack.controllers;
 
 import com.suiviPedagogique.edutrack.Dto.CahierDeTexteRequest;
 import com.suiviPedagogique.edutrack.services.CahierDeTexteService;
