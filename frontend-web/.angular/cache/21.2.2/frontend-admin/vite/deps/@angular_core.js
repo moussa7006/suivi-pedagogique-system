@@ -503,8 +503,8 @@ import {
   ɵɵviewQuery,
   ɵɵviewQuerySignal
 } from "./chunk-RE3GE62D.js";
-import "./chunk-7KYJW5NB.js";
 import "./chunk-T5LTUBDW.js";
+import "./chunk-7KYJW5NB.js";
 import "./chunk-BD4Z4QZG.js";
 export {
   ANIMATION_MODULE_TYPE,

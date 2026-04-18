@@ -1,0 +1,7 @@
+C:\Users\mouss\projet_licence\suivi-pedagogique-system\backend\edutrack\src\main\java\com\suiviPedagogique\edutrack\controllers\AuthController.java
+C:\Users\mouss\projet_licence\suivi-pedagogique-system\backend\edutrack\src\main\java\com\suiviPedagogique\edutrack\controllers\CahierDeTexteController.java
+C:\Users\mouss\projet_licence\suivi-pedagogique-system\backend\edutrack\src\main\java\com\suiviPedagogique\edutrack\controllers\ClasseController.java
+C:\Users\mouss\projet_licence\suivi-pedagogique-system\backend\edutrack\src\main\java\com\suiviPedagogique\edutrack\controllers\EmargementController.java
+C:\Users\mouss\projet_licence\suivi-pedagogique-system\backend\edutrack\src\main\java\com\suiviPedagogique\edutrack\controllers\MatiereController.java
+C:\Users\mouss\projet_licence\suivi-pedagogique-system\backend\edutrack\src\main\java\com\suiviPedagogique\edutrack\controllers\SeanceController.java
+C:\Users\mouss\projet_licence\suivi-pedagogique-system\backend\edutrack\src\main\java\com\suiviPedagogique\edutrack\controllers\UtilisateurController.java
