@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class ClasseDto {
     private Integer id;
     private String filiere;
+    private String niveau;
     private String anneeScolaire;
 }

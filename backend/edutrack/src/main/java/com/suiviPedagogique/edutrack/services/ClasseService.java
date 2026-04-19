@@ -37,6 +37,7 @@ public class ClasseService {
         verifyAdmin();
         Classe classe = new Classe();
         classe.setFiliere(dto.getFiliere());
+        classe.setNiveau(dto.getNiveau());
         classe.setAnneeScolaire(dto.getAnneeScolaire());
         Classe saved = classeRepository.save(classe);
         return convertToDto(saved);
@@ -60,6 +61,7 @@ public class ClasseService {
                 .orElseThrow(() -> new RuntimeException("Classe non trouvée"));
         
         if (dto.getFiliere() != null) classe.setFiliere(dto.getFiliere());
+        if (dto.getNiveau() != null) classe.setNiveau(dto.getNiveau());
         if (dto.getAnneeScolaire() != null) classe.setAnneeScolaire(dto.getAnneeScolaire());
 
         Classe updated = classeRepository.save(classe);
@@ -77,6 +79,7 @@ public class ClasseService {
         ClasseDto dto = new ClasseDto();
         dto.setId(classe.getId());
         dto.setFiliere(classe.getFiliere());
+        dto.setNiveau(classe.getNiveau());
         dto.setAnneeScolaire(classe.getAnneeScolaire());
         return dto;
     }

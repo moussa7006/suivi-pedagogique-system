@@ -20,6 +20,7 @@ public class Classe {
     private Integer id;
 
     private String filiere;
+    private String niveau; // e.g., Licence 1, Master 2
     private String anneeScolaire;
 
     @OneToMany(mappedBy = "classe")
