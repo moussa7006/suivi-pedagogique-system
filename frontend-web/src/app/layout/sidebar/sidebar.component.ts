@@ -162,7 +162,7 @@ export class SidebarComponent {
 
   menuItems: MenuItem[] = [
     { label: 'Tableau de bord', icon: 'pi pi-th-large', route: '/dashboard', exact: true },
-    { label: 'Enseignants', icon: 'pi pi-users', route: '/teachers', exact: false },
+    { label: 'Utilisateurs', icon: 'pi pi-users', route: '/teachers', exact: false },
     { label: 'Générer QR Code', icon: 'pi pi-qrcode', route: '/qr-generator', exact: false },
     { label: 'Emargements', icon: 'pi pi-check-square', route: '/attendance', exact: false },
     { label: 'Cahiers de textes', icon: 'pi pi-book', route: '/pedagogy', exact: false }
