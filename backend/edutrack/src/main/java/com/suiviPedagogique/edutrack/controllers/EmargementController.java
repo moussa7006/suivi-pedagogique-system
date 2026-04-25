@@ -29,4 +29,9 @@ public class EmargementController {
             return ResponseEntity.status(400).body(errorResponse);
         }
     }
+
+    @GetMapping
+    public ResponseEntity<java.util.List<com.suiviPedagogique.edutrack.Dto.EmargementDto>> getAllEmargements() {
+        return ResponseEntity.ok(emargementService.getAllEmargements());
+    }
 }
