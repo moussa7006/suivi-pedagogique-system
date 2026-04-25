@@ -52,18 +52,18 @@ import { LessonLog } from '../../core/models/lesson-log.model';
 
       <div class="logs-list">
         @for (log of lessonLogs; track log.id) {
-          <div class="log-card" [ngClass]="getStatusClass(log.status)">
+          <div class="log-card" [ngClass]="getStatusClass(log.statutValidite || 'En attente')">
             <div class="log-header">
               <div class="teacher-info">
-                <div class="teacher-avatar">{{ getInitials(log.teacherName) }}</div>
+                <div class="teacher-avatar">{{ getInitials(log.enseignantNomPrenom || '') }}</div>
                 <div class="details">
-                  <span class="name">{{ log.teacherName }}</span>
-                  <span class="subject">{{ log.subject }} • {{ log.date }}</span>
+                  <span class="name">{{ log.enseignantNomPrenom }}</span>
+                  <span class="subject">{{ log.matiereLibelle }} • {{ log.dateSeance }}</span>
                 </div>
               </div>
-              <div class="status-badge" [ngClass]="getStatusClass(log.status)">
+              <div class="status-badge" [ngClass]="getStatusClass(log.statutValidite || 'En attente')">
                 <span class="status-dot"></span>
-                {{ log.status }}
+                {{ log.statutValidite }}
               </div>
             </div>
 
@@ -71,34 +71,34 @@ import { LessonLog } from '../../core/models/lesson-log.model';
               <div class="content-section">
                 <div class="chapter-header">
                   <i class="pi pi-folder"></i>
-                  <span class="chapter-title">{{ log.chapter }}</span>
+                  <span class="chapter-title">{{ log.titreCours }}</span>
                 </div>
-                <p class="content-text">{{ log.content }}</p>
+                <p class="content-text">{{ log.contenu }}</p>
                 <div class="meta-info">
                   <span class="meta-item">
                     <i class="pi pi-clock"></i>
-                    <span>{{ log.startTime }} - {{ log.endTime }} (2h 00)</span>
+                    <span>{{ log.heureSeance }}</span>
                   </span>
                   <span class="meta-item">
                     <i class="pi pi-calendar"></i>
-                    <span>{{ log.date }}</span>
+                    <span>{{ log.dateSeance }}</span>
                   </span>
                 </div>
               </div>
 
-              @if (log.status === 'En attente') {
+              @if (log.statutValidite === 'En attente') {
                 <div class="actions">
-                  <button class="btn btn-approve" (click)="updateStatus(log.id, 'Validé')">
+                  <button class="btn btn-approve" (click)="updateStatus(log.id!, 'Validé')">
                     <i class="pi pi-check"></i> Approuver
                   </button>
-                  <button class="btn btn-reject" (click)="updateStatus(log.id, 'Rejeté')">
+                  <button class="btn btn-reject" (click)="updateStatus(log.id!, 'Rejeté')">
                     <i class="pi pi-times"></i> Rejeter
                   </button>
                 </div>
               } @else {
-                <div class="validated-label" [ngClass]="log.status.toLowerCase()">
-                  <i class="pi" [ngClass]="getValidatedIcon(log.status)"></i>
-                  <span>Séance {{ log.status.toLowerCase() }}e</span>
+                <div class="validated-label" [ngClass]="(log.statutValidite || '').toLowerCase()">
+                  <i class="pi" [ngClass]="getValidatedIcon(log.statutValidite || '')"></i>
+                  <span>Séance {{ (log.statutValidite || '').toLowerCase() }}e</span>
                 </div>
               }
             </div>
@@ -575,8 +575,11 @@ export class PedagogyComponent implements OnInit {
     this.pedagogyService.getLessonLogs().subscribe((data) => (this.lessonLogs = data));
   }
 
-  updateStatus(id: number, status: 'Validé' | 'Rejeté') {
-    this.pedagogyService.validateLog(id, status);
+  updateStatus(id: number, status: string) {
+    this.pedagogyService.validateLog(id, status).subscribe(() => {
+      // Refresh logs
+      this.ngOnInit();
+    });
   }
 
   getStatusClass(status: string): string {

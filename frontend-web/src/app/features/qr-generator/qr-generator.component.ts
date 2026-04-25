@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { QRCodeComponent } from 'angularx-qrcode';
+import { ScheduleService } from '../../core/services/schedule.service';
+import { Seance } from '../../core/models/schedule.model';
 
 @Component({
   selector: 'app-qr-generator',
@@ -20,17 +22,18 @@ import { QRCodeComponent } from 'angularx-qrcode';
           <h3><i class="pi pi-cog"></i> Configuration de la Session</h3>
 
           <div class="form-group">
-            <label for="subject"><i class="pi pi-book"></i> Matière</label>
-            <select id="subject" [(ngModel)]="selectedSubject">
-              <option value="Algorithmique">Algorithmique - Amphi 500</option>
-              <option value="Java">Programmation Java - Salle 12</option>
-              <option value="Bases de données">Bases de données - Amphi A</option>
+            <label for="subject"><i class="pi pi-book"></i> Séance Active</label>
+            <select id="subject" [(ngModel)]="selectedSeanceId" (change)="onSeanceChange()">
+              <option value="">Sélectionnez une séance</option>
+              <option *ngFor="let s of seances" [value]="s.id">
+                {{ s.salle }} - {{ s.heureDebut }} à {{ s.heureFin }}
+              </option>
             </select>
           </div>
 
           <div class="form-group">
-            <label for="teacher"><i class="pi pi-user"></i> Enseignant</label>
-            <input id="teacher" type="text" disabled value="Dr. Alou Diarra" />
+            <label for="teacher"><i class="pi pi-qrcode"></i> Token QR</label>
+            <input id="teacher" type="text" disabled [value]="selectedSeance?.tokenQRCode || 'N/A'" />
           </div>
 
           <div class="form-group">
@@ -81,8 +84,8 @@ import { QRCodeComponent } from 'angularx-qrcode';
                 <div class="placeholder-icon">
                   <i class="pi pi-shield"></i>
                 </div>
-                <p class="placeholder-text">Démarrez la session pour générer le QR Code</p>
-                <p class="placeholder-sub">Le code sera actualisé automatiquement</p>
+                <p class="placeholder-text">Sélectionnez et démarrez l'affichage pour le QR Code</p>
+                <p class="placeholder-sub">Le code QR correspond à la séance sélectionnée</p>
               </div>
             }
           </div>
@@ -113,9 +116,9 @@ import { QRCodeComponent } from 'angularx-qrcode';
             </div>
             <div class="log-content">
               <span class="log-message"
-                >Tentative d'émargement hors zone détectée (Utilisateur: M. Diallo)</span
+                >Historique non disponible en temps réel ici. Veuillez vérifier le tableau de bord.</span
               >
-              <span class="log-time">14:31:12</span>
+              <span class="log-time">-</span>
             </div>
           </div>
         </div>
@@ -621,7 +624,9 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   isRunning: boolean = false;
   timeLeft: number = 30;
   refreshInterval: number = 30;
-  selectedSubject: string = 'Algorithmique';
+  seances: Seance[] = [];
+  selectedSeanceId: string | number = '';
+  selectedSeance: Seance | null = null;
   timer: any;
   dashOffset: number = 0;
   todayLogs: any[] = [
@@ -629,7 +634,26 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
     { id: 2, type: 'warning' },
   ];
 
-  ngOnInit() {}
+  constructor(private scheduleService: ScheduleService) {}
+
+  ngOnInit() {
+    this.scheduleService.getAllSeances().subscribe((data) => {
+      // Pour une vraie application, filtrer uniquement les séances d'aujourd'hui
+      this.seances = data;
+    });
+  }
+
+  onSeanceChange() {
+    if (this.selectedSeanceId) {
+      this.selectedSeance = this.seances.find(s => s.id == this.selectedSeanceId) || null;
+      if (this.selectedSeance) {
+        this.qrData = this.selectedSeance.tokenQRCode || '';
+      }
+    } else {
+      this.selectedSeance = null;
+      this.qrData = '';
+    }
+  }
 
   ngOnDestroy() {
     this.stopSession();
@@ -639,13 +663,17 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
     if (this.isRunning) {
       this.stopSession();
     } else {
-      this.startSession();
+      if (this.selectedSeance) {
+        this.startSession();
+      } else {
+        alert("Veuillez d'abord sélectionner une séance.");
+      }
     }
   }
 
   startSession() {
     this.isRunning = true;
-    this.generateNewCode();
+    this.qrData = this.selectedSeance?.tokenQRCode || '';
     this.startTimer();
   }
 
@@ -665,15 +693,11 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
       this.dashOffset = 283 - (this.timeLeft / this.refreshInterval) * 283;
 
       if (this.timeLeft <= 0) {
-        this.generateNewCode();
+        // En vrai, le token reste le même pour la séance, mais on simule le refresh visuel
         this.timeLeft = this.refreshInterval;
       }
     }, 1000);
   }
 
-  generateNewCode() {
-    const timestamp = Date.now();
-    const randomSalt = Math.random().toString(36).substring(7);
-    this.qrData = `SESSION-${this.selectedSubject.substring(0, 3).toUpperCase()}-${timestamp}-${randomSalt}`;
-  }
 }
+

@@ -1,15 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-interface AttendanceLog {
-  id: number;
-  teacherName: string;
-  subject: string;
-  time: string;
-  location: string;
-  status: 'Présent' | 'En retard' | 'Absent';
-  method: 'QR Code' | 'Manuel';
-}
+import { AttendanceService } from '../../core/services/attendance.service';
+import { Emargement } from '../../core/models/attendance.model';
 
 @Component({
   selector: 'app-attendance',
@@ -78,39 +70,39 @@ interface AttendanceLog {
               <tr>
                 <td>
                   <div class="teacher-cell">
-                    <div class="teacher-avatar">{{ getInitials(log.teacherName) }}</div>
+                    <div class="teacher-avatar">{{ getInitials(log.enseignantNomPrenom || '??') }}</div>
                     <div class="teacher-name">
-                      <strong>{{ log.teacherName }}</strong>
+                      <strong>{{ log.enseignantNomPrenom }}</strong>
                     </div>
                   </div>
                 </td>
                 <td>
                   <div class="sub-info">
-                    <span class="subject">{{ log.subject }}</span>
+                    <span class="subject">{{ log.matiereLibelle }}</span>
                     <small class="location"
-                      ><i class="pi pi-map-marker"></i> {{ log.location }}</small
+                      ><i class="pi pi-map-marker"></i> {{ log.lieu }}</small
                     >
                   </div>
                 </td>
                 <td>
-                  <span class="time-cell"> <i class="pi pi-clock"></i> {{ log.time }} </span>
+                  <span class="time-cell"> <i class="pi pi-clock"></i> {{ log.dateHeureScan ? (log.dateHeureScan | date:'HH:mm') : log.heureSeance }} </span>
                 </td>
                 <td>
                   <span
                     class="method-tag"
-                    [ngClass]="log.method === 'QR Code' ? 'qr-method' : 'manual-method'"
+                    [ngClass]="log.methode === 'QR Code' ? 'qr-method' : 'manual-method'"
                   >
                     <i
                       class="pi"
-                      [ngClass]="log.method === 'QR Code' ? 'pi-qrcode' : 'pi-pencil'"
+                      [ngClass]="log.methode === 'QR Code' ? 'pi-qrcode' : 'pi-pencil'"
                     ></i>
-                    {{ log.method }}
+                    {{ log.methode }}
                   </span>
                 </td>
                 <td>
-                  <span class="status-pill" [ngClass]="getStatusClass(log.status)">
+                  <span class="status-pill" [ngClass]="getStatusClass(log.statutAffichage || '')">
                     <span class="status-dot"></span>
-                    {{ log.status }}
+                    {{ log.statutAffichage }}
                   </span>
                 </td>
               </tr>
@@ -588,48 +580,15 @@ interface AttendanceLog {
   ],
 })
 export class AttendanceComponent implements OnInit {
-  todayLogs: AttendanceLog[] = [
-    {
-      id: 1,
-      teacherName: 'Dr. Alou Diarra',
-      subject: 'Algorithmique',
-      time: '08:05',
-      location: 'Amphi 500',
-      status: 'Présent',
-      method: 'QR Code',
-    },
-    {
-      id: 2,
-      teacherName: 'K. Barry',
-      subject: 'Mathématiques',
-      time: '10:45',
-      location: 'Salle 12',
-      status: 'En retard',
-      method: 'QR Code',
-    },
-    {
-      id: 3,
-      teacherName: 'F. Coulibaly',
-      subject: 'Informatique',
-      time: '14:00',
-      location: 'Amphi A',
-      status: 'Présent',
-      method: 'Manuel',
-    },
-    {
-      id: 4,
-      teacherName: 'M. Traoré',
-      subject: 'Physique',
-      time: '--:--',
-      location: 'Labo 1',
-      status: 'Absent',
-      method: 'Manuel',
-    },
-  ];
+  todayLogs: Emargement[] = [];
 
-  constructor() {}
+  constructor(private attendanceService: AttendanceService) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.attendanceService.getAllAttendances().subscribe((data) => {
+      this.todayLogs = data;
+    });
+  }
 
   getInitials(name: string): string {
     const parts = name.split(' ');

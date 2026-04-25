@@ -1,0 +1,70 @@
+<div class="page-header">
+  <div class="header-content">
+    <h2>Gestion des Classes</h2>
+    <p>Gérez les différentes classes de l'établissement</p>
+  </div>
+  <button pButton icon="pi pi-plus" label="Nouvelle Classe" class="p-button-primary" (click)="showAddDialog()"></button>
+</div>
+
+<div class="card">
+  <p-table [value]="classes" [loading]="loading" [paginator]="true" [rows]="10" styleClass="p-datatable-sm" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nom</th>
+        <th>Niveau</th>
+        <th>Description</th>
+        <th style="width: 120px; text-align: center;">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-classe>
+      <tr>
+        <td style="font-weight: 600;">{{ classe.nom }}</td>
+        <td>
+          <span class="p-chip p-chip-info">{{ classe.niveau || 'N/A' }}</span>
+        </td>
+        <td style="color: #64748b;">{{ classe.description }}</td>
+        <td style="text-align: center;">
+          <div class="action-buttons">
+            <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm" (click)="showEditDialog(classe)"></button>
+            <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm p-ml-2" (click)="delete(classe.id)"></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="4">
+          <div class="empty-state">
+            <div class="empty-icon"><i class="pi pi-folder-open"></i></div>
+            <p class="empty-title">Aucune classe trouvée</p>
+            <p class="empty-desc">Commencez par ajouter une nouvelle classe.</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog header="{{ editingId ? 'Modifier la Classe' : 'Nouvelle Classe' }}" [(visible)]="displayDialog" [modal]="true" [style]="{width: '450px'}" [draggable]="false" [resizable]="false">
+  <form [formGroup]="classeForm" class="p-fluid">
+    <div class="p-field" style="margin-bottom: 1.5rem;">
+      <label for="nom" style="display:block; margin-bottom: 0.5rem; font-weight: 500;">Nom de la classe</label>
+      <input id="nom" type="text" pInputText formControlName="nom" placeholder="Ex: Licence 1 Informatique"/>
+    </div>
+    
+    <div class="p-field" style="margin-bottom: 1.5rem;">
+      <label for="niveau" style="display:block; margin-bottom: 0.5rem; font-weight: 500;">Niveau</label>
+      <input id="niveau" type="text" pInputText formControlName="niveau" placeholder="Ex: Licence 1"/>
+    </div>
+
+    <div class="p-field" style="margin-bottom: 1.5rem;">
+      <label for="description" style="display:block; margin-bottom: 0.5rem; font-weight: 500;">Description</label>
+      <input id="description" type="text" pInputText formControlName="description"/>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="displayDialog=false"></button>
+    <button pButton label="Enregistrer" icon="pi pi-check" class="p-button-primary" (click)="save()" [disabled]="classeForm.invalid"></button>
+  </ng-template>
+</p-dialog>

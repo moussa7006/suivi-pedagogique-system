@@ -7,6 +7,18 @@ export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent },
   { 
+    path: 'classes', 
+    loadComponent: () => import('./features/classes/classes').then(m => m.Classes) 
+  },
+  { 
+    path: 'matieres', 
+    loadComponent: () => import('./features/matieres/matieres').then(m => m.Matieres) 
+  },
+  { 
+    path: 'schedule', 
+    loadComponent: () => import('./features/schedule/schedule').then(m => m.Schedule) 
+  },
+  { 
     path: 'teachers', 
     loadComponent: () => import('./features/teachers/teachers.component').then(m => m.TeachersComponent) 
   },
@@ -23,3 +35,4 @@ export const routes: Routes = [
     loadComponent: () => import('./features/pedagogy/pedagogy.component').then(m => m.PedagogyComponent) 
   }
 ];
+
