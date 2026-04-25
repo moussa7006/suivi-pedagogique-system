@@ -1,0 +1,99 @@
+<div class="page-header">
+  <div class="header-content">
+    <h2>Emploi du temps annuel</h2>
+    <p>Planifiez les cours récurrents</p>
+  </div>
+  <button pButton icon="pi pi-plus" label="Nouvelle Planification" class="p-button-primary" (click)="showAddDialog()"></button>
+</div>
+
+<div class="card">
+  <p-table [value]="schedules" [loading]="loading" [paginator]="true" [rows]="10" styleClass="p-datatable-sm" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Jour</th>
+        <th>Horaire</th>
+        <th>Classe</th>
+        <th>Matière</th>
+        <th>Enseignant</th>
+        <th>Salle</th>
+        <th style="width: 80px; text-align: center;">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-s>
+      <tr>
+        <td style="font-weight: 600;">{{ s.jourSemaine }}</td>
+        <td>{{ s.heureDebut }} - {{ s.heureFin }}</td>
+        <td><span class="p-chip p-chip-info">{{ s.classe?.nom }}</span></td>
+        <td>{{ s.matiere?.nom }}</td>
+        <td>{{ s.enseignant?.prenom }} {{ s.enseignant?.nom }}</td>
+        <td><span class="badge-salle"><i class="pi pi-map-marker" style="margin-right: 4px; font-size: 0.8rem"></i>{{ s.salle }}</span></td>
+        <td style="text-align: center;">
+          <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm" (click)="delete(s.id)"></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7">
+          <div class="empty-state">
+            <div class="empty-icon"><i class="pi pi-calendar"></i></div>
+            <p class="empty-title">Aucune planification</p>
+            <p class="empty-desc">Commencez par planifier un emploi du temps.</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog header="Nouvelle Planification" [(visible)]="displayDialog" [modal]="true" [style]="{width: '550px'}" [draggable]="false" [resizable]="false">
+  <form [formGroup]="scheduleForm" class="p-fluid grid-form">
+    
+    <div class="p-field w-50">
+      <label>Jour de la semaine</label>
+      <p-dropdown [options]="jours" formControlName="jourSemaine" placeholder="Sélectionnez un jour"></p-dropdown>
+    </div>
+    
+    <div class="p-field w-50">
+      <label>Salle</label>
+      <input type="text" pInputText formControlName="salle" placeholder="Ex: Amphi A"/>
+    </div>
+
+    <div class="p-field w-50">
+      <label>Heure Début</label>
+      <input type="time" pInputText formControlName="heureDebut" />
+    </div>
+
+    <div class="p-field w-50">
+      <label>Heure Fin</label>
+      <input type="time" pInputText formControlName="heureFin" />
+    </div>
+
+    <div class="p-field w-100 mt-2">
+      <label>Classe</label>
+      <p-dropdown [options]="classes" formControlName="classeId" optionLabel="nom" optionValue="id" placeholder="Sélectionnez une classe"></p-dropdown>
+    </div>
+
+    <div class="p-field w-100">
+      <label>Matière</label>
+      <p-dropdown [options]="matieres" formControlName="matiereId" optionLabel="nom" optionValue="id" placeholder="Sélectionnez une matière"></p-dropdown>
+    </div>
+
+    <div class="p-field w-100">
+      <label>Enseignant</label>
+      <p-dropdown [options]="teachers" formControlName="enseignantId" optionLabel="nom" optionValue="id" placeholder="Sélectionnez un enseignant">
+        <ng-template let-teacher pTemplate="item">
+          <div>{{teacher.prenom}} {{teacher.nom}}</div>
+        </ng-template>
+        <ng-template let-teacher pTemplate="selectedItem">
+          <div *ngIf="teacher">{{teacher.prenom}} {{teacher.nom}}</div>
+        </ng-template>
+      </p-dropdown>
+    </div>
+
+  </form>
+  <ng-template pTemplate="footer">
+    <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="displayDialog=false"></button>
+    <button pButton label="Planifier" icon="pi pi-check" class="p-button-primary" (click)="save()" [disabled]="scheduleForm.invalid"></button>
+  </ng-template>
+</p-dialog>

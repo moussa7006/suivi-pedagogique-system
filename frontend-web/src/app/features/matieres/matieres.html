@@ -1,0 +1,77 @@
+<div class="page-header">
+  <div class="header-content">
+    <h2>Catalogue des Matières</h2>
+    <p>Gérez les cours et matières enseignés</p>
+  </div>
+  <button pButton icon="pi pi-plus" label="Nouvelle Matière" class="p-button-primary" (click)="showAddDialog()"></button>
+</div>
+
+<div class="card">
+  <p-table [value]="matieres" [loading]="loading" [paginator]="true" [rows]="10" styleClass="p-datatable-sm" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nom de la matière</th>
+        <th>Coefficient</th>
+        <th>Classe rattachée</th>
+        <th>Description</th>
+        <th style="width: 120px; text-align: center;">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-matiere>
+      <tr>
+        <td style="font-weight: 600; color: #1d4ed8;">{{ matiere.nom }}</td>
+        <td>{{ matiere.coefficient }}</td>
+        <td>
+          <span class="p-chip p-chip-info" *ngIf="matiere.classes?.length > 0">{{ matiere.classes[0].nom }}</span>
+          <span *ngIf="!matiere.classes || matiere.classes.length === 0" style="color: #94a3b8; font-style: italic;">Non assignée</span>
+        </td>
+        <td style="color: #64748b;">{{ matiere.description }}</td>
+        <td style="text-align: center;">
+          <div class="action-buttons">
+            <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm" (click)="showEditDialog(matiere)"></button>
+            <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm p-ml-2" (click)="delete(matiere.id)"></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5">
+          <div class="empty-state">
+            <div class="empty-icon"><i class="pi pi-book"></i></div>
+            <p class="empty-title">Aucune matière trouvée</p>
+            <p class="empty-desc">Commencez par ajouter une nouvelle matière.</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog header="{{ editingId ? 'Modifier la Matière' : 'Nouvelle Matière' }}" [(visible)]="displayDialog" [modal]="true" [style]="{width: '500px'}" [draggable]="false" [resizable]="false">
+  <form [formGroup]="matiereForm" class="p-fluid">
+    <div class="p-field" style="margin-bottom: 1.5rem;">
+      <label for="nom" style="display:block; margin-bottom: 0.5rem; font-weight: 500;">Nom</label>
+      <input id="nom" type="text" pInputText formControlName="nom"/>
+    </div>
+    
+    <div class="p-field" style="margin-bottom: 1.5rem;">
+      <label for="coefficient" style="display:block; margin-bottom: 0.5rem; font-weight: 500;">Coefficient</label>
+      <input id="coefficient" type="number" pInputText formControlName="coefficient"/>
+    </div>
+
+    <div class="p-field" style="margin-bottom: 1.5rem;">
+      <label for="classeId" style="display:block; margin-bottom: 0.5rem; font-weight: 500;">Classe rattachée</label>
+      <p-dropdown id="classeId" [options]="classes" formControlName="classeId" optionLabel="nom" optionValue="id" placeholder="Sélectionnez une classe"></p-dropdown>
+    </div>
+
+    <div class="p-field" style="margin-bottom: 1.5rem;">
+      <label for="description" style="display:block; margin-bottom: 0.5rem; font-weight: 500;">Description</label>
+      <input id="description" type="text" pInputText formControlName="description"/>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="displayDialog=false"></button>
+    <button pButton label="Enregistrer" icon="pi pi-check" class="p-button-primary" (click)="save()" [disabled]="matiereForm.invalid"></button>
+  </ng-template>
+</p-dialog>
