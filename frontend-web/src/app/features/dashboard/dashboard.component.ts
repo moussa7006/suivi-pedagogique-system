@@ -150,7 +150,7 @@ export class DashboardComponent implements OnInit {
   });
 
   stats: StatCard[] = [
-    { label: 'Enseignants Actifs', value: 0, suffix: '', icon: 'pi pi-users', color: '#3b82f6', trend: 'Global', trendClass: 'neutral' },
+    { label: 'Utilisateurs Actifs', value: 0, suffix: '', icon: 'pi pi-users', color: '#3b82f6', trend: 'Global', trendClass: 'neutral' },
     { label: "Classes créées", value: 0, suffix: '', icon: 'pi pi-folder', color: '#22c55e', trend: 'Global', trendClass: 'neutral' },
     { label: 'Planifications', value: 0, suffix: '', icon: 'pi pi-calendar', color: '#f97316', trend: 'Total', trendClass: 'neutral' },
     { label: 'Progression Moyenne', value: 85, suffix: '%', icon: 'pi pi-book', color: '#a855f7', trend: '+5%', trendClass: 'positive' },

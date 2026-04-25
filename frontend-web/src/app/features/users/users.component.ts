@@ -12,16 +12,16 @@ import { Teacher } from '../../core/models/teacher.model';
     <div class="page-container">
       <div class="page-header">
         <div class="header-left">
-          <h1>Gestion des Enseignants</h1>
-          <p>Supervisez l'ensemble du corps professoral ({{ teachers.length }} enregistrés)</p>
+          <h1>Gestion des Utilisateurs</h1>
+          <p>Supervisez l'ensemble des administrateurs et enseignants ({{ teachers.length }} enregistrés)</p>
         </div>
         <div class="header-actions">
-          <button class="btn btn-primary" (click)="showAddForm()"><i class="pi pi-plus"></i> Nouveau Enseignant</button>
+          <button class="btn btn-primary" (click)="showAddForm()"><i class="pi pi-plus"></i> Nouvel Utilisateur</button>
         </div>
       </div>
 
       <div class="form-card" *ngIf="displayForm">
-        <h3>{{ editingId ? 'Modifier Enseignant' : 'Nouvel Enseignant' }}</h3>
+        <h3>{{ editingId ? 'Modifier Utilisateur' : 'Nouvel Utilisateur' }}</h3>
         <div class="form-row">
           <div class="input-group">
             <label>Matricule</label>
@@ -56,6 +56,15 @@ import { Teacher } from '../../core/models/teacher.model';
             <input type="password" [(ngModel)]="currentTeacher.motDePasse"/>
           </div>
         </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label>Rôle</label>
+            <select [(ngModel)]="currentTeacher.role">
+              <option value="ENSEIGNANT">Enseignant</option>
+              <option value="ADMIN">Administrateur</option>
+            </select>
+          </div>
+        </div>
         <div class="form-actions">
           <button class="btn btn-outline" (click)="displayForm = false">Annuler</button>
           <button class="btn btn-primary" (click)="save()"><i class="pi pi-check"></i> Enregistrer</button>
@@ -88,12 +97,15 @@ import { Teacher } from '../../core/models/teacher.model';
             </thead>
             <tbody>
               <tr *ngIf="filteredTeachers.length === 0">
-                <td colspan="5" class="text-center" style="padding: 30px; color: #94a3b8;">Aucun enseignant trouvé.</td>
+                <td colspan="5" class="text-center" style="padding: 30px; color: #94a3b8;">Aucun utilisateur trouvé.</td>
               </tr>
               <tr *ngFor="let teacher of filteredTeachers">
                 <td data-label="Identité">
                   <div style="font-weight: 700; color: #0f172a;">{{ teacher.prenom }} {{ teacher.nom }}</div>
-                  <div style="font-size: 0.8rem; color: #64748b;">{{ teacher.role || 'ENSEIGNANT' }}</div>
+                  <div style="font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px;"
+                       [ngStyle]="{'background': teacher.role === 'ADMIN' ? '#fee2e2' : '#e0f2fe', 'color': teacher.role === 'ADMIN' ? '#991b1b' : '#0369a1'}">
+                    {{ teacher.role || 'ENSEIGNANT' }}
+                  </div>
                 </td>
                 <td data-label="Matricule">
                   <span class="matricule-badge">{{ teacher.matricule || 'N/A' }}</span>
@@ -178,7 +190,7 @@ export class TeachersComponent implements OnInit {
         },
         error: (err) => {
           console.error('Erreur lors de la mise à jour', err);
-          alert('Erreur lors de la mise à jour de l\'enseignant.');
+          alert("Erreur lors de la mise à jour de l'utilisateur.");
         }
       });
     } else {
@@ -189,14 +201,14 @@ export class TeachersComponent implements OnInit {
         },
         error: (err) => {
           console.error('Erreur lors de la création', err);
-          alert('Erreur lors de la création de l\'enseignant.');
+          alert("Erreur lors de la création de l'utilisateur.");
         }
       });
     }
   }
 
   deleteTeacher(id: number) {
-    if(confirm('Voulez-vous vraiment supprimer cet enseignant ?')) {
+    if(confirm('Voulez-vous vraiment supprimer cet utilisateur ?')) {
       this.teacherService.delete(id).subscribe({
         next: () => this.loadTeachers(),
         error: (err) => console.error('Erreur lors de la suppression', err)
