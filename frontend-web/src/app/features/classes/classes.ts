@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ClasseService } from '../../core/services/classe.service';
@@ -46,6 +46,22 @@ import { Classe } from '../../core/models/classe.model';
       </div>
 
       <div class="table-card">
+        <div class="table-header" style="display: flex; flex-direction: column; align-items: center; gap: 24px; position: relative;">
+          <!-- Centered Search Bar -->
+          <div class="search-container" style="align-self: stretch; max-width: 100%; display: flex; justify-content: center;">
+            <div style="position: relative; width: 100%; max-width: 400px;">
+              <i class="pi pi-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #64748b;"></i>
+              <input
+                type="text"
+                placeholder="Rechercher une filière, un niveau..."
+                [(ngModel)]="searchText"
+                (input)="filterClasses()"
+                style="width: 100%; padding: 12px 16px 12px 42px; border-radius: 12px; border: 1px solid #cbd5e1; outline:none; background: rgba(255,255,255,0.9); font-family: inherit; transition: all 0.2s;"
+              />
+            </div>
+          </div>
+        </div>
+
         <div class="table-responsive">
           <table class="pro-table">
             <thead>
@@ -57,10 +73,10 @@ import { Classe } from '../../core/models/classe.model';
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="classes.length === 0">
+              <tr *ngIf="filteredClasses.length === 0">
                 <td colspan="4" class="text-center" style="padding: 30px; color: #94a3b8;">Aucune classe trouvée.</td>
               </tr>
-              <tr *ngFor="let classe of classes">
+              <tr *ngFor="let classe of filteredClasses">
                 <td data-label="Filière" style="font-weight: 600;">{{ classe.filiere || 'N/A' }}</td>
                 <td data-label="Niveau"><span class="subject-chip">{{ classe.niveau || 'N/A' }}</span></td>
                 <td data-label="Année Scolaire" style="color: #64748b;">{{ classe.anneeScolaire || 'N/A' }}</td>
@@ -81,11 +97,13 @@ import { Classe } from '../../core/models/classe.model';
 })
 export class Classes implements OnInit {
   classes: Classe[] = [];
+  filteredClasses: Classe[] = [];
+  searchText: string = '';
   displayForm: boolean = false;
   editingId: number | null = null;
   currentClasse: Partial<Classe> = {};
 
-  constructor(private classeService: ClasseService) {}
+  constructor(private classeService: ClasseService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.loadClasses();
@@ -93,9 +111,23 @@ export class Classes implements OnInit {
 
   loadClasses() {
     this.classeService.getAll().subscribe({
-      next: (data) => { this.classes = data; },
+      next: (data) => { 
+        this.classes = data; 
+        this.filterClasses();
+        this.cdr.detectChanges();
+      },
       error: () => { console.error('Erreur'); }
     });
+  }
+
+  filterClasses() {
+    const text = this.searchText.toLowerCase();
+    this.filteredClasses = this.classes.filter(
+      (c) =>
+        (c.filiere || '').toLowerCase().includes(text) ||
+        (c.niveau || '').toLowerCase().includes(text) ||
+        (c.anneeScolaire || '').toLowerCase().includes(text)
+    );
   }
 
   showAddForm() {

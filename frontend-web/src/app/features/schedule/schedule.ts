@@ -117,6 +117,21 @@ import { Teacher } from '../../core/models/teacher.model';
       </div>
 
       <div class="table-card">
+        <div class="table-header" style="display: flex; flex-direction: column; align-items: center; gap: 24px; position: relative;">
+          <!-- Centered Search Bar -->
+          <div class="search-container" style="align-self: stretch; max-width: 100%; display: flex; justify-content: center;">
+            <div style="position: relative; width: 100%; max-width: 400px;">
+              <i class="pi pi-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #64748b;"></i>
+              <input
+                type="text"
+                placeholder="Rechercher titre, salle, enseignant..."
+                [(ngModel)]="searchText"
+                (input)="filterSchedules()"
+                style="width: 100%; padding: 12px 16px 12px 42px; border-radius: 12px; border: 1px solid #cbd5e1; outline:none; background: rgba(255,255,255,0.9); font-family: inherit; transition: all 0.2s;"
+              />
+            </div>
+          </div>
+        </div>
         <div class="table-responsive">
           <table class="pro-table">
             <thead>
@@ -130,10 +145,10 @@ import { Teacher } from '../../core/models/teacher.model';
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="schedules.length === 0">
+              <tr *ngIf="filteredSchedules.length === 0">
                 <td colspan="6" class="text-center" style="padding: 30px; color: #94a3b8;">Aucune planification trouvée.</td>
               </tr>
-              <tr *ngFor="let s of schedules">
+              <tr *ngFor="let s of filteredSchedules">
                 <td data-label="Titre" style="font-weight: 600; color:var(--primary-color);">{{ s.titre || 'Sans-titre' }}</td>
                 <td data-label="Type"><span class="subject-chip">{{ s.typeRecurrence }}</span></td>
                 <td data-label="Jour / Date">
@@ -164,6 +179,8 @@ import { Teacher } from '../../core/models/teacher.model';
 })
 export class Schedule implements OnInit {
   schedules: EmploiDuTemps[] = [];
+  filteredSchedules: EmploiDuTemps[] = [];
+  searchText: string = '';
   classes: Classe[] = [];
   matieres: Matiere[] = [];
   teachers: Teacher[] = [];
@@ -189,10 +206,25 @@ export class Schedule implements OnInit {
   }
 
   loadData() {
-    this.scheduleService.getAllSchedules().subscribe(s => this.schedules = s);
+    this.scheduleService.getAllSchedules().subscribe(s => {
+      this.schedules = s;
+      this.filterSchedules();
+    });
     this.classeService.getAll().subscribe(c => this.classes = c);
     this.matiereService.getAll().subscribe(m => this.matieres = m);
     this.teacherService.getTeachers().subscribe(t => this.teachers = t);
+  }
+
+  filterSchedules() {
+    const text = this.searchText.toLowerCase();
+    this.filteredSchedules = this.schedules.filter(
+      (s) =>
+        (s.titre || '').toLowerCase().includes(text) ||
+        (s.salle || '').toLowerCase().includes(text) ||
+        (s.enseignant?.nom || '').toLowerCase().includes(text) ||
+        (s.enseignant?.prenom || '').toLowerCase().includes(text) ||
+        (s.matiere?.libelle || '').toLowerCase().includes(text)
+    );
   }
 
   showAddForm() {

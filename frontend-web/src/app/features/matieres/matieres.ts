@@ -53,6 +53,22 @@ import { Classe } from '../../core/models/classe.model';
       </div>
 
       <div class="table-card">
+        <div class="table-header" style="display: flex; flex-direction: column; align-items: center; gap: 24px; position: relative;">
+          <!-- Centered Search Bar -->
+          <div class="search-container" style="align-self: stretch; max-width: 100%; display: flex; justify-content: center;">
+            <div style="position: relative; width: 100%; max-width: 400px;">
+              <i class="pi pi-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #64748b;"></i>
+              <input
+                type="text"
+                placeholder="Rechercher code ou libellé..."
+                [(ngModel)]="searchText"
+                (input)="filterMatieres()"
+                style="width: 100%; padding: 12px 16px 12px 42px; border-radius: 12px; border: 1px solid #cbd5e1; outline:none; background: rgba(255,255,255,0.9); font-family: inherit; transition: all 0.2s;"
+              />
+            </div>
+          </div>
+        </div>
+
         <div class="table-responsive">
           <table class="pro-table">
             <thead>
@@ -65,10 +81,10 @@ import { Classe } from '../../core/models/classe.model';
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="matieres.length === 0">
+              <tr *ngIf="filteredMatieres.length === 0">
                 <td colspan="5" class="text-center" style="padding: 30px; color: #94a3b8;">Aucune matière trouvée.</td>
               </tr>
-              <tr *ngFor="let m of matieres">
+              <tr *ngFor="let m of filteredMatieres">
                 <td data-label="Code" style="font-weight: 600;">{{ m.codeMatiere }}</td>
                 <td data-label="Libellé" style="font-weight: 600; color:var(--primary-color);">{{ m.libelle }}</td>
                 <td data-label="Coefficient">{{ m.coefficient }}</td>
@@ -90,6 +106,8 @@ import { Classe } from '../../core/models/classe.model';
 })
 export class Matieres implements OnInit {
   matieres: Matiere[] = [];
+  filteredMatieres: Matiere[] = [];
+  searchText: string = '';
   classes: Classe[] = [];
   displayForm: boolean = false;
   editingId: number | null = null;
@@ -104,7 +122,19 @@ export class Matieres implements OnInit {
   }
 
   loadMatieres() {
-    this.matiereService.getAll().subscribe(data => this.matieres = data);
+    this.matiereService.getAll().subscribe(data => {
+      this.matieres = data;
+      this.filterMatieres();
+    });
+  }
+
+  filterMatieres() {
+    const text = this.searchText.toLowerCase();
+    this.filteredMatieres = this.matieres.filter(
+      (m) =>
+        (m.codeMatiere || '').toLowerCase().includes(text) ||
+        (m.libelle || '').toLowerCase().includes(text)
+    );
   }
 
   showAddForm() {

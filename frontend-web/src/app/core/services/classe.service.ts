@@ -13,11 +13,11 @@ export class ClasseService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<Classe[]> {
-    return this.http.get<Classe[]>(this.apiUrl);
+    return this.http.get<Classe[]>(`${this.apiUrl}?t=${new Date().getTime()}`);
   }
 
   getById(id: number): Observable<Classe> {
-    return this.http.get<Classe>(`${this.apiUrl}/${id}`);
+    return this.http.get<Classe>(`${this.apiUrl}/${id}?t=${new Date().getTime()}`);
   }
 
   create(classe: Classe): Observable<Classe> {
