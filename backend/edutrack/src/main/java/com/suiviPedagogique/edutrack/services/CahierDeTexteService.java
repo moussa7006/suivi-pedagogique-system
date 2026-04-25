@@ -85,4 +85,52 @@ public class CahierDeTexteService {
 
         return "Cahier de texte enregistré. (Aucun émargement trouvé à confirmer).";
     }
+
+    public java.util.List<com.suiviPedagogique.edutrack.Dto.CahierDeTexteDto> getAllCahierDeTextes() {
+        return cahierDeTexteRepository.findAll().stream().map(c -> {
+            com.suiviPedagogique.edutrack.Dto.CahierDeTexteDto dto = new com.suiviPedagogique.edutrack.Dto.CahierDeTexteDto();
+            dto.setId(c.getId());
+            dto.setTitreCours(c.getTitreCours());
+            dto.setContenu(c.getContenu());
+            dto.setDateCreation(c.getDateCreation());
+            dto.setPieceJointe(c.getPieceJointe());
+            dto.setStatutValidite(c.getStatutValidite());
+            
+            Seance seance = c.getSeance();
+            if (seance != null) {
+                dto.setSeanceId(seance.getId());
+                if (seance.getEnseignant() != null) {
+                    dto.setEnseignantNomPrenom(seance.getEnseignant().getPrenom() + " " + seance.getEnseignant().getNom());
+                }
+                if (seance.getMatiere() != null) {
+                    dto.setMatiereLibelle(seance.getMatiere().getLibelle());
+                }
+                if (seance.getDate() != null) {
+                    dto.setDateSeance(seance.getDate().toString());
+                }
+                if (seance.getHeureDebut() != null && seance.getHeureFin() != null) {
+                    dto.setHeureSeance(seance.getHeureDebut() + " - " + seance.getHeureFin());
+                }
+            }
+            return dto;
+        }).collect(java.util.stream.Collectors.toList());
+    }
+
+    @Transactional
+    public com.suiviPedagogique.edutrack.Dto.CahierDeTexteDto validerCahierDeTexte(Integer id, String statut) {
+        CahierDeTexte c = cahierDeTexteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cahier de texte introuvable."));
+        c.setStatutValidite(statut);
+        cahierDeTexteRepository.save(c);
+        
+        // Return updated DTO
+        com.suiviPedagogique.edutrack.Dto.CahierDeTexteDto dto = new com.suiviPedagogique.edutrack.Dto.CahierDeTexteDto();
+        dto.setId(c.getId());
+        dto.setTitreCours(c.getTitreCours());
+        dto.setContenu(c.getContenu());
+        dto.setDateCreation(c.getDateCreation());
+        dto.setPieceJointe(c.getPieceJointe());
+        dto.setStatutValidite(c.getStatutValidite());
+        return dto;
+    }
 }

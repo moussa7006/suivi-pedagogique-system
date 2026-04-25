@@ -24,6 +24,7 @@ public class CahierDeTexte {
     private String contenu;
     private LocalDateTime dateCreation;
     private String pieceJointe;
+    private String statutValidite = "En attente"; // En attente, Validé, Rejeté
 
     @OneToOne(mappedBy = "cahierDeTexte")
     private Seance seance;

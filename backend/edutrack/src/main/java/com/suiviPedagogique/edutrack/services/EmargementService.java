@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.stream.Collectors;
+import com.suiviPedagogique.edutrack.Dto.EmargementDto;
 
 @Service
 public class EmargementService {
@@ -97,5 +100,40 @@ public class EmargementService {
                 Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    public List<EmargementDto> getAllEmargements() {
+        return emargementRepository.findAll().stream().map(e -> {
+            EmargementDto dto = new EmargementDto();
+            dto.setId(e.getId());
+            dto.setDateHeureScan(e.getDateHeureScan());
+            dto.setLatitudeGPS(e.getLatitudeGPS());
+            dto.setLongitudeGPS(e.getLongitudeGPS());
+            dto.setEstLocalisee(e.getEstLocalisee());
+            dto.setEstConfirme(e.getEstConfirme());
+            
+            Seance seance = e.getSeance();
+            if (seance != null) {
+                if (seance.getEnseignant() != null) {
+                    dto.setEnseignantNomPrenom(seance.getEnseignant().getPrenom() + " " + seance.getEnseignant().getNom());
+                }
+                if (seance.getMatiere() != null) {
+                    dto.setMatiereLibelle(seance.getMatiere().getLibelle());
+                }
+                dto.setLieu(seance.getSalle());
+                dto.setHeureSeance(seance.getHeureDebut() + " - " + seance.getHeureFin());
+                
+                if (e.getEstConfirme()) {
+                    dto.setStatutAffichage("Présent");
+                } else if (e.getEstLocalisee()) {
+                    dto.setStatutAffichage("En retard"); // Or whatever logic
+                } else {
+                    dto.setStatutAffichage("Absent");
+                }
+                
+                dto.setMethode("QR Code");
+            }
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

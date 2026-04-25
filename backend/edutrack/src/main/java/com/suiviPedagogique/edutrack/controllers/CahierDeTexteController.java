@@ -32,4 +32,20 @@ public class CahierDeTexteController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping
+    @Operation(summary = "Lister les cahiers de texte", description = "Retourne la liste de tous les cahiers de texte")
+    public ResponseEntity<java.util.List<com.suiviPedagogique.edutrack.Dto.CahierDeTexteDto>> getAllCahierDeTextes() {
+        return ResponseEntity.ok(cahierDeTexteService.getAllCahierDeTextes());
+    }
+
+    @PutMapping("/{id}/valider")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Valider ou rejeter un cahier de texte", description = "Permet à l'admin d'approuver ou rejeter le cahier de texte")
+    public ResponseEntity<com.suiviPedagogique.edutrack.Dto.CahierDeTexteDto> validerCahierDeTexte(
+            @PathVariable Integer id,
+            @RequestBody java.util.Map<String, String> body) {
+        String statut = body.get("statutValidite");
+        return ResponseEntity.ok(cahierDeTexteService.validerCahierDeTexte(id, statut));
+    }
 }
