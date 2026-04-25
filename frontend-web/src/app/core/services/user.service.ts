@@ -13,11 +13,11 @@ export class UserService {
   constructor(private http: HttpClient) {}
 
   getUsers(): Observable<Teacher[]> {
-    return this.http.get<Teacher[]>(`${this.apiUrl}/lister-tous`);
+    return this.http.get<Teacher[]>(`${this.apiUrl}/lister-tous?t=${new Date().getTime()}`);
   }
 
   getUserById(id: number): Observable<Teacher> {
-    return this.http.get<Teacher>(`${this.apiUrl}/lister/${id}`);
+    return this.http.get<Teacher>(`${this.apiUrl}/lister/${id}?t=${new Date().getTime()}`);
   }
 
   create(user: Teacher): Observable<any> {
@@ -43,11 +43,11 @@ export class TeacherService {
   constructor(private http: HttpClient) {}
 
   getTeachers(): Observable<Teacher[]> {
-    return this.http.get<Teacher[]>(`${this.apiUrl}/lister-tous`);
+    return this.http.get<Teacher[]>(`${this.apiUrl}/lister-tous?t=${new Date().getTime()}`);
   }
 
   getTeacherById(id: number): Observable<Teacher> {
-    return this.http.get<Teacher>(`${this.apiUrl}/lister/${id}`);
+    return this.http.get<Teacher>(`${this.apiUrl}/lister/${id}?t=${new Date().getTime()}`);
   }
 
   create(teacher: Teacher): Observable<any> {

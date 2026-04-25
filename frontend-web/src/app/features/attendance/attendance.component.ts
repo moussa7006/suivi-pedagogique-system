@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AttendanceService } from '../../core/services/attendance.service';
 import { Emargement } from '../../core/models/attendance.model';
 
 @Component({
   selector: 'app-attendance',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="attendance-page">
       <div class="page-header">
@@ -51,10 +52,27 @@ import { Emargement } from '../../core/models/attendance.model';
       </div>
 
       <div class="table-card">
-        <div class="table-header">
-          <h3>Émargements du jour</h3>
-          <span class="record-count">{{ todayLogs.length }} enregistrements</span>
+        <div class="table-header" style="display: flex; flex-direction: column; align-items: center; gap: 24px; position: relative;">
+          <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+            <h3>Émargements du jour</h3>
+            <span class="record-count">{{ filteredLogs.length }} / {{ todayLogs.length }}</span>
+          </div>
+          
+          <!-- Centered Search Bar -->
+          <div class="search-container" style="align-self: stretch; max-width: 100%; display: flex; justify-content: center;">
+            <div style="position: relative; width: 100%; max-width: 400px;">
+              <i class="pi pi-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #64748b;"></i>
+              <input
+                type="text"
+                placeholder="Rechercher enseignant, matière, statut..."
+                [(ngModel)]="searchText"
+                (input)="filterLogs()"
+                style="width: 100%; padding: 12px 16px 12px 42px; border-radius: 12px; border: 1px solid #cbd5e1; outline:none; background: rgba(255,255,255,0.9); font-family: inherit; transition: all 0.2s;"
+              />
+            </div>
+          </div>
         </div>
+        <div style="overflow-x: auto;">
         <table class="attendance-table">
           <thead>
             <tr>
@@ -66,7 +84,10 @@ import { Emargement } from '../../core/models/attendance.model';
             </tr>
           </thead>
           <tbody>
-            @for (log of todayLogs; track log.id) {
+            <tr *ngIf="filteredLogs.length === 0">
+              <td colspan="5" class="text-center" style="padding: 30px; color: #94a3b8; text-align: center;">Aucun enregistrement trouvé.</td>
+            </tr>
+            @for (log of filteredLogs; track log.id) {
               <tr>
                 <td>
                   <div class="teacher-cell">
@@ -109,6 +130,7 @@ import { Emargement } from '../../core/models/attendance.model';
             }
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   `,
@@ -338,27 +360,24 @@ import { Emargement } from '../../core/models/attendance.model';
       }
 
       .table-header {
-        padding: 20px 24px;
-        background: rgba(248, 250, 252, 0.6);
-        border-bottom: 1px solid rgba(241, 245, 249, 0.9);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        padding: 24px;
+        background: rgba(248, 250, 252, 0.4);
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
 
         h3 {
           margin: 0;
-          font-size: 1.05rem;
+          font-size: 1.15rem;
           font-weight: 700;
           color: #1e293b;
         }
 
         .record-count {
-          font-size: 0.8rem;
-          color: #94a3b8;
+          font-size: 0.85rem;
+          color: #64748b;
           font-weight: 600;
           background: rgba(241, 245, 249, 0.8);
-          padding: 4px 12px;
-          border-radius: 999px;
+          padding: 6px 12px;
+          border-radius: 8px;
         }
       }
 
@@ -581,13 +600,27 @@ import { Emargement } from '../../core/models/attendance.model';
 })
 export class AttendanceComponent implements OnInit {
   todayLogs: Emargement[] = [];
+  filteredLogs: Emargement[] = [];
+  searchText: string = '';
 
   constructor(private attendanceService: AttendanceService) {}
 
   ngOnInit() {
     this.attendanceService.getAllAttendances().subscribe((data) => {
       this.todayLogs = data;
+      this.filterLogs();
     });
+  }
+
+  filterLogs() {
+    const text = this.searchText.toLowerCase();
+    this.filteredLogs = this.todayLogs.filter(
+      (log) =>
+        (log.enseignantNomPrenom || '').toLowerCase().includes(text) ||
+        (log.matiereLibelle || '').toLowerCase().includes(text) ||
+        (log.statutAffichage || '').toLowerCase().includes(text) ||
+        (log.lieu || '').toLowerCase().includes(text)
+    );
   }
 
   getInitials(name: string): string {
