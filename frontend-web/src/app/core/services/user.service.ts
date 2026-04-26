@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Teacher } from '../models/user.model';
 
@@ -32,6 +33,12 @@ export class UserService {
   delete(id: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/supprimer/${id}`);
   }
+
+  importTeachers(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<any>(`${this.apiUrl}/import-enseignants`, formData);
+  }
 }
 
 @Injectable({
@@ -43,7 +50,9 @@ export class TeacherService {
   constructor(private http: HttpClient) {}
 
   getTeachers(): Observable<Teacher[]> {
-    return this.http.get<Teacher[]>(`${this.apiUrl}/lister-tous?t=${new Date().getTime()}`);
+    return this.http.get<Teacher[]>(`${this.apiUrl}/lister-tous?t=${new Date().getTime()}`).pipe(
+      map(users => users.filter(u => u.role === 'ENSEIGNANT' || u.role === 'enseignant'))
+    );
   }
 
   getTeacherById(id: number): Observable<Teacher> {
@@ -61,5 +70,11 @@ export class TeacherService {
 
   delete(id: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/supprimer/${id}`);
+  }
+
+  importTeachers(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<any>(`${this.apiUrl}/import-enseignants`, formData);
   }
 }

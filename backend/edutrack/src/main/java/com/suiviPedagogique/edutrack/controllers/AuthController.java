@@ -56,11 +56,35 @@ public class AuthController {
             response.put("message", "Connexion réussie !");
             response.put("token", token);
             response.put("role", utilisateur.getRole());
+            response.put("forcePasswordChange", utilisateur.getForcePasswordChange() != null ? utilisateur.getForcePasswordChange() : false);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Identifiants invalides");
             return ResponseEntity.status(401).body(error);
+        }
+    }
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request) {
+        try {
+            org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            String email = authentication.getName();
+            String newPassword = request.get("newPassword");
+            
+            if (newPassword == null || newPassword.trim().isEmpty()) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Le nouveau mot de passe ne peut pas être vide");
+                return ResponseEntity.badRequest().body(error);
+            }
+            
+            authService.changePassword(email, newPassword);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Mot de passe modifié avec succès");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Erreur lors du changement de mot de passe");
+            return ResponseEntity.status(500).body(error);
         }
     }
 }

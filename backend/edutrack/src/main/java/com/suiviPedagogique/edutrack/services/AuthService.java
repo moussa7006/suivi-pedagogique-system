@@ -79,4 +79,13 @@ public class AuthService {
         }
         return utilisateur;
     }
+
+    @Transactional
+    public void changePassword(String email, String newPassword) {
+        Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        utilisateur.setMotDePasse(passwordEncoder.encode(newPassword));
+        utilisateur.setForcePasswordChange(false);
+        utilisateurRepository.save(utilisateur);
+    }
 }

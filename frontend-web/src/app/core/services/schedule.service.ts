@@ -25,6 +25,12 @@ export class ScheduleService {
     return this.http.delete<void>(`${this.scheduleUrl}/${id}`);
   }
 
+  importSchedules(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<any>(`${this.scheduleUrl}/import`, formData);
+  }
+
   getAllSeances(): Observable<Seance[]> {
     return this.http.get<Seance[]>(this.seanceUrl);
   }

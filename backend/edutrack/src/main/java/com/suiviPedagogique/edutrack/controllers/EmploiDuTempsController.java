@@ -54,4 +54,24 @@ public class EmploiDuTempsController {
     public ResponseEntity<EmploiDuTempsDto> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(emploiDuTempsService.getById(id));
     }
+
+    @PostMapping(value = "/import", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Importer des emplois du temps via Excel")
+    public ResponseEntity<?> importSchedules(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        try {
+            int count = com.suiviPedagogique.edutrack.services.ExcelImportService.class.cast(
+                org.springframework.web.context.support.WebApplicationContextUtils.getRequiredWebApplicationContext(
+                    ((org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder.getRequestAttributes()).getRequest().getServletContext()
+                ).getBean(com.suiviPedagogique.edutrack.services.ExcelImportService.class)
+            ).importSchedules(file);
+            java.util.Map<String, String> response = new java.util.HashMap<>();
+            response.put("message", count + " planifications importées avec succès.");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            java.util.Map<String, String> response = new java.util.HashMap<>();
+            response.put("error", "Erreur d'importation: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 }
