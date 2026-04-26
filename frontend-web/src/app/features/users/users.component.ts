@@ -16,6 +16,8 @@ import { Teacher } from '../../core/models/teacher.model';
           <p>Supervisez l'ensemble des administrateurs et enseignants ({{ teachers.length }} enregistrés)</p>
         </div>
         <div class="header-actions">
+          <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls" style="display: none;">
+          <button class="btn btn-outline" (click)="fileInput.click()"><i class="pi pi-upload"></i> Importer Enseignants</button>
           <button class="btn btn-primary" (click)="showAddForm()"><i class="pi pi-plus"></i> Nouvel Utilisateur</button>
         </div>
       </div>
@@ -277,6 +279,25 @@ export class TeachersComponent implements OnInit {
         next: () => this.loadTeachers(),
         error: (err) => console.error('Erreur lors de la suppression', err)
       });
+    }
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      if (confirm(`Voulez-vous importer les enseignants depuis le fichier ${file.name} ?`)) {
+        this.teacherService.importTeachers(file).subscribe({
+          next: (res: any) => {
+            alert(res.message);
+            this.loadTeachers();
+          },
+          error: (err) => {
+            alert(err.error?.error || "Erreur lors de l'importation");
+          }
+        });
+      }
+      // Reset input
+      event.target.value = '';
     }
   }
 }

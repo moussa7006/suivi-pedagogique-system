@@ -35,4 +35,23 @@ public class UtilisateurController {
         utilisateurService.deleteUtilisateur(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping(value = "/import-enseignants", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> importEnseignants(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        try {
+            int count = com.suiviPedagogique.edutrack.services.ExcelImportService.class.cast(
+                org.springframework.web.context.support.WebApplicationContextUtils.getRequiredWebApplicationContext(
+                    ((org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder.getRequestAttributes()).getRequest().getServletContext()
+                ).getBean(com.suiviPedagogique.edutrack.services.ExcelImportService.class)
+            ).importEnseignants(file);
+            java.util.Map<String, String> response = new java.util.HashMap<>();
+            response.put("message", count + " enseignants importés avec succès.");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            java.util.Map<String, String> response = new java.util.HashMap<>();
+            response.put("error", "Erreur d'importation: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 }

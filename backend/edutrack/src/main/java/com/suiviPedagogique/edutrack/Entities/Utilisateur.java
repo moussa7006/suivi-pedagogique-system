@@ -36,6 +36,9 @@ public class Utilisateur {
 
     private String role;
 
+    @Column(columnDefinition = "boolean default false")
+    private Boolean forcePasswordChange = false;
+
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     public String getMatricule() { return matricule; }
@@ -54,4 +57,6 @@ public class Utilisateur {
     public void setMotDePasse(String motDePasse) { this.motDePasse = motDePasse; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+    public Boolean getForcePasswordChange() { return forcePasswordChange; }
+    public void setForcePasswordChange(Boolean forcePasswordChange) { this.forcePasswordChange = forcePasswordChange; }
 }

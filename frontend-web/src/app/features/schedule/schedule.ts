@@ -22,6 +22,8 @@ import { Teacher } from '../../core/models/teacher.model';
           <p>Planifiez les cours ({{ schedules.length }} planifications effectuées)</p>
         </div>
         <div class="header-actions">
+          <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls" style="display: none;">
+          <button class="btn btn-outline" (click)="fileInput.click()"><i class="pi pi-upload"></i> Importer Excel</button>
           <button class="btn btn-primary" (click)="showAddForm()"><i class="pi pi-calendar-plus"></i> Nouvelle Planification</button>
         </div>
       </div>
@@ -251,6 +253,25 @@ export class Schedule implements OnInit {
   delete(id: number) {
     if (confirm('Voulez-vous supprimer cette planification ?')) {
       this.scheduleService.deleteSchedule(id).subscribe(() => this.loadData());
+    }
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      if (confirm(`Voulez-vous importer les emplois du temps depuis le fichier ${file.name} ?`)) {
+        this.scheduleService.importSchedules(file).subscribe({
+          next: (res: any) => {
+            alert(res.message);
+            this.loadData();
+          },
+          error: (err) => {
+            alert(err.error?.error || "Erreur lors de l'importation");
+          }
+        });
+      }
+      // Reset input
+      event.target.value = '';
     }
   }
 }
