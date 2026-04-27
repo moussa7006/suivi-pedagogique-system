@@ -1,0 +1,64 @@
+/* ============================================
+   MODERN TABS - Suivi Pédagogique
+   Design flottant et translucide (Zéro Noir)
+   ============================================ */
+
+ion-tab-bar {
+  --background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: none;
+  height: 70px;
+  margin: 16px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0 10px;
+  contain: none;
+
+  ion-tab-button {
+    --color: #94a3b8;
+    --color-selected: #4361ee;
+    background: transparent;
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    margin: 5px;
+
+    &.tab-selected {
+      background: rgba(67, 97, 238, 0.08);
+      
+      ion-icon {
+        transform: translateY(-2px);
+      }
+      
+      ion-label {
+        font-weight: 700;
+        opacity: 1;
+      }
+    }
+
+    ion-icon {
+      font-size: 24px;
+      transition: transform 0.3s ease;
+    }
+
+    ion-label {
+      font-size: 10px;
+      text-transform: none;
+      font-weight: 500;
+      margin-top: 4px;
+      letter-spacing: 0.02em;
+      opacity: 0.7;
+    }
+  }
+}
+
+/* On retire l'effet safe-area car la barre est flottante */
+:host {
+  ion-tab-bar {
+    padding-bottom: 0;
+  }
+}
