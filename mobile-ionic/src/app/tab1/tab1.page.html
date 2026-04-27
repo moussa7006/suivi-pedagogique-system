@@ -1,0 +1,86 @@
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Header Supérieur avec Paramètres -->
+  <div class="top-header animate-fade-in">
+    <div class="user-greeting">
+      <h1>Bonjour, {{ teacher.firstName }} {{ teacher.lastName }} 👋</h1>
+      <p>Bienvenue sur votre espace</p>
+    </div>
+    <div class="header-actions">
+      <ion-button fill="clear" (click)="navigateTo('/tabs/tabs/tab2')" class="settings-btn">
+        <ion-icon name="settings-outline"></ion-icon>
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- LE HUB D'ACTIONS CENTRAL -->
+  <div class="action-hub">
+    <!-- CAHIER DE TEXTES -->
+    <div
+      class="action-tile blue animate-scale-in"
+      style="--delay: 100ms"
+      (click)="navigateTo('/tabs/tabs/tab4')"
+    >
+      <div class="icon-wrapper">
+        <ion-icon name="book-outline"></ion-icon>
+      </div>
+      <span>Cahier de<br />Textes</span>
+      <ion-badge *ngIf="!isCahierFait" color="warning" class="tile-badge">À remplir</ion-badge>
+    </div>
+
+    <!-- EMMARGER -->
+    <div
+      class="action-tile purple animate-scale-in"
+      style="--delay: 200ms"
+      (click)="navigateTo('/scan-qr')"
+    >
+      <div class="icon-wrapper">
+        <ion-icon name="qr-code-outline"></ion-icon>
+      </div>
+      <span>Emmarger sa<br />séance</span>
+    </div>
+
+    <!-- HISTORIQUE -->
+    <div
+      class="action-tile cyan animate-scale-in"
+      style="--delay: 300ms"
+      (click)="navigateTo('/tabs/tabs/tab3')"
+    >
+      <div class="icon-wrapper">
+        <ion-icon name="time-outline"></ion-icon>
+      </div>
+      <span>Historique<br />des Séances</span>
+    </div>
+
+    <!-- MON PLANNING -->
+    <div
+      class="action-tile pink animate-scale-in"
+      style="--delay: 400ms"
+      (click)="navigateTo('/planning')"
+    >
+      <div class="icon-wrapper">
+        <ion-icon name="calendar-outline"></ion-icon>
+      </div>
+      <span>Mon Planning<br />& Cours</span>
+    </div>
+  </div>
+
+  <!-- GRAPHIQUE DE VOLUME HORAIRE -->
+  <div class="modern-chart-card animate-slide-up">
+    <h3>Résumé de Progression</h3>
+    <div class="chart-content">
+      <div class="circular-progress">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#f1f5f9" stroke-width="10"/>
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#4361ee" stroke-width="10" stroke-dasharray="282.7" stroke-dashoffset="70.6" stroke-linecap="round"/>
+        </svg>
+        <span class="percentage">75%</span>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item primary">
+          <span class="label">Séances Effectuées</span>
+          <span class="value">42</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>
