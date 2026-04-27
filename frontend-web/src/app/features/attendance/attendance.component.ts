@@ -52,27 +52,26 @@ import { Emargement } from '../../core/models/attendance.model';
       </div>
 
       <div class="table-card">
-        <div class="table-header" style="display: flex; flex-direction: column; align-items: center; gap: 24px; position: relative;">
-          <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+        <div class="table-header custom-table-header">
+          <div class="table-header-top">
             <h3>Émargements du jour</h3>
             <span class="record-count">{{ filteredLogs.length }} / {{ todayLogs.length }}</span>
           </div>
           
           <!-- Centered Search Bar -->
-          <div class="search-container" style="align-self: stretch; max-width: 100%; display: flex; justify-content: center;">
-            <div style="position: relative; width: 100%; max-width: 400px;">
-              <i class="pi pi-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #64748b;"></i>
+          <div class="search-container centered-search">
+            <div class="search-input-wrapper">
+              <i class="pi pi-search"></i>
               <input
                 type="text"
                 placeholder="Rechercher enseignant, matière, statut..."
                 [(ngModel)]="searchText"
                 (input)="filterLogs()"
-                style="width: 100%; padding: 12px 16px 12px 42px; border-radius: 12px; border: 1px solid #cbd5e1; outline:none; background: rgba(255,255,255,0.9); font-family: inherit; transition: all 0.2s;"
               />
             </div>
           </div>
         </div>
-        <div style="overflow-x: auto;">
+        <div class="table-scrollless">
         <table class="attendance-table">
           <thead>
             <tr>
@@ -85,7 +84,7 @@ import { Emargement } from '../../core/models/attendance.model';
           </thead>
           <tbody>
             <tr *ngIf="filteredLogs.length === 0">
-              <td colspan="5" class="text-center" style="padding: 30px; color: #94a3b8; text-align: center;">Aucun enregistrement trouvé.</td>
+              <td colspan="5" class="text-center empty-state-cell">Aucun enregistrement trouvé.</td>
             </tr>
             @for (log of filteredLogs; track log.id) {
               <tr>
@@ -379,6 +378,70 @@ import { Emargement } from '../../core/models/attendance.model';
           padding: 6px 12px;
           border-radius: 8px;
         }
+      }
+
+      .custom-table-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+        position: relative;
+      }
+
+      .table-header-top {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .centered-search {
+        align-self: stretch;
+        max-width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+
+      .search-input-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+
+        .pi-search {
+          position: absolute;
+          left: 16px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #64748b;
+        }
+
+        input {
+          width: 100%;
+          padding: 12px 16px 12px 42px;
+          border-radius: 12px;
+          border: 1px solid #cbd5e1;
+          outline: none;
+          background: rgba(255, 255, 255, 0.9);
+          font-family: inherit;
+          transition: all 0.2s;
+        }
+      }
+
+      .table-scrollless {
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .table-scrollless::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+      }
+
+      .empty-state-cell {
+        padding: 30px;
+        color: #94a3b8;
+        text-align: center;
       }
 
       .attendance-table {

@@ -1,95 +1,15 @@
-<div class="layout-wrapper" [class.no-sidebar]="!showSidebar">
-  <!-- Overlay pour mobile -->
-  <div class="layout-mask" [class.active]="mobileMenuOpen" (click)="closeMobileMenu()"></div>
-
-  <!-- Sidebar -->
-  <div class="layout-sidebar" *ngIf="showSidebar" [class.mobile-active]="mobileMenuOpen">
-    <div class="sidebar-logo">
-      <img src="/assets/images/intec.png" alt="Logo INTEC" class="brand-logo-sidebar" />
-      <span>INTEC-PEDAGO</span>
-    </div>
-    <ul class="sidebar-menu">
-      <li routerLink="/dashboard" routerLinkActive="active" (click)="closeMobileMenu()">
-        <i class="pi pi-th-large"></i> <span>Tableau de bord</span>
-      </li>
-      <li routerLink="/classes" routerLinkActive="active" (click)="closeMobileMenu()">
-        <i class="pi pi-folder"></i> <span>Classes</span>
-      </li>
-      <li routerLink="/matieres" routerLinkActive="active" (click)="closeMobileMenu()">
-        <i class="pi pi-book"></i> <span>Matières</span>
-      </li>
-      <li routerLink="/teachers" routerLinkActive="active" (click)="closeMobileMenu()">
-        <i class="pi pi-users"></i> <span>Utilisateurs</span>
-      </li>
-      <li routerLink="/schedule" routerLinkActive="active" (click)="closeMobileMenu()">
-        <i class="pi pi-calendar"></i> <span>Emploi du temps</span>
-      </li>
-      <li routerLink="/qr-generator" routerLinkActive="active" (click)="closeMobileMenu()">
-        <i class="pi pi-qrcode"></i> <span>Générer QR Code</span>
-      </li>
-      <li routerLink="/attendance" routerLinkActive="active" (click)="closeMobileMenu()">
-        <i class="pi pi-check-square"></i> <span>Emargements</span>
-      </li>
-      <li routerLink="/pedagogy" routerLinkActive="active" (click)="closeMobileMenu()">
-        <i class="pi pi-file-edit"></i> <span>Cahiers de textes</span>
-      </li>
-    </ul>
-
-    <div class="sidebar-footer">
-      <div class="logout-btn" (click)="logout()">
-        <i class="pi pi-power-off"></i> <span>Déconnexion</span>
-      </div>
-    </div>
+<main class="layout-main">
+  <header class="app-topbar">
+    <a class="brand" routerLink="/dashboard">
+      <i class="pi pi-graduation-cap"></i>
+      <span>EduTrack</span>
+    </a>
+    <a class="home-btn" routerLink="/dashboard" aria-label="Retour au dashboard">
+      <i class="pi pi-home"></i>
+      <span>Dashboard</span>
+    </a>
+  </header>
+  <div class="layout-content">
+    <router-outlet></router-outlet>
   </div>
-
-  <div class="layout-main">
-    <!-- Topbar -->
-    <div class="layout-topbar" *ngIf="showSidebar">
-      <div class="topbar-left">
-        <div class="menu-button" (click)="toggleMobileMenu()">
-          <i class="pi pi-bars"></i>
-        </div>
-
-        <div class="topbar-search">
-          <i class="pi pi-search"></i>
-          <input type="text" placeholder="Rechercher une information..." />
-        </div>
-      </div>
-
-      <div class="topbar-right">
-        <div class="action-icons">
-          <div class="icon-btn">
-            <i class="pi pi-envelope"></i>
-          </div>
-          <div class="icon-btn">
-            <i class="pi pi-bell"></i>
-            <span class="pulse-badge"></span>
-          </div>
-          <div class="icon-btn">
-            <i class="pi pi-cog"></i>
-          </div>
-        </div>
-
-        <div class="user-anchor">
-          <div class="user-info">
-            <span class="user-name">Admin Mali</span>
-            <span class="user-role">Super Administrateur</span>
-          </div>
-          <div class="avatar-wrapper">
-            <img
-              src="https://ui-avatars.com/api/?name=Admin+Mali&background=2563eb&color=fff"
-              alt="Profile"
-            />
-            <div class="status-indicator online"></div>
-          </div>
-          <i class="pi pi-chevron-down"></i>
-        </div>
-      </div>
-    </div>
-
-    <!-- Contenu Principal -->
-    <div class="layout-content">
-      <router-outlet></router-outlet>
-    </div>
-  </div>
-</div>
+</main>
