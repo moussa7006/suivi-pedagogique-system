@@ -1,0 +1,95 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>QR Code</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="list-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Générateur QR Code</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="session-card card">
+    <div class="session-header">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <div>
+        <h3>Séance du Jour</h3>
+        <p>Algorithmique - 08:00-10:00</p>
+      </div>
+    </div>
+    <div class="session-status active">
+      <span class="status-dot"></span>
+      <span>Séance en cours</span>
+    </div>
+  </div>
+
+  <div class="qr-container">
+    <div class="qr-wrapper">
+      <div class="qr-code">
+        <ion-icon name="qr-code-outline" class="qr-placeholder"></ion-icon>
+      </div>
+      <div class="qr-timer">
+        <ion-spinner name="crescent"></ion-spinner>
+        <span>Expire dans 4:32</span>
+      </div>
+    </div>
+    <p class="qr-instruction">Scannez ce code pour marquer votre présence</p>
+  </div>
+
+  <!-- Scanner Info -->
+  <div class="scanner-info-card card">
+    <div class="scanner-icon">
+      <ion-icon name="qr-code-outline"></ion-icon>
+    </div>
+    <h3>Scanner le QR Code</h3>
+    <p>
+      Pointez votre caméra vers le QR Code affiché à l'écran pour émarger votre
+      présence.
+    </p>
+    <div class="scanner-status">
+      <ion-spinner name="crescent"></ion-spinner>
+      <span>En attente du QR Code...</span>
+    </div>
+    <ion-button expand="block" class="scan-button">
+      <ion-icon slot="start" name="scan-outline"></ion-icon>
+      Ouvrir le scanner
+    </ion-button>
+  </div>
+
+  <!-- Session Controls -->
+  <div class="controls-card card">
+    <h3><ion-icon name="settings-outline"></ion-icon> Paramètres</h3>
+
+    <ion-item lines="none" class="settings-item">
+      <ion-icon slot="start" name="book-outline"></ion-icon>
+      <ion-label>Matière</ion-label>
+      <ion-select value="algo" interface="action-sheet" class="settings-select">
+        <ion-select-option value="algo">Algorithmique</ion-select-option>
+        <ion-select-option value="java">Java</ion-select-option>
+        <ion-select-option value="bd">Bases de données</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item lines="none" class="settings-item">
+      <ion-icon slot="start" name="time-outline"></ion-icon>
+      <ion-label>Durée (secondes)</ion-label>
+      <ion-input type="number" value="300" class="settings-input"></ion-input>
+    </ion-item>
+
+    <ion-item lines="none" class="settings-item">
+      <ion-icon slot="start" name="location-outline"></ion-icon>
+      <ion-label>Vérification GPS</ion-label>
+      <ion-toggle checked></ion-toggle>
+    </ion-item>
+  </div>
+</ion-content>
