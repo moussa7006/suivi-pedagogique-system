@@ -97,6 +97,8 @@ public class ExcelImportService {
                 Row row = sheet.getRow(i);
                 if (row == null || row.getCell(0) == null) continue;
 
+                final int numeroLigne = i + 1;
+
                 String titre = row.getCell(0).getStringCellValue();
                 String typeRecurrenceStr = row.getCell(1).getStringCellValue();
                 TypeRecurrence type = TypeRecurrence.valueOf(typeRecurrenceStr.toUpperCase());
@@ -110,17 +112,17 @@ public class ExcelImportService {
                 String nomClasse = row.getCell(8).getStringCellValue(); // Assuming filiere
 
                 Enseignant ens = enseignantRepository.findByEmail(emailEnseignant)
-                        .orElseThrow(() -> new RuntimeException("Enseignant introuvable (Email: " + emailEnseignant + ") à la ligne " + (i + 1)));
+                        .orElseThrow(() -> new RuntimeException("Enseignant introuvable (Email: " + emailEnseignant + ") à la ligne " + numeroLigne));
 
                 Matiere mat = matiereRepository.findAll().stream()
                         .filter(m -> m.getLibelle().equalsIgnoreCase(nomMatiere))
                         .findFirst()
-                        .orElseThrow(() -> new RuntimeException("Matière introuvable (Libellé: " + nomMatiere + ") à la ligne " + (i + 1)));
+                        .orElseThrow(() -> new RuntimeException("Matière introuvable (Libellé: " + nomMatiere + ") à la ligne " + numeroLigne));
 
                 Classe cls = classeRepository.findAll().stream()
                         .filter(c -> c.getFiliere().equalsIgnoreCase(nomClasse))
                         .findFirst()
-                        .orElseThrow(() -> new RuntimeException("Classe introuvable (Filière: " + nomClasse + ") à la ligne " + (i + 1)));
+                        .orElseThrow(() -> new RuntimeException("Classe introuvable (Filière: " + nomClasse + ") à la ligne " + numeroLigne));
 
                 EmploiDuTemps edt = new EmploiDuTemps();
                 edt.setTitre(titre);
