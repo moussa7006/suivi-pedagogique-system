@@ -1,0 +1,46 @@
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Bouton Retour -->
+  <ion-button fill="clear" class="back-btn-header" routerLink="/tabs/tabs/tab1">
+    <ion-icon name="arrow-back-outline"></ion-icon>
+  </ion-button>
+
+  <div class="header-section">
+    <h1 class="page-title">Mon Planning</h1>
+    <p class="page-subtitle">{{ today | date:'EEEE d MMMM' }}</p>
+  </div>
+
+  <!-- Agenda du jour -->
+  <div class="agenda-container">
+    <div *ngFor="let cours of emploisDuTemps" class="agenda-card animate-slide-up">
+      <div class="time-column">
+        <span class="start-time">{{ cours.horaire.split(' - ')[0] }}</span>
+        <div class="time-line"></div>
+      </div>
+      
+      <div class="course-details">
+        <div class="course-header">
+          <ion-badge color="primary">{{ cours.type }}</ion-badge>
+        </div>
+        <h3>{{ cours.matiere }}</h3>
+        
+        <div class="course-info">
+          <div class="info-item">
+            <ion-icon name="location-outline"></ion-icon>
+            <span>{{ cours.salle }}</span>
+          </div>
+          <div class="info-item">
+            <ion-icon name="time-outline"></ion-icon>
+            <span>{{ cours.horaire }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state si besoin -->
+  <div *ngIf="emploisDuTemps.length === 0" class="empty-state">
+    <ion-icon name="calendar-outline" class="empty-icon"></ion-icon>
+    <h3>Aucun cours aujourd'hui</h3>
+    <p>Profitez de votre temps libre !</p>
+  </div>
+</ion-content>
