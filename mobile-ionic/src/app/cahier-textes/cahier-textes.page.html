@@ -1,0 +1,150 @@
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Bouton Retour -->
+  <ion-button fill="clear" class="back-btn-header" routerLink="/tabs/tabs/tab1">
+    <ion-icon name="arrow-back-outline"></ion-icon>
+  </ion-button>
+
+  <div class="header-section">
+    <h1 class="page-title">Cahier de Textes</h1>
+    <p class="page-subtitle">Gérez vos contenus pédagogiques</p>
+    <div class="volume-info">
+      <ion-icon name="time"></ion-icon>
+      <span>{{ totalHeures }}h effectuées</span>
+    </div>
+  </div>
+
+  <!-- Statistiques rapides -->
+  <div class="quick-stats">
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <ion-icon name="document-text-outline"></ion-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ seances.length }}</span>
+        <span class="stat-label">Séances</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ getValidatedCount }}</span>
+        <span class="stat-label">Validées</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bouton d'ajout rapide -->
+  <div class="add-section">
+    <ion-button
+      expand="block"
+      (click)="showForm = !showForm"
+      class="toggle-form-btn"
+    >
+      <ion-icon
+        slot="start"
+        name="{{ showForm ? 'close-circle-outline' : 'add-circle-outline' }}"
+      ></ion-icon>
+      {{ showForm ? 'Annuler' : 'Nouvelle séance' }}
+    </ion-button>
+  </div>
+
+  <!-- Formulaire de saisie (conditionnel) -->
+  <div class="form-wrapper animate-slide-up" *ngIf="showForm">
+    <div class="form-card-modern">
+      <div class="form-header-sleek">
+        <div class="icon-circle">
+          <ion-icon name="create-outline"></ion-icon>
+        </div>
+        <div class="header-text">
+          <h2>Nouvelle Séance</h2>
+          <p>Remplissez les détails du cours</p>
+        </div>
+      </div>
+
+      <form [formGroup]="seanceForm" (ngSubmit)="onSubmit()" class="modern-inputs">
+        <div class="input-group">
+          <label>Matière enseignée</label>
+          <div class="input-field">
+            <ion-icon name="book-outline"></ion-icon>
+            <ion-input formControlName="matiere" placeholder="Ex: Développement Mobile"></ion-input>
+          </div>
+        </div>
+
+        <div class="input-row">
+          <div class="input-group">
+            <label>Date</label>
+            <div class="input-field">
+              <ion-icon name="calendar-outline"></ion-icon>
+              <ion-input formControlName="date" type="date"></ion-input>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Heure</label>
+            <div class="input-field">
+              <ion-icon name="time-outline"></ion-icon>
+              <ion-input formControlName="heure" placeholder="08:00 - 10:00"></ion-input>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Contenu de la séance</label>
+          <div class="input-field textarea-field">
+            <ion-textarea 
+              formControlName="contenu" 
+              placeholder="Décrivez les chapitres abordés..."
+              rows="4"
+            ></ion-textarea>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Ressources (optionnel)</label>
+          <div class="input-field">
+            <ion-icon name="link-outline"></ion-icon>
+            <ion-input formControlName="ressources" placeholder="Lien drive, PDF..."></ion-input>
+          </div>
+        </div>
+
+        <ion-button expand="block" type="submit" [disabled]="isSubmitting" class="btn-submit-modern">
+          <ion-spinner *ngIf="isSubmitting" name="crescent"></ion-spinner>
+          <span *ngIf="!isSubmitting">Publier au Cahier de Textes</span>
+          <ion-icon *ngIf="!isSubmitting" slot="end" name="send-outline"></ion-icon>
+        </ion-button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Liste des séances -->
+  <div class="seances-section" *ngIf="seances.length > 0">
+    <div class="section-header">
+      <h3>Dernières séances</h3>
+    </div>
+
+    <div *ngFor="let seance of seances" class="seance-card">
+      <div class="seance-card-header">
+        <div class="matiere-info">
+          <h3>{{ seance.matiere }}</h3>
+          <div class="seance-meta">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <span>{{ seance.date }}</span>
+            <ion-icon name="time-outline"></ion-icon>
+            <span>{{ seance.heure }}</span>
+          </div>
+        </div>
+        <ion-badge [class]="seance.status === 'Validé' ? 'badge-success' : 'badge-warning'">
+          {{ seance.status }}
+        </ion-badge>
+      </div>
+      <div class="seance-content">
+        <p class="seance-description">{{ seance.contenu }}</p>
+        <div class="seance-footer" *ngIf="seance.ressources">
+          <ion-icon name="link-outline"></ion-icon>
+          <span>{{ seance.ressources }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

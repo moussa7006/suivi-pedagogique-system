@@ -1,0 +1,339 @@
+/* ============================================
+   CAHIER DE TEXTES - Suivi Pédagogique
+   Design Ultra-Moderne & Fluide (Zéro Noir)
+   ============================================ */
+
+:host {
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent-blue: #4361ee;
+  --accent-green: #4cc9f0;
+  --card-bg: #ffffff;
+}
+
+ion-content {
+  --background: #f8f9fa;
+}
+
+/* ============================================
+   HEADER SECTION & BACK BUTTON
+   ============================================ */
+.back-btn-header {
+  --color: var(--accent-blue);
+  --background: #ffffff;
+  --border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  height: 48px;
+  width: 48px;
+  margin: 0 0 var(--space-lg) 0;
+  
+  ion-icon { font-size: 24px; }
+}
+
+.header-section {
+  margin-bottom: var(--space-xl);
+  .page-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: -0.04em;
+  }
+  .page-subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin: 0 0 10px 0;
+    font-weight: 500;
+  }
+
+  .volume-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(247, 127, 0, 0.1);
+    padding: 6px 14px;
+    border-radius: 20px;
+    color: #f77f00;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(247, 127, 0, 0.05);
+
+    ion-icon {
+      font-size: 16px;
+    }
+  }  }
+
+/* ============================================
+   QUICK STATS
+   ============================================ */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+
+  .stat-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: var(--space-lg);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      
+      &.blue { background: rgba(67, 97, 238, 0.1); color: var(--accent-blue); }
+      &.green { background: rgba(76, 201, 240, 0.1); color: var(--accent-green); }
+    }
+
+    .stat-content {
+      .stat-value {
+        display: block;
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1;
+        margin-bottom: 2px;
+      }
+      .stat-label {
+        font-size: 11px;
+        color: var(--text-secondary);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+    }
+  }
+}
+
+/* ============================================
+   ADD BUTTON (FLOATING EFFECT)
+   ============================================ */
+.add-section {
+  margin-bottom: var(--space-xl);
+
+  .toggle-form-btn {
+    --background: var(--accent-blue);
+    --border-radius: 18px;
+    --box-shadow: 0 8px 20px rgba(67, 97, 238, 0.25);
+    font-weight: 700;
+    height: 56px;
+    margin: 0;
+    font-size: 15px;
+  }
+}
+
+/* ============================================
+   MODERN FORM RE-DESIGN (PREMIUM)
+   ============================================ */
+.form-wrapper {
+  margin-bottom: var(--space-xl);
+}
+
+.form-card-modern {
+  background: #ffffff;
+  border-radius: 35px;
+  padding: 30px 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(67, 97, 238, 0.05);
+
+  .form-header-sleek {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f1f5f9;
+
+    .icon-circle {
+      width: 54px;
+      height: 54px;
+      background: linear-gradient(135deg, rgba(67, 97, 238, 0.1) 0%, rgba(63, 55, 201, 0.1) 100%);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-blue);
+      font-size: 26px;
+    }
+
+    .header-text {
+      h2 { font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0; }
+      p { font-size: 13px; color: var(--text-secondary); margin: 2px 0 0 0; }
+    }
+  }
+}
+
+.modern-inputs {
+  .input-group {
+    margin-bottom: 22px;
+    
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 8px;
+      margin-left: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .input-field {
+      background: #f8fafc;
+      border: 2px solid #f1f5f9;
+      border-radius: 18px;
+      padding: 4px 16px;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+      
+      ion-icon {
+        color: #94a3b8;
+        font-size: 20px;
+        margin-right: 12px;
+        transition: color 0.3s ease;
+      }
+
+      ion-input, ion-textarea {
+        --padding-start: 0;
+        --color: #0f172a;
+        --placeholder-color: #94a3b8;
+        font-weight: 600;
+        font-size: 15px;
+      }
+
+      &:focus-within {
+        border-color: var(--accent-blue);
+        background: #ffffff;
+        box-shadow: 0 4px 20px rgba(67, 97, 238, 0.08);
+        
+        ion-icon { color: var(--accent-blue); }
+      }
+    }
+
+    .textarea-field {
+      align-items: flex-start;
+      padding-top: 12px;
+    }
+  }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+.btn-submit-modern {
+  --background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+  --border-radius: 20px;
+  --box-shadow: 0 10px 25px rgba(67, 97, 238, 0.3);
+  height: 64px;
+  margin-top: 10px;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.2px;
+  
+  &::part(native) { transition: all 0.3s ease; }
+  
+  &:active { transform: scale(0.97); }
+}
+
+/* ============================================
+   SEANCES LIST (PREMIUM CARDS)
+   ============================================ */
+.section-header {
+  margin-bottom: var(--space-lg);
+  h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.seance-card {
+  background: #ffffff;
+  border-radius: 26px;
+  margin-bottom: var(--space-lg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.01);
+  overflow: hidden;
+
+  .seance-card-header {
+    padding: var(--space-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: #f8fafc;
+    border-bottom: 1px solid #f1f5f9;
+    
+    .matiere-info {
+      h3 { font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0 0 6px 0; }
+      .seance-meta {
+        display: flex;
+        gap: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        ion-icon { color: var(--accent-blue); }
+      }
+    }
+    
+    ion-badge {
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-size: 10px;
+      font-weight: 800;
+      &.badge-success { background: rgba(76, 201, 240, 0.15); color: #00b4d8; }
+      &.badge-warning { background: rgba(247, 127, 0, 0.15); color: #f77f00; }
+    }
+  }
+
+  .seance-content {
+    padding: var(--space-lg);
+    .seance-description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+    }
+    .seance-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-blue);
+      padding: 10px 14px;
+      background: rgba(67, 97, 238, 0.05);
+      border-radius: 12px;
+    }
+  }
+
+  .seance-actions {
+    display: flex;
+    padding: 0 var(--space-lg) var(--space-lg);
+    gap: 10px;
+    
+    ion-button {
+      --border-radius: 12px;
+      font-weight: 700;
+      font-size: 12px;
+      height: 38px;
+    }
+  }
+}

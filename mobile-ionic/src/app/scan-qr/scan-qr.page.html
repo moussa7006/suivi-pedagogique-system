@@ -1,0 +1,36 @@
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Bouton Retour (Essentiel car plus de barre en bas) -->
+  <ion-button fill="clear" class="back-btn-header" routerLink="/tabs/tabs/tab1">
+    <ion-icon name="arrow-back-outline"></ion-icon>
+  </ion-button>
+
+  <div class="header-section">
+    <h1 class="page-title">Émargement</h1>
+    <p class="page-subtitle">Scannez le QR Code de la séance</p>
+  </div>
+
+  <!-- Scanner Card -->
+  <div class="scanner-card animate-scale-in">
+    <div class="scanner-icon-wrapper">
+      <ion-icon name="scan-outline"></ion-icon>
+    </div>
+    <h2>Scanner pour émarger</h2>
+    <p>Placez le code QR au centre du cadre pour valider votre séance.</p>
+
+    <ion-button expand="block" class="scan-btn" (click)="openScanner()">
+      <ion-icon slot="start" name="camera-outline"></ion-icon>
+      Ouvrir le scanner
+    </ion-button>
+  </div>
+
+  <!-- Info Cards -->
+  <div class="info-card animate-slide-up" style="--delay: 100ms">
+    <div class="card-header">
+      <ion-icon name="checkmark-circle-outline"></ion-icon>
+      <h3>Instructions</h3>
+    </div>
+    <div class="card-content">
+      <p>L'émargement ne peut être validé que si vous avez préalablement rempli le Cahier de Textes pour cette séance.</p>
+    </div>
+  </div>
+</ion-content>
