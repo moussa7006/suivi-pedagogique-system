@@ -1,19 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-
-interface MenuItem {
-  label: string;
-  icon: string;
-  route: string;
-  exact: boolean;
-}
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule],
   template: `
     <nav class="sidebar" [class.mobile-active]="isMobileMenuOpen">
       <div class="sidebar-logo">
@@ -21,20 +14,7 @@ interface MenuItem {
         <span>Suivi Pédagogique</span>
       </div>
 
-      <div class="nav-section">Menu Principal</div>
-      <ul class="nav-list">
-        <li *ngFor="let item of menuItems">
-          <a
-            [routerLink]="item.route"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: item.exact }"
-            (click)="onMenuClick()"
-          >
-            <i [class]="item.icon"></i>
-            <span>{{ item.label }}</span>
-          </a>
-        </li>
-      </ul>
+      
 
       <div class="sidebar-footer">
         <button class="logout-btn" (click)="logout()">
@@ -160,22 +140,10 @@ export class SidebarComponent {
   @Input() isMobileMenuOpen = false;
   @Output() mobileMenuClosed = new EventEmitter<void>();
 
-  menuItems: MenuItem[] = [
-    { label: 'Tableau de bord', icon: 'pi pi-th-large', route: '/dashboard', exact: true },
-    { label: 'Utilisateurs', icon: 'pi pi-users', route: '/teachers', exact: false },
-    { label: 'Générer QR Code', icon: 'pi pi-qrcode', route: '/qr-generator', exact: false },
-    { label: 'Emargements', icon: 'pi pi-check-square', route: '/attendance', exact: false },
-    { label: 'Cahiers de textes', icon: 'pi pi-book', route: '/pedagogy', exact: false }
-  ];
-
   constructor(
     private router: Router,
     private authService: AuthService
   ) {}
-
-  onMenuClick(): void {
-    this.mobileMenuClosed.emit();
-  }
 
   logout(): void {
     this.authService.logout();

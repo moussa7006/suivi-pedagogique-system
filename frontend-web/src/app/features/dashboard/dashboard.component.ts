@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { TeacherService } from '../../core/services/teacher.service';
 import { ClasseService } from '../../core/services/classe.service';
 import { ScheduleService } from '../../core/services/schedule.service';
@@ -29,10 +30,17 @@ interface ChartData {
   value: number;
 }
 
+interface HubTile {
+  label: string;
+  route: string;
+  icon: string;
+  color: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="dashboard">
       <!-- Header -->
@@ -46,6 +54,21 @@ interface ChartData {
           <span>{{ currentDate }}</span>
         </div>
       </header>
+
+      <!-- Hub de navigation -->
+      <section class="hub-grid">
+        <a class="hub-tile" *ngFor="let tile of hubTiles" [routerLink]="tile.route" [style.--tile-color]="tile.color">
+          <div class="tile-icon">
+            <i [class]="tile.icon"></i>
+          </div>
+          <h3>{{ tile.label }}</h3>
+          <span class="tile-link">
+            Ouvrir
+            <i class="pi pi-arrow-right"></i>
+          </span>
+          <i class="tile-watermark" [class]="tile.icon" aria-hidden="true"></i>
+        </a>
+      </section>
 
       <!-- Stats Cards -->
       <section class="stats-grid">
@@ -105,49 +128,21 @@ interface ChartData {
         </div>
       </section>
     </div>
-  `,
-  styles: [
-    `
-      :host { display: block; }
-      .dashboard { display: flex; flex-direction: column; gap: 24px; padding: 24px; max-width: 1400px; width: 100%; margin: 0 auto; opacity: 0; animation: fadeIn 0.5s ease forwards; }
-      @keyframes fadeIn { to { opacity: 1; } }
-      .dash-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; }
-      .dash-header h1 { margin: 0 0 4px; font-size: clamp(1.2rem, 4vw, 1.6rem); font-weight: 700; color: #0f172a; }
-      .dash-header p { margin: 0; font-size: clamp(0.8rem, 2.5vw, 0.9rem); color: #64748b; font-weight: 400; }
-      .header-date { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: #fff; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.8rem; font-weight: 500; color: #475569; }
-      .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-      .stat-card { background: #fff; border: 2px solid rgba(226, 232, 240, 0.7); border-radius: 14px; padding: 20px; display: flex; align-items: center; gap: 16px; transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease; position: relative; overflow: hidden; opacity: 0; transform: translateY(8px); animation: slideUp 0.4s ease forwards; animation-delay: var(--delay, 0ms); }
-      .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--c, #3b82f6); border-radius: 4px 0 0 4px; transform: scaleY(0); transform-origin: bottom; transition: transform 0.3s ease; }
-      .stat-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 16px 32px rgba(2, 6, 23, 0.1); }
-      .stat-card:hover::before { transform: scaleY(1); }
-      @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-      .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; color: var(--c); background: color-mix(in srgb, var(--c) 12%, white); flex-shrink: 0; }
-      .stat-info { display: flex; flex-direction: column; gap: 4px; }
-      .stat-label { font-size: 0.8rem; font-weight: 500; color: #64748b; }
-      .stat-row { display: flex; align-items: baseline; gap: 8px; }
-      .stat-value { font-size: 1.35rem; font-weight: 700; color: #0f172a; line-height: 1; }
-      .stat-trend { font-size: 0.72rem; font-weight: 600; }
-      .stat-trend.positive { color: #16a34a; }
-      .content-grid { display: grid; grid-template-columns: 2fr 1.2fr; gap: 20px; }
-      .card { background: #fff; border: 1px solid rgba(226, 232, 240, 0.7); border-radius: 14px; padding: 24px; }
-      .card-header h3 { margin: 0 0 16px; font-size: 1rem; font-weight: 600; color: #1e293b; }
-      .chart-bars { display: flex; align-items: flex-end; gap: clamp(12px, 3vw, 24px); height: 160px; }
-      .bar-col { display: flex; flex-direction: column; flex: 1; align-items: center; gap: 6px; }
-      .bar { width: 100%; max-width: 48px; background: linear-gradient(180deg, #3b82f6, #93c5fd); border-radius: 8px 8px 4px 4px; display: flex; justify-content: flex-start; padding-top: 4px; min-height: 8px; }
-      .bar-value { font-size: 0.65rem; font-weight: 700; color: #fff; line-height: 1; margin-left: auto; margin-right: auto;}
-      .bar-label { font-size: 0.75rem; color: #64748b; font-weight: 500; }
-      .activity-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(241, 245, 249, 0.9); }
-      .activity-avatar { width: 36px; height: 36px; border-radius: 10px; background: color-mix(in srgb, var(--bg) 12%, white); color: var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; }
-      .activity-text { font-size: 0.85rem; color: #334155; }
-      .activity-text strong { color: #0f172a; font-weight: 600; }
-      .activity-time { font-size: 0.72rem; color: #94a3b8; font-weight: 500; }
-    `
-  ]
+  `
 })
 export class DashboardComponent implements OnInit {
   currentDate = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
   });
+
+  hubTiles: HubTile[] = [
+    { label: 'Classes', route: '/classes', icon: 'pi pi-folder', color: '#3182ce' },
+    { label: 'Matières', route: '/matieres', icon: 'pi pi-book', color: '#48bb78' },
+    { label: 'Utilisateurs', route: '/teachers', icon: 'pi pi-users', color: '#ed8936' },
+    { label: 'Emploi du temps', route: '/schedule', icon: 'pi pi-calendar', color: '#e53e3e' },
+    { label: 'Générer QR Code', route: '/qr-generator', icon: 'pi pi-qrcode', color: '#805ad5' },
+    { label: 'Emargements', route: '/attendance', icon: 'pi pi-check-square', color: '#319795' },
+  ];
 
   stats: StatCard[] = [
     { label: 'Utilisateurs Actifs', value: 0, suffix: '', icon: 'pi pi-users', color: '#3b82f6', trend: 'Global', trendClass: 'neutral' },
