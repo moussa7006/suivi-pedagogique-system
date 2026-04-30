@@ -1,18 +1,31 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { PedagogyService } from '../../core/services/pedagogy.service';
 import { LessonLog } from '../../core/models/lesson-log.model';
 
 @Component({
   selector: 'app-pedagogy',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="pedagogy-container">
       <div class="page-header">
         <div class="header-left">
-          <h1><i class="pi pi-book"></i> Validation Pédagogique</h1>
-          <p>Vérifiez et approuvez les cahiers de textes des enseignants</p>
+          <div class="header-left-top">
+            <a
+              routerLink="/dashboard"
+              class="btn-back-arrow"
+              aria-label="Retour au tableau de bord"
+              title="Retour au tableau de bord"
+            >
+              <i class="pi pi-arrow-left"></i>
+            </a>
+            <div class="header-left-titles">
+              <h1>Validation Pédagogique</h1>
+              <p>Vérifiez et approuvez les cahiers de textes des enseignants</p>
+            </div>
+          </div>
         </div>
         <div class="header-actions">
           <button class="btn btn-outline"><i class="pi pi-filter"></i> Filtres</button>
@@ -61,7 +74,10 @@ import { LessonLog } from '../../core/models/lesson-log.model';
                   <span class="subject">{{ log.matiereLibelle }} • {{ log.dateSeance }}</span>
                 </div>
               </div>
-              <div class="status-badge" [ngClass]="getStatusClass(log.statutValidite || 'En attente')">
+              <div
+                class="status-badge"
+                [ngClass]="getStatusClass(log.statutValidite || 'En attente')"
+              >
                 <span class="status-dot"></span>
                 {{ log.statutValidite }}
               </div>

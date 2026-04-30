@@ -55,6 +55,13 @@ public class AuthController {
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Connexion réussie !");
             response.put("token", token);
+            response.put("id", utilisateur.getId());
+            response.put("matricule", utilisateur.getMatricule());
+            response.put("nom", utilisateur.getNom());
+            response.put("prenom", utilisateur.getPrenom());
+            response.put("email", utilisateur.getEmail());
+            response.put("telephone", utilisateur.getTelephone());
+            response.put("adresse", utilisateur.getAdresse());
             response.put("role", utilisateur.getRole());
             response.put("forcePasswordChange", utilisateur.getForcePasswordChange() != null ? utilisateur.getForcePasswordChange() : false);
             return ResponseEntity.ok(response);
@@ -70,13 +77,13 @@ public class AuthController {
             org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
             String newPassword = request.get("newPassword");
-            
+
             if (newPassword == null || newPassword.trim().isEmpty()) {
                 Map<String, String> error = new HashMap<>();
                 error.put("error", "Le nouveau mot de passe ne peut pas être vide");
                 return ResponseEntity.badRequest().body(error);
             }
-            
+
             authService.changePassword(email, newPassword);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Mot de passe modifié avec succès");

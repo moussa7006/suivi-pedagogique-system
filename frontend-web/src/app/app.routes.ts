@@ -6,33 +6,41 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent },
-  { 
-    path: 'classes', 
-    loadComponent: () => import('./features/classes/classes').then(m => m.Classes) 
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./features/profile/profile.component').then((m) => m.ProfileComponent),
   },
-  { 
-    path: 'matieres', 
-    loadComponent: () => import('./features/matieres/matieres').then(m => m.Matieres) 
+  {
+    path: 'classes',
+    loadComponent: () => import('./features/classes/classes').then((m) => m.Classes),
   },
-  { 
-    path: 'schedule', 
-    loadComponent: () => import('./features/schedule/schedule').then(m => m.Schedule) 
+  {
+    path: 'matieres',
+    loadComponent: () => import('./features/matieres/matieres').then((m) => m.Matieres),
   },
-  { 
-    path: 'teachers', 
-    loadComponent: () => import('./features/teachers/teachers.component').then(m => m.TeachersComponent) 
+  {
+    path: 'schedule',
+    loadComponent: () => import('./features/schedule/schedule').then((m) => m.Schedule),
   },
-  { 
-    path: 'qr-generator', 
-    loadComponent: () => import('./features/qr-generator/qr-generator.component').then(m => m.QrGeneratorComponent) 
+  {
+    path: 'teachers',
+    loadComponent: () =>
+      import('./features/teachers/teachers.component').then((m) => m.TeachersComponent),
   },
-  { 
-    path: 'attendance', 
-    loadComponent: () => import('./features/attendance/attendance.component').then(m => m.AttendanceComponent) 
+  {
+    path: 'qr-generator',
+    loadComponent: () =>
+      import('./features/qr-generator/qr-generator.component').then((m) => m.QrGeneratorComponent),
   },
-  { 
-    path: 'pedagogy', 
-    loadComponent: () => import('./features/pedagogy/pedagogy.component').then(m => m.PedagogyComponent) 
-  }
+  {
+    path: 'attendance',
+    loadComponent: () =>
+      import('./features/attendance/attendance.component').then((m) => m.AttendanceComponent),
+  },
+  {
+    path: 'pedagogy',
+    loadComponent: () =>
+      import('./features/pedagogy/pedagogy.component').then((m) => m.PedagogyComponent),
+  },
 ];
-
