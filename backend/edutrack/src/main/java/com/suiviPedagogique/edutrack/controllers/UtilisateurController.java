@@ -1,6 +1,7 @@
 package com.suiviPedagogique.edutrack.controllers;
 
 import com.suiviPedagogique.edutrack.Dto.UtilisateurDto;
+import com.suiviPedagogique.edutrack.services.ExcelImportService;
 import com.suiviPedagogique.edutrack.services.UtilisateurService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,9 @@ public class UtilisateurController {
 
     @Autowired
     private UtilisateurService utilisateurService;
+
+    @Autowired
+    private ExcelImportService excelImportService;
 
     @GetMapping("/lister-tous")
     public ResponseEntity<List<UtilisateurDto>> getAllUtilisateurs() {
@@ -40,14 +44,7 @@ public class UtilisateurController {
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> importEnseignants(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         try {
-            int count = com.suiviPedagogique.edutrack.services.ExcelImportService.class.cast(
-                org.springframework.web.context.support.WebApplicationContextUtils.getRequiredWebApplicationContext(
-                    ((org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder.getRequestAttributes()).getRequest().getServletContext()
-                ).getBean(com.suiviPedagogique.edutrack.services.ExcelImportService.class)
-            ).importEnseignants(file);
-            java.util.Map<String, String> response = new java.util.HashMap<>();
-            response.put("message", count + " enseignants importés avec succès.");
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(excelImportService.importEnseignantsDetailed(file));
         } catch (Exception e) {
             java.util.Map<String, String> response = new java.util.HashMap<>();
             response.put("error", "Erreur d'importation: " + e.getMessage());

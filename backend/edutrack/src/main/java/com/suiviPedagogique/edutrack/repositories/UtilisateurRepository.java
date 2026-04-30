@@ -14,4 +14,7 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Intege
 
     // Recherche par matricule (puisque tu l'as ajouté)
     Optional<Utilisateur> findByMatricule(String matricule);
+
+    // Recherche par téléphone
+    Optional<Utilisateur> findByTelephone(String telephone);
 }

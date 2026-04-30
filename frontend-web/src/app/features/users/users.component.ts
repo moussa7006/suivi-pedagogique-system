@@ -1,193 +1,425 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TeacherService } from '../../core/services/teacher.service';
 import { Teacher } from '../../core/models/teacher.model';
+import { timeout } from 'rxjs/operators';
 
 @Component({
   selector: 'app-teachers',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="page-container">
       <div class="page-header">
         <div class="header-left">
-          <h1>Gestion des Utilisateurs</h1>
-          <p>Supervisez l'ensemble des administrateurs et enseignants ({{ teachers.length }} enregistrés)</p>
-        </div>
-        <div class="header-actions">
-          <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls" style="display: none;">
-          <button class="btn btn-outline" (click)="fileInput.click()"><i class="pi pi-upload"></i> Importer Enseignants</button>
-          <button class="btn btn-primary" (click)="showAddForm()"><i class="pi pi-plus"></i> Nouvel Utilisateur</button>
-        </div>
-      </div>
-
-      <div class="form-card" *ngIf="displayForm">
-        <h3>{{ editingId ? 'Modifier Utilisateur' : 'Nouvel Utilisateur' }}</h3>
-        <div class="form-row">
-          <div class="input-group">
-            <label>Matricule</label>
-            <input type="text" [(ngModel)]="currentTeacher.matricule" placeholder="Ex: ENS-001"/>
-          </div>
-          <div class="input-group">
-            <label>Prénom</label>
-            <input type="text" [(ngModel)]="currentTeacher.prenom" placeholder="Prénom"/>
-          </div>
-          <div class="input-group">
-            <label>Nom</label>
-            <input type="text" [(ngModel)]="currentTeacher.nom" placeholder="Nom de famille"/>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="input-group">
-            <label>Email</label>
-            <input type="email" [(ngModel)]="currentTeacher.email" placeholder="email@exemple.com"/>
-          </div>
-          <div class="input-group">
-            <label>Téléphone</label>
-            <input type="text" [(ngModel)]="currentTeacher.telephone" placeholder="+223..."/>
-          </div>
-        </div>
-        <div class="form-row" *ngIf="!editingId">
-          <div class="input-group">
-            <label>Adresse</label>
-            <input type="text" [(ngModel)]="currentTeacher.adresse" placeholder="Quartier, Ville..."/>
-          </div>
-          <div class="input-group">
-            <label>Mot de Passe (provisoire)</label>
-            <input type="password" [(ngModel)]="currentTeacher.motDePasse"/>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="input-group">
-            <label>Rôle</label>
-            <select [(ngModel)]="currentTeacher.role">
-              <option value="ENSEIGNANT">Enseignant</option>
-              <option value="ADMIN">Administrateur</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-actions">
-          <button class="btn btn-outline" (click)="displayForm = false">Annuler</button>
-          <button class="btn btn-primary" (click)="save()"><i class="pi pi-check"></i> Enregistrer</button>
-        </div>
-      </div>
-
-      <div class="table-card">
-        <div class="table-header" style="display: flex; flex-direction: column; align-items: center; gap: 24px; position: relative;">
-          
-          <!-- Premium Centered Tabs -->
-          <div style="display: inline-flex; background: rgba(226, 232, 240, 0.4); padding: 6px; border-radius: 99px; gap: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-            <button 
-              style="padding: 10px 24px; border-radius: 99px; font-weight: 700; font-size: 0.95rem; border: none; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;"
-              [ngStyle]="activeTab === 'ENSEIGNANT' ? {'background': 'var(--primary-gradient)', 'color': 'white', 'box-shadow': '0 4px 15px rgba(79, 70, 229, 0.3)'} : {'background': 'transparent', 'color': '#64748b'}"
-              (click)="activeTab = 'ENSEIGNANT'">
-              <i class="pi pi-users"></i> Enseignants
-              <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; margin-left: 4px;">{{ filteredEnseignants.length }}</span>
-            </button>
-            <button 
-              style="padding: 10px 24px; border-radius: 99px; font-weight: 700; font-size: 0.95rem; border: none; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;"
-              [ngStyle]="activeTab === 'ADMIN' ? {'background': 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', 'color': 'white', 'box-shadow': '0 4px 15px rgba(245, 158, 11, 0.3)'} : {'background': 'transparent', 'color': '#64748b'}"
-              (click)="activeTab = 'ADMIN'">
-              <i class="pi pi-shield"></i> Administrateurs
-              <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; margin-left: 4px;">{{ filteredAdmins.length }}</span>
-            </button>
-          </div>
-
-          <!-- Search Bar (Centered) -->
-          <div class="search-container" style="align-self: stretch; max-width: 100%; display: flex; justify-content: center;">
-            <div style="position: relative; width: 100%; max-width: 400px;">
-              <i class="pi pi-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #64748b;"></i>
-              <input
-                type="text"
-                placeholder="Rechercher nom, prénom, matricule ou email..."
-                [(ngModel)]="searchText"
-                (input)="filterTeachers()"
-                style="width: 100%; padding: 12px 16px 12px 42px; border-radius: 12px; border: 1px solid #cbd5e1; outline:none; background: rgba(255,255,255,0.9); font-family: inherit; transition: all 0.2s;"
-              />
+          <div class="header-left-top">
+            <a
+              routerLink="/dashboard"
+              class="btn-back-arrow"
+              aria-label="Retour au tableau de bord"
+              title="Retour au tableau de bord"
+            >
+              <i class="pi pi-arrow-left"></i>
+            </a>
+            <div class="header-left-titles">
+              <h1>Gestion des Utilisateurs</h1>
+              <p>
+                Supervisez l'ensemble des administrateurs et enseignants ({{ teachers.length }}
+                enregistrés)
+              </p>
             </div>
           </div>
         </div>
+        <div class="header-actions">
+          <input
+            type="file"
+            #fileInput
+            (change)="onFileSelected($event)"
+            accept=".xlsx, .xls"
+            style="display: none;"
+          />
+          <button class="btn btn-outline" type="button" (click)="downloadImportTemplate()">
+            <i class="pi pi-download"></i> Modèle
+          </button>
+          <button
+            class="btn btn-outline"
+            type="button"
+            (click)="fileInput.click()"
+            [disabled]="isImporting"
+          >
+            <i
+              class="pi"
+              [class.pi-upload]="!isImporting"
+              [class.pi-spin]="isImporting"
+              [class.pi-spinner]="isImporting"
+            ></i>
+            {{ isImporting ? 'Import...' : 'Importer' }}
+          </button>
+          <button class="btn btn-primary" type="button" (click)="showAddForm()">
+            <i class="pi pi-plus"></i> Nouveau
+          </button>
+        </div>
+      </div>
 
-        <div class="table-responsive">
-          <table class="pro-table">
-            <thead>
-              <tr>
-                <th>Identité</th>
-                <th>Matricule</th>
-                <th>Contacts</th>
-                <th>Adresse</th>
-                <th class="text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody *ngIf="activeTab === 'ENSEIGNANT'">
-              <tr *ngIf="filteredEnseignants.length === 0">
-                <td colspan="5" class="text-center" style="padding: 30px; color: #94a3b8;">Aucun enseignant trouvé.</td>
-              </tr>
-              <tr *ngFor="let teacher of filteredEnseignants">
-                <td data-label="Identité">
-                  <div style="font-weight: 700; color: #0f172a;">{{ teacher.prenom }} {{ teacher.nom }}</div>
-                  <div style="font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; background: #e0f2fe; color: #0369a1;">
-                    {{ teacher.role || 'ENSEIGNANT' }}
-                  </div>
-                </td>
-                <td data-label="Matricule">
-                  <span class="matricule-badge">{{ teacher.matricule || 'N/A' }}</span>
-                </td>
-                <td data-label="Contacts">
-                  <div style="display:flex; flex-direction:column; gap:4px; font-size: 0.85rem;">
-                    <span><i class="pi pi-envelope" style="margin-right:4px;"></i>{{ teacher.email }}</span>
-                    <span><i class="pi pi-phone" style="margin-right:4px;"></i>{{ teacher.telephone }}</span>
-                  </div>
-                </td>
-                <td data-label="Adresse" style="color: #64748b; font-size: 0.9rem;">
-                  {{ teacher.adresse }}
-                </td>
-                <td data-label="Actions" class="text-right">
-                  <div class="action-buttons">
-                    <button class="btn-icon" (click)="showEditForm(teacher)"><i class="pi pi-pencil"></i></button>
-                    <button class="btn-icon delete" (click)="deleteTeacher(teacher.id!)"><i class="pi pi-trash"></i></button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-            <tbody *ngIf="activeTab === 'ADMIN'">
-              <tr *ngIf="filteredAdmins.length === 0">
-                <td colspan="5" class="text-center" style="padding: 30px; color: #94a3b8;">Aucun administrateur trouvé.</td>
-              </tr>
-              <tr *ngFor="let teacher of filteredAdmins">
-                <td data-label="Identité">
-                  <div style="font-weight: 700; color: #0f172a;">{{ teacher.prenom }} {{ teacher.nom }}</div>
-                  <div style="font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; background: #fee2e2; color: #991b1b;">
-                    {{ teacher.role }}
-                  </div>
-                </td>
-                <td data-label="Matricule">
-                  <span class="matricule-badge">{{ teacher.matricule || 'N/A' }}</span>
-                </td>
-                <td data-label="Contacts">
-                  <div style="display:flex; flex-direction:column; gap:4px; font-size: 0.85rem;">
-                    <span><i class="pi pi-envelope" style="margin-right:4px;"></i>{{ teacher.email }}</span>
-                    <span><i class="pi pi-phone" style="margin-right:4px;"></i>{{ teacher.telephone }}</span>
-                  </div>
-                </td>
-                <td data-label="Adresse" style="color: #64748b; font-size: 0.9rem;">
-                  {{ teacher.adresse }}
-                </td>
-                <td data-label="Actions" class="text-right">
-                  <div class="action-buttons">
-                    <button class="btn-icon" (click)="showEditForm(teacher)"><i class="pi pi-pencil"></i></button>
-                    <button class="btn-icon delete" (click)="deleteTeacher(teacher.id!)"><i class="pi pi-trash"></i></button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- ── Form Card ── -->
+      <div class="form-card" *ngIf="displayForm">
+        <div class="form-card-header">
+          <h3>{{ editingId ? 'Modifier l'utilisateur' : 'Nouvel utilisateur' }}</h3>
+        </div>
+        <div class="form-card-body">
+          <div *ngIf="errorMessage" class="error-banner">
+            <i class="pi pi-exclamation-triangle"></i>
+            {{ errorMessage }}
+          </div>
+
+          <div class="form-section">
+            <div class="section-label">
+              <i class="pi pi-user"></i>
+              <span>Identité</span>
+            </div>
+            <div class="section-grid">
+              <div class="input-group">
+                <label>Prénom</label>
+                <input type="text" [(ngModel)]="currentTeacher.prenom" placeholder="Prénom" />
+              </div>
+              <div class="input-group">
+                <label>Nom</label>
+                <input type="text" [(ngModel)]="currentTeacher.nom" placeholder="Nom de famille" />
+              </div>
+              <div class="input-group">
+                <label>Matricule</label>
+                <input
+                  type="text"
+                  [(ngModel)]="currentTeacher.matricule"
+                  placeholder="Ex: ENS-001"
+                />
+              </div>
+              <div class="input-group">
+                <label>Rôle</label>
+                <select [(ngModel)]="currentTeacher.role">
+                  <option value="ENSEIGNANT">Enseignant</option>
+                  <option value="ADMIN">Administrateur</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-label">
+              <i class="pi pi-phone"></i>
+              <span>Contact</span>
+            </div>
+            <div class="section-grid">
+              <div class="input-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  [(ngModel)]="currentTeacher.email"
+                  placeholder="email@exemple.com"
+                />
+              </div>
+              <div class="input-group">
+                <label>Téléphone</label>
+                <input type="text" [(ngModel)]="currentTeacher.telephone" placeholder="+223..." />
+              </div>
+              <div class="input-group" *ngIf="!editingId">
+                <label>Adresse</label>
+                <input
+                  type="text"
+                  [(ngModel)]="currentTeacher.adresse"
+                  placeholder="Quartier, Ville..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section" *ngIf="!editingId">
+            <div class="section-label">
+              <i class="pi pi-lock"></i>
+              <span>Sécurité</span>
+            </div>
+            <div class="section-grid">
+              <div class="input-group">
+                <label>Mot de Passe (provisoire)</label>
+                <div class="password-wrapper">
+                  <input
+                    [type]="showPassword ? 'text' : 'password'"
+                    [(ngModel)]="currentTeacher.motDePasse"
+                    placeholder="Minimum 8 caractères"
+                    class="password-input"
+                  />
+                  <button
+                    type="button"
+                    class="eye-toggle"
+                    (click)="showPassword = !showPassword"
+                    [attr.aria-label]="
+                      showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+                    "
+                    [title]="showPassword ? 'Masquer' : 'Afficher'"
+                  >
+                    <i
+                      class="pi"
+                      [class.pi-eye]="!showPassword"
+                      [class.pi-eye-slash]="showPassword"
+                    ></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-outline" (click)="displayForm = false" [disabled]="isSaving">
+              Annuler
+            </button>
+            <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+              <i
+                class="pi"
+                [class.pi-check]="!isSaving"
+                [class.pi-spin]="isSaving"
+                [class.pi-spinner]="isSaving"
+              ></i>
+              {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tabs + Search ── -->
+      <div class="toolbar-section">
+        <div class="tabs-pill">
+          <button
+            class="tab-btn"
+            [class.active-enseignant]="activeTab === 'ENSEIGNANT'"
+            (click)="activeTab = 'ENSEIGNANT'"
+          >
+            <i class="pi pi-users"></i>
+            <span>Enseignants</span>
+            <span class="tab-count">{{ filteredEnseignants.length }}</span>
+          </button>
+          <button
+            class="tab-btn"
+            [class.active-admin]="activeTab === 'ADMIN'"
+            (click)="activeTab = 'ADMIN'"
+          >
+            <i class="pi pi-shield"></i>
+            <span>Administrateurs</span>
+            <span class="tab-count">{{ filteredAdmins.length }}</span>
+          </button>
+        </div>
+
+        <div class="search-wrapper">
+          <i class="pi pi-search"></i>
+          <input
+            type="text"
+            placeholder="Rechercher nom, prénom, matricule, email..."
+            [(ngModel)]="searchText"
+            (input)="filterTeachers()"
+          />
+        </div>
+      </div>
+
+      <!-- ── Empty State ── -->
+      <div
+        class="empty-state"
+        *ngIf="
+          (activeTab === 'ENSEIGNANT' && filteredEnseignants.length === 0) ||
+          (activeTab === 'ADMIN' && filteredAdmins.length === 0)
+        "
+      >
+        <div class="empty-icon">
+          <i
+            class="pi"
+            [class.pi-users]="activeTab === 'ENSEIGNANT'"
+            [class.pi-shield]="activeTab === 'ADMIN'"
+          ></i>
+        </div>
+        <h3>
+          {{
+            activeTab === 'ENSEIGNANT' ? 'Aucun enseignant trouvé' : 'Aucun administrateur trouvé'
+          }}
+        </h3>
+        <p>
+          Utilisez le bouton "Nouveau" pour ajouter un
+          {{ activeTab === 'ENSEIGNANT' ? 'enseignant' : 'administrateur' }}.
+        </p>
+      </div>
+
+      <!-- ── Cards Grid ── -->
+      <div class="cards-grid" *ngIf="activeTab === 'ENSEIGNANT' && filteredEnseignants.length > 0">
+        <div class="user-card enseignant" *ngFor="let teacher of filteredEnseignants">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-avatar">
+              {{ getInitials(teacher.prenom, teacher.nom) }}
+            </div>
+            <div class="card-identity">
+              <div class="card-name">{{ teacher.prenom }} {{ teacher.nom }}</div>
+              <span class="badge-role enseignant">{{ teacher.role || 'ENSEIGNANT' }}</span>
+            </div>
+            <div class="card-details">
+              <div class="detail-item">
+                <i class="pi pi-id-card"></i>
+                <span>{{ teacher.matricule || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="pi pi-envelope"></i>
+                <span>{{ teacher.email }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="pi pi-phone"></i>
+                <span>{{ teacher.telephone }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="pi pi-map-marker"></i>
+                <span>{{ teacher.adresse }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-icon-sm edit" (click)="showEditForm(teacher)" title="Modifier">
+              <i class="pi pi-pencil"></i>
+            </button>
+            <button
+              class="btn-icon-sm delete"
+              (click)="deleteTeacher(teacher.id!)"
+              title="Supprimer"
+            >
+              <i class="pi pi-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cards-grid" *ngIf="activeTab === 'ADMIN' && filteredAdmins.length > 0">
+        <div class="user-card admin" *ngFor="let teacher of filteredAdmins">
+          <div class="card-accent admin-accent"></div>
+          <div class="card-body">
+            <div class="card-avatar admin-avatar">
+              {{ getInitials(teacher.prenom, teacher.nom) }}
+            </div>
+            <div class="card-identity">
+              <div class="card-name">{{ teacher.prenom }} {{ teacher.nom }}</div>
+              <span class="badge-role admin">{{ teacher.role }}</span>
+            </div>
+            <div class="card-details">
+              <div class="detail-item">
+                <i class="pi pi-id-card"></i>
+                <span>{{ teacher.matricule || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="pi pi-envelope"></i>
+                <span>{{ teacher.email }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="pi pi-phone"></i>
+                <span>{{ teacher.telephone }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="pi pi-map-marker"></i>
+                <span>{{ teacher.adresse }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-icon-sm edit" (click)="showEditForm(teacher)" title="Modifier">
+              <i class="pi pi-pencil"></i>
+            </button>
+            <button
+              class="btn-icon-sm delete"
+              (click)="deleteTeacher(teacher.id!)"
+              title="Supprimer"
+            >
+              <i class="pi pi-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Confirm Delete Dialog ── -->
+      <div class="confirm-backdrop" *ngIf="confirmDeleteId !== null" (click)="cancelDelete()">
+        <div
+          class="confirm-dialog"
+          role="dialog"
+          aria-modal="true"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="confirm-icon">
+            <i class="pi pi-trash"></i>
+          </div>
+          <h3>Confirmer la suppression</h3>
+          <p>{{ confirmDeleteMessage }}</p>
+          <div class="confirm-actions">
+            <button class="btn btn-outline" type="button" (click)="cancelDelete()">Annuler</button>
+            <button class="btn btn-danger" type="button" (click)="confirmDelete()">OK</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Confirm Import Dialog ── -->
+      <div class="confirm-backdrop" *ngIf="pendingImportFile" (click)="cancelImport()">
+        <div
+          class="confirm-dialog"
+          role="dialog"
+          aria-modal="true"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="confirm-icon import-icon">
+            <i class="pi pi-upload"></i>
+          </div>
+          <h3>Confirmer l'import</h3>
+          <p>{{ confirmImportMessage }}</p>
+          <div class="confirm-actions">
+            <button class="btn btn-outline" type="button" (click)="cancelImport()">Annuler</button>
+            <button class="btn btn-primary" type="button" (click)="confirmImport()">OK</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Result Dialog ── -->
+      <div class="confirm-backdrop" *ngIf="resultDialogMessage" (click)="closeResultDialog()">
+        <div
+          class="confirm-dialog"
+          role="dialog"
+          aria-modal="true"
+          (click)="$event.stopPropagation()"
+        >
+          <div
+            class="confirm-icon"
+            [ngClass]="resultDialogType === 'success' ? 'success-icon' : 'error-icon'"
+          >
+            <i
+              class="pi"
+              [class.pi-check-circle]="resultDialogType === 'success'"
+              [class.pi-exclamation-triangle]="resultDialogType === 'error'"
+            ></i>
+          </div>
+          <h3>{{ resultDialogTitle }}</h3>
+          <p>{{ resultDialogMessage }}</p>
+
+          <div class="report-summary" *ngIf="importReportSummary.length > 0">
+            <div class="report-row" *ngFor="let item of importReportSummary">
+              <i class="pi pi-check-circle"></i>
+              <span>{{ item }}</span>
+            </div>
+          </div>
+
+          <div class="report-errors" *ngIf="importReportErrors.length > 0">
+            <strong class="errors-title">Lignes ignorées</strong>
+            <div class="error-row" *ngFor="let error of importReportErrors">• {{ error }}</div>
+          </div>
+
+          <div class="confirm-actions">
+            <button class="btn btn-primary" type="button" (click)="closeResultDialog()">OK</button>
+          </div>
         </div>
       </div>
     </div>
   `,
-  styleUrl: '../classes/classes.scss'
+  styleUrl: './users.component.scss',
 })
 export class TeachersComponent implements OnInit {
   teachers: Teacher[] = [];
@@ -195,12 +427,28 @@ export class TeachersComponent implements OnInit {
   filteredAdmins: Teacher[] = [];
   activeTab: 'ENSEIGNANT' | 'ADMIN' = 'ENSEIGNANT';
   searchText: string = '';
+  showPassword: boolean = false;
 
   displayForm: boolean = false;
   editingId: number | null = null;
   currentTeacher: Partial<Teacher> = {};
+  errorMessage: string = '';
+  isSaving: boolean = false;
+  confirmDeleteId: number | null = null;
+  confirmDeleteMessage = '';
+  pendingImportFile: File | null = null;
+  confirmImportMessage = '';
+  resultDialogTitle = '';
+  resultDialogMessage = '';
+  resultDialogType: 'success' | 'error' = 'success';
+  importReportSummary: string[] = [];
+  importReportErrors: string[] = [];
+  isImporting = false;
 
-  constructor(private teacherService: TeacherService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private teacherService: TeacherService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
     this.loadTeachers();
@@ -216,7 +464,7 @@ export class TeachersComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur lors du chargement des utilisateurs:', err);
-      }
+      },
     });
   }
 
@@ -227,77 +475,261 @@ export class TeachersComponent implements OnInit {
         (t.nom || '').toLowerCase().includes(text) ||
         (t.prenom || '').toLowerCase().includes(text) ||
         (t.matricule || '').toLowerCase().includes(text) ||
-        (t.email || '').toLowerCase().includes(text)
+        (t.email || '').toLowerCase().includes(text),
     );
-    this.filteredEnseignants = filtered.filter(t => t.role !== 'ADMIN');
-    this.filteredAdmins = filtered.filter(t => t.role === 'ADMIN');
+    this.filteredEnseignants = filtered.filter((t) => t.role !== 'ADMIN');
+    this.filteredAdmins = filtered.filter((t) => t.role === 'ADMIN');
+  }
+
+  getInitials(prenom?: string, nom?: string): string {
+    const p = (prenom || '').charAt(0).toUpperCase();
+    const n = (nom || '').charAt(0).toUpperCase();
+    return p + n || '??';
   }
 
   showAddForm() {
     this.editingId = null;
+    this.errorMessage = '';
+    this.isSaving = false;
+    this.showPassword = false;
     this.currentTeacher = { role: 'ENSEIGNANT' };
     this.displayForm = true;
   }
 
   showEditForm(t: Teacher) {
     this.editingId = t.id!;
+    this.errorMessage = '';
+    this.isSaving = false;
+    this.showPassword = false;
     this.currentTeacher = { ...t };
     this.displayForm = true;
   }
 
   save() {
-    if (!this.currentTeacher.nom || !this.currentTeacher.prenom || !this.currentTeacher.email) return;
-    
-    if (this.editingId) {
-      this.teacherService.update(this.editingId, this.currentTeacher as Teacher).subscribe({
-        next: () => {
-          this.displayForm = false;
-          this.loadTeachers();
-        },
-        error: (err) => {
-          console.error('Erreur lors de la mise à jour', err);
-          alert("Erreur lors de la mise à jour de l'utilisateur.");
-        }
-      });
-    } else {
-      this.teacherService.create(this.currentTeacher as Teacher).subscribe({
-        next: () => {
-          this.displayForm = false;
-          this.loadTeachers();
-        },
-        error: (err) => {
-          console.error('Erreur lors de la création', err);
-          alert("Erreur lors de la création de l'utilisateur.");
-        }
-      });
+    this.errorMessage = '';
+
+    const teacherToSave: Teacher = {
+      ...this.currentTeacher,
+      matricule: this.currentTeacher.matricule?.trim(),
+      nom: this.currentTeacher.nom?.trim(),
+      prenom: this.currentTeacher.prenom?.trim(),
+      email: this.currentTeacher.email?.trim(),
+      telephone: this.currentTeacher.telephone?.trim(),
+      adresse: this.currentTeacher.adresse?.trim(),
+      motDePasse: this.currentTeacher.motDePasse?.trim(),
+      role: this.currentTeacher.role || 'ENSEIGNANT',
+    };
+
+    if (
+      !teacherToSave.nom ||
+      !teacherToSave.prenom ||
+      !teacherToSave.email ||
+      !teacherToSave.matricule ||
+      !teacherToSave.telephone ||
+      !teacherToSave.adresse
+    ) {
+      this.errorMessage =
+        "Veuillez renseigner le matricule, le prénom, le nom, l'email, le téléphone et l'adresse.";
+      return;
     }
+
+    if (!this.editingId && !teacherToSave.motDePasse) {
+      this.errorMessage = 'Veuillez renseigner un mot de passe provisoire.';
+      return;
+    }
+
+    if (!this.editingId && teacherToSave.motDePasse && teacherToSave.motDePasse.length < 8) {
+      this.errorMessage = 'Le mot de passe provisoire doit contenir au moins 8 caractères.';
+      return;
+    }
+
+    this.isSaving = true;
+
+    const request$ = this.editingId
+      ? this.teacherService.update(this.editingId, teacherToSave)
+      : this.teacherService.create(teacherToSave);
+
+    request$.pipe(timeout(12000)).subscribe({
+      next: (savedTeacher: any) => {
+        const normalizedTeacher: Teacher = {
+          ...teacherToSave,
+          id: savedTeacher?.id || this.editingId || teacherToSave.id,
+          motDePasse: undefined,
+        };
+
+        if (this.editingId) {
+          this.teachers = this.teachers.map((teacher) =>
+            teacher.id === this.editingId ? { ...teacher, ...normalizedTeacher } : teacher,
+          );
+        } else {
+          this.teachers = [normalizedTeacher, ...this.teachers];
+        }
+
+        this.filterTeachers();
+        this.displayForm = false;
+        this.isSaving = false;
+        this.errorMessage = '';
+        this.currentTeacher = {};
+        this.editingId = null;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isSaving = false;
+
+        if (error?.name === 'TimeoutError') {
+          this.errorMessage =
+            'Le serveur met trop de temps à répondre. Vérifiez que le backend est démarré puis réessayez.';
+          return;
+        }
+
+        if (error?.status === 401) {
+          this.errorMessage = 'Votre session a expiré. Veuillez vous reconnecter.';
+          return;
+        }
+
+        if (error?.status === 403) {
+          this.errorMessage =
+            "Vous n'avez pas les droits nécessaires pour enregistrer cet utilisateur.";
+          return;
+        }
+
+        if (error?.status === 409) {
+          this.errorMessage =
+            error?.error?.error ||
+            'Un utilisateur existe déjà avec cet email, ce matricule ou ce téléphone.';
+          return;
+        }
+
+        this.errorMessage =
+          error?.error?.error ||
+          error?.error?.message ||
+          "Impossible d'enregistrer l'utilisateur. Vérifiez le backend et réessayez.";
+      },
+    });
   }
 
   deleteTeacher(id: number) {
-    if(confirm('Voulez-vous vraiment supprimer cet utilisateur ?')) {
-      this.teacherService.delete(id).subscribe({
-        next: () => this.loadTeachers(),
-        error: (err) => console.error('Erreur lors de la suppression', err)
-      });
+    this.confirmDeleteId = id;
+    this.confirmDeleteMessage = 'Voulez-vous vraiment supprimer cet utilisateur ?';
+  }
+
+  cancelDelete() {
+    this.confirmDeleteId = null;
+    this.confirmDeleteMessage = '';
+  }
+
+  confirmDelete() {
+    if (this.confirmDeleteId === null) {
+      return;
     }
+
+    const id = this.confirmDeleteId;
+    this.cancelDelete();
+
+    this.teacherService.delete(id).subscribe({
+      next: () => this.loadTeachers(),
+      error: (err) => console.error('Erreur lors de la suppression', err),
+    });
+  }
+
+  downloadImportTemplate() {
+    const csvContent = [
+      'nom,prenom,email,telephone,matricule',
+      'Keita,Moussa,moussa.keita@example.com,70000000,ENS-001',
+      'Diarra,Aminata,aminata.diarra@example.com,71000000,ENS-002',
+    ].join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = 'modele-import-enseignants.csv';
+    link.click();
+
+    window.URL.revokeObjectURL(url);
   }
 
   onFileSelected(event: any) {
-    const file = event.target.files[0];
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
     if (file) {
-      if (confirm(`Voulez-vous importer les enseignants depuis le fichier ${file.name} ?`)) {
-        this.teacherService.importTeachers(file).subscribe({
-          next: (res: any) => {
-            alert(res.message);
-            this.loadTeachers();
-          },
-          error: (err) => {
-            alert(err.error?.error || "Erreur lors de l'importation");
-          }
-        });
-      }
-      // Reset input
-      event.target.value = '';
+      this.pendingImportFile = file;
+      this.confirmImportMessage = `Voulez-vous importer les enseignants depuis le fichier ${file.name} ?`;
     }
+
+    input.value = '';
+  }
+
+  cancelImport() {
+    this.pendingImportFile = null;
+    this.confirmImportMessage = '';
+  }
+
+  confirmImport() {
+    if (!this.pendingImportFile) {
+      return;
+    }
+
+    const file = this.pendingImportFile;
+    this.cancelImport();
+    this.isImporting = true;
+    this.importReportSummary = [];
+    this.importReportErrors = [];
+
+    this.teacherService.importTeachers(file).subscribe({
+      next: (res: any) => {
+        this.isImporting = false;
+
+        const totalRows = Number(res?.totalRows ?? 0);
+        const importedCount = Number(res?.importedCount ?? 0);
+        const skippedCount = Number(res?.skippedCount ?? 0);
+        this.importReportErrors = Array.isArray(res?.errors) ? res.errors : [];
+
+        this.importReportSummary = [
+          `Lignes analysées : ${totalRows}`,
+          `Enseignants importés : ${importedCount}`,
+          `Lignes ignorées : ${skippedCount}`,
+          'Mot de passe provisoire : Intec@2026',
+        ];
+
+        this.showResultDialog(
+          'Import terminé',
+          this.importReportErrors.length > 0
+            ? 'Le fichier a été traité. Certaines lignes ont été ignorées.'
+            : res?.message || 'Les enseignants ont été importés avec succès.',
+          'success',
+        );
+        this.loadTeachers();
+      },
+      error: (err) => {
+        this.isImporting = false;
+        this.importReportSummary = [];
+        this.importReportErrors = [];
+
+        this.showResultDialog(
+          'Import impossible',
+          err?.error?.error || "Erreur lors de l'importation des enseignants.",
+          'error',
+        );
+      },
+    });
+  }
+
+  showResultDialog(title: string, message: string, type: 'success' | 'error') {
+    this.resultDialogTitle = title;
+    this.resultDialogMessage = message;
+    this.resultDialogType = type;
+  }
+
+  closeResultDialog() {
+    this.resultDialogTitle = '';
+    this.resultDialogMessage = '';
+    this.resultDialogType = 'success';
+    this.importReportSummary = [];
+    this.importReportErrors = [];
   }
 }

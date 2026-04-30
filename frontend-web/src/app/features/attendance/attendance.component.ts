@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceService } from '../../core/services/attendance.service';
@@ -7,13 +8,27 @@ import { Emargement } from '../../core/models/attendance.model';
 @Component({
   selector: 'app-attendance',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="attendance-page">
       <div class="page-header">
         <div class="header-left">
-          <h1><i class="pi pi-clipboard-check"></i> Suivi des Émargements</h1>
-          <p>Historique des présences enregistrées aujourd'hui ({{ todayLogs.length }} séances)</p>
+          <div class="header-left-top">
+            <a
+              routerLink="/dashboard"
+              class="btn-back-arrow"
+              aria-label="Retour au tableau de bord"
+              title="Retour au tableau de bord"
+            >
+              <i class="pi pi-arrow-left"></i>
+            </a>
+            <div class="header-left-titles">
+              <h1>Suivi des Émargements</h1>
+              <p>
+                Historique des présences enregistrées aujourd'hui ({{ todayLogs.length }} séances)
+              </p>
+            </div>
+          </div>
         </div>
         <div class="header-actions">
           <button class="btn btn-outline"><i class="pi pi-download"></i> Exporter</button>
@@ -57,7 +72,7 @@ import { Emargement } from '../../core/models/attendance.model';
             <h3>Émargements du jour</h3>
             <span class="record-count">{{ filteredLogs.length }} / {{ todayLogs.length }}</span>
           </div>
-          
+
           <!-- Centered Search Bar -->
           <div class="search-container centered-search">
             <div class="search-input-wrapper">
@@ -72,63 +87,72 @@ import { Emargement } from '../../core/models/attendance.model';
           </div>
         </div>
         <div class="table-scrollless">
-        <table class="attendance-table">
-          <thead>
-            <tr>
-              <th>Enseignant</th>
-              <th>Matière / Lieu</th>
-              <th>Heure</th>
-              <th>Méthode</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngIf="filteredLogs.length === 0">
-              <td colspan="5" class="text-center empty-state-cell">Aucun enregistrement trouvé.</td>
-            </tr>
-            @for (log of filteredLogs; track log.id) {
+          <table class="attendance-table">
+            <thead>
               <tr>
-                <td>
-                  <div class="teacher-cell">
-                    <div class="teacher-avatar">{{ getInitials(log.enseignantNomPrenom || '??') }}</div>
-                    <div class="teacher-name">
-                      <strong>{{ log.enseignantNomPrenom }}</strong>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div class="sub-info">
-                    <span class="subject">{{ log.matiereLibelle }}</span>
-                    <small class="location"
-                      ><i class="pi pi-map-marker"></i> {{ log.lieu }}</small
-                    >
-                  </div>
-                </td>
-                <td>
-                  <span class="time-cell"> <i class="pi pi-clock"></i> {{ log.dateHeureScan ? (log.dateHeureScan | date:'HH:mm') : log.heureSeance }} </span>
-                </td>
-                <td>
-                  <span
-                    class="method-tag"
-                    [ngClass]="log.methode === 'QR Code' ? 'qr-method' : 'manual-method'"
-                  >
-                    <i
-                      class="pi"
-                      [ngClass]="log.methode === 'QR Code' ? 'pi-qrcode' : 'pi-pencil'"
-                    ></i>
-                    {{ log.methode }}
-                  </span>
-                </td>
-                <td>
-                  <span class="status-pill" [ngClass]="getStatusClass(log.statutAffichage || '')">
-                    <span class="status-dot"></span>
-                    {{ log.statutAffichage }}
-                  </span>
+                <th>Enseignant</th>
+                <th>Matière / Lieu</th>
+                <th>Heure</th>
+                <th>Méthode</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="filteredLogs.length === 0">
+                <td colspan="5" class="text-center empty-state-cell">
+                  Aucun enregistrement trouvé.
                 </td>
               </tr>
-            }
-          </tbody>
-        </table>
+              @for (log of filteredLogs; track log.id) {
+                <tr>
+                  <td>
+                    <div class="teacher-cell">
+                      <div class="teacher-avatar">
+                        {{ getInitials(log.enseignantNomPrenom || '??') }}
+                      </div>
+                      <div class="teacher-name">
+                        <strong>{{ log.enseignantNomPrenom }}</strong>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="sub-info">
+                      <span class="subject">{{ log.matiereLibelle }}</span>
+                      <small class="location"
+                        ><i class="pi pi-map-marker"></i> {{ log.lieu }}</small
+                      >
+                    </div>
+                  </td>
+                  <td>
+                    <span class="time-cell">
+                      <i class="pi pi-clock"></i>
+                      {{
+                        log.dateHeureScan ? (log.dateHeureScan | date: 'HH:mm') : log.heureSeance
+                      }}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      class="method-tag"
+                      [ngClass]="log.methode === 'QR Code' ? 'qr-method' : 'manual-method'"
+                    >
+                      <i
+                        class="pi"
+                        [ngClass]="log.methode === 'QR Code' ? 'pi-qrcode' : 'pi-pencil'"
+                      ></i>
+                      {{ log.methode }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-pill" [ngClass]="getStatusClass(log.statutAffichage || '')">
+                      <span class="status-dot"></span>
+                      {{ log.statutAffichage }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -682,7 +706,7 @@ export class AttendanceComponent implements OnInit {
         (log.enseignantNomPrenom || '').toLowerCase().includes(text) ||
         (log.matiereLibelle || '').toLowerCase().includes(text) ||
         (log.statutAffichage || '').toLowerCase().includes(text) ||
-        (log.lieu || '').toLowerCase().includes(text)
+        (log.lieu || '').toLowerCase().includes(text),
     );
   }
 

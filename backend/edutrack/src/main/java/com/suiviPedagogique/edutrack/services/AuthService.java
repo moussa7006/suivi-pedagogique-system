@@ -38,6 +38,17 @@ public class AuthService {
             throw new RuntimeException("Erreur : Cet email est déjà utilisé !");
         }
 
+        // Vérification de l'existence du matricule
+        if (utilisateurRepository.findByMatricule(requestdto.getMatricule()).isPresent()) {
+            throw new RuntimeException("Erreur : Ce matricule est déjà utilisé !");
+        }
+
+        // Vérification de l'existence du téléphone
+        if (requestdto.getTelephone() != null && !requestdto.getTelephone().trim().isEmpty()
+                && utilisateurRepository.findByTelephone(requestdto.getTelephone().trim()).isPresent()) {
+            throw new RuntimeException("Erreur : Ce numéro de téléphone est déjà utilisé !");
+        }
+
         // Cryptage du mot de passe
         String motDePasseCrypte = passwordEncoder.encode(requestdto.getMotDePasse());
 

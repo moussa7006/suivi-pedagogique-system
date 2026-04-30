@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { QRCodeComponent } from 'angularx-qrcode';
@@ -8,12 +9,24 @@ import { Seance } from '../../core/models/schedule.model';
 @Component({
   selector: 'app-qr-generator',
   standalone: true,
-  imports: [CommonModule, FormsModule, QRCodeComponent],
+  imports: [CommonModule, FormsModule, QRCodeComponent, RouterLink],
   template: `
     <div class="qr-container">
       <div class="page-header">
         <h1>Générateur de QR Code Dynamique</h1>
         <p>Sécurisez l'émargement avec des codes à durée limitée</p>
+      </div>
+
+      <!-- Retour (visibilité premium) -->
+      <div class="qr-back">
+        <a
+          routerLink="/dashboard"
+          class="btn-back-arrow"
+          aria-label="Retour au tableau de bord"
+          title="Retour au tableau de bord"
+        >
+          <i class="pi pi-arrow-left"></i>
+        </a>
       </div>
 
       <div class="grid-layout">
@@ -33,7 +46,12 @@ import { Seance } from '../../core/models/schedule.model';
 
           <div class="form-group">
             <label for="teacher"><i class="pi pi-qrcode"></i> Token QR</label>
-            <input id="teacher" type="text" disabled [value]="selectedSeance?.tokenQRCode || 'N/A'" />
+            <input
+              id="teacher"
+              type="text"
+              disabled
+              [value]="selectedSeance?.tokenQRCode || 'N/A'"
+            />
           </div>
 
           <div class="form-group">
@@ -116,7 +134,8 @@ import { Seance } from '../../core/models/schedule.model';
             </div>
             <div class="log-content">
               <span class="log-message"
-                >Historique non disponible en temps réel ici. Veuillez vérifier le tableau de bord.</span
+                >Historique non disponible en temps réel ici. Veuillez vérifier le tableau de
+                bord.</span
               >
               <span class="log-time">-</span>
             </div>
@@ -645,7 +664,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
 
   onSeanceChange() {
     if (this.selectedSeanceId) {
-      this.selectedSeance = this.seances.find(s => s.id == this.selectedSeanceId) || null;
+      this.selectedSeance = this.seances.find((s) => s.id == this.selectedSeanceId) || null;
       if (this.selectedSeance) {
         this.qrData = this.selectedSeance.tokenQRCode || '';
       }
@@ -698,6 +717,4 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
       }
     }, 1000);
   }
-
 }
-
