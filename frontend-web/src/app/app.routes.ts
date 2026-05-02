@@ -1,0 +1,46 @@
+import { Routes } from '@angular/router';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { LoginComponent } from './features/login/login.component';
+
+export const routes: Routes = [
+  { path: 'login', component: LoginComponent },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: 'dashboard', component: DashboardComponent },
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./features/profile/profile.component').then((m) => m.ProfileComponent),
+  },
+  {
+    path: 'classes',
+    loadComponent: () => import('./features/classes/classes').then((m) => m.Classes),
+  },
+  {
+    path: 'matieres',
+    loadComponent: () => import('./features/matieres/matieres').then((m) => m.Matieres),
+  },
+  {
+    path: 'schedule',
+    loadComponent: () => import('./features/schedule/schedule').then((m) => m.Schedule),
+  },
+  {
+    path: 'teachers',
+    loadComponent: () =>
+      import('./features/teachers/teachers.component').then((m) => m.TeachersComponent),
+  },
+  {
+    path: 'qr-generator',
+    loadComponent: () =>
+      import('./features/qr-generator/qr-generator.component').then((m) => m.QrGeneratorComponent),
+  },
+  {
+    path: 'attendance',
+    loadComponent: () =>
+      import('./features/attendance/attendance.component').then((m) => m.AttendanceComponent),
+  },
+  {
+    path: 'pedagogy',
+    loadComponent: () =>
+      import('./features/pedagogy/pedagogy.component').then((m) => m.PedagogyComponent),
+  },
+];
