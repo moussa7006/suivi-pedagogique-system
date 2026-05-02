@@ -1,24 +1,36 @@
-# Compiled class file
+### Node / Angular ###
+node_modules/
+dist/
+.angular/cache/
+.env
+.env.*
+
+### Java / Spring Boot ###
 *.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
 *.jar
 *.war
-*.nar
 *.ear
-*.zip
-*.tar.gz
-*.rar
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+*.log
+target/
+.mtj.tmp/
 hs_err_pid*
 replay_pid*
+
+### Maven ###
+backend/edutrack/.mvn/wrapper/maven-wrapper.jar
+
+### IDE ###
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Misc ###
+*.txt
+!README.txt
