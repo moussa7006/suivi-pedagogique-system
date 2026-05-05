@@ -377,6 +377,7 @@ import { AuthService } from '../../core/services/auth.service';
         flex-direction: column;
         justify-content: center;
         min-height: 100vh;
+        transform: translateY(56px);
       }
 
       @keyframes slideIn {
@@ -633,9 +634,9 @@ import { AuthService } from '../../core/services/auth.service';
 
       /* Security Footer */
       .security-footer {
-        margin-top: auto;
-        padding-top: 28px;
-        padding-bottom: 24px;
+        margin-top: 24px;
+        padding-top: 0;
+        padding-bottom: 0;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -672,6 +673,7 @@ import { AuthService } from '../../core/services/auth.service';
         .auth-container {
           padding: 0 24px;
           min-height: 100vh;
+          transform: translateY(36px);
         }
 
         .auth-mobile-logo {
@@ -701,6 +703,7 @@ import { AuthService } from '../../core/services/auth.service';
           padding: 20px 16px;
           max-width: 100%;
           min-height: 100vh;
+          transform: translateY(24px);
         }
 
         .auth-header {
@@ -759,6 +762,7 @@ import { AuthService } from '../../core/services/auth.service';
         .auth-container {
           padding: 16px 14px;
           min-height: auto;
+          transform: translateY(0);
         }
 
         .auth-mobile-logo {
