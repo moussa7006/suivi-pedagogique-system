@@ -1,4 +1,8 @@
-<div class="layout-wrapper" [class.authenticated]="authService.isLoggedIn()">
+<div
+  class="layout-wrapper"
+  [class.authenticated]="authService.isLoggedIn()"
+  [class.login-layout]="isLoginPage"
+>
   <!-- Sidebar : Uniquement si connecté -->
   <app-sidebar
     *ngIf="authService.isLoggedIn()"
