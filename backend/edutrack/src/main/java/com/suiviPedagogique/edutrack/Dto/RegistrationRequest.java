@@ -1,10 +1,11 @@
 package com.suiviPedagogique.edutrack.Dto;
 
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+
+import java.time.LocalDate;
 
 @Data
 public class RegistrationRequest {
@@ -28,20 +29,8 @@ public class RegistrationRequest {
     @NotBlank(message = "Le rôle est obligatoire")
     private String role; // "ADMIN" ou "ENSEIGNANT"
 
-    public String getNom() { return nom; }
-    public void setNom(String nom) { this.nom = nom; }
-    public String getPrenom() { return prenom; }
-    public void setPrenom(String prenom) { this.prenom = prenom; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getMotDePasse() { return motDePasse; }
-    public void setMotDePasse(String motDePasse) { this.motDePasse = motDePasse; }
-    public String getMatricule() { return matricule; }
-    public void setMatricule(String matricule) { this.matricule = matricule; }
-    public String getTelephone() { return telephone; }
-    public void setTelephone(String telephone) { this.telephone = telephone; }
-    public String getAdresse() { return adresse; }
-    public void setAdresse(String adresse) { this.adresse = adresse; }
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    // Pour l'enseignant
+    private String specialite;
+    private LocalDate dateEmbauche;
+    private String grade;
 }

@@ -4,18 +4,19 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CahierDeTexteDto {
+public class FicheProgressionDto {
     private Integer id;
-    private String titreCours;
-    private String contenu;
-    private LocalDateTime dateCreation;
-    private String pieceJointe;
-    private String statutValidite;
+    private LocalDate dateSaisie;
+    private String contenuDetaille;
+    private String objectifs;
+    private String travaux;
+    private Boolean estValideAdmin;
+    private LocalDate dateValidation;
 
     // Informations associées pour l'affichage Frontend
     private String enseignantNomPrenom;

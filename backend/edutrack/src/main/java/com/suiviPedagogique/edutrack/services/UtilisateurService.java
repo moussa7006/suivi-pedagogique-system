@@ -2,6 +2,7 @@ package com.suiviPedagogique.edutrack.services;
 
 import com.suiviPedagogique.edutrack.Dto.UtilisateurDto;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
+import com.suiviPedagogique.edutrack.Entities.enums.Role;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -23,7 +24,7 @@ public class UtilisateurService {
         String currentEmail = authentication.getName();
         Utilisateur currentUser = utilisateurRepository.findByEmail(currentEmail)
                 .orElseThrow(() -> new RuntimeException("Utilisateur actuel non trouvé"));
-        if (!"ADMIN".equals(currentUser.getRole())) {
+        if (currentUser.getRole() != Role.ADMINISTRATEUR) {
             throw new AccessDeniedException("Seul l'administrateur peut effectuer cette action");
         }
     }
@@ -53,6 +54,7 @@ public class UtilisateurService {
         if(dto.getTelephone() != null) u.setTelephone(dto.getTelephone());
         if(dto.getAdresse() != null) u.setAdresse(dto.getAdresse());
         if(dto.getMatricule() != null) u.setMatricule(dto.getMatricule());
+        if(dto.getActif() != null) u.setActif(dto.getActif());
 
         return convertToDto(utilisateurRepository.save(u));
     }
@@ -73,7 +75,8 @@ public class UtilisateurService {
         dto.setTelephone(u.getTelephone());
         dto.setAdresse(u.getAdresse());
         dto.setMatricule(u.getMatricule());
-        dto.setRole(u.getRole());
+        dto.setRole(u.getRole().name());
+        dto.setActif(u.getActif());
         return dto;
     }
 }

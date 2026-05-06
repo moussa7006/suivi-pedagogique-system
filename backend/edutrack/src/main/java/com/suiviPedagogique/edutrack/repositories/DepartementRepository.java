@@ -1,9 +1,9 @@
 package com.suiviPedagogique.edutrack.repositories;
 
-import com.suiviPedagogique.edutrack.Entities.CahierDeTexte;
+import com.suiviPedagogique.edutrack.Entities.Departement;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CahierDeTexteRepository extends JpaRepository<CahierDeTexte, Integer> {
+public interface DepartementRepository extends JpaRepository<Departement, Integer> {
 }

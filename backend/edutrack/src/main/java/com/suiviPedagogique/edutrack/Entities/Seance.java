@@ -1,12 +1,10 @@
 package com.suiviPedagogique.edutrack.Entities;
 
-import jakarta.persistence.Entity;
+import com.suiviPedagogique.edutrack.Entities.enums.StatutSeance;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -15,46 +13,52 @@ import java.time.LocalTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 public class Seance {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private LocalDate date;
-    private LocalTime heureDebut;
-    private LocalTime heureFin;
-    private String salle;
-    private String tokenQRCode;
+    @Column(nullable = false)
+    private LocalDate dateCours;
 
-    // Relations
-    @ManyToOne
-    @JoinColumn(name = "administrateur_id")
-    private Administrateur administrateur; // Relation "gerer"
+    @Column(nullable = false)
+    private LocalTime heureDebutReelle;
 
-    @ManyToOne
-    @JoinColumn(name = "enseignant_id")
-    private Enseignant enseignant; // Relation "animer"
+    @Column(nullable = false)
+    private LocalTime heureFinReelle;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StatutSeance statut;
 
     @ManyToOne
-    @JoinColumn(name = "classe_id")
-    private Classe classe; // Relation "destinee a"
-
-    @ManyToOne
-    @JoinColumn(name = "matiere_id")
-    private Matiere matiere; // Relation "concerner"
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "emargement_id", referencedColumnName = "id")
-    private Emargement emargement; // Relation "contienir"
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "cahier_de_texte_id", referencedColumnName = "id")
-    private CahierDeTexte cahierDeTexte;
-
-    @ManyToOne
-    @JoinColumn(name = "emploi_du_temps_id")
+    @JoinColumn(name = "emploi_du_temps_id", nullable = false)
     private EmploiDuTemps emploiDuTemps;
+
+    @ManyToOne
+    @JoinColumn(name = "salle_id", nullable = false)
+    private Salle salle;
+
+    @ManyToOne
+    @JoinColumn(name = "enseignant_id", nullable = false)
+    private Enseignant enseignant;
+
+    @ManyToOne
+    @JoinColumn(name = "classe_id", nullable = false)
+    private Classe classe;
+
+    @OneToOne
+    @JoinColumn(name = "qr_code_id", nullable = true) // 0..1
+    private QRCode qrCode;
+
+    @OneToOne(mappedBy = "seance")
+    private Emargement emargement;
+
+    @OneToOne
+    @JoinColumn(name = "fiche_progression_id", nullable = true) // 0..1
+    private FicheProgression ficheProgression;
+
+    @OneToOne(mappedBy = "seance")
+    private LignesHonoraires ligneHonoraire;
 }

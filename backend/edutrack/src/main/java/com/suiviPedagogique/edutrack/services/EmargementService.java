@@ -4,6 +4,7 @@ import com.suiviPedagogique.edutrack.Dto.EmargementRequest;
 import com.suiviPedagogique.edutrack.Entities.Emargement;
 import com.suiviPedagogique.edutrack.Entities.Seance;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
+import com.suiviPedagogique.edutrack.Entities.enums.StatutEmargement;
 import com.suiviPedagogique.edutrack.repositories.EmargementRepository;
 import com.suiviPedagogique.edutrack.repositories.SeanceRepository;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
@@ -31,17 +32,14 @@ public class EmargementService {
     @Autowired
     private UtilisateurRepository utilisateurRepository;
 
-    // Coordonnées de l'école (exemple fictif, à ajuster)
     private static final double ECOLE_LAT = 36.7525;
     private static final double ECOLE_LON = 3.04197;
-    private static final double MAX_DISTANCE_KM = 0.5; // 500 mètres de tolérance
+    private static final double MAX_DISTANCE_KM = 0.5;
 
     public String faireEmargement(EmargementRequest request) {
-        // 1. Trouver la séance par le QR code
         Seance seance = seanceRepository.findByTokenQRCode(request.getTokenQRCode())
                 .orElseThrow(() -> new RuntimeException("QR Code invalide ou séance inexistante."));
 
-        // 2. Vérifier que c'est bien l'enseignant de cette séance
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Utilisateur currentUser = utilisateurRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non authentifié."));
@@ -50,39 +48,38 @@ public class EmargementService {
             throw new RuntimeException("Vous n'êtes pas l'enseignant assigné à cette séance.");
         }
 
-        // 3. Vérification temporelle
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
 
-        if (!seance.getDate().equals(today)) {
+        if (!seance.getDateCours().equals(today)) {
             throw new RuntimeException("La séance n'est pas prévue pour aujourd'hui.");
         }
-        if (now.isBefore(seance.getHeureDebut()) || now.isAfter(seance.getHeureFin())) {
+        if (now.isBefore(seance.getHeureDebutReelle()) || now.isAfter(seance.getHeureFinReelle())) {
             throw new RuntimeException("L'émargement doit se faire pendant les heures de la séance.");
         }
 
-        // 4. Vérification GPS (formule de Haversine)
-        double enseignantLat = Double.parseDouble(request.getLatitudeGPS());
-        double enseignantLon = Double.parseDouble(request.getLongitudeGPS());
+        double enseignantLat = request.getLatitude() != null ? request.getLatitude().doubleValue() : 0.0;
+        double enseignantLon = request.getLongitude() != null ? request.getLongitude().doubleValue() : 0.0;
 
         double distance = calculateDistanceInKilometers(enseignantLat, enseignantLon, ECOLE_LAT, ECOLE_LON);
         if (distance > MAX_DISTANCE_KM) {
             throw new RuntimeException("Échec de la géolocalisation. Vous êtes trop loin de l'école (" + Math.round(distance * 1000) + "m).");
         }
 
-        // 5. Valider l'émargement
         Emargement emargement = seance.getEmargement();
         if (emargement == null) {
             emargement = new Emargement();
-        } else if (Boolean.TRUE.equals(emargement.getEstLocalisee())) {
+        } else if (emargement.getStatut() == StatutEmargement.VALIDE) {
             throw new RuntimeException("Émargement déjà effectué pour cette séance.");
         }
         
         emargement.setDateHeureScan(LocalDateTime.now());
-        emargement.setLatitudeGPS(request.getLatitudeGPS());
-        emargement.setLongitudeGPS(request.getLongitudeGPS());
-        emargement.setEstLocalisee(true);
-        emargement.setEstConfirme(false);
+        emargement.setLatitude(request.getLatitude());
+        emargement.setLongitude(request.getLongitude());
+        emargement.setAdresseApproximative(request.getAdresseApproximative() != null ? request.getAdresseApproximative() : "QR Code");
+        emargement.setStatut(StatutEmargement.VALIDE);
+        emargement.setEnseignant(seance.getEnseignant());
+        emargement.setSeance(seance);
 
         emargementRepository.save(emargement);
         seance.setEmargement(emargement);
@@ -92,7 +89,7 @@ public class EmargementService {
     }
 
     private double calculateDistanceInKilometers(double lat1, double lon1, double lat2, double lon2) {
-        final int R = 6371; // Earth radius in km
+        final int R = 6371;
         double dLat = Math.toRadians(lat2 - lat1);
         double dLon = Math.toRadians(lon2 - lon1);
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
@@ -107,31 +104,20 @@ public class EmargementService {
             EmargementDto dto = new EmargementDto();
             dto.setId(e.getId());
             dto.setDateHeureScan(e.getDateHeureScan());
-            dto.setLatitudeGPS(e.getLatitudeGPS());
-            dto.setLongitudeGPS(e.getLongitudeGPS());
-            dto.setEstLocalisee(e.getEstLocalisee());
-            dto.setEstConfirme(e.getEstConfirme());
+            dto.setLatitude(e.getLatitude());
+            dto.setLongitude(e.getLongitude());
+            dto.setAdresseApproximative(e.getAdresseApproximative());
+            dto.setStatut(e.getStatut());
             
             Seance seance = e.getSeance();
             if (seance != null) {
                 if (seance.getEnseignant() != null) {
                     dto.setEnseignantNomPrenom(seance.getEnseignant().getPrenom() + " " + seance.getEnseignant().getNom());
                 }
-                if (seance.getMatiere() != null) {
-                    dto.setMatiereLibelle(seance.getMatiere().getLibelle());
+                if (seance.getSalle() != null) {
+                    dto.setLieu(seance.getSalle().getNom());
                 }
-                dto.setLieu(seance.getSalle());
-                dto.setHeureSeance(seance.getHeureDebut() + " - " + seance.getHeureFin());
-                
-                if (e.getEstConfirme()) {
-                    dto.setStatutAffichage("Présent");
-                } else if (e.getEstLocalisee()) {
-                    dto.setStatutAffichage("En retard"); // Or whatever logic
-                } else {
-                    dto.setStatutAffichage("Absent");
-                }
-                
-                dto.setMethode("QR Code");
+                dto.setHeureSeance(seance.getHeureDebutReelle() + " - " + seance.getHeureFinReelle());
             }
             return dto;
         }).collect(Collectors.toList());

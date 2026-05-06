@@ -1,6 +1,5 @@
 package com.suiviPedagogique.edutrack.Entities;
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,17 +11,26 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class Classe {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String filiere;
-    private String niveau; // e.g., Licence 1, Master 2
-    private String anneeScolaire;
+    @Column(nullable = false, unique = true)
+    private String libelle;
+
+    @ManyToOne
+    @JoinColumn(name = "filiere_id", nullable = false)
+    private Filiere filiere;
+
+    @ManyToOne
+    @JoinColumn(name = "niveau_enseignement_id", nullable = false)
+    private NiveauEnseignement niveauEnseignement;
 
     @OneToMany(mappedBy = "classe")
     private List<Seance> seances;
+
+    @OneToMany(mappedBy = "classe")
+    private List<EmploiDuTemps> emploisDuTemps;
 }

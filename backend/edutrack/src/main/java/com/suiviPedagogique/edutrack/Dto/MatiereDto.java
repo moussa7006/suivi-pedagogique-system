@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MatiereDto {
     private Integer id;
-    private String codeMatiere;
+    private String code;
     private String libelle;
-    private Integer coefficient;
+    private Integer volumeHoraireTotal;
+    private Integer departementId;
 }

@@ -2,6 +2,7 @@ package com.suiviPedagogique.edutrack.services;
 
 import com.suiviPedagogique.edutrack.Dto.SeanceDto;
 import com.suiviPedagogique.edutrack.Entities.*;
+import com.suiviPedagogique.edutrack.Entities.enums.Role;
 import com.suiviPedagogique.edutrack.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -22,22 +23,22 @@ public class SeanceService {
     private UtilisateurRepository utilisateurRepository;
 
     @Autowired
-    private AdministrateurRepository administrateurRepository;
-
-    @Autowired
     private EnseignantRepository enseignantRepository;
 
     @Autowired
     private ClasseRepository classeRepository;
 
     @Autowired
-    private MatiereRepository matiereRepository;
+    private EmploiDuTempsRepository emploiDuTempsRepository;
 
     @Autowired
     private EmargementRepository emargementRepository;
 
     @Autowired
-    private CahierDeTexteRepository cahierDeTexteRepository;
+    private FicheProgressionRepository ficheProgressionRepository;
+    
+    @Autowired
+    private SalleRepository salleRepository;
 
     private Utilisateur getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -48,55 +49,44 @@ public class SeanceService {
 
     public SeanceDto createSeance(SeanceDto dto) {
         Utilisateur currentUser = getCurrentUser();
-        if (!"ADMIN".equals(currentUser.getRole())) {
+        if (currentUser.getRole() != Role.ADMINISTRATEUR) {
             throw new AccessDeniedException("Seul l'administrateur peut créer des séances");
         }
 
         Seance seance = new Seance();
-        seance.setDate(dto.getDate());
-        seance.setHeureDebut(dto.getHeureDebut());
-        seance.setHeureFin(dto.getHeureFin());
-        seance.setSalle(dto.getSalle());
+        seance.setDateCours(dto.getDateCours());
+        seance.setHeureDebutReelle(dto.getHeureDebutReelle());
+        seance.setHeureFinReelle(dto.getHeureFinReelle());
+        seance.setStatut(dto.getStatut());
         
-        // Le token QRCode sera généré par le ScheduleJobService
-        seance.setTokenQRCode(null);
+        if (dto.getSalleId() != null) {
+            Salle salle = salleRepository.findById(dto.getSalleId())
+                    .orElseThrow(() -> new RuntimeException("Salle non trouvée"));
+            seance.setSalle(salle);
+        }
 
-        // Set administrateur to current admin
-        Administrateur admin = administrateurRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new RuntimeException("Administrateur non trouvé"));
-        seance.setAdministrateur(admin);
-
-        // Set enseignant
         if (dto.getEnseignantId() != null) {
             Enseignant enseignant = enseignantRepository.findById(dto.getEnseignantId())
                     .orElseThrow(() -> new RuntimeException("Enseignant non trouvé"));
             seance.setEnseignant(enseignant);
         }
 
-        // Set classe
-        if (dto.getClasseId() != null) {
-            Classe classe = classeRepository.findById(dto.getClasseId())
-                    .orElseThrow(() -> new RuntimeException("Classe non trouvée"));
-            seance.setClasse(classe);
+        if (dto.getEmploiDuTempsId() != null) {
+            EmploiDuTemps emploiDuTemps = emploiDuTempsRepository.findById(dto.getEmploiDuTempsId())
+                    .orElseThrow(() -> new RuntimeException("Emploi du temps non trouvé"));
+            seance.setEmploiDuTemps(emploiDuTemps);
         }
 
-        // Set matiere
-        if (dto.getMatiereId() != null) {
-            Matiere matiere = matiereRepository.findById(dto.getMatiereId())
-                    .orElseThrow(() -> new RuntimeException("Matière non trouvée"));
-            seance.setMatiere(matiere);
+        if (dto.getEmargementId() != null) {
+            Emargement emargement = emargementRepository.findById(dto.getEmargementId())
+                    .orElseThrow(() -> new RuntimeException("Emargement non trouvé"));
+            seance.setEmargement(emargement);
         }
 
-        // Initialize empty Emargement
-        Emargement emargement = new Emargement();
-        emargement.setEstLocalisee(false);
-        seance.setEmargement(emargement);
-
-        // Set cahierDeTexte
-        if (dto.getCahierDeTexteId() != null) {
-            CahierDeTexte cahierDeTexte = cahierDeTexteRepository.findById(dto.getCahierDeTexteId())
-                    .orElseThrow(() -> new RuntimeException("Cahier de texte non trouvé"));
-            seance.setCahierDeTexte(cahierDeTexte);
+        if (dto.getFicheProgressionId() != null) {
+            FicheProgression ficheProgression = ficheProgressionRepository.findById(dto.getFicheProgressionId())
+                    .orElseThrow(() -> new RuntimeException("Fiche de progression non trouvée"));
+            seance.setFicheProgression(ficheProgression);
         }
 
         Seance saved = seanceRepository.save(seance);
@@ -105,52 +95,46 @@ public class SeanceService {
 
     public SeanceDto updateSeance(Integer id, SeanceDto dto) {
         Utilisateur currentUser = getCurrentUser();
-        if (!"ADMIN".equals(currentUser.getRole())) {
+        if (currentUser.getRole() != Role.ADMINISTRATEUR) {
             throw new AccessDeniedException("Seul l'administrateur peut modifier des séances");
         }
 
         Seance seance = seanceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Séance non trouvée"));
 
-        seance.setDate(dto.getDate());
-        seance.setHeureDebut(dto.getHeureDebut());
-        seance.setHeureFin(dto.getHeureFin());
-        seance.setSalle(dto.getSalle());
-        seance.setTokenQRCode(dto.getTokenQRCode());
+        seance.setDateCours(dto.getDateCours());
+        seance.setHeureDebutReelle(dto.getHeureDebutReelle());
+        seance.setHeureFinReelle(dto.getHeureFinReelle());
+        seance.setStatut(dto.getStatut());
 
-        // Update enseignant if provided
+        if (dto.getSalleId() != null) {
+            Salle salle = salleRepository.findById(dto.getSalleId())
+                    .orElseThrow(() -> new RuntimeException("Salle non trouvée"));
+            seance.setSalle(salle);
+        }
+
         if (dto.getEnseignantId() != null) {
             Enseignant enseignant = enseignantRepository.findById(dto.getEnseignantId())
                     .orElseThrow(() -> new RuntimeException("Enseignant non trouvé"));
             seance.setEnseignant(enseignant);
         }
 
-        // Update classe if provided
-        if (dto.getClasseId() != null) {
-            Classe classe = classeRepository.findById(dto.getClasseId())
-                    .orElseThrow(() -> new RuntimeException("Classe non trouvée"));
-            seance.setClasse(classe);
+        if (dto.getEmploiDuTempsId() != null) {
+            EmploiDuTemps emploiDuTemps = emploiDuTempsRepository.findById(dto.getEmploiDuTempsId())
+                    .orElseThrow(() -> new RuntimeException("Emploi du temps non trouvé"));
+            seance.setEmploiDuTemps(emploiDuTemps);
         }
 
-        // Update matiere if provided
-        if (dto.getMatiereId() != null) {
-            Matiere matiere = matiereRepository.findById(dto.getMatiereId())
-                    .orElseThrow(() -> new RuntimeException("Matière non trouvée"));
-            seance.setMatiere(matiere);
-        }
-
-        // Update emargement if provided
         if (dto.getEmargementId() != null) {
             Emargement emargement = emargementRepository.findById(dto.getEmargementId())
                     .orElseThrow(() -> new RuntimeException("Emargement non trouvé"));
             seance.setEmargement(emargement);
         }
 
-        // Update cahierDeTexte if provided
-        if (dto.getCahierDeTexteId() != null) {
-            CahierDeTexte cahierDeTexte = cahierDeTexteRepository.findById(dto.getCahierDeTexteId())
-                    .orElseThrow(() -> new RuntimeException("Cahier de texte non trouvé"));
-            seance.setCahierDeTexte(cahierDeTexte);
+        if (dto.getFicheProgressionId() != null) {
+            FicheProgression ficheProgression = ficheProgressionRepository.findById(dto.getFicheProgressionId())
+                    .orElseThrow(() -> new RuntimeException("Fiche de progression non trouvée"));
+            seance.setFicheProgression(ficheProgression);
         }
 
         Seance updated = seanceRepository.save(seance);
@@ -159,7 +143,7 @@ public class SeanceService {
 
     public void deleteSeance(Integer id) {
         Utilisateur currentUser = getCurrentUser();
-        if (!"ADMIN".equals(currentUser.getRole())) {
+        if (currentUser.getRole() != Role.ADMINISTRATEUR) {
             throw new AccessDeniedException("Seul l'administrateur peut supprimer des séances");
         }
 
@@ -171,9 +155,9 @@ public class SeanceService {
     public List<SeanceDto> getAllSeances() {
         Utilisateur currentUser = getCurrentUser();
         List<Seance> seances;
-        if ("ADMIN".equals(currentUser.getRole())) {
+        if (currentUser.getRole() == Role.ADMINISTRATEUR) {
             seances = seanceRepository.findAll();
-        } else if ("ENSEIGNANT".equals(currentUser.getRole())) {
+        } else if (currentUser.getRole() == Role.ENSEIGNANT) {
             seances = seanceRepository.findByEnseignantId(currentUser.getId());
         } else {
             throw new AccessDeniedException("Rôle non autorisé");
@@ -186,7 +170,7 @@ public class SeanceService {
                 .orElseThrow(() -> new RuntimeException("Séance non trouvée"));
 
         Utilisateur currentUser = getCurrentUser();
-        if ("ENSEIGNANT".equals(currentUser.getRole()) && !seance.getEnseignant().getId().equals(currentUser.getId())) {
+        if (currentUser.getRole() == Role.ENSEIGNANT && !seance.getEnseignant().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("Vous ne pouvez voir que vos propres séances");
         }
 
@@ -196,28 +180,28 @@ public class SeanceService {
     private SeanceDto convertToDto(Seance seance) {
         SeanceDto dto = new SeanceDto();
         dto.setId(seance.getId());
-        dto.setDate(seance.getDate());
-        dto.setHeureDebut(seance.getHeureDebut());
-        dto.setHeureFin(seance.getHeureFin());
-        dto.setSalle(seance.getSalle());
-        dto.setTokenQRCode(seance.getTokenQRCode());
-        if (seance.getAdministrateur() != null) {
-            dto.setAdministrateurId(seance.getAdministrateur().getId());
+        dto.setDateCours(seance.getDateCours());
+        dto.setHeureDebutReelle(seance.getHeureDebutReelle());
+        dto.setHeureFinReelle(seance.getHeureFinReelle());
+        dto.setStatut(seance.getStatut());
+        
+        if (seance.getSalle() != null) {
+            dto.setSalleId(seance.getSalle().getId());
+        }
+        if (seance.getQrCode() != null) {
+            dto.setQrCodeId(seance.getQrCode().getId());
         }
         if (seance.getEnseignant() != null) {
             dto.setEnseignantId(seance.getEnseignant().getId());
         }
-        if (seance.getClasse() != null) {
-            dto.setClasseId(seance.getClasse().getId());
-        }
-        if (seance.getMatiere() != null) {
-            dto.setMatiereId(seance.getMatiere().getId());
+        if (seance.getEmploiDuTemps() != null) {
+            dto.setEmploiDuTempsId(seance.getEmploiDuTemps().getId());
         }
         if (seance.getEmargement() != null) {
             dto.setEmargementId(seance.getEmargement().getId());
         }
-        if (seance.getCahierDeTexte() != null) {
-            dto.setCahierDeTexteId(seance.getCahierDeTexte().getId());
+        if (seance.getFicheProgression() != null) {
+            dto.setFicheProgressionId(seance.getFicheProgression().getId());
         }
         return dto;
     }

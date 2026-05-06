@@ -20,4 +20,5 @@ public class UtilisateurDto {
     private String telephone;
     private String adresse;
     private String role;
+    private Boolean actif;
 }

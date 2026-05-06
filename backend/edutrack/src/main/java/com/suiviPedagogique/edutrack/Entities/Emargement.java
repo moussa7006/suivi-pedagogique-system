@@ -1,6 +1,6 @@
 package com.suiviPedagogique.edutrack.Entities;
 
-import jakarta.persistence.Entity;
+import com.suiviPedagogique.edutrack.Entities.enums.StatutEmargement;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,19 +12,36 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class Emargement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(nullable = false)
     private LocalDateTime dateHeureScan;
-    private String latitudeGPS;
-    private String longitudeGPS;
-    private Boolean estLocalisee;
-    private Boolean estConfirme = false;
+
+    @Column(nullable = false)
+    private Float latitude;
+
+    @Column(nullable = false)
+    private Float longitude;
+
+    @Column(nullable = false)
+    private String adresseApproximative;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StatutEmargement statut;
+
+    @ManyToOne
+    @JoinColumn(name = "enseignant_id", nullable = false)
+    private Enseignant enseignant;
+
+    @OneToOne
+    @JoinColumn(name = "seance_id", nullable = false, unique = true)
+    private Seance seance;
 
     @OneToOne(mappedBy = "emargement")
-    private Seance seance;
+    private Justificatif justificatif;
 }
