@@ -1,27 +1,28 @@
 package com.suiviPedagogique.edutrack.Entities;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
+import java.time.LocalDate;
 
 @Entity
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class Grade {
-
+@AllArgsConstructor
+public class AnneeUniversitaire {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(nullable = false, unique = true)
     private String libelle;
-    private float tauxHoraire;
 
+    @Column(nullable = false)
+    private LocalDate dateDebut;
 
-    @OneToMany(mappedBy = "grade")
-    private List<Enseignant> enseignants;
+    @Column(nullable = false)
+    private LocalDate dateFin;
 
+    @Column(nullable = false)
+    private Boolean active;
 }

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ClasseDto {
     private Integer id;
-    private String filiere;
-    private String niveau;
-    private String anneeScolaire;
+    private String libelle;
+    private Integer filiereId;
+    private Integer niveauEnseignementId;
 }

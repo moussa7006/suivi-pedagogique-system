@@ -1,5 +1,6 @@
 package com.suiviPedagogique.edutrack.Entities;
 
+import com.suiviPedagogique.edutrack.Entities.enums.JourSemaine;
 import com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.DayOfWeek;
+import java.util.List;
 
 @Entity
 @Data
@@ -20,41 +21,55 @@ public class EmploiDuTemps {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String titre; // Optionnel (ex: "Mathématiques Semestre 1")
+    @Column(nullable = true)
+    private String titre;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TypeRecurrence typeRecurrence;
 
+    @Column(nullable = false)
     private LocalDate dateDebutValidite;
+
+    @Column(nullable = false)
     private LocalDate dateFinValidite;
 
-    // Pour "HEBDOMADAIRE"
     @Enumerated(EnumType.STRING)
-    private DayOfWeek jourDeSemaine;
+    @Column(nullable = true) // Only for weekly
+    private JourSemaine jourSemaine;
 
-    // Pour "MENSUEL"
+    @Column(nullable = true) // Only for monthly
     private Integer jourDuMois;
 
-    // Pour "UNIQUE"
+    @Column(nullable = true) // Only for unique
     private LocalDate dateSpecifique;
 
+    @Column(nullable = false)
     private LocalTime heureDebut;
+
+    @Column(nullable = false)
     private LocalTime heureFin;
-    private String salle;
 
     @ManyToOne
-    @JoinColumn(name = "administrateur_id")
-    private Administrateur administrateur;
+    @JoinColumn(name = "salle_id", nullable = false)
+    private Salle salle;
 
     @ManyToOne
-    @JoinColumn(name = "enseignant_id")
+    @JoinColumn(name = "enseignant_id", nullable = false)
     private Enseignant enseignant;
 
     @ManyToOne
-    @JoinColumn(name = "classe_id")
+    @JoinColumn(name = "classe_id", nullable = false)
     private Classe classe;
 
     @ManyToOne
-    @JoinColumn(name = "matiere_id")
+    @JoinColumn(name = "matiere_id", nullable = false)
     private Matiere matiere;
+
+    @ManyToOne
+    @JoinColumn(name = "annee_universitaire_id", nullable = false)
+    private AnneeUniversitaire anneeUniversitaire;
+
+    @OneToMany(mappedBy = "emploiDuTemps")
+    private List<Seance> seances;
 }

@@ -2,6 +2,7 @@ package com.suiviPedagogique.edutrack.services;
 
 import com.suiviPedagogique.edutrack.Dto.EmploiDuTempsDto;
 import com.suiviPedagogique.edutrack.Entities.*;
+import com.suiviPedagogique.edutrack.Entities.enums.Role;
 import com.suiviPedagogique.edutrack.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -22,9 +23,6 @@ public class EmploiDuTempsService {
     private UtilisateurRepository utilisateurRepository;
 
     @Autowired
-    private AdministrateurRepository administrateurRepository;
-
-    @Autowired
     private EnseignantRepository enseignantRepository;
 
     @Autowired
@@ -32,6 +30,12 @@ public class EmploiDuTempsService {
 
     @Autowired
     private MatiereRepository matiereRepository;
+    
+    @Autowired
+    private SalleRepository salleRepository;
+
+    @Autowired
+    private AnneeUniversitaireRepository anneeUniversitaireRepository;
 
     private Utilisateur getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -42,16 +46,12 @@ public class EmploiDuTempsService {
 
     public EmploiDuTempsDto create(EmploiDuTempsDto dto) {
         Utilisateur currentUser = getCurrentUser();
-        if (!"ADMIN".equals(currentUser.getRole())) {
+        if (currentUser.getRole() != Role.ADMINISTRATEUR) {
             throw new AccessDeniedException("Seul l'administrateur peut créer un emploi du temps");
         }
 
         EmploiDuTemps emploi = new EmploiDuTemps();
         hydrateEntity(emploi, dto);
-
-        Administrateur admin = administrateurRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new RuntimeException("Administrateur non trouvé"));
-        emploi.setAdministrateur(admin);
 
         EmploiDuTemps saved = emploiDuTempsRepository.save(emploi);
         return convertToDto(saved);
@@ -59,7 +59,7 @@ public class EmploiDuTempsService {
 
     public EmploiDuTempsDto update(Integer id, EmploiDuTempsDto dto) {
         Utilisateur currentUser = getCurrentUser();
-        if (!"ADMIN".equals(currentUser.getRole())) {
+        if (currentUser.getRole() != Role.ADMINISTRATEUR) {
             throw new AccessDeniedException("Seul l'administrateur peut modifier un emploi du temps");
         }
 
@@ -74,7 +74,7 @@ public class EmploiDuTempsService {
 
     public void delete(Integer id) {
         Utilisateur currentUser = getCurrentUser();
-        if (!"ADMIN".equals(currentUser.getRole())) {
+        if (currentUser.getRole() != Role.ADMINISTRATEUR) {
             throw new AccessDeniedException("Seul l'administrateur peut supprimer un emploi du temps");
         }
 
@@ -86,9 +86,9 @@ public class EmploiDuTempsService {
     public List<EmploiDuTempsDto> getAll() {
         Utilisateur currentUser = getCurrentUser();
         List<EmploiDuTemps> list;
-        if ("ADMIN".equals(currentUser.getRole())) {
+        if (currentUser.getRole() == Role.ADMINISTRATEUR) {
             list = emploiDuTempsRepository.findAll();
-        } else if ("ENSEIGNANT".equals(currentUser.getRole())) {
+        } else if (currentUser.getRole() == Role.ENSEIGNANT) {
             list = emploiDuTempsRepository.findByEnseignantId(currentUser.getId());
         } else {
             throw new AccessDeniedException("Rôle non autorisé");
@@ -107,12 +107,17 @@ public class EmploiDuTempsService {
         emploi.setTypeRecurrence(dto.getTypeRecurrence());
         emploi.setDateDebutValidite(dto.getDateDebutValidite());
         emploi.setDateFinValidite(dto.getDateFinValidite());
-        emploi.setJourDeSemaine(dto.getJourDeSemaine());
+        emploi.setJourSemaine(dto.getJourSemaine());
         emploi.setJourDuMois(dto.getJourDuMois());
         emploi.setDateSpecifique(dto.getDateSpecifique());
         emploi.setHeureDebut(dto.getHeureDebut());
         emploi.setHeureFin(dto.getHeureFin());
-        emploi.setSalle(dto.getSalle());
+        
+        if (dto.getSalleId() != null) {
+            Salle salle = salleRepository.findById(dto.getSalleId())
+                    .orElseThrow(() -> new RuntimeException("Salle non trouvée"));
+            emploi.setSalle(salle);
+        }
 
         if (dto.getEnseignantId() != null) {
             Enseignant enseignant = enseignantRepository.findById(dto.getEnseignantId())
@@ -129,6 +134,11 @@ public class EmploiDuTempsService {
                     .orElseThrow(() -> new RuntimeException("Matière non trouvée"));
             emploi.setMatiere(matiere);
         }
+        if (dto.getAnneeUniversitaireId() != null) {
+            AnneeUniversitaire annee = anneeUniversitaireRepository.findById(dto.getAnneeUniversitaireId())
+                    .orElseThrow(() -> new RuntimeException("Année universitaire non trouvée"));
+            emploi.setAnneeUniversitaire(annee);
+        }
     }
 
     private EmploiDuTempsDto convertToDto(EmploiDuTemps emploi) {
@@ -138,17 +148,17 @@ public class EmploiDuTempsService {
         dto.setTypeRecurrence(emploi.getTypeRecurrence());
         dto.setDateDebutValidite(emploi.getDateDebutValidite());
         dto.setDateFinValidite(emploi.getDateFinValidite());
-        dto.setJourDeSemaine(emploi.getJourDeSemaine());
+        dto.setJourSemaine(emploi.getJourSemaine());
         dto.setJourDuMois(emploi.getJourDuMois());
         dto.setDateSpecifique(emploi.getDateSpecifique());
         dto.setHeureDebut(emploi.getHeureDebut());
         dto.setHeureFin(emploi.getHeureFin());
-        dto.setSalle(emploi.getSalle());
         
-        if (emploi.getAdministrateur() != null) dto.setAdministrateurId(emploi.getAdministrateur().getId());
+        if (emploi.getSalle() != null) dto.setSalleId(emploi.getSalle().getId());
         if (emploi.getEnseignant() != null) dto.setEnseignantId(emploi.getEnseignant().getId());
         if (emploi.getClasse() != null) dto.setClasseId(emploi.getClasse().getId());
         if (emploi.getMatiere() != null) dto.setMatiereId(emploi.getMatiere().getId());
+        if (emploi.getAnneeUniversitaire() != null) dto.setAnneeUniversitaireId(emploi.getAnneeUniversitaire().getId());
         
         return dto;
     }

@@ -51,7 +51,7 @@ public class AuthController {
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         try {
             Utilisateur utilisateur = authService.authentifier(loginRequest);
-            String token = jwtUtil.generateToken(utilisateur.getEmail(), utilisateur.getRole());
+            String token = jwtUtil.generateToken(utilisateur.getEmail(), utilisateur.getRole().name());
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Connexion réussie !");
             response.put("token", token);

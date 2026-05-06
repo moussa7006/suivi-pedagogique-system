@@ -6,12 +6,18 @@ import com.suiviPedagogique.edutrack.Entities.EmploiDuTemps;
 import com.suiviPedagogique.edutrack.Entities.Enseignant;
 import com.suiviPedagogique.edutrack.Entities.Matiere;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
+import com.suiviPedagogique.edutrack.Entities.Salle;
+import com.suiviPedagogique.edutrack.Entities.AnneeUniversitaire;
 import com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence;
+import com.suiviPedagogique.edutrack.Entities.enums.JourSemaine;
+import com.suiviPedagogique.edutrack.Entities.enums.Role;
 import com.suiviPedagogique.edutrack.repositories.ClasseRepository;
 import com.suiviPedagogique.edutrack.repositories.EmploiDuTempsRepository;
 import com.suiviPedagogique.edutrack.repositories.EnseignantRepository;
 import com.suiviPedagogique.edutrack.repositories.MatiereRepository;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
+import com.suiviPedagogique.edutrack.repositories.SalleRepository;
+import com.suiviPedagogique.edutrack.repositories.AnneeUniversitaireRepository;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -23,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -41,6 +46,8 @@ public class ExcelImportService {
     private final ClasseRepository classeRepository;
     private final MatiereRepository matiereRepository;
     private final EmploiDuTempsRepository emploiDuTempsRepository;
+    private final SalleRepository salleRepository;
+    private final AnneeUniversitaireRepository anneeUniversitaireRepository;
     private static final String DEFAULT_TEACHER_PASSWORD = "Intec@2026";
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", Pattern.CASE_INSENSITIVE);
 
@@ -51,12 +58,16 @@ public class ExcelImportService {
                               ClasseRepository classeRepository,
                               MatiereRepository matiereRepository,
                               EmploiDuTempsRepository emploiDuTempsRepository,
+                              SalleRepository salleRepository,
+                              AnneeUniversitaireRepository anneeUniversitaireRepository,
                               PasswordEncoder passwordEncoder) {
         this.enseignantRepository = enseignantRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.classeRepository = classeRepository;
         this.matiereRepository = matiereRepository;
         this.emploiDuTempsRepository = emploiDuTempsRepository;
+        this.salleRepository = salleRepository;
+        this.anneeUniversitaireRepository = anneeUniversitaireRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -169,9 +180,15 @@ public class ExcelImportService {
                 ens.setEmail(email);
                 ens.setTelephone(telephone);
                 ens.setMatricule(matricule);
-                ens.setRole("ENSEIGNANT");
+                ens.setRole(Role.ENSEIGNANT);
                 ens.setMotDePasse(defaultPasswordHash);
                 ens.setForcePasswordChange(true);
+                ens.setActif(true);
+                
+                // Valeurs par défaut pour les nouveaux champs
+                ens.setSpecialite("Non spécifié");
+                ens.setDateEmbauche(LocalDate.now());
+                ens.setGrade("Non spécifié");
 
                 enseignantsToSave.add(ens);
             }
@@ -228,10 +245,11 @@ public class ExcelImportService {
                 String jourOuDate = row.getCell(2).getStringCellValue();
                 String heureDebutStr = row.getCell(3).getStringCellValue();
                 String heureFinStr = row.getCell(4).getStringCellValue();
-                String salle = row.getCell(5).getStringCellValue();
+                String nomSalle = row.getCell(5).getStringCellValue();
                 String emailEnseignant = row.getCell(6).getStringCellValue();
-                String nomMatiere = row.getCell(7).getStringCellValue(); // Assuming libelle
-                String nomClasse = row.getCell(8).getStringCellValue(); // Assuming filiere
+                String nomMatiere = row.getCell(7).getStringCellValue(); 
+                String nomClasse = row.getCell(8).getStringCellValue(); 
+                String libelleAnnee = row.getCell(9) != null ? row.getCell(9).getStringCellValue() : null;
 
                 Enseignant ens = enseignantRepository.findByEmail(emailEnseignant)
                         .orElseThrow(() -> new RuntimeException("Enseignant introuvable (Email: " + emailEnseignant + ") à la ligne " + numeroLigne));
@@ -242,9 +260,27 @@ public class ExcelImportService {
                         .orElseThrow(() -> new RuntimeException("Matière introuvable (Libellé: " + nomMatiere + ") à la ligne " + numeroLigne));
 
                 Classe cls = classeRepository.findAll().stream()
-                        .filter(c -> c.getFiliere().equalsIgnoreCase(nomClasse))
+                        .filter(c -> c.getLibelle().equalsIgnoreCase(nomClasse))
                         .findFirst()
-                        .orElseThrow(() -> new RuntimeException("Classe introuvable (Filière: " + nomClasse + ") à la ligne " + numeroLigne));
+                        .orElseThrow(() -> new RuntimeException("Classe introuvable (Libellé: " + nomClasse + ") à la ligne " + numeroLigne));
+                        
+                Salle salle = salleRepository.findAll().stream()
+                        .filter(s -> s.getNom().equalsIgnoreCase(nomSalle))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Salle introuvable (Nom: " + nomSalle + "). L'importation est bloquée à la ligne " + numeroLigne));
+                        
+                AnneeUniversitaire annee;
+                if (libelleAnnee != null && !libelleAnnee.isEmpty()) {
+                    annee = anneeUniversitaireRepository.findAll().stream()
+                            .filter(a -> a.getLibelle().equalsIgnoreCase(libelleAnnee))
+                            .findFirst()
+                            .orElseThrow(() -> new RuntimeException("Année Universitaire introuvable (Libellé: " + libelleAnnee + "). L'importation est bloquée à la ligne " + numeroLigne));
+                } else {
+                    annee = anneeUniversitaireRepository.findAll().stream()
+                            .filter(AnneeUniversitaire::getActive)
+                            .findFirst()
+                            .orElseThrow(() -> new RuntimeException("Aucune Année Universitaire active trouvée. L'importation est bloquée à la ligne " + numeroLigne));
+                }
 
                 EmploiDuTemps edt = new EmploiDuTemps();
                 edt.setTitre(titre);
@@ -255,10 +291,12 @@ public class ExcelImportService {
                 edt.setEnseignant(ens);
                 edt.setMatiere(mat);
                 edt.setClasse(cls);
+                edt.setAnneeUniversitaire(annee);
+                edt.setDateDebutValidite(LocalDate.now()); // Par défaut
+                edt.setDateFinValidite(annee.getDateFin());
 
                 if (type == TypeRecurrence.HEBDOMADAIRE) {
-                    edt.setJourDeSemaine(DayOfWeek.valueOf(jourOuDate.toUpperCase()));
-                    // Set default dates if needed, or leave null for permanent
+                    edt.setJourSemaine(JourSemaine.valueOf(jourOuDate.toUpperCase()));
                 } else if (type == TypeRecurrence.MENSUEL) {
                     edt.setJourDuMois(Integer.parseInt(jourOuDate));
                 } else if (type == TypeRecurrence.UNIQUE) {

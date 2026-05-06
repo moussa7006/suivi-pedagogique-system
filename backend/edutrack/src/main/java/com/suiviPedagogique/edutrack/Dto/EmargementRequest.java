@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class EmargementRequest {
     private String tokenQRCode;
-    private String latitudeGPS;
-    private String longitudeGPS;
+    private Float latitude;
+    private Float longitude;
+    private String adresseApproximative;
 }

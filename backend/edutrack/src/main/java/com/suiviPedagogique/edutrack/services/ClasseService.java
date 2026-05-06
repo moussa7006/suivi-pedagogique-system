@@ -3,8 +3,13 @@ package com.suiviPedagogique.edutrack.services;
 import com.suiviPedagogique.edutrack.Dto.ClasseDto;
 import com.suiviPedagogique.edutrack.Entities.Classe;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
+import com.suiviPedagogique.edutrack.Entities.Filiere;
+import com.suiviPedagogique.edutrack.Entities.NiveauEnseignement;
+import com.suiviPedagogique.edutrack.Entities.enums.Role;
 import com.suiviPedagogique.edutrack.repositories.ClasseRepository;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
+import com.suiviPedagogique.edutrack.repositories.FiliereRepository;
+import com.suiviPedagogique.edutrack.repositories.NiveauEnseignementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -23,12 +28,18 @@ public class ClasseService {
     @Autowired
     private UtilisateurRepository utilisateurRepository;
 
+    @Autowired
+    private FiliereRepository filiereRepository;
+
+    @Autowired
+    private NiveauEnseignementRepository niveauEnseignementRepository;
+
     private void verifyAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentEmail = authentication.getName();
         Utilisateur currentUser = utilisateurRepository.findByEmail(currentEmail)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-        if (!"ADMIN".equals(currentUser.getRole())) {
+        if (currentUser.getRole() != Role.ADMINISTRATEUR) {
             throw new AccessDeniedException("Seul l'administrateur peut effectuer cette action");
         }
     }
@@ -36,9 +47,20 @@ public class ClasseService {
     public ClasseDto createClasse(ClasseDto dto) {
         verifyAdmin();
         Classe classe = new Classe();
-        classe.setFiliere(dto.getFiliere());
-        classe.setNiveau(dto.getNiveau());
-        classe.setAnneeScolaire(dto.getAnneeScolaire());
+        classe.setLibelle(dto.getLibelle());
+        
+        if (dto.getFiliereId() != null) {
+            Filiere filiere = filiereRepository.findById(dto.getFiliereId())
+                    .orElseThrow(() -> new RuntimeException("Filière non trouvée"));
+            classe.setFiliere(filiere);
+        }
+        
+        if (dto.getNiveauEnseignementId() != null) {
+            NiveauEnseignement niveau = niveauEnseignementRepository.findById(dto.getNiveauEnseignementId())
+                    .orElseThrow(() -> new RuntimeException("Niveau d'enseignement non trouvé"));
+            classe.setNiveauEnseignement(niveau);
+        }
+
         Classe saved = classeRepository.save(classe);
         return convertToDto(saved);
     }
@@ -60,9 +82,19 @@ public class ClasseService {
         Classe classe = classeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Classe non trouvée"));
         
-        if (dto.getFiliere() != null) classe.setFiliere(dto.getFiliere());
-        if (dto.getNiveau() != null) classe.setNiveau(dto.getNiveau());
-        if (dto.getAnneeScolaire() != null) classe.setAnneeScolaire(dto.getAnneeScolaire());
+        if (dto.getLibelle() != null) classe.setLibelle(dto.getLibelle());
+        
+        if (dto.getFiliereId() != null) {
+            Filiere filiere = filiereRepository.findById(dto.getFiliereId())
+                    .orElseThrow(() -> new RuntimeException("Filière non trouvée"));
+            classe.setFiliere(filiere);
+        }
+        
+        if (dto.getNiveauEnseignementId() != null) {
+            NiveauEnseignement niveau = niveauEnseignementRepository.findById(dto.getNiveauEnseignementId())
+                    .orElseThrow(() -> new RuntimeException("Niveau d'enseignement non trouvé"));
+            classe.setNiveauEnseignement(niveau);
+        }
 
         Classe updated = classeRepository.save(classe);
         return convertToDto(updated);
@@ -78,9 +110,9 @@ public class ClasseService {
     private ClasseDto convertToDto(Classe classe) {
         ClasseDto dto = new ClasseDto();
         dto.setId(classe.getId());
-        dto.setFiliere(classe.getFiliere());
-        dto.setNiveau(classe.getNiveau());
-        dto.setAnneeScolaire(classe.getAnneeScolaire());
+        dto.setLibelle(classe.getLibelle());
+        if (classe.getFiliere() != null) dto.setFiliereId(classe.getFiliere().getId());
+        if (classe.getNiveauEnseignement() != null) dto.setNiveauEnseignementId(classe.getNiveauEnseignement().getId());
         return dto;
     }
 }

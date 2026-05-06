@@ -2,29 +2,27 @@ package com.suiviPedagogique.edutrack.services;
 
 import com.suiviPedagogique.edutrack.Dto.LoginRequest;
 import com.suiviPedagogique.edutrack.Dto.RegistrationRequest;
-import com.suiviPedagogique.edutrack.Entities.Administrateur;
 import com.suiviPedagogique.edutrack.Entities.Enseignant;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
-import com.suiviPedagogique.edutrack.repositories.AdministrateurRepository;
+import com.suiviPedagogique.edutrack.Entities.enums.Role;
 import com.suiviPedagogique.edutrack.repositories.EnseignantRepository;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 public class AuthService {
 
-    private final AdministrateurRepository administrateurRepository;
     private final EnseignantRepository enseignantRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthService(AdministrateurRepository administrateurRepository,
-                       EnseignantRepository enseignantRepository,
+    public AuthService(EnseignantRepository enseignantRepository,
                        UtilisateurRepository utilisateurRepository,
                        PasswordEncoder passwordEncoder) {
-        this.administrateurRepository = administrateurRepository;
         this.enseignantRepository = enseignantRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.passwordEncoder = passwordEncoder;
@@ -55,14 +53,19 @@ public class AuthService {
         // Création polymorphe selon le rôle
         String roleDemande = requestdto.getRole().toUpperCase();
 
-        if (roleDemande.equals("ADMIN")) {
-            Administrateur admin = new Administrateur();
+        if (roleDemande.equals("ADMIN") || roleDemande.equals("ADMINISTRATEUR")) {
+            Utilisateur admin = new Utilisateur();
             remplirDonneesDeBase(admin, requestdto, motDePasseCrypte);
-            return administrateurRepository.save(admin);
+            admin.setRole(Role.ADMINISTRATEUR);
+            return utilisateurRepository.save(admin);
 
         } else if (roleDemande.equals("ENSEIGNANT")) {
             Enseignant enseignant = new Enseignant();
             remplirDonneesDeBase(enseignant, requestdto, motDePasseCrypte);
+            enseignant.setRole(Role.ENSEIGNANT);
+            enseignant.setSpecialite(requestdto.getSpecialite() != null ? requestdto.getSpecialite() : "Non spécifié");
+            enseignant.setDateEmbauche(requestdto.getDateEmbauche() != null ? requestdto.getDateEmbauche() : LocalDate.now());
+            enseignant.setGrade(requestdto.getGrade() != null ? requestdto.getGrade() : "Non spécifié");
             return enseignantRepository.save(enseignant);
 
         } else {
@@ -78,7 +81,8 @@ public class AuthService {
         utilisateur.setTelephone(request.getTelephone());
         utilisateur.setAdresse(request.getAdresse());
         utilisateur.setMotDePasse(mdpCrypte);
-        utilisateur.setRole(request.getRole().toUpperCase());
+        utilisateur.setActif(true);
+        utilisateur.setForcePasswordChange(false);
     }
 
     public Utilisateur authentifier(LoginRequest loginRequest) {

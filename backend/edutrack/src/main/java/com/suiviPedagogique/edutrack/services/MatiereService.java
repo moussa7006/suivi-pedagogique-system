@@ -3,8 +3,11 @@ package com.suiviPedagogique.edutrack.services;
 import com.suiviPedagogique.edutrack.Dto.MatiereDto;
 import com.suiviPedagogique.edutrack.Entities.Matiere;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
+import com.suiviPedagogique.edutrack.Entities.Departement;
+import com.suiviPedagogique.edutrack.Entities.enums.Role;
 import com.suiviPedagogique.edutrack.repositories.MatiereRepository;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
+import com.suiviPedagogique.edutrack.repositories.DepartementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -23,12 +26,15 @@ public class MatiereService {
     @Autowired
     private UtilisateurRepository utilisateurRepository;
 
+    @Autowired
+    private DepartementRepository departementRepository;
+
     private void verifyAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentEmail = authentication.getName();
         Utilisateur currentUser = utilisateurRepository.findByEmail(currentEmail)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-        if (!"ADMIN".equals(currentUser.getRole())) {
+        if (currentUser.getRole() != Role.ADMINISTRATEUR) {
             throw new AccessDeniedException("Seul l'administrateur peut effectuer cette action");
         }
     }
@@ -36,9 +42,16 @@ public class MatiereService {
     public MatiereDto createMatiere(MatiereDto dto) {
         verifyAdmin();
         Matiere matiere = new Matiere();
-        matiere.setCodeMatiere(dto.getCodeMatiere());
+        matiere.setCode(dto.getCode());
         matiere.setLibelle(dto.getLibelle());
-        matiere.setCoefficient(dto.getCoefficient());
+        matiere.setVolumeHoraireTotal(dto.getVolumeHoraireTotal() != null ? dto.getVolumeHoraireTotal() : 0);
+        
+        if (dto.getDepartementId() != null) {
+            Departement departement = departementRepository.findById(dto.getDepartementId())
+                    .orElseThrow(() -> new RuntimeException("Département non trouvé"));
+            matiere.setDepartement(departement);
+        }
+
         Matiere saved = matiereRepository.save(matiere);
         return convertToDto(saved);
     }
@@ -60,9 +73,15 @@ public class MatiereService {
         Matiere matiere = matiereRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Matière non trouvée"));
         
-        if (dto.getCodeMatiere() != null) matiere.setCodeMatiere(dto.getCodeMatiere());
+        if (dto.getCode() != null) matiere.setCode(dto.getCode());
         if (dto.getLibelle() != null) matiere.setLibelle(dto.getLibelle());
-        if (dto.getCoefficient() != null) matiere.setCoefficient(dto.getCoefficient());
+        if (dto.getVolumeHoraireTotal() != null) matiere.setVolumeHoraireTotal(dto.getVolumeHoraireTotal());
+        
+        if (dto.getDepartementId() != null) {
+            Departement departement = departementRepository.findById(dto.getDepartementId())
+                    .orElseThrow(() -> new RuntimeException("Département non trouvé"));
+            matiere.setDepartement(departement);
+        }
 
         Matiere updated = matiereRepository.save(matiere);
         return convertToDto(updated);
@@ -78,9 +97,10 @@ public class MatiereService {
     private MatiereDto convertToDto(Matiere matiere) {
         MatiereDto dto = new MatiereDto();
         dto.setId(matiere.getId());
-        dto.setCodeMatiere(matiere.getCodeMatiere());
+        dto.setCode(matiere.getCode());
         dto.setLibelle(matiere.getLibelle());
-        dto.setCoefficient(matiere.getCoefficient());
+        dto.setVolumeHoraireTotal(matiere.getVolumeHoraireTotal());
+        if (matiere.getDepartement() != null) dto.setDepartementId(matiere.getDepartement().getId());
         return dto;
     }
 }
