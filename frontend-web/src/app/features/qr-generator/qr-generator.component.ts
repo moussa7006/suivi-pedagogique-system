@@ -39,7 +39,7 @@ import { Seance } from '../../core/models/schedule.model';
             <select id="subject" [(ngModel)]="selectedSeanceId" (change)="onSeanceChange()">
               <option value="">Sélectionnez une séance</option>
               <option *ngFor="let s of seances" [value]="s.id">
-                {{ s.salle }} - {{ s.heureDebut }} à {{ s.heureFin }}
+                {{ s.dateCours }} - {{ s.heureDebutReelle }} à {{ s.heureFinReelle }}
               </option>
             </select>
           </div>
@@ -50,7 +50,7 @@ import { Seance } from '../../core/models/schedule.model';
               id="teacher"
               type="text"
               disabled
-              [value]="selectedSeance?.tokenQRCode || 'N/A'"
+              [value]="selectedSeance ? 'SEANCE-' + selectedSeance.id : 'N/A'"
             />
           </div>
 
@@ -666,7 +666,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
     if (this.selectedSeanceId) {
       this.selectedSeance = this.seances.find((s) => s.id == this.selectedSeanceId) || null;
       if (this.selectedSeance) {
-        this.qrData = this.selectedSeance.tokenQRCode || '';
+        this.qrData = 'SEANCE-' + this.selectedSeance.id;
       }
     } else {
       this.selectedSeance = null;
@@ -692,7 +692,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
 
   startSession() {
     this.isRunning = true;
-    this.qrData = this.selectedSeance?.tokenQRCode || '';
+    this.qrData = this.selectedSeance ? 'SEANCE-' + this.selectedSeance.id : '';
     this.startTimer();
   }
 

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Emargement } from '../models/attendance.model';
+import { Emargement, EmargementRequest } from '../models/attendance.model';
 
 @Injectable({
   providedIn: 'root'
@@ -16,8 +16,7 @@ export class AttendanceService {
     return this.http.get<Emargement[]>(this.apiUrl);
   }
 
-  validateAttendance(id: number): Observable<Emargement> {
-    // Supposons une route spécifique pour valider ou juste un update
-    return this.http.put<Emargement>(`${this.apiUrl}/${id}`, { statut: 'Validé' });
+  scanQRCode(request: EmargementRequest): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/scan`, request);
   }
 }

@@ -19,16 +19,52 @@ export class AuthService {
       .pipe(
         tap((response) => {
           this.tokenStorage.setToken(response.token);
+          this.setUser(response);
         }),
       );
+  }
+
+  changePassword(newPassword: string): Observable<any> {
+    return this.http.post(`${this.authApiUrl}/change-password`, { newPassword });
   }
 
   isAuthenticated(): boolean {
     return !!this.tokenStorage.getToken();
   }
 
+  // Gestion du token
+  setToken(token: string): void {
+    this.tokenStorage.setToken(token);
+  }
+
+  getToken(): string | null {
+    return this.tokenStorage.getToken();
+  }
+
+  // Gestion de l'utilisateur
+  setUser(user: any): void {
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
+  getUser(): any {
+    const user = localStorage.getItem('user');
+    if (user) {
+      try {
+        return JSON.parse(user);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getToken();
+  }
+
   logout(): void {
     this.tokenStorage.clearToken();
-    void this.router.navigate(["/login"]);
+    localStorage.removeItem('user');
+    void this.router.navigate(['/login']);
   }
 }

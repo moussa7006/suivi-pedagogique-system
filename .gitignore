@@ -2,6 +2,7 @@
 node_modules/
 dist/
 .angular/cache/
+**/.angular/cache/
 .env
 .env.*
 
@@ -12,6 +13,7 @@ dist/
 *.ear
 *.log
 target/
+**/target/
 .mtj.tmp/
 hs_err_pid*
 replay_pid*

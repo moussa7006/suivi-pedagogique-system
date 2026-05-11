@@ -22,21 +22,21 @@ public class EmploiDuTempsController {
     private EmploiDuTempsService emploiDuTempsService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     @Operation(summary = "Créer un emploi du temps", description = "Seul l'administrateur peut créer")
     public ResponseEntity<EmploiDuTempsDto> create(@RequestBody EmploiDuTempsDto dto) {
         return ResponseEntity.ok(emploiDuTempsService.create(dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     @Operation(summary = "Modifier un emploi du temps", description = "Seul l'administrateur peut modifier")
     public ResponseEntity<EmploiDuTempsDto> update(@PathVariable Integer id, @RequestBody EmploiDuTempsDto dto) {
         return ResponseEntity.ok(emploiDuTempsService.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     @Operation(summary = "Supprimer un emploi du temps", description = "Seul l'administrateur peut supprimer")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         emploiDuTempsService.delete(id);
@@ -56,7 +56,7 @@ public class EmploiDuTempsController {
     }
 
     @PostMapping(value = "/import", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     @Operation(summary = "Importer des emplois du temps via Excel")
     public ResponseEntity<?> importSchedules(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         try {

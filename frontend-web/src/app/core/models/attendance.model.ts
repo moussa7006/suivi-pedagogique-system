@@ -1,15 +1,20 @@
+import { StatutEmargement } from './enums';
+
 export interface Emargement {
   id?: number;
-  dateHeureScan?: string;
-  latitudeGPS?: string;
-  longitudeGPS?: string;
-  estLocalisee?: boolean;
-  estConfirme?: boolean;
-  
+  dateHeureScan: string;
+  latitude: number;
+  longitude: number;
+  adresseApproximative: string;
+  statut: StatutEmargement;
   enseignantNomPrenom?: string;
-  matiereLibelle?: string;
   lieu?: string;
   heureSeance?: string;
-  statutAffichage?: string;
-  methode?: string;
+}
+
+export interface EmargementRequest {
+  tokenQRCode: string;
+  latitude: number;
+  longitude: number;
+  adresseApproximative: string;
 }

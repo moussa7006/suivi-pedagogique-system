@@ -1,9 +1,7 @@
-import { Classe } from './classe.model';
-
 export interface Matiere {
   id?: number;
-  codeMatiere?: string;
-  libelle?: string;
-  coefficient?: number;
-  classes?: Classe[];
+  code: string;
+  libelle: string;
+  volumeHoraireTotal: number;
+  departementId: number;
 }

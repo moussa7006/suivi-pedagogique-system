@@ -14,19 +14,19 @@ export const routes: Routes = [
       {
         path: "tab2",
         loadComponent: () =>
-          import("../profile/profile.page").then((m) => m.ProfilePage),
+          import("../planning/planning.page").then((m) => m.PlanningPage),
       },
       {
         path: "tab3",
         loadComponent: () =>
-          import("../historique/historique.page").then((m) => m.HistoriquePage),
+          import("../cahier-textes/cahier-textes.page").then(
+            (m) => m.CahierTextesPage,
+          ),
       },
       {
         path: "tab4",
         loadComponent: () =>
-          import("../cahier-textes/cahier-textes.page").then(
-            (m) => m.CahierTextesPage,
-          ),
+          import("../profile/profile.page").then((m) => m.ProfilePage),
       },
       {
         path: "",

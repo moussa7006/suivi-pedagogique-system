@@ -36,7 +36,7 @@ public class SeanceService {
 
     @Autowired
     private FicheProgressionRepository ficheProgressionRepository;
-    
+
     @Autowired
     private SalleRepository salleRepository;
 
@@ -54,40 +54,7 @@ public class SeanceService {
         }
 
         Seance seance = new Seance();
-        seance.setDateCours(dto.getDateCours());
-        seance.setHeureDebutReelle(dto.getHeureDebutReelle());
-        seance.setHeureFinReelle(dto.getHeureFinReelle());
-        seance.setStatut(dto.getStatut());
-        
-        if (dto.getSalleId() != null) {
-            Salle salle = salleRepository.findById(dto.getSalleId())
-                    .orElseThrow(() -> new RuntimeException("Salle non trouvée"));
-            seance.setSalle(salle);
-        }
-
-        if (dto.getEnseignantId() != null) {
-            Enseignant enseignant = enseignantRepository.findById(dto.getEnseignantId())
-                    .orElseThrow(() -> new RuntimeException("Enseignant non trouvé"));
-            seance.setEnseignant(enseignant);
-        }
-
-        if (dto.getEmploiDuTempsId() != null) {
-            EmploiDuTemps emploiDuTemps = emploiDuTempsRepository.findById(dto.getEmploiDuTempsId())
-                    .orElseThrow(() -> new RuntimeException("Emploi du temps non trouvé"));
-            seance.setEmploiDuTemps(emploiDuTemps);
-        }
-
-        if (dto.getEmargementId() != null) {
-            Emargement emargement = emargementRepository.findById(dto.getEmargementId())
-                    .orElseThrow(() -> new RuntimeException("Emargement non trouvé"));
-            seance.setEmargement(emargement);
-        }
-
-        if (dto.getFicheProgressionId() != null) {
-            FicheProgression ficheProgression = ficheProgressionRepository.findById(dto.getFicheProgressionId())
-                    .orElseThrow(() -> new RuntimeException("Fiche de progression non trouvée"));
-            seance.setFicheProgression(ficheProgression);
-        }
+        hydrateSeance(seance, dto);
 
         Seance saved = seanceRepository.save(seance);
         return convertToDto(saved);
@@ -102,6 +69,13 @@ public class SeanceService {
         Seance seance = seanceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Séance non trouvée"));
 
+        hydrateSeance(seance, dto);
+
+        Seance updated = seanceRepository.save(seance);
+        return convertToDto(updated);
+    }
+
+    private void hydrateSeance(Seance seance, SeanceDto dto) {
         seance.setDateCours(dto.getDateCours());
         seance.setHeureDebutReelle(dto.getHeureDebutReelle());
         seance.setHeureFinReelle(dto.getHeureFinReelle());
@@ -123,6 +97,15 @@ public class SeanceService {
             EmploiDuTemps emploiDuTemps = emploiDuTempsRepository.findById(dto.getEmploiDuTempsId())
                     .orElseThrow(() -> new RuntimeException("Emploi du temps non trouvé"));
             seance.setEmploiDuTemps(emploiDuTemps);
+            if (emploiDuTemps.getClasse() != null) {
+                seance.setClasse(emploiDuTemps.getClasse());
+            }
+        }
+
+        if (dto.getClasseId() != null) {
+            Classe classe = classeRepository.findById(dto.getClasseId())
+                    .orElseThrow(() -> new RuntimeException("Classe non trouvée"));
+            seance.setClasse(classe);
         }
 
         if (dto.getEmargementId() != null) {
@@ -136,9 +119,6 @@ public class SeanceService {
                     .orElseThrow(() -> new RuntimeException("Fiche de progression non trouvée"));
             seance.setFicheProgression(ficheProgression);
         }
-
-        Seance updated = seanceRepository.save(seance);
-        return convertToDto(updated);
     }
 
     public void deleteSeance(Integer id) {
@@ -184,7 +164,7 @@ public class SeanceService {
         dto.setHeureDebutReelle(seance.getHeureDebutReelle());
         dto.setHeureFinReelle(seance.getHeureFinReelle());
         dto.setStatut(seance.getStatut());
-        
+
         if (seance.getSalle() != null) {
             dto.setSalleId(seance.getSalle().getId());
         }
@@ -193,6 +173,9 @@ public class SeanceService {
         }
         if (seance.getEnseignant() != null) {
             dto.setEnseignantId(seance.getEnseignant().getId());
+        }
+        if (seance.getClasse() != null) {
+            dto.setClasseId(seance.getClasse().getId());
         }
         if (seance.getEmploiDuTemps() != null) {
             dto.setEmploiDuTempsId(seance.getEmploiDuTemps().getId());

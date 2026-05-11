@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import { Teacher } from '../models/user.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserService {
   private apiUrl = `${environment.apiUrl}/utilisateurs`;
@@ -42,7 +42,7 @@ export class UserService {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TeacherService {
   private apiUrl = `${environment.apiUrl}/utilisateurs`;
@@ -50,9 +50,9 @@ export class TeacherService {
   constructor(private http: HttpClient) {}
 
   getTeachers(): Observable<Teacher[]> {
-    return this.http.get<Teacher[]>(`${this.apiUrl}/lister-tous?t=${new Date().getTime()}`).pipe(
-      map(users => users.filter(u => u.role === 'ENSEIGNANT' || u.role === 'enseignant'))
-    );
+    return this.http
+      .get<Teacher[]>(`${this.apiUrl}/lister-tous?t=${new Date().getTime()}`)
+      .pipe(map((users) => users.filter((u) => u.role === 'ENSEIGNANT')));
   }
 
   getTeacherById(id: number): Observable<Teacher> {

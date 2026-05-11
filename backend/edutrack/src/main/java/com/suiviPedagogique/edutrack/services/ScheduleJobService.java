@@ -29,7 +29,7 @@ public class ScheduleJobService {
 
     @Autowired
     private SeanceRepository seanceRepository;
-    
+
     @Autowired
     private QRCodeRepository qrCodeRepository;
 
@@ -68,6 +68,7 @@ public class ScheduleJobService {
                 seance.setStatut(StatutSeance.PREVUE);
                 seance.setSalle(emploi.getSalle());
                 seance.setEnseignant(emploi.getEnseignant());
+                seance.setClasse(emploi.getClasse());
                 seance.setEmploiDuTemps(emploi);
 
                 // Initialiser l'émargement
@@ -103,7 +104,7 @@ public class ScheduleJobService {
                     qrCode.setDateHeureCreation(LocalDateTime.now());
                     qrCode.setDateHeureExpiration(LocalDateTime.of(seance.getDateCours(), seance.getHeureFinReelle()));
                     qrCode.setEstValide(true);
-                    
+
                     qrCodeRepository.save(qrCode);
                     seance.setQrCode(qrCode);
                     seanceRepository.save(seance);

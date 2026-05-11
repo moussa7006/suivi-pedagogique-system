@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatiereService } from '../../core/services/matiere.service';
-import { ClasseService } from '../../core/services/classe.service';
+import { DepartementService } from '../../core/services/departement.service';
 import { Matiere } from '../../core/models/matiere.model';
-import { Classe } from '../../core/models/classe.model';
+import { Departement } from '../../core/models/departement.model';
 import { timeout } from 'rxjs/operators';
 
 @Component({
@@ -55,10 +55,10 @@ import { timeout } from 'rxjs/operators';
             </div>
             <div class="section-grid">
               <div class="input-group">
-                <label>Code Matière</label>
+                <label>Code</label>
                 <input
                   type="text"
-                  [(ngModel)]="currentMatiere.codeMatiere"
+                  [(ngModel)]="currentMatiere.code"
                   placeholder="Ex: INFO101"
                 />
               </div>
@@ -71,14 +71,19 @@ import { timeout } from 'rxjs/operators';
                 />
               </div>
               <div class="input-group">
-                <label>Coefficient</label>
-                <input type="number" [(ngModel)]="currentMatiere.coefficient" />
+                <label>Volume Horaire Total</label>
+                <input
+                  type="number"
+                  [(ngModel)]="currentMatiere.volumeHoraireTotal"
+                  placeholder="Ex: 60"
+                />
               </div>
               <div class="input-group">
-                <label>Classe Rattachée</label>
-                <select [(ngModel)]="selectedClasseId">
-                  <option *ngFor="let c of classes" [value]="c.id">
-                    {{ c.filiere }} - {{ c.niveau }}
+                <label>Département</label>
+                <select [(ngModel)]="currentMatiere.departementId">
+                  <option [value]="null" disabled>Sélectionnez un département</option>
+                  <option *ngFor="let d of departements" [value]="d.id">
+                    {{ d.libelle }}
                   </option>
                 </select>
               </div>
@@ -125,22 +130,16 @@ import { timeout } from 'rxjs/operators';
         <div class="matiere-card" *ngFor="let m of filteredMatieres">
           <div class="card-accent"></div>
           <div class="card-body">
-            <div class="card-code">{{ m.codeMatiere }}</div>
+            <div class="card-code">{{ m.code }}</div>
             <div class="card-title">{{ m.libelle }}</div>
             <div class="card-details">
               <div class="detail-item">
                 <i class="pi pi-calculator"></i>
-                <span
-                  >Coefficient : <strong>{{ m.coefficient }}</strong></span
-                >
+                <span>Volume : <strong>{{ m.volumeHoraireTotal }}h</strong></span>
               </div>
               <div class="detail-item">
                 <i class="pi pi-folder"></i>
-                <span>{{
-                  m.classes && m.classes.length > 0
-                    ? m.classes[0].filiere + ' - ' + m.classes[0].niveau
-                    : 'Non assignée'
-                }}</span>
+                <span>{{ getDepartementLibelle(m.departementId) }}</span>
               </div>
             </div>
           </div>
@@ -181,11 +180,10 @@ export class Matieres implements OnInit {
   matieres: Matiere[] = [];
   filteredMatieres: Matiere[] = [];
   searchText: string = '';
-  classes: Classe[] = [];
+  departements: Departement[] = [];
   displayForm: boolean = false;
   editingId: number | null = null;
   currentMatiere: Partial<Matiere> = {};
-  selectedClasseId: number | null = null;
   errorMessage: string = '';
   isSaving: boolean = false;
   confirmDeleteId: number | null = null;
@@ -193,12 +191,12 @@ export class Matieres implements OnInit {
 
   constructor(
     private matiereService: MatiereService,
-    private classeService: ClasseService,
+    private departementService: DepartementService,
   ) {}
 
   ngOnInit() {
     this.loadMatieres();
-    this.classeService.getAll().subscribe((c) => (this.classes = c));
+    this.departementService.getAll().subscribe((d) => (this.departements = d));
   }
 
   loadMatieres() {
@@ -212,17 +210,22 @@ export class Matieres implements OnInit {
     const text = this.searchText.toLowerCase();
     this.filteredMatieres = this.matieres.filter(
       (m) =>
-        (m.codeMatiere || '').toLowerCase().includes(text) ||
+        (m.code || '').toLowerCase().includes(text) ||
         (m.libelle || '').toLowerCase().includes(text),
     );
+  }
+
+  getDepartementLibelle(departementId: number | undefined): string {
+    if (!departementId) return 'Non assigné';
+    const d = this.departements.find((dept) => dept.id === departementId);
+    return d ? d.libelle : 'Non assigné';
   }
 
   showAddForm() {
     this.editingId = null;
     this.errorMessage = '';
     this.isSaving = false;
-    this.currentMatiere = { codeMatiere: '', libelle: '', coefficient: 1 };
-    this.selectedClasseId = null;
+    this.currentMatiere = { code: '', libelle: '', volumeHoraireTotal: 60, departementId: undefined };
     this.displayForm = true;
   }
 
@@ -231,7 +234,6 @@ export class Matieres implements OnInit {
     this.errorMessage = '';
     this.isSaving = false;
     this.currentMatiere = { ...m };
-    this.selectedClasseId = m.classes && m.classes.length > 0 ? m.classes[0].id! : null;
     this.displayForm = true;
   }
 
@@ -240,19 +242,17 @@ export class Matieres implements OnInit {
 
     const matiereToSave: Matiere = {
       ...this.currentMatiere,
-      codeMatiere: this.currentMatiere.codeMatiere?.trim(),
-      libelle: this.currentMatiere.libelle?.trim(),
-      coefficient: Number(this.currentMatiere.coefficient || 1),
+      code: (this.currentMatiere.code || '').trim(),
+      libelle: (this.currentMatiere.libelle || '').trim(),
+      volumeHoraireTotal: Number(this.currentMatiere.volumeHoraireTotal || 0),
+      departementId: Number(this.currentMatiere.departementId),
     };
 
-    if (!matiereToSave.codeMatiere || !matiereToSave.libelle || !matiereToSave.coefficient) {
+    if (!matiereToSave.code || !matiereToSave.libelle || !matiereToSave.volumeHoraireTotal || !matiereToSave.departementId) {
       this.errorMessage =
-        'Veuillez renseigner le code matière, le libellé et le coefficient avant d’enregistrer.';
+        'Veuillez renseigner le code, le libellé, le volume horaire total et le département avant d\'enregistrer.';
       return;
     }
-
-    const classeSelectionnee = this.classes.find((c) => c.id === Number(this.selectedClasseId));
-    matiereToSave.classes = classeSelectionnee ? [classeSelectionnee] : [];
 
     this.isSaving = true;
 
@@ -275,7 +275,6 @@ export class Matieres implements OnInit {
         this.isSaving = false;
         this.errorMessage = '';
         this.currentMatiere = {};
-        this.selectedClasseId = null;
         this.editingId = null;
       },
       error: (error) => {
@@ -294,14 +293,14 @@ export class Matieres implements OnInit {
 
         if (error?.status === 403) {
           this.errorMessage =
-            'Vous n’avez pas les droits nécessaires pour enregistrer une matière.';
+            'Vous n\'avez pas les droits nécessaires pour enregistrer une matière.';
           return;
         }
 
         this.errorMessage =
           error?.error?.error ||
           error?.error?.message ||
-          'Impossible d’enregistrer la matière. Vérifiez le backend et réessayez.';
+          'Impossible d\'enregistrer la matière. Vérifiez le backend et réessayez.';
       },
     });
   }

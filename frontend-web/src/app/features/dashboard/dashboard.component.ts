@@ -416,7 +416,11 @@ interface HubTile {
           content: '';
           position: absolute;
           inset: 0;
-          background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 15%, transparent), transparent);
+          background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--accent) 15%, transparent),
+            transparent
+          );
           opacity: 0.5;
         }
 
@@ -430,7 +434,11 @@ interface HubTile {
           width: 52px;
           height: 52px;
           border-radius: 16px;
-          background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent), black 20%));
+          background: linear-gradient(
+            135deg,
+            var(--accent),
+            color-mix(in srgb, var(--accent), black 20%)
+          );
           color: #ffffff;
           display: flex;
           align-items: center;
@@ -903,7 +911,7 @@ export class DashboardComponent implements OnInit {
     this.attendanceService.getAllAttendances().subscribe((data) => {
       if (!data) return;
       this.hubTiles[5].indicator = `${data.length} émargement${data.length > 1 ? 's' : ''}`;
-      const confirmedCount = data.filter((item) => item.estConfirme).length;
+      const confirmedCount = data.filter((item) => item.statut === 'VALIDE').length;
       this.stats[3].value = data.length ? Math.round((confirmedCount / data.length) * 100) : 0;
 
       const sorted = data.sort(
@@ -914,13 +922,13 @@ export class DashboardComponent implements OnInit {
         initials: e.enseignantNomPrenom
           ? e.enseignantNomPrenom.substring(0, 2).toUpperCase()
           : '??',
-        action: e.estConfirme ? 'a validé sa séance.' : 'a initié un scan QR.',
-        meta: e.matiereLibelle || 'Séance',
+        action: e.statut === 'VALIDE' ? 'a émargé avec succès.' : 'a tenté un émargement.',
+        meta: e.lieu || 'Séance',
         time: new Date(e.dateHeureScan!).toLocaleTimeString('fr-FR', {
           hour: '2-digit',
           minute: '2-digit',
         }),
-        color: e.estConfirme ? '#10b981' : '#f59e0b',
+        color: e.statut === 'VALIDE' ? '#10b981' : '#f59e0b',
       }));
     });
   }

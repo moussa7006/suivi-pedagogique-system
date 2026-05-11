@@ -25,7 +25,7 @@ import { Emargement } from '../../core/models/attendance.model';
             <div class="header-left-titles">
               <h1>Suivi des Émargements</h1>
               <p>
-                Historique des présences enregistrées aujourd'hui ({{ todayLogs.length }} séances)
+                Historique des émargements enregistrés ({{ todayLogs.length }} entrées)
               </p>
             </div>
           </div>
@@ -42,26 +42,26 @@ import { Emargement } from '../../core/models/attendance.model';
             <i class="pi pi-check-circle"></i>
           </div>
           <div class="stat-content">
-            <span class="val">92%</span>
-            <span class="lab">Taux de présence</span>
-          </div>
-        </div>
-        <div class="mini-stat">
-          <div class="stat-icon blue">
-            <i class="pi pi-book"></i>
-          </div>
-          <div class="stat-content">
-            <span class="val">42</span>
-            <span class="lab">Séances validées</span>
+            <span class="val">{{ getStats().valides }}</span>
+            <span class="lab">Validés</span>
           </div>
         </div>
         <div class="mini-stat">
           <div class="stat-icon orange">
-            <i class="pi pi-clock"></i>
+            <i class="pi pi-exclamation-triangle"></i>
           </div>
           <div class="stat-content">
-            <span class="val">3</span>
-            <span class="lab">Retards</span>
+            <span class="val">{{ getStats().horsPerimetre }}</span>
+            <span class="lab">Hors périmètre</span>
+          </div>
+        </div>
+        <div class="mini-stat">
+          <div class="stat-icon blue">
+            <i class="pi pi-file"></i>
+          </div>
+          <div class="stat-content">
+            <span class="val">{{ getStats().justifies }}</span>
+            <span class="lab">Justifiés</span>
           </div>
         </div>
       </div>
@@ -69,7 +69,7 @@ import { Emargement } from '../../core/models/attendance.model';
       <div class="table-card">
         <div class="table-header custom-table-header">
           <div class="table-header-top">
-            <h3>Émargements du jour</h3>
+            <h3>Émargements</h3>
             <span class="record-count">{{ filteredLogs.length }} / {{ todayLogs.length }}</span>
           </div>
 
@@ -79,7 +79,7 @@ import { Emargement } from '../../core/models/attendance.model';
               <i class="pi pi-search"></i>
               <input
                 type="text"
-                placeholder="Rechercher enseignant, matière, statut..."
+                placeholder="Rechercher enseignant, lieu, statut..."
                 [(ngModel)]="searchText"
                 (input)="filterLogs()"
               />
@@ -91,15 +91,14 @@ import { Emargement } from '../../core/models/attendance.model';
             <thead>
               <tr>
                 <th>Enseignant</th>
-                <th>Matière / Lieu</th>
-                <th>Heure</th>
-                <th>Méthode</th>
+                <th>Lieu / Adresse</th>
+                <th>Date & Heure</th>
                 <th>Statut</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngIf="filteredLogs.length === 0">
-                <td colspan="5" class="text-center empty-state-cell">
+                <td colspan="4" class="text-center empty-state-cell">
                   Aucun enregistrement trouvé.
                 </td>
               </tr>
@@ -117,9 +116,9 @@ import { Emargement } from '../../core/models/attendance.model';
                   </td>
                   <td>
                     <div class="sub-info">
-                      <span class="subject">{{ log.matiereLibelle }}</span>
+                      <span class="subject">{{ log.lieu || 'Non spécifié' }}</span>
                       <small class="location"
-                        ><i class="pi pi-map-marker"></i> {{ log.lieu }}</small
+                        ><i class="pi pi-map-marker"></i> {{ log.adresseApproximative }}</small
                       >
                     </div>
                   </td>
@@ -127,26 +126,14 @@ import { Emargement } from '../../core/models/attendance.model';
                     <span class="time-cell">
                       <i class="pi pi-clock"></i>
                       {{
-                        log.dateHeureScan ? (log.dateHeureScan | date: 'HH:mm') : log.heureSeance
+                        log.dateHeureScan ? (log.dateHeureScan | date: 'dd/MM/yy HH:mm') : log.heureSeance
                       }}
                     </span>
                   </td>
                   <td>
-                    <span
-                      class="method-tag"
-                      [ngClass]="log.methode === 'QR Code' ? 'qr-method' : 'manual-method'"
-                    >
-                      <i
-                        class="pi"
-                        [ngClass]="log.methode === 'QR Code' ? 'pi-qrcode' : 'pi-pencil'"
-                      ></i>
-                      {{ log.methode }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="status-pill" [ngClass]="getStatusClass(log.statutAffichage || '')">
+                    <span class="status-pill" [ngClass]="getStatusClass(log.statut || '')">
                       <span class="status-dot"></span>
-                      {{ log.statutAffichage }}
+                      {{ getStatutLabel(log.statut) }}
                     </span>
                   </td>
                 </tr>
@@ -203,8 +190,8 @@ import { Emargement } from '../../core/models/attendance.model';
 
           p {
             color: #64748b;
-            margin: 4px 0 0;
-            font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+            margin: 6px 0 0;
+            font-size: clamp(0.8rem, 1.5vw, 0.95rem);
             font-weight: 500;
           }
         }
@@ -212,11 +199,10 @@ import { Emargement } from '../../core/models/attendance.model';
         .header-actions {
           display: flex;
           gap: 10px;
-          flex-shrink: 0;
 
           @media (max-width: 600px) {
             width: 100%;
-            justify-content: flex-start;
+            justify-content: flex-end;
           }
         }
       }
@@ -231,99 +217,80 @@ import { Emargement } from '../../core/models/attendance.model';
         align-items: center;
         gap: 8px;
         border: none;
-        transition:
-          transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-          box-shadow 0.2s ease,
-          background-color 0.2s ease,
-          border-color 0.2s ease,
-          color 0.2s ease;
+        transition: all 0.15s ease;
         position: relative;
         overflow: hidden;
 
         &::before {
           content: '';
           position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-          transition: left 0.4s ease;
+          inset: 0;
+          background: rgba(255, 255, 255, 0.05);
+          transition: opacity 0.3s;
+          opacity: 0;
         }
 
         i {
           font-size: 1rem;
-          transition: transform 0.2s ease;
         }
 
         &.btn-outline {
           background: white;
-          border: 2px solid rgba(226, 232, 240, 0.8);
+          border: 1px solid var(--border-color);
           color: #475569;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 
           &:hover {
-            transform: translateY(-3px) scale(1.02);
-            background: var(--primary-color);
-            border-color: var(--primary-color);
-            color: #fff;
-            box-shadow:
-              0 10px 20px rgba(37, 99, 235, 0.2),
-              0 4px 8px rgba(37, 99, 235, 0.1);
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
 
             &::before {
-              left: 100%;
-            }
-
-            i {
-              transform: rotate(6deg) scale(1.1);
+              opacity: 1;
             }
           }
 
           &:active {
-            transform: translateY(-1px) scale(1);
-            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+            transform: scale(0.97);
           }
         }
       }
 
       .stats-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 16px;
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
 
         @media (max-width: 768px) {
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
           gap: 12px;
         }
 
         @media (max-width: 480px) {
-          grid-template-columns: 1fr;
+          flex-direction: column;
         }
 
         .mini-stat {
           background: white;
+          flex: 1;
+          min-width: 150px;
           padding: 18px 20px;
           border-radius: 14px;
-          border: 2px solid rgba(226, 232, 240, 0.9);
+          border: 1px solid rgba(226, 232, 240, 0.9);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
           display: flex;
           align-items: center;
-          gap: 14px;
-          transition:
-            transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-            box-shadow 0.3s ease,
-            border-color 0.3s ease;
+          gap: 16px;
+          transition: all 0.2s;
 
           &:hover {
-            transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-            border-color: rgba(59, 130, 246, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
           }
 
           .stat-icon {
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -352,14 +319,14 @@ import { Emargement } from '../../core/models/attendance.model';
             flex-direction: column;
 
             .val {
-              font-size: 1.6rem;
+              font-size: 1.5rem;
               font-weight: 800;
               color: #0f172a;
               line-height: 1;
             }
 
             .lab {
-              font-size: 0.8rem;
+              font-size: 0.75rem;
               color: #64748b;
               font-weight: 600;
               margin-top: 4px;
@@ -372,139 +339,145 @@ import { Emargement } from '../../core/models/attendance.model';
         background: white;
         border-radius: 16px;
         border: 1px solid rgba(226, 232, 240, 0.9);
-        box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
-        overflow: hidden;
-        overflow-x: auto;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 
         &:hover {
-          box-shadow: 0 14px 40px rgba(2, 6, 23, 0.08);
-          border-color: rgba(59, 130, 246, 0.15);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
         }
       }
 
       .table-header {
-        padding: 24px;
-        background: rgba(248, 250, 252, 0.4);
-        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(241, 245, 249, 0.9);
+      }
+
+      .custom-table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .table-header-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
 
         h3 {
           margin: 0;
           font-size: 1.15rem;
           font-weight: 700;
-          color: #1e293b;
+          color: #0f172a;
         }
 
         .record-count {
-          font-size: 0.85rem;
-          color: #64748b;
-          font-weight: 600;
-          background: rgba(241, 245, 249, 0.8);
-          padding: 6px 12px;
-          border-radius: 8px;
+          background: rgba(219, 234, 254, 0.7);
+          padding: 3px 10px;
+          border-radius: 999px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #1d4ed8;
         }
       }
 
-      .custom-table-header {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 24px;
-        position: relative;
-      }
-
-      .table-header-top {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
       .centered-search {
-        align-self: stretch;
-        max-width: 100%;
-        display: flex;
-        justify-content: center;
+        flex: 1;
+        min-width: 240px;
+        max-width: 380px;
       }
 
       .search-input-wrapper {
         position: relative;
         width: 100%;
-        max-width: 400px;
 
         .pi-search {
           position: absolute;
-          left: 16px;
+          left: 14px;
           top: 50%;
           transform: translateY(-50%);
-          color: #64748b;
+          color: #94a3b8;
+          font-size: 0.9rem;
+          pointer-events: none;
         }
 
         input {
           width: 100%;
-          padding: 12px 16px 12px 42px;
-          border-radius: 12px;
-          border: 1px solid #cbd5e1;
-          outline: none;
-          background: rgba(255, 255, 255, 0.9);
-          font-family: inherit;
+          padding: 10px 14px 10px 40px;
+          border-radius: 10px;
+          border: 1px solid var(--border-color);
+          font-size: 0.88rem;
+          background: #f8fafc;
           transition: all 0.2s;
+          box-sizing: border-box;
+
+          &:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+          }
+
+          &::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+          }
         }
       }
 
       .table-scrollless {
         overflow-x: auto;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
       }
 
       .table-scrollless::-webkit-scrollbar {
-        width: 0;
-        height: 0;
+        height: 6px;
       }
 
       .empty-state-cell {
-        padding: 30px;
+        padding: 48px 24px !important;
         color: #94a3b8;
-        text-align: center;
+        font-size: 0.95rem;
       }
 
       .attendance-table {
         width: 100%;
         border-collapse: collapse;
+        font-size: 0.9rem;
+        min-width: 580px;
 
         thead {
           th {
             padding: 14px 20px;
-            background: rgba(148, 163, 184, 0.08);
             text-align: left;
-            color: #475569;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 700;
+            color: #64748b;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            border-bottom: 2px solid rgba(226, 232, 240, 0.8);
+            background: rgba(248, 250, 252, 0.6);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
           }
         }
 
         tbody {
           tr {
-            transition: background-color 0.15s ease;
-            border-bottom: 1px solid rgba(241, 245, 249, 0.8);
+            transition: background 0.15s;
 
             &:last-child {
-              border-bottom: none;
+              td {
+                border-bottom: none;
+              }
             }
 
             &:hover {
-              background: rgba(37, 99, 235, 0.03);
+              background: rgba(248, 250, 252, 0.6);
             }
           }
 
           td {
-            padding: 18px 20px;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(241, 245, 249, 0.9);
             vertical-align: middle;
-            color: #334155;
-            font-size: 0.9rem;
           }
         }
       }
@@ -515,25 +488,23 @@ import { Emargement } from '../../core/models/attendance.model';
         gap: 12px;
 
         .teacher-avatar {
-          width: 40px;
-          height: 40px;
-          border-radius: 12px;
-          background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(148, 163, 184, 0.08));
+          width: 38px;
+          height: 38px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(148, 163, 184, 0.07));
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: 700;
-          font-size: 0.85rem;
+          font-size: 0.78rem;
           color: var(--primary-color);
-          border: 2px solid rgba(255, 255, 255, 0.9);
           flex-shrink: 0;
         }
 
         .teacher-name {
           strong {
-            color: #0f172a;
-            font-weight: 700;
-            font-size: 0.95rem;
+            color: #1e293b;
+            font-size: 0.88rem;
           }
         }
       }
@@ -544,31 +515,32 @@ import { Emargement } from '../../core/models/attendance.model';
         gap: 4px;
 
         .subject {
-          color: #0f172a;
           font-weight: 600;
-          font-size: 0.9rem;
+          color: #334155;
+          font-size: 0.88rem;
         }
 
         .location {
-          color: #94a3b8;
+          color: #64748b;
           font-size: 0.8rem;
           display: flex;
           align-items: center;
           gap: 5px;
 
           i {
+            color: #94a3b8;
             font-size: 0.75rem;
           }
         }
       }
 
       .time-cell {
+        font-size: 0.85rem;
+        color: #475569;
+        font-weight: 500;
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-weight: 600;
-        color: #334155;
-        font-size: 0.9rem;
+        gap: 6px;
 
         i {
           color: #94a3b8;
@@ -576,42 +548,17 @@ import { Emargement } from '../../core/models/attendance.model';
         }
       }
 
-      .method-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        padding: 5px 11px;
-        border-radius: 8px;
-        border: 1px solid;
-
-        i {
-          font-size: 0.85rem;
-        }
-
-        &.qr-method {
-          background: rgba(37, 99, 235, 0.08);
-          color: #2563eb;
-          border-color: rgba(37, 99, 235, 0.25);
-        }
-
-        &.manual-method {
-          background: rgba(241, 245, 249, 0.9);
-          color: #64748b;
-          border-color: rgba(226, 232, 240, 0.7);
-        }
-      }
-
       .status-pill {
         padding: 6px 14px;
         border-radius: 999px;
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
         gap: 7px;
         border: 1px solid;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
 
         .status-dot {
           width: 7px;
@@ -620,10 +567,10 @@ import { Emargement } from '../../core/models/attendance.model';
           display: inline-block;
         }
 
-        &.present {
+        &.valide {
           background: rgba(220, 252, 231, 0.85);
           color: #166534;
-          border-color: rgba(187, 240, 208, 0.6);
+          border-color: rgba(34, 197, 94, 0.5);
 
           .status-dot {
             background: #22c55e;
@@ -631,42 +578,37 @@ import { Emargement } from '../../core/models/attendance.model';
           }
         }
 
-        &.en-retard {
-          background: rgba(254, 249, 195, 0.85);
-          color: #854d0e;
-          border-color: rgba(253, 230, 138, 0.6);
-
-          .status-dot {
-            background: #eab308;
-            box-shadow: 0 0 8px rgba(234, 179, 8, 0.5);
-          }
-        }
-
-        &.absent {
+        &.hors-perimetre {
           background: rgba(254, 226, 226, 0.85);
-          color: #991b1b;
-          border-color: rgba(254, 202, 202, 0.6);
+          color: #b91c1c;
+          border-color: rgba(239, 68, 68, 0.5);
 
           .status-dot {
             background: #ef4444;
-            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+          }
+        }
+
+        &.justifie {
+          background: rgba(254, 237, 195, 0.85);
+          color: #b45309;
+          border-color: rgba(251, 191, 36, 0.5);
+
+          .status-dot {
+            background: #f59e0b;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
           }
         }
       }
 
       @media (max-width: 768px) {
         .table-card {
-          overflow-x: auto;
-
           .attendance-table {
-            min-width: 600px;
+            font-size: 0.82rem;
           }
         }
 
         .page-header {
-          flex-direction: column;
-          align-items: flex-start;
-
           .header-actions {
             width: 100%;
           }
@@ -675,8 +617,6 @@ import { Emargement } from '../../core/models/attendance.model';
 
       @media (max-width: 480px) {
         .header-left h1 {
-          font-size: 1.3rem;
-
           i {
             display: none;
           }
@@ -704,10 +644,30 @@ export class AttendanceComponent implements OnInit {
     this.filteredLogs = this.todayLogs.filter(
       (log) =>
         (log.enseignantNomPrenom || '').toLowerCase().includes(text) ||
-        (log.matiereLibelle || '').toLowerCase().includes(text) ||
-        (log.statutAffichage || '').toLowerCase().includes(text) ||
-        (log.lieu || '').toLowerCase().includes(text),
+        (log.lieu || '').toLowerCase().includes(text) ||
+        (log.adresseApproximative || '').toLowerCase().includes(text) ||
+        (log.statut || '').toLowerCase().includes(text),
     );
+  }
+
+  getStats() {
+    const valides = this.todayLogs.filter((l) => l.statut === 'VALIDE').length;
+    const horsPerimetre = this.todayLogs.filter((l) => l.statut === 'HORS_PERIMETRE').length;
+    const justifies = this.todayLogs.filter((l) => l.statut === 'JUSTIFIE').length;
+    return { valides, horsPerimetre, justifies };
+  }
+
+  getStatutLabel(statut: string | undefined): string {
+    switch (statut) {
+      case 'VALIDE':
+        return 'Validé';
+      case 'HORS_PERIMETRE':
+        return 'Hors périmètre';
+      case 'JUSTIFIE':
+        return 'Justifié';
+      default:
+        return statut || 'N/A';
+    }
   }
 
   getInitials(name: string): string {
@@ -718,14 +678,14 @@ export class AttendanceComponent implements OnInit {
     return name.substring(0, 2).toUpperCase();
   }
 
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'Présent':
-        return 'present';
-      case 'En retard':
-        return 'en-retard';
-      case 'Absent':
-        return 'absent';
+  getStatusClass(statut: string): string {
+    switch (statut) {
+      case 'VALIDE':
+        return 'valide';
+      case 'HORS_PERIMETRE':
+        return 'hors-perimetre';
+      case 'JUSTIFIE':
+        return 'justifie';
       default:
         return '';
     }

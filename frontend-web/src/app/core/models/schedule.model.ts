@@ -1,36 +1,22 @@
-import { Classe } from './classe.model';
-import { Matiere } from './matiere.model';
-import { Teacher } from './teacher.model';
-
-export type TypeRecurrence = 'HEBDOMADAIRE' | 'MENSUEL' | 'UNIQUE';
+import { TypeRecurrence, JourSemaine } from './enums';
+import { Seance } from './seance.model';
 
 export interface EmploiDuTemps {
   id?: number;
   titre?: string;
-  typeRecurrence?: TypeRecurrence;
-  dateDebutValidite?: string;
-  dateFinValidite?: string;
-  jourDeSemaine?: string;
+  typeRecurrence: TypeRecurrence;
+  dateDebutValidite: string;
+  dateFinValidite: string;
+  jourSemaine?: JourSemaine;
   jourDuMois?: number;
   dateSpecifique?: string;
-  heureDebut?: string;
-  heureFin?: string;
-  salle?: string;
-  classe?: Classe;
-  matiere?: Matiere;
-  enseignant?: Teacher;
-  statut?: boolean; // Optionnel sur le front
+  heureDebut: string;
+  heureFin: string;
+  salleId: number;
+  enseignantId: number;
+  classeId: number;
+  matiereId: number;
+  anneeUniversitaireId: number;
 }
 
-export interface Seance {
-  id?: number;
-  date?: string;
-  heureDebut?: string;
-  heureFin?: string;
-  salle?: string;
-  tokenQRCode?: string;
-  enseignant?: Teacher;
-  classe?: Classe;
-  matiere?: Matiere;
-  emploiDuTemps?: EmploiDuTemps;
-}
+export type { Seance };

@@ -36,14 +36,14 @@ public class EmargementService {
     private static final double ECOLE_LON = 3.04197;
     private static final double MAX_DISTANCE_KM = 0.5;
 
-    public String faireEmargement(EmargementRequest request) {
+    public Emargement faireEmargement(EmargementRequest request) {
         Seance seance = seanceRepository.findByTokenQRCode(request.getTokenQRCode())
                 .orElseThrow(() -> new RuntimeException("QR Code invalide ou séance inexistante."));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Utilisateur currentUser = utilisateurRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non authentifié."));
-        
+
         if (seance.getEnseignant() == null || !seance.getEnseignant().getId().equals(currentUser.getId())) {
             throw new RuntimeException("Vous n'êtes pas l'enseignant assigné à cette séance.");
         }
@@ -72,7 +72,7 @@ public class EmargementService {
         } else if (emargement.getStatut() == StatutEmargement.VALIDE) {
             throw new RuntimeException("Émargement déjà effectué pour cette séance.");
         }
-        
+
         emargement.setDateHeureScan(LocalDateTime.now());
         emargement.setLatitude(request.getLatitude());
         emargement.setLongitude(request.getLongitude());
@@ -85,7 +85,7 @@ public class EmargementService {
         seance.setEmargement(emargement);
         seanceRepository.save(seance);
 
-        return "Émargement validé avec succès !";
+        return emargement;
     }
 
     private double calculateDistanceInKilometers(double lat1, double lon1, double lat2, double lon2) {
@@ -108,7 +108,7 @@ public class EmargementService {
             dto.setLongitude(e.getLongitude());
             dto.setAdresseApproximative(e.getAdresseApproximative());
             dto.setStatut(e.getStatut());
-            
+
             Seance seance = e.getSeance();
             if (seance != null) {
                 if (seance.getEnseignant() != null) {

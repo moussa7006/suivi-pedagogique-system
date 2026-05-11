@@ -1,15 +1,23 @@
-export interface LessonLog {
+export interface FicheProgression {
   id?: number;
-  titreCours?: string;
-  contenu?: string;
-  dateCreation?: string;
-  pieceJointe?: string;
-  statutValidite?: string; // "En attente", "Validé", "Rejeté"
-
-  // Champs ajoutés par le DTO pour l'affichage
+  dateSaisie: string;
+  contenuDetaille: string;
+  objectifs: string;
+  travaux: string;
+  estValideAdmin: boolean;
+  dateValidation?: string;
   enseignantNomPrenom?: string;
   matiereLibelle?: string;
   dateSeance?: string;
   heureSeance?: string;
   seanceId?: number;
 }
+
+export interface FicheProgressionRequest {
+  dateSaisie: string;
+  contenuDetaille: string;
+  objectifs: string;
+  travaux: string;
+}
+
+export type { FicheProgression as LessonLog };

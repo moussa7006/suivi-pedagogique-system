@@ -1,86 +1,247 @@
-<ion-content [fullscreen]="true" class="ion-padding">
-  <!-- Header Supérieur avec Paramètres -->
-  <div class="top-header animate-fade-in">
-    <div class="user-greeting">
-      <h1>Bonjour, {{ teacher.firstName }} {{ teacher.lastName }} 👋</h1>
-      <p>Bienvenue sur votre espace</p>
+<ion-content [fullscreen]="true">
+  <!-- ========================================= -->
+  <!-- DECORATIVE BACKGROUND ELEMENTS            -->
+  <!-- ========================================= -->
+  <div class="bg-decoration">
+    <div class="bg-circle bg-circle--1"></div>
+    <div class="bg-circle bg-circle--2"></div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- TOP HEADER                                -->
+  <!-- ========================================= -->
+  <div class="dashboard-header animate-fade-in">
+    <div class="header-left">
+      <div class="avatar-wrapper">
+        <div class="avatar">
+          <span>{{ teacherInitials }}</span>
+        </div>
+        <div class="status-dot"></div>
+      </div>
+      <div class="header-text">
+        <p class="greeting">Bonjour 👋</p>
+        <h1 class="teacher-name">
+          {{ teacher.firstName }} {{ teacher.lastName }}
+        </h1>
+      </div>
     </div>
-    <div class="header-actions">
-      <ion-button fill="clear" (click)="navigateTo('/tabs/tabs/tab2')" class="settings-btn">
-        <ion-icon name="settings-outline"></ion-icon>
+    <div class="header-right">
+      <ion-button fill="clear" class="notif-btn" (click)="openNotifications()">
+        <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+        <ion-badge color="danger" class="notif-badge"
+          >{{ notificationCount }}</ion-badge
+        >
       </ion-button>
     </div>
   </div>
 
-  <!-- LE HUB D'ACTIONS CENTRAL -->
-  <div class="action-hub">
-    <!-- CAHIER DE TEXTES -->
-    <div
-      class="action-tile blue animate-scale-in"
-      style="--delay: 100ms"
-      (click)="navigateTo('/tabs/tabs/tab4')"
-    >
-      <div class="icon-wrapper">
-        <ion-icon name="book-outline"></ion-icon>
-      </div>
-      <span>Cahier de<br />Textes</span>
-      <ion-badge *ngIf="!isCahierFait" color="warning" class="tile-badge">À remplir</ion-badge>
+  <!-- ========================================= -->
+  <!-- QUICK STATS ROW                           -->
+  <!-- ========================================= -->
+  <div class="quick-stats animate-slide-up" style="--delay: 100ms">
+    <div class="stat-chip stat-chip--primary">
+      <ion-icon name="school-outline"></ion-icon>
+      <span>{{ totalSeances }} séances</span>
     </div>
-
-    <!-- EMMARGER -->
-    <div
-      class="action-tile purple animate-scale-in"
-      style="--delay: 200ms"
-      (click)="navigateTo('/scan-qr')"
-    >
-      <div class="icon-wrapper">
-        <ion-icon name="qr-code-outline"></ion-icon>
-      </div>
-      <span>Emmarger sa<br />séance</span>
+    <div class="stat-chip stat-chip--accent">
+      <ion-icon name="time-outline"></ion-icon>
+      <span>{{ totalHeures }}h</span>
     </div>
-
-    <!-- HISTORIQUE -->
-    <div
-      class="action-tile cyan animate-scale-in"
-      style="--delay: 300ms"
-      (click)="navigateTo('/tabs/tabs/tab3')"
-    >
-      <div class="icon-wrapper">
-        <ion-icon name="time-outline"></ion-icon>
-      </div>
-      <span>Historique<br />des Séances</span>
-    </div>
-
-    <!-- MON PLANNING -->
-    <div
-      class="action-tile pink animate-scale-in"
-      style="--delay: 400ms"
-      (click)="navigateTo('/planning')"
-    >
-      <div class="icon-wrapper">
-        <ion-icon name="calendar-outline"></ion-icon>
-      </div>
-      <span>Mon Planning<br />& Cours</span>
+    <div class="stat-chip stat-chip--success">
+      <ion-icon name="checkmark-circle-outline"></ion-icon>
+      <span>{{ completedSeances }} faites</span>
     </div>
   </div>
 
-  <!-- GRAPHIQUE DE VOLUME HORAIRE -->
-  <div class="modern-chart-card animate-slide-up">
-    <h3>Résumé de Progression</h3>
-    <div class="chart-content">
-      <div class="circular-progress">
-        <svg viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="45" fill="none" stroke="#f1f5f9" stroke-width="10"/>
-          <circle cx="50" cy="50" r="45" fill="none" stroke="#4361ee" stroke-width="10" stroke-dasharray="282.7" stroke-dashoffset="70.6" stroke-linecap="round"/>
-        </svg>
-        <span class="percentage">75%</span>
+  <!-- ========================================= -->
+  <!-- SECTION TITLE                             -->
+  <!-- ========================================= -->
+  <div class="section-header animate-slide-up" style="--delay: 150ms">
+    <h2>Actions rapides</h2>
+    <span class="section-subtitle">Gérez votre pédagogie</span>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- ACTION TILES GRID 2x2                     -->
+  <!-- ========================================= -->
+  <div class="action-grid animate-slide-up" style="--delay: 200ms">
+    <!-- TILE 1 - Cahier de Textes -->
+    <div class="action-card" (click)="navigateTo('/tabs/tabs/tab3')">
+      <div class="action-card__bg action-card__bg--blue"></div>
+      <div class="action-card__icon action-card__icon--blue">
+        <ion-icon name="book-outline"></ion-icon>
       </div>
-      <div class="chart-legend">
-        <div class="legend-item primary">
-          <span class="label">Séances Effectuées</span>
-          <span class="value">42</span>
+      <span class="action-card__label">Cahier de Textes</span>
+      <span class="action-card__desc">Remplir le cahier</span>
+      <ion-badge
+        *ngIf="!isCahierFait"
+        color="warning"
+        class="action-card__badge"
+      >
+        À faire
+      </ion-badge>
+    </div>
+
+    <!-- TILE 2 - Scan QR -->
+    <div class="action-card" (click)="navigateTo('/scan-qr')">
+      <div class="action-card__bg action-card__bg--purple"></div>
+      <div class="action-card__icon action-card__icon--purple">
+        <ion-icon name="qr-code-outline"></ion-icon>
+      </div>
+      <span class="action-card__label">Scan QR</span>
+      <span class="action-card__desc">Emmarger une séance</span>
+    </div>
+
+    <!-- TILE 3 - Planning -->
+    <div class="action-card" (click)="navigateTo('/tabs/tabs/tab2')">
+      <div class="action-card__bg action-card__bg--coral"></div>
+      <div class="action-card__icon action-card__icon--coral">
+        <ion-icon name="calendar-outline"></ion-icon>
+      </div>
+      <span class="action-card__label">Planning</span>
+      <span class="action-card__desc">Voir mon emploi du temps</span>
+    </div>
+
+    <!-- TILE 4 - Profil -->
+    <div class="action-card" (click)="navigateTo('/tabs/tabs/tab4')">
+      <div class="action-card__bg action-card__bg--green"></div>
+      <div class="action-card__icon action-card__icon--green">
+        <ion-icon name="person-outline"></ion-icon>
+      </div>
+      <span class="action-card__label">Profil</span>
+      <span class="action-card__desc">Mon compte</span>
+    </div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- SECTION TITLE                             -->
+  <!-- ========================================= -->
+  <div class="section-header animate-slide-up" style="--delay: 300ms">
+    <h2>Résumé pédagogique</h2>
+    <span class="section-subtitle">Vue d'ensemble de votre progression</span>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- RESUME CARD WITH CIRCULAR GAUGE           -->
+  <!-- ========================================= -->
+  <div class="resume-card animate-slide-up" style="--delay: 350ms">
+    <div class="resume-card__header">
+      <div class="resume-card__title">
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        <span>Progression</span>
+      </div>
+      <span class="resume-card__period">Cette année</span>
+    </div>
+
+    <div class="resume-card__body">
+      <!-- Circular Gauge -->
+      <div class="gauge-wrapper">
+        <div class="circular-gauge">
+          <svg viewBox="0 0 120 120" class="gauge-svg">
+            <!-- Background circle -->
+            <circle
+              cx="60"
+              cy="60"
+              r="52"
+              fill="none"
+              stroke="#f1f5f9"
+              stroke-width="10"
+            />
+            <!-- Progress circle -->
+            <circle
+              cx="60"
+              cy="60"
+              r="52"
+              fill="none"
+              stroke="url(#gaugeGradient)"
+              stroke-width="10"
+              stroke-linecap="round"
+              [attr.stroke-dasharray]="gaugeCircumference"
+              [attr.stroke-dashoffset]="gaugeOffset"
+              class="gauge-progress"
+            />
+            <!-- Glow circle -->
+            <circle
+              cx="60"
+              cy="60"
+              r="52"
+              fill="none"
+              stroke="#4361ee"
+              stroke-width="10"
+              stroke-linecap="round"
+              [attr.stroke-dasharray]="gaugeCircumference"
+              [attr.stroke-dashoffset]="gaugeOffset"
+              class="gauge-glow"
+            />
+            <defs>
+              <linearGradient
+                id="gaugeGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
+                <stop offset="0%" stop-color="#4361ee" />
+                <stop offset="100%" stop-color="#7c3aed" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="gauge-value">
+            <span class="gauge-number">{{ completionRate }}%</span>
+            <span class="gauge-label">complet</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Details -->
+      <div class="stats-details">
+        <div class="stat-row">
+          <div class="stat-row__icon stat-row__icon--blue">
+            <ion-icon name="calendar-outline"></ion-icon>
+          </div>
+          <div class="stat-row__info">
+            <span class="stat-row__label">Total séances</span>
+            <span class="stat-row__value">{{ totalSeances }}</span>
+          </div>
+          <div class="stat-row__trend stat-row__trend--up">
+            <ion-icon name="trending-up-outline"></ion-icon>
+            <span>+12%</span>
+          </div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-row">
+          <div class="stat-row__icon stat-row__icon--green">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+          </div>
+          <div class="stat-row__info">
+            <span class="stat-row__label">Séances effectuées</span>
+            <span class="stat-row__value">{{ completedSeances }}</span>
+          </div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-row">
+          <div class="stat-row__icon stat-row__icon--amber">
+            <ion-icon name="time-outline"></ion-icon>
+          </div>
+          <div class="stat-row__info">
+            <span class="stat-row__label">Volume horaire</span>
+            <span class="stat-row__value">{{ totalHeures }}h</span>
+          </div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-row">
+          <div class="stat-row__icon stat-row__icon--purple">
+            <ion-icon name="people-outline"></ion-icon>
+          </div>
+          <div class="stat-row__info">
+            <span class="stat-row__label">Étudiants suivis</span>
+            <span class="stat-row__value">{{ studentCount }}</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Bottom spacer for tab bar -->
+  <div class="bottom-spacer"></div>
 </ion-content>
