@@ -24,14 +24,19 @@ public class JwtUtil {
     }
 
     public Claims extractClaims(String token) {
-        return Jwts.parser()
+        return Jwts.parserBuilder()
                 .setSigningKey(SECRET_KEY)
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
     public boolean isTokenValid(String token, String email) {
-        Claims claims = extractClaims(token);
-        return claims.getSubject().equals(email) && claims.getExpiration().after(new Date());
+        try {
+            Claims claims = extractClaims(token);
+            return claims.getSubject().equals(email) && claims.getExpiration().after(new Date());
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

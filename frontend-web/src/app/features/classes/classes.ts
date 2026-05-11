@@ -3,7 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ClasseService } from '../../core/services/classe.service';
+import { FiliereService } from '../../core/services/filiere.service';
+import { NiveauEnseignementService } from '../../core/services/niveau-enseignement.service';
 import { Classe } from '../../core/models/classe.model';
+import { Filiere } from '../../core/models/filiere.model';
+import { NiveauEnseignement } from '../../core/models/niveau-enseignement.model';
 import { timeout } from 'rxjs/operators';
 
 @Component({
@@ -55,24 +59,30 @@ import { timeout } from 'rxjs/operators';
             </div>
             <div class="section-grid">
               <div class="input-group">
+                <label>Libellé</label>
+                <input
+                  type="text"
+                  [(ngModel)]="currentClasse.libelle"
+                  placeholder="Ex: Licence 1 Informatique de Gestion"
+                />
+              </div>
+              <div class="input-group">
                 <label>Filière</label>
-                <input
-                  type="text"
-                  [(ngModel)]="currentClasse.filiere"
-                  placeholder="Ex: Informatique de Gestion"
-                />
+                <select [(ngModel)]="currentClasse.filiereId">
+                  <option [value]="null" disabled>Sélectionnez une filière</option>
+                  <option *ngFor="let f of filieres" [value]="f.id">
+                    {{ f.libelle }}
+                  </option>
+                </select>
               </div>
               <div class="input-group">
-                <label>Niveau</label>
-                <input type="text" [(ngModel)]="currentClasse.niveau" placeholder="Ex: Licence 1" />
-              </div>
-              <div class="input-group">
-                <label>Année Scolaire</label>
-                <input
-                  type="text"
-                  [(ngModel)]="currentClasse.anneeScolaire"
-                  placeholder="Ex: 2023-2024"
-                />
+                <label>Niveau d'Enseignement</label>
+                <select [(ngModel)]="currentClasse.niveauEnseignementId">
+                  <option [value]="null" disabled>Sélectionnez un niveau</option>
+                  <option *ngFor="let n of niveauxEnseignement" [value]="n.id">
+                    {{ n.libelle }}
+                  </option>
+                </select>
               </div>
             </div>
           </div>
@@ -96,7 +106,7 @@ import { timeout } from 'rxjs/operators';
           <i class="pi pi-search"></i>
           <input
             type="text"
-            placeholder="Rechercher une filière, un niveau..."
+            placeholder="Rechercher un libellé..."
             [(ngModel)]="searchText"
             (input)="filterClasses()"
           />
@@ -115,15 +125,10 @@ import { timeout } from 'rxjs/operators';
         <div class="class-card" *ngFor="let classe of filteredClasses">
           <div class="card-accent"></div>
           <div class="card-body">
-            <div class="card-title">{{ classe.filiere || 'N/A' }}</div>
+            <div class="card-title">{{ classe.libelle || 'N/A' }}</div>
             <div class="card-badges">
-              <span class="badge-niveau">{{ classe.niveau || 'N/A' }}</span>
-            </div>
-            <div class="card-meta">
-              <div class="meta-item">
-                <i class="pi pi-calendar"></i>
-                <span>{{ classe.anneeScolaire || 'N/A' }}</span>
-              </div>
+              <span class="badge-niveau">{{ getFiliereLibelle(classe.filiereId) }}</span>
+              <span class="badge-niveau">{{ getNiveauLibelle(classe.niveauEnseignementId) }}</span>
             </div>
           </div>
           <div class="card-actions">
@@ -162,6 +167,8 @@ import { timeout } from 'rxjs/operators';
 export class Classes implements OnInit {
   classes: Classe[] = [];
   filteredClasses: Classe[] = [];
+  filieres: Filiere[] = [];
+  niveauxEnseignement: NiveauEnseignement[] = [];
   searchText: string = '';
   displayForm: boolean = false;
   editingId: number | null = null;
@@ -173,11 +180,36 @@ export class Classes implements OnInit {
 
   constructor(
     private classeService: ClasseService,
+    private filiereService: FiliereService,
+    private niveauEnseignementService: NiveauEnseignementService,
     private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
     this.loadClasses();
+    this.loadFilieres();
+    this.loadNiveauxEnseignement();
+  }
+
+  private loadFilieres(): void {
+    this.filiereService.getAll().subscribe({
+      next: (data) => (this.filieres = data),
+      error: (err) => {
+        console.error('[Classes] Erreur chargement filières:', err);
+        this.errorMessage = 'Impossible de charger les filières. Vérifiez le backend.';
+      },
+    });
+  }
+
+  private loadNiveauxEnseignement(): void {
+    this.niveauEnseignementService.getAll().subscribe({
+      next: (data) => (this.niveauxEnseignement = data),
+      error: (err) => {
+        console.error('[Classes] Erreur chargement niveaux:', err);
+        this.errorMessage =
+          "Impossible de charger les niveaux d'enseignement. Vérifiez le backend.";
+      },
+    });
   }
 
   loadClasses() {
@@ -187,27 +219,37 @@ export class Classes implements OnInit {
         this.filterClasses();
         this.cdr.detectChanges();
       },
-      error: () => {
-        console.error('Erreur');
+      error: (err) => {
+        console.error('[Classes] Erreur chargement classes:', err);
+        this.errorMessage = 'Impossible de charger les classes. Vérifiez le backend.';
       },
     });
   }
 
   filterClasses() {
     const text = this.searchText.toLowerCase();
-    this.filteredClasses = this.classes.filter(
-      (c) =>
-        (c.filiere || '').toLowerCase().includes(text) ||
-        (c.niveau || '').toLowerCase().includes(text) ||
-        (c.anneeScolaire || '').toLowerCase().includes(text),
+    this.filteredClasses = this.classes.filter((c) =>
+      (c.libelle || '').toLowerCase().includes(text),
     );
+  }
+
+  getFiliereLibelle(filiereId: number | undefined): string {
+    if (!filiereId) return 'N/A';
+    const f = this.filieres.find((f) => f.id === filiereId);
+    return f ? f.libelle : 'N/A';
+  }
+
+  getNiveauLibelle(niveauId: number | undefined): string {
+    if (!niveauId) return 'N/A';
+    const n = this.niveauxEnseignement.find((n) => n.id === niveauId);
+    return n ? n.libelle : 'N/A';
   }
 
   showAddForm() {
     this.editingId = null;
     this.errorMessage = '';
     this.isSaving = false;
-    this.currentClasse = { filiere: '', niveau: '', anneeScolaire: '' };
+    this.currentClasse = { libelle: '', filiereId: undefined, niveauEnseignementId: undefined };
     this.displayForm = true;
   }
 
@@ -224,14 +266,14 @@ export class Classes implements OnInit {
 
     const classeToSave: Classe = {
       ...this.currentClasse,
-      filiere: this.currentClasse.filiere?.trim(),
-      niveau: this.currentClasse.niveau?.trim(),
-      anneeScolaire: this.currentClasse.anneeScolaire?.trim(),
+      libelle: (this.currentClasse.libelle || '').trim(),
+      filiereId: Number(this.currentClasse.filiereId),
+      niveauEnseignementId: Number(this.currentClasse.niveauEnseignementId),
     };
 
-    if (!classeToSave.filiere || !classeToSave.niveau || !classeToSave.anneeScolaire) {
+    if (!classeToSave.libelle || !classeToSave.filiereId || !classeToSave.niveauEnseignementId) {
       this.errorMessage =
-        'Veuillez renseigner la filière, le niveau et l’année scolaire avant d’enregistrer.';
+        "Veuillez renseigner le libellé, la filière et le niveau d'enseignement avant d'enregistrer.";
       return;
     }
 
@@ -274,14 +316,14 @@ export class Classes implements OnInit {
         }
 
         if (error?.status === 403) {
-          this.errorMessage = 'Vous n’avez pas les droits nécessaires pour enregistrer une classe.';
+          this.errorMessage = "Vous n'avez pas les droits nécessaires pour enregistrer une classe.";
           return;
         }
 
         this.errorMessage =
           error?.error?.error ||
           error?.error?.message ||
-          'Impossible d’enregistrer la classe. Vérifiez le backend et réessayez.';
+          "Impossible d'enregistrer la classe. Vérifiez le backend et réessayez.";
       },
     });
   }

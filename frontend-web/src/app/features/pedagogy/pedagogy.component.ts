@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { PedagogyService } from '../../core/services/pedagogy.service';
-import { LessonLog } from '../../core/models/lesson-log.model';
+import { FicheProgression } from '../../core/models/lesson-log.model';
 
 @Component({
   selector: 'app-pedagogy',
@@ -23,7 +23,7 @@ import { LessonLog } from '../../core/models/lesson-log.model';
             </a>
             <div class="header-left-titles">
               <h1>Validation Pédagogique</h1>
-              <p>Vérifiez et approuvez les cahiers de textes des enseignants</p>
+              <p>Vérifiez et approuvez les fiches de progression des enseignants</p>
             </div>
           </div>
         </div>
@@ -39,8 +39,8 @@ import { LessonLog } from '../../core/models/lesson-log.model';
             <i class="pi pi-book"></i>
           </div>
           <div class="stat-content">
-            <span class="value">42</span>
-            <span class="label">Total Séances</span>
+            <span class="value">{{ lessonLogs.length }}</span>
+            <span class="label">Total Fiches</span>
           </div>
         </div>
         <div class="summary-card warning">
@@ -48,7 +48,7 @@ import { LessonLog } from '../../core/models/lesson-log.model';
             <i class="pi pi-clock"></i>
           </div>
           <div class="stat-content">
-            <span class="value">12</span>
+            <span class="value">{{ getPendingCount() }}</span>
             <span class="label">À Valider</span>
           </div>
         </div>
@@ -57,7 +57,7 @@ import { LessonLog } from '../../core/models/lesson-log.model';
             <i class="pi pi-check-circle"></i>
           </div>
           <div class="stat-content">
-            <span class="value">28</span>
+            <span class="value">{{ getValidatedCount() }}</span>
             <span class="label">Approuvées</span>
           </div>
         </div>
@@ -65,7 +65,7 @@ import { LessonLog } from '../../core/models/lesson-log.model';
 
       <div class="logs-list">
         @for (log of lessonLogs; track log.id) {
-          <div class="log-card" [ngClass]="getStatusClass(log.statutValidite || 'En attente')">
+          <div class="log-card" [ngClass]="getStatusClass(log.estValideAdmin)">
             <div class="log-header">
               <div class="teacher-info">
                 <div class="teacher-avatar">{{ getInitials(log.enseignantNomPrenom || '') }}</div>
@@ -76,20 +76,38 @@ import { LessonLog } from '../../core/models/lesson-log.model';
               </div>
               <div
                 class="status-badge"
-                [ngClass]="getStatusClass(log.statutValidite || 'En attente')"
+                [ngClass]="getStatusClass(log.estValideAdmin)"
               >
                 <span class="status-dot"></span>
-                {{ log.statutValidite }}
+                {{ getStatutLabel(log.estValideAdmin) }}
               </div>
             </div>
 
             <div class="log-body">
               <div class="content-section">
                 <div class="chapter-header">
-                  <i class="pi pi-folder"></i>
-                  <span class="chapter-title">{{ log.titreCours }}</span>
+                  <i class="pi pi-file"></i>
+                  <span class="chapter-title">Contenu détaillé</span>
                 </div>
-                <p class="content-text">{{ log.contenu }}</p>
+                <p class="content-text">{{ log.contenuDetaille }}</p>
+
+                <div class="extra-fields" *ngIf="log.objectifs || log.travaux">
+                  <div class="extra-field" *ngIf="log.objectifs">
+                    <div class="field-label">
+                      <i class="pi pi-flag"></i>
+                      <span>Objectifs</span>
+                    </div>
+                    <p class="field-value">{{ log.objectifs }}</p>
+                  </div>
+                  <div class="extra-field" *ngIf="log.travaux">
+                    <div class="field-label">
+                      <i class="pi pi-wrench"></i>
+                      <span>Travaux</span>
+                    </div>
+                    <p class="field-value">{{ log.travaux }}</p>
+                  </div>
+                </div>
+
                 <div class="meta-info">
                   <span class="meta-item">
                     <i class="pi pi-clock"></i>
@@ -99,22 +117,26 @@ import { LessonLog } from '../../core/models/lesson-log.model';
                     <i class="pi pi-calendar"></i>
                     <span>{{ log.dateSeance }}</span>
                   </span>
+                  <span class="meta-item" *ngIf="log.dateValidation">
+                    <i class="pi pi-check-circle"></i>
+                    <span>Validé le {{ log.dateValidation }}</span>
+                  </span>
                 </div>
               </div>
 
-              @if (log.statutValidite === 'En attente') {
+              @if (log.estValideAdmin == null || log.estValideAdmin === false) {
                 <div class="actions">
-                  <button class="btn btn-approve" (click)="updateStatus(log.id!, 'Validé')">
+                  <button class="btn btn-approve" (click)="updateStatus(log.id!, true)">
                     <i class="pi pi-check"></i> Approuver
                   </button>
-                  <button class="btn btn-reject" (click)="updateStatus(log.id!, 'Rejeté')">
+                  <button class="btn btn-reject" (click)="updateStatus(log.id!, false)">
                     <i class="pi pi-times"></i> Rejeter
                   </button>
                 </div>
               } @else {
-                <div class="validated-label" [ngClass]="(log.statutValidite || '').toLowerCase()">
-                  <i class="pi" [ngClass]="getValidatedIcon(log.statutValidite || '')"></i>
-                  <span>Séance {{ (log.statutValidite || '').toLowerCase() }}e</span>
+                <div class="validated-label approved">
+                  <i class="pi pi-check-circle"></i>
+                  <span>Fiche approuvée</span>
                 </div>
               }
             </div>
@@ -304,7 +326,7 @@ import { LessonLog } from '../../core/models/lesson-log.model';
           border-left: 5px solid #f59e0b;
         }
 
-        &.validated {
+        &.approved {
           border-left: 5px solid #22c55e;
         }
 
@@ -391,7 +413,7 @@ import { LessonLog } from '../../core/models/lesson-log.model';
           }
         }
 
-        &.validated {
+        &.approved {
           background: rgba(220, 252, 231, 0.85);
           color: #166534;
           border-color: rgba(34, 197, 94, 0.5);
@@ -451,6 +473,43 @@ import { LessonLog } from '../../core/models/lesson-log.model';
             line-height: 1.7;
             margin-bottom: 16px;
             font-size: 0.92rem;
+          }
+
+          .extra-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: rgba(248, 250, 252, 0.7);
+            border-radius: 10px;
+            border: 1px solid rgba(226, 232, 240, 0.6);
+
+            .extra-field {
+              .field-label {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 0.82rem;
+                font-weight: 700;
+                color: #475569;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+                margin-bottom: 4px;
+
+                i {
+                  font-size: 0.85rem;
+                  color: var(--primary-color);
+                }
+              }
+
+              .field-value {
+                color: #334155;
+                line-height: 1.6;
+                font-size: 0.9rem;
+                margin: 0;
+              }
+            }
           }
 
           .meta-info {
@@ -539,23 +598,13 @@ import { LessonLog } from '../../core/models/lesson-log.model';
           font-size: 1.3rem;
         }
 
-        &.validé {
+        &.approved {
           color: #166534;
           background: rgba(220, 252, 231, 0.5);
           border-color: rgba(34, 197, 94, 0.3);
 
           i {
             color: #22c55e;
-          }
-        }
-
-        &.rejeté {
-          color: #b91c1c;
-          background: rgba(254, 226, 226, 0.5);
-          border-color: rgba(239, 68, 68, 0.3);
-
-          i {
-            color: #ef4444;
           }
         }
       }
@@ -583,32 +632,50 @@ import { LessonLog } from '../../core/models/lesson-log.model';
   ],
 })
 export class PedagogyComponent implements OnInit {
-  lessonLogs: LessonLog[] = [];
+  lessonLogs: FicheProgression[] = [];
 
   constructor(private pedagogyService: PedagogyService) {}
 
   ngOnInit() {
+    this.loadLogs();
+  }
+
+  private loadLogs() {
     this.pedagogyService.getLessonLogs().subscribe((data) => (this.lessonLogs = data));
   }
 
-  updateStatus(id: number, status: string) {
-    this.pedagogyService.validateLog(id, status).subscribe(() => {
-      // Refresh logs
-      this.ngOnInit();
+  getPendingCount(): number {
+    return this.lessonLogs.filter(
+      (log) => log.estValideAdmin == null || log.estValideAdmin === false,
+    ).length;
+  }
+
+  getValidatedCount(): number {
+    return this.lessonLogs.filter((log) => log.estValideAdmin === true).length;
+  }
+
+  updateStatus(id: number, estValideAdmin: boolean) {
+    this.pedagogyService.validerFicheProgression(id, estValideAdmin).subscribe(() => {
+      this.loadLogs();
     });
   }
 
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'En attente':
-        return 'pending';
-      case 'Validé':
-        return 'validated';
-      case 'Rejeté':
-        return 'rejected';
-      default:
-        return 'pending';
+  getStatutLabel(estValideAdmin: boolean | null | undefined): string {
+    if (estValideAdmin === true) {
+      return 'Approuvé';
+    } else if (estValideAdmin === false) {
+      return 'Rejeté';
     }
+    return 'En attente';
+  }
+
+  getStatusClass(estValideAdmin: boolean | null | undefined): string {
+    if (estValideAdmin === true) {
+      return 'approved';
+    } else if (estValideAdmin === false) {
+      return 'rejected';
+    }
+    return 'pending';
   }
 
   getInitials(name: string): string {
@@ -617,9 +684,5 @@ export class PedagogyComponent implements OnInit {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
-  }
-
-  getValidatedIcon(status: string): string {
-    return status === 'Validé' ? 'pi-check-circle' : 'pi-exclamation-circle';
   }
 }

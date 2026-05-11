@@ -9,8 +9,8 @@ import {
 import { addIcons } from "ionicons";
 import {
   gridOutline,
+  calendarOutline,
   bookOutline,
-  timeOutline,
   personOutline,
 } from "ionicons/icons";
 
@@ -26,8 +26,8 @@ export class TabsPage {
   constructor() {
     addIcons({
       gridOutline,
+      calendarOutline,
       bookOutline,
-      timeOutline,
       personOutline,
     });
   }

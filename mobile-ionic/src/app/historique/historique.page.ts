@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
@@ -27,6 +27,10 @@ import {
   arrowDownOutline,
   arrowBackOutline,
 } from "ionicons/icons";
+import { ScheduleService } from "../core/services/schedule.service";
+import { EmargementService } from "../core/services/emargement.service";
+import { Seance } from "../core/models/seance.model";
+import { Emargement as EmargementModel } from "../core/models/attendance.model";
 
 @Component({
   selector: "app-historique",
@@ -50,73 +54,20 @@ import {
     IonLabel,
   ],
 })
-export class HistoriquePage {
+export class HistoriquePage implements OnInit {
+  private scheduleService = inject(ScheduleService);
+  private emargementService = inject(EmargementService);
+
   filterPeriod = "all";
 
   stats = {
-    seancesCompletees: 42,
-    moyennePresence: 89,
+    seancesCompletees: 0,
+    moyennePresence: 0,
   };
 
-  seances = [
-    {
-      id: 1,
-      matiere: "Algorithmique",
-      date: new Date("2024-01-15"),
-      heure: "08:00 - 10:00",
-      contenu:
-        "Introduction aux algorithmes de tri: tri à bulles, tri par insertion, tri par sélection.",
-      status: "completed",
-      presents: 45,
-      total: 50,
-      duree: 120,
-    },
-    {
-      id: 2,
-      matiere: "Java",
-      date: new Date("2024-01-16"),
-      heure: "14:00 - 16:00",
-      contenu:
-        "Programmation orientée objet: concepts de base, classes et objets.",
-      status: "completed",
-      presents: 48,
-      total: 50,
-      duree: 120,
-    },
-    {
-      id: 3,
-      matiere: "Bases de données",
-      date: new Date("2024-01-17"),
-      heure: "10:00 - 12:00",
-      contenu: "Modèle relationnel, algèbre relationnelle et SQL de base.",
-      status: "completed",
-      presents: 47,
-      total: 50,
-      duree: 120,
-    },
-    {
-      id: 4,
-      matiere: "Algorithmique",
-      date: new Date("2024-01-18"),
-      heure: "08:00 - 10:00",
-      contenu: "Algorithmes de tri avancés: tri rapide, tri fusion.",
-      status: "completed",
-      presents: 46,
-      total: 50,
-      duree: 120,
-    },
-    {
-      id: 5,
-      matiere: "Java",
-      date: new Date("2024-01-19"),
-      heure: "14:00 - 16:00",
-      contenu: "Héritage et polymorphisme en Java.",
-      status: "in_progress",
-      presents: 0,
-      total: 50,
-      duree: 120,
-    },
-  ];
+  seances: any[] = [];
+  seancesData: Seance[] = [];
+  emargementsData: EmargementModel[] = [];
 
   get filteredSeances() {
     if (this.filterPeriod === "all") {
@@ -132,7 +83,7 @@ export class HistoriquePage {
       cutoff.setMonth(now.getMonth() - 1);
     }
 
-    return this.seances.filter((s) => s.date >= cutoff);
+    return this.seances.filter((s) => new Date(s.date) >= cutoff);
   }
 
   constructor() {
@@ -146,6 +97,74 @@ export class HistoriquePage {
       arrowDownOutline,
       arrowBackOutline,
     });
+  }
+
+  ngOnInit() {
+    this.loadHistorique();
+  }
+
+  private loadHistorique() {
+    // Charger les séances
+    this.scheduleService.getSeances().subscribe({
+      next: (data) => {
+        this.seancesData = data;
+        this.buildHistorique();
+      },
+      error: () => {
+        this.seancesData = [];
+        this.buildHistorique();
+      },
+    });
+
+    // Charger les émargements
+    this.emargementService.getEmargements().subscribe({
+      next: (data) => {
+        this.emargementsData = data;
+        this.buildHistorique();
+      },
+      error: () => {
+        this.emargementsData = [];
+        this.buildHistorique();
+      },
+    });
+  }
+
+  private buildHistorique() {
+    // Fusionner les données de séances avec les infos d'émargements
+    const now = new Date();
+    this.seances = this.seancesData.map((s) => {
+      const emargement = this.emargementsData.find((e) => e.id === s.emargementId);
+
+      return {
+        id: s.id,
+        matiere: `Séance #${s.id}`,
+        date: new Date(s.dateCours),
+        heure: `${s.heureDebutReelle} - ${s.heureFinReelle}`,
+        contenu: `Statut: ${s.statut}`,
+        status: s.statut === 'TERMINEE' ? 'completed' :
+                s.statut === 'EN_COURS' ? 'in_progress' : 'planned',
+        presents: emargement ? 1 : 0,
+        total: 1,
+        duree: this.calculerDureeMinutes(s.heureDebutReelle, s.heureFinReelle),
+      };
+    });
+
+    this.stats.seancesCompletees = this.seances.filter(
+      (s) => s.status === 'completed'
+    ).length;
+    this.stats.moyennePresence = this.seances.length > 0
+      ? Math.round(
+          (this.seances.reduce((acc, s) => acc + s.presents, 0) /
+            this.seances.reduce((acc, s) => acc + s.total, 0)) *
+            100
+        )
+      : 0;
+  }
+
+  private calculerDureeMinutes(debut: string, fin: string): number {
+    const [h1, m1] = debut.split(':').map(Number);
+    const [h2, m2] = fin.split(':').map(Number);
+    return (h2 * 60 + m2) - (h1 * 60 + m1);
   }
 
   filterByPeriod() {

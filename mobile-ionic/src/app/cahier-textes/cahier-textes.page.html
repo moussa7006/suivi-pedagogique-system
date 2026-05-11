@@ -1,20 +1,20 @@
 <ion-content [fullscreen]="true" class="ion-padding">
-  <!-- Bouton Retour -->
-  <ion-button fill="clear" class="back-btn-header" routerLink="/tabs/tabs/tab1">
-    <ion-icon name="arrow-back-outline"></ion-icon>
-  </ion-button>
-
-  <div class="header-section">
-    <h1 class="page-title">Cahier de Textes</h1>
-    <p class="page-subtitle">Gérez vos contenus pédagogiques</p>
-    <div class="volume-info">
-      <ion-icon name="time"></ion-icon>
-      <span>{{ totalHeures }}h effectuées</span>
+  <!-- Header -->
+  <div class="header-section animate-fade-in">
+    <div class="header-top">
+      <div>
+        <h1 class="page-title">Cahier de Textes</h1>
+        <p class="page-subtitle">Gérez vos contenus pédagogiques</p>
+      </div>
+      <div class="header-volume">
+        <ion-icon name="time-outline"></ion-icon>
+        <span>{{ totalHeures }}h</span>
+      </div>
     </div>
   </div>
 
-  <!-- Statistiques rapides -->
-  <div class="quick-stats">
+  <!-- Quick Stats -->
+  <div class="quick-stats animate-slide-up">
     <div class="stat-card">
       <div class="stat-icon blue">
         <ion-icon name="document-text-outline"></ion-icon>
@@ -33,9 +33,18 @@
         <span class="stat-label">Validées</span>
       </div>
     </div>
+    <div class="stat-card">
+      <div class="stat-icon orange">
+        <ion-icon name="time-outline"></ion-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ getPendingCount }}</span>
+        <span class="stat-label">En attente</span>
+      </div>
+    </div>
   </div>
 
-  <!-- Bouton d'ajout rapide -->
+  <!-- Add Button -->
   <div class="add-section">
     <ion-button
       expand="block"
@@ -44,107 +53,156 @@
     >
       <ion-icon
         slot="start"
-        name="{{ showForm ? 'close-circle-outline' : 'add-circle-outline' }}"
+        [name]="showForm ? 'close-outline' : 'add-outline'"
       ></ion-icon>
-      {{ showForm ? 'Annuler' : 'Nouvelle séance' }}
+      {{ showForm ? 'Fermer' : 'Nouvelle séance' }}
     </ion-button>
   </div>
 
-  <!-- Formulaire de saisie (conditionnel) -->
-  <div class="form-wrapper animate-slide-up" *ngIf="showForm">
-    <div class="form-card-modern">
-      <div class="form-header-sleek">
-        <div class="icon-circle">
+  <!-- Formulaire -->
+  <div class="form-section animate-slide-up" *ngIf="showForm">
+    <div class="form-card">
+      <div class="form-header">
+        <div class="form-icon">
           <ion-icon name="create-outline"></ion-icon>
         </div>
-        <div class="header-text">
-          <h2>Nouvelle Séance</h2>
+        <div>
+          <h2>Nouvelle séance</h2>
           <p>Remplissez les détails du cours</p>
         </div>
       </div>
 
-      <form [formGroup]="seanceForm" (ngSubmit)="onSubmit()" class="modern-inputs">
-        <div class="input-group">
-          <label>Matière enseignée</label>
+      <form [formGroup]="seanceForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label>Matière</label>
           <div class="input-field">
             <ion-icon name="book-outline"></ion-icon>
-            <ion-input formControlName="matiere" placeholder="Ex: Développement Mobile"></ion-input>
+            <ion-input
+              formControlName="matiere"
+              placeholder="Ex: Developpement Mobile"
+            ></ion-input>
           </div>
+          <span
+            class="error-msg"
+            *ngIf="seanceForm.get('matiere')?.invalid && seanceForm.get('matiere')?.touched"
+          >
+            Veuillez entrer une matiere
+          </span>
         </div>
 
-        <div class="input-row">
-          <div class="input-group">
+        <div class="form-row">
+          <div class="form-group">
             <label>Date</label>
             <div class="input-field">
               <ion-icon name="calendar-outline"></ion-icon>
               <ion-input formControlName="date" type="date"></ion-input>
             </div>
           </div>
-          <div class="input-group">
-            <label>Heure</label>
+          <div class="form-group">
+            <label>Horaire</label>
             <div class="input-field">
               <ion-icon name="time-outline"></ion-icon>
-              <ion-input formControlName="heure" placeholder="08:00 - 10:00"></ion-input>
+              <ion-input
+                formControlName="heure"
+                placeholder="08:00 - 10:00"
+              ></ion-input>
             </div>
           </div>
         </div>
 
-        <div class="input-group">
-          <label>Contenu de la séance</label>
+        <div class="form-group">
+          <label>Contenu du cours</label>
           <div class="input-field textarea-field">
-            <ion-textarea 
-              formControlName="contenu" 
-              placeholder="Décrivez les chapitres abordés..."
-              rows="4"
+            <ion-textarea
+              formControlName="contenu"
+              placeholder="Decrivez les chapitres abordes..."
+              rows="3"
             ></ion-textarea>
           </div>
+          <span
+            class="error-msg"
+            *ngIf="seanceForm.get('contenu')?.invalid && seanceForm.get('contenu')?.touched"
+          >
+            Minimum 20 caracteres requis
+          </span>
         </div>
 
-        <div class="input-group">
-          <label>Ressources (optionnel)</label>
-          <div class="input-field">
-            <ion-icon name="link-outline"></ion-icon>
-            <ion-input formControlName="ressources" placeholder="Lien drive, PDF..."></ion-input>
-          </div>
-        </div>
-
-        <ion-button expand="block" type="submit" [disabled]="isSubmitting" class="btn-submit-modern">
+        <ion-button
+          expand="block"
+          type="submit"
+          [disabled]="isSubmitting"
+          class="submit-btn"
+        >
           <ion-spinner *ngIf="isSubmitting" name="crescent"></ion-spinner>
-          <span *ngIf="!isSubmitting">Publier au Cahier de Textes</span>
-          <ion-icon *ngIf="!isSubmitting" slot="end" name="send-outline"></ion-icon>
+          <ng-container *ngIf="!isSubmitting">
+            <span>Publier au cahier de textes</span>
+            <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+          </ng-container>
         </ion-button>
       </form>
     </div>
   </div>
 
-  <!-- Liste des séances -->
+  <!-- Liste des seances -->
   <div class="seances-section" *ngIf="seances.length > 0">
-    <div class="section-header">
-      <h3>Dernières séances</h3>
+    <div class="section-title">
+      <ion-icon name="list-outline"></ion-icon>
+      <h3>Dernieres seances</h3>
+      <span class="count">{{ seances.length }}</span>
     </div>
 
-    <div *ngFor="let seance of seances" class="seance-card">
-      <div class="seance-card-header">
-        <div class="matiere-info">
-          <h3>{{ seance.matiere }}</h3>
+    <div
+      *ngFor="let seance of seances; let i = index"
+      class="seance-card animate-slide-up"
+      [style.--delay]="(i * 80) + 'ms'"
+    >
+      <div class="seance-header">
+        <div
+          class="seance-badge"
+          [class.validated]="seance.status === 'Validé'"
+          [class.pending]="seance.status === 'En attente'"
+        >
+          <ion-icon
+            [name]="seance.status === 'Validé' ? 'checkmark-circle' : 'time-outline'"
+          ></ion-icon>
+        </div>
+        <div class="seance-info">
+          <h4>{{ seance.matiere }}</h4>
           <div class="seance-meta">
-            <ion-icon name="calendar-outline"></ion-icon>
-            <span>{{ seance.date }}</span>
-            <ion-icon name="time-outline"></ion-icon>
-            <span>{{ seance.heure }}</span>
+            <span>
+              <ion-icon name="calendar-outline"></ion-icon>
+              {{ seance.date }}
+            </span>
+            <span>
+              <ion-icon name="time-outline"></ion-icon>
+              {{ seance.heure }}
+            </span>
           </div>
         </div>
-        <ion-badge [class]="seance.status === 'Validé' ? 'badge-success' : 'badge-warning'">
+        <ion-badge
+          [color]="seance.status === 'Validé' ? 'success' : 'warning'"
+          class="status-tag"
+        >
           {{ seance.status }}
         </ion-badge>
       </div>
-      <div class="seance-content">
-        <p class="seance-description">{{ seance.contenu }}</p>
-        <div class="seance-footer" *ngIf="seance.ressources">
-          <ion-icon name="link-outline"></ion-icon>
-          <span>{{ seance.ressources }}</span>
-        </div>
+      <div class="seance-body">
+        <p>{{ seance.contenu }}</p>
       </div>
     </div>
   </div>
+
+  <!-- Empty state -->
+  <div *ngIf="seances.length === 0" class="empty-state animate-fade-in">
+    <div class="empty-illustration">
+      <ion-icon name="book-outline"></ion-icon>
+    </div>
+    <h3>Aucune seance</h3>
+    <p>
+      Commencez par ajouter une nouvelle seance dans votre cahier de textes.
+    </p>
+  </div>
+
+  <!-- Bottom spacer -->
+  <div class="bottom-spacer"></div>
 </ion-content>

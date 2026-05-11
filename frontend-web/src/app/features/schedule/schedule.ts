@@ -6,10 +6,14 @@ import { ScheduleService } from '../../core/services/schedule.service';
 import { ClasseService } from '../../core/services/classe.service';
 import { MatiereService } from '../../core/services/matiere.service';
 import { TeacherService } from '../../core/services/teacher.service';
+import { SalleService } from '../../core/services/salle.service';
+import { AnneeUniversitaireService } from '../../core/services/annee-universitaire.service';
 import { EmploiDuTemps } from '../../core/models/schedule.model';
 import { Classe } from '../../core/models/classe.model';
 import { Matiere } from '../../core/models/matiere.model';
-import { Teacher } from '../../core/models/teacher.model';
+import { Teacher } from '../../core/models/user.model';
+import { Salle } from '../../core/models/salle.model';
+import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model';
 
 @Component({
   selector: 'app-schedule',
@@ -79,6 +83,15 @@ import { Teacher } from '../../core/models/teacher.model';
                   <option value="UNIQUE">Unique</option>
                 </select>
               </div>
+              <div class="input-group">
+                <label>Année Universitaire</label>
+                <select [(ngModel)]="currentSchedule.anneeUniversitaireId">
+                  <option [value]="null" disabled>Sélectionnez une année</option>
+                  <option *ngFor="let a of anneesUniversitaires" [value]="a.id">
+                    {{ a.libelle }}
+                  </option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -90,7 +103,7 @@ import { Teacher } from '../../core/models/teacher.model';
             <div class="section-grid">
               <div class="input-group">
                 <label>Jour de la semaine</label>
-                <select [(ngModel)]="currentSchedule.jourDeSemaine">
+                <select [(ngModel)]="currentSchedule.jourSemaine">
                   <option *ngFor="let j of jours" [value]="j">{{ j }}</option>
                 </select>
               </div>
@@ -147,7 +160,12 @@ import { Teacher } from '../../core/models/teacher.model';
               </div>
               <div class="input-group">
                 <label>Salle</label>
-                <input type="text" [(ngModel)]="currentSchedule.salle" placeholder="Ex: Amphi A" />
+                <select [(ngModel)]="currentSchedule.salleId">
+                  <option [value]="null" disabled>Sélectionnez une salle</option>
+                  <option *ngFor="let s of salles" [value]="s.id">
+                    {{ s.nom }} ({{ s.batiment }})
+                  </option>
+                </select>
               </div>
             </div>
           </div>
@@ -161,20 +179,23 @@ import { Teacher } from '../../core/models/teacher.model';
               <div class="input-group">
                 <label>Classe</label>
                 <select [(ngModel)]="selectedClasseId">
+                  <option [value]="null" disabled>Sélectionnez une classe</option>
                   <option *ngFor="let c of classes" [value]="c.id">
-                    {{ c.filiere }} - {{ c.niveau }}
+                    {{ c.libelle }}
                   </option>
                 </select>
               </div>
               <div class="input-group">
                 <label>Matière</label>
                 <select [(ngModel)]="selectedMatiereId">
+                  <option [value]="null" disabled>Sélectionnez une matière</option>
                   <option *ngFor="let m of matieres" [value]="m.id">{{ m.libelle }}</option>
                 </select>
               </div>
               <div class="input-group">
                 <label>Enseignant</label>
                 <select [(ngModel)]="selectedTeacherId">
+                  <option [value]="null" disabled>Sélectionnez un enseignant</option>
                   <option *ngFor="let t of teachers" [value]="t.id">
                     {{ t.prenom }} {{ t.nom }}
                   </option>
@@ -230,7 +251,7 @@ import { Teacher } from '../../core/models/teacher.model';
                   <i class="pi pi-calendar"></i>
                   <span>
                     <ng-container *ngIf="s.typeRecurrence === 'HEBDOMADAIRE'">{{
-                      s.jourDeSemaine
+                      s.jourSemaine
                     }}</ng-container>
                     <ng-container *ngIf="s.typeRecurrence === 'UNIQUE'">{{
                       s.dateSpecifique
@@ -246,7 +267,7 @@ import { Teacher } from '../../core/models/teacher.model';
                 </div>
                 <div class="schedule-row">
                   <i class="pi pi-map-marker"></i>
-                  <span>{{ s.salle }}</span>
+                  <span>{{ getSalleNom(s.salleId) }}</span>
                 </div>
               </div>
 
@@ -255,15 +276,19 @@ import { Teacher } from '../../core/models/teacher.model';
               <div class="card-cours-info">
                 <div class="cours-row">
                   <i class="pi pi-folder"></i>
-                  <span>{{ s.classe?.filiere }}</span>
+                  <span>{{ getClasseLibelle(s.classeId) }}</span>
                 </div>
                 <div class="cours-row">
                   <i class="pi pi-book"></i>
-                  <span>{{ s.matiere?.libelle }}</span>
+                  <span>{{ getMatiereLibelle(s.matiereId) }}</span>
                 </div>
                 <div class="cours-row">
                   <i class="pi pi-user"></i>
-                  <span>{{ s.enseignant?.prenom }} {{ s.enseignant?.nom }}</span>
+                  <span>{{ getEnseignantNom(s.enseignantId) }}</span>
+                </div>
+                <div class="cours-row" *ngIf="s.anneeUniversitaireId">
+                  <i class="pi pi-calendar"></i>
+                  <span>{{ getAnneeUniversitaireLibelle(s.anneeUniversitaireId) }}</span>
                 </div>
               </div>
             </div>
@@ -286,6 +311,8 @@ export class Schedule implements OnInit {
   classes: Classe[] = [];
   matieres: Matiere[] = [];
   teachers: Teacher[] = [];
+  salles: Salle[] = [];
+  anneesUniversitaires: AnneeUniversitaire[] = [];
 
   displayForm: boolean = false;
 
@@ -301,6 +328,8 @@ export class Schedule implements OnInit {
     private classeService: ClasseService,
     private matiereService: MatiereService,
     private teacherService: TeacherService,
+    private salleService: SalleService,
+    private anneeUniversitaireService: AnneeUniversitaireService,
   ) {}
 
   ngOnInit() {
@@ -315,6 +344,8 @@ export class Schedule implements OnInit {
     this.classeService.getAll().subscribe((c) => (this.classes = c));
     this.matiereService.getAll().subscribe((m) => (this.matieres = m));
     this.teacherService.getTeachers().subscribe((t) => (this.teachers = t));
+    this.salleService.getAll().subscribe((s) => (this.salles = s));
+    this.anneeUniversitaireService.getAll().subscribe((a) => (this.anneesUniversitaires = a));
   }
 
   filterSchedules() {
@@ -322,15 +353,44 @@ export class Schedule implements OnInit {
     this.filteredSchedules = this.schedules.filter(
       (s) =>
         (s.titre || '').toLowerCase().includes(text) ||
-        (s.salle || '').toLowerCase().includes(text) ||
-        (s.enseignant?.nom || '').toLowerCase().includes(text) ||
-        (s.enseignant?.prenom || '').toLowerCase().includes(text) ||
-        (s.matiere?.libelle || '').toLowerCase().includes(text),
+        this.getSalleNom(s.salleId).toLowerCase().includes(text) ||
+        this.getEnseignantNom(s.enseignantId).toLowerCase().includes(text) ||
+        this.getMatiereLibelle(s.matiereId).toLowerCase().includes(text),
     );
   }
 
+  getSalleNom(salleId: number | undefined): string {
+    if (!salleId) return 'N/A';
+    const s = this.salles.find((salle) => salle.id === salleId);
+    return s ? `${s.nom} (${s.batiment})` : 'N/A';
+  }
+
+  getClasseLibelle(classeId: number | undefined): string {
+    if (!classeId) return 'N/A';
+    const c = this.classes.find((cl) => cl.id === classeId);
+    return c ? c.libelle : 'N/A';
+  }
+
+  getMatiereLibelle(matiereId: number | undefined): string {
+    if (!matiereId) return 'N/A';
+    const m = this.matieres.find((mat) => mat.id === matiereId);
+    return m ? m.libelle : 'N/A';
+  }
+
+  getEnseignantNom(enseignantId: number | undefined): string {
+    if (!enseignantId) return 'N/A';
+    const t = this.teachers.find((teacher) => teacher.id === enseignantId);
+    return t ? `${t.prenom} ${t.nom}` : 'N/A';
+  }
+
+  getAnneeUniversitaireLibelle(anneeId: number | undefined): string {
+    if (!anneeId) return '';
+    const a = this.anneesUniversitaires.find((au) => au.id === anneeId);
+    return a ? a.libelle : '';
+  }
+
   showAddForm() {
-    this.currentSchedule = { typeRecurrence: 'HEBDOMADAIRE', jourDeSemaine: 'LUNDI' };
+    this.currentSchedule = { typeRecurrence: 'HEBDOMADAIRE', jourSemaine: 'LUNDI' };
     this.selectedClasseId = null;
     this.selectedMatiereId = null;
     this.selectedTeacherId = null;
@@ -342,20 +402,32 @@ export class Schedule implements OnInit {
       !this.selectedClasseId ||
       !this.selectedMatiereId ||
       !this.selectedTeacherId ||
+      !this.currentSchedule.salleId ||
       !this.currentSchedule.heureDebut ||
       !this.currentSchedule.heureFin
     )
       return;
 
-    this.currentSchedule.classe = this.classes.find((c) => c.id === Number(this.selectedClasseId));
-    this.currentSchedule.matiere = this.matieres.find(
-      (m) => m.id === Number(this.selectedMatiereId),
-    );
-    this.currentSchedule.enseignant = this.teachers.find(
-      (t) => t.id === Number(this.selectedTeacherId),
-    );
+    const scheduleToSave: EmploiDuTemps = {
+      titre: this.currentSchedule.titre,
+      typeRecurrence: this.currentSchedule.typeRecurrence as any,
+      dateDebutValidite: this.currentSchedule.dateDebutValidite || '',
+      dateFinValidite: this.currentSchedule.dateFinValidite || '',
+      jourSemaine: this.currentSchedule.jourSemaine as any,
+      jourDuMois: this.currentSchedule.jourDuMois,
+      dateSpecifique: this.currentSchedule.dateSpecifique,
+      heureDebut: this.currentSchedule.heureDebut!,
+      heureFin: this.currentSchedule.heureFin!,
+      salleId: Number(this.currentSchedule.salleId),
+      enseignantId: Number(this.selectedTeacherId),
+      classeId: Number(this.selectedClasseId),
+      matiereId: Number(this.selectedMatiereId),
+      anneeUniversitaireId: this.currentSchedule.anneeUniversitaireId
+        ? Number(this.currentSchedule.anneeUniversitaireId)
+        : 0,
+    };
 
-    this.scheduleService.createSchedule(this.currentSchedule as EmploiDuTemps).subscribe(() => {
+    this.scheduleService.createSchedule(scheduleToSave).subscribe(() => {
       this.displayForm = false;
       this.loadData();
     });

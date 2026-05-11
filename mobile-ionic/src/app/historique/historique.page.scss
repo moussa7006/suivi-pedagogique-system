@@ -26,8 +26,10 @@ ion-content {
   height: 48px;
   width: 48px;
   margin: 0 0 var(--space-lg) 0;
-  
-  ion-icon { font-size: 24px; }
+
+  ion-icon {
+    font-size: 24px;
+  }
 }
 
 .header-section {
@@ -52,7 +54,7 @@ ion-content {
    ============================================ */
 .filters-section {
   margin-bottom: var(--space-xl);
-  
+
   .custom-segment {
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(10px);
@@ -74,7 +76,7 @@ ion-content {
 }
 
 /* ============================================
-   SUMMARY CARDS
+   SUMMARY CARDS (avec animations)
    ============================================ */
 .summary-cards {
   display: grid;
@@ -92,6 +94,20 @@ ion-content {
     align-items: center;
     text-align: center;
     gap: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeSlideUp 0.4s ease-out both;
+
+    &:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.07);
+    }
 
     .summary-icon {
       width: 54px;
@@ -101,9 +117,20 @@ ion-content {
       align-items: center;
       justify-content: center;
       font-size: 26px;
-      
-      &.blue { background: rgba(67, 97, 238, 0.1); color: var(--accent-blue); }
-      &.green { background: rgba(76, 201, 240, 0.1); color: var(--accent-green); }
+      transition: transform 0.3s ease;
+
+      &.blue {
+        background: rgba(67, 97, 238, 0.1);
+        color: var(--accent-blue);
+      }
+      &.green {
+        background: rgba(76, 201, 240, 0.1);
+        color: var(--accent-green);
+      }
+
+      .summary-card:hover & {
+        transform: scale(1.1) rotate(-5deg);
+      }
     }
 
     .summary-info {
@@ -138,42 +165,71 @@ ion-content {
     display: flex;
     align-items: center;
     gap: 8px;
-    
-    ion-icon { color: var(--accent-blue); }
+
+    ion-icon {
+      color: var(--accent-blue);
+    }
   }
 }
 
 .timeline {
   position: relative;
-  padding-left: 24px;
+  padding-left: 28px;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
-    left: 4px;
+    left: 6px;
     top: 8px;
     bottom: 8px;
-    width: 2px;
-    background: linear-gradient(to bottom, var(--accent-blue), var(--accent-green));
-    border-radius: 2px;
-    opacity: 0.3;
+    width: 3px;
+    background: linear-gradient(
+      to bottom,
+      var(--accent-blue),
+      var(--accent-green)
+    );
+    border-radius: 3px;
+    opacity: 0.4;
   }
 
   .timeline-item {
     position: relative;
     margin-bottom: var(--space-xl);
+    animation: fadeSlideUp 0.5s ease-out both;
+
+    &:nth-child(1) {
+      animation-delay: 0.05s;
+    }
+    &:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+    &:nth-child(3) {
+      animation-delay: 0.15s;
+    }
+    &:nth-child(4) {
+      animation-delay: 0.2s;
+    }
+    &:nth-child(5) {
+      animation-delay: 0.25s;
+    }
 
     .timeline-marker {
       position: absolute;
-      left: -24px;
+      left: -28px;
       top: 20px;
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       background: #ffffff;
-      border: 3px solid var(--accent-blue);
+      border: 3.5px solid var(--accent-blue);
       border-radius: 50%;
       z-index: 2;
-      box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+      box-shadow: 0 0 0 5px rgba(67, 97, 238, 0.12);
+      transition: all 0.3s ease;
+    }
+
+    &:hover .timeline-marker {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 8px rgba(67, 97, 238, 0.15);
     }
 
     .timeline-content {
@@ -182,12 +238,19 @@ ion-content {
       padding: var(--space-lg);
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
       border: 1px solid rgba(0, 0, 0, 0.01);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+        border-color: rgba(67, 97, 238, 0.08);
+      }
 
       .timeline-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
 
         .timeline-date {
           font-size: 12px;
@@ -197,16 +260,35 @@ ion-content {
         }
 
         ion-badge {
-          --padding-start: 10px;
-          --padding-end: 10px;
-          --padding-top: 5px;
-          --padding-bottom: 5px;
-          border-radius: 10px;
-          font-size: 10px;
+          --padding-start: 12px;
+          --padding-end: 12px;
+          --padding-top: 6px;
+          --padding-bottom: 6px;
+          border-radius: 20px;
+          font-size: 11px;
           font-weight: 800;
-          
-          &.badge-success { background: rgba(76, 201, 240, 0.15); color: #00b4d8; }
-          &.badge-warning { background: rgba(247, 127, 0, 0.15); color: #f77f00; }
+          letter-spacing: 0.02em;
+          transition: all 0.3s ease;
+
+          &.badge-success {
+            --background: rgba(76, 201, 240, 0.12);
+            color: #0096c7;
+            box-shadow: 0 2px 8px rgba(76, 201, 240, 0.15);
+          }
+          &.badge-warning {
+            --background: rgba(247, 127, 0, 0.12);
+            color: #e85d04;
+            box-shadow: 0 2px 8px rgba(247, 127, 0, 0.15);
+          }
+          &.badge-info {
+            --background: rgba(67, 97, 238, 0.12);
+            color: #4361ee;
+            box-shadow: 0 2px 8px rgba(67, 97, 238, 0.15);
+          }
+
+          &:hover {
+            transform: scale(1.05);
+          }
         }
       }
 
@@ -225,21 +307,24 @@ ion-content {
         color: var(--text-secondary);
         font-weight: 600;
         margin-bottom: 12px;
-        
-        ion-icon { font-size: 14px; color: var(--accent-blue); }
+
+        ion-icon {
+          font-size: 14px;
+          color: var(--accent-blue);
+        }
       }
 
       .timeline-content-text {
         font-size: 14px;
         color: var(--text-secondary);
-        line-height: 1.5;
+        line-height: 1.6;
         margin-bottom: 16px;
       }
 
       .timeline-stats {
         display: flex;
-        gap: 16px;
-        padding-top: 12px;
+        gap: 20px;
+        padding-top: 14px;
         border-top: 1px solid #f1f5f9;
 
         .stat-item {
@@ -249,10 +334,43 @@ ion-content {
           font-size: 12px;
           font-weight: 600;
           color: var(--text-primary);
-          
-          ion-icon { color: var(--accent-blue); }
+          transition: color 0.2s ease;
+
+          ion-icon {
+            color: var(--accent-blue);
+            transition: transform 0.2s ease;
+          }
+
+          &:hover {
+            color: var(--accent-blue);
+            ion-icon {
+              transform: scale(1.15);
+            }
+          }
         }
       }
     }
   }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   BOTTOM SPACER (pour tab bar flottante)
+   ============================================ */
+.bottom-spacer {
+  height: 80px;
+  width: 100%;
 }

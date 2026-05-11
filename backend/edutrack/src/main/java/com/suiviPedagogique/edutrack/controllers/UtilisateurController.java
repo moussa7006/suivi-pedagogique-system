@@ -41,7 +41,7 @@ public class UtilisateurController {
     }
 
     @PostMapping(value = "/import-enseignants", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<?> importEnseignants(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         try {
             return ResponseEntity.ok(excelImportService.importEnseignantsDetailed(file));

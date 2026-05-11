@@ -147,7 +147,7 @@ import { timeout } from 'rxjs/operators';
                 <div class="password-wrapper">
                   <input
                     [type]="showPassword ? 'text' : 'password'"
-                    [(ngModel)]="currentTeacher.motDePasse"
+                    [(ngModel)]="provisionalPassword"
                     placeholder="Minimum 8 caractères"
                     class="password-input"
                   />
@@ -202,8 +202,8 @@ import { timeout } from 'rxjs/operators';
           </button>
           <button
             class="tab-btn"
-            [class.active-admin]="activeTab === 'ADMIN'"
-            (click)="activeTab = 'ADMIN'"
+            [class.active-admin]="activeTab === 'ADMINISTRATEUR'"
+            (click)="activeTab = 'ADMINISTRATEUR'"
           >
             <i class="pi pi-shield"></i>
             <span>Administrateurs</span>
@@ -227,14 +227,14 @@ import { timeout } from 'rxjs/operators';
         class="empty-state"
         *ngIf="
           (activeTab === 'ENSEIGNANT' && filteredEnseignants.length === 0) ||
-          (activeTab === 'ADMIN' && filteredAdmins.length === 0)
+          (activeTab === 'ADMINISTRATEUR' && filteredAdmins.length === 0)
         "
       >
         <div class="empty-icon">
           <i
             class="pi"
             [class.pi-users]="activeTab === 'ENSEIGNANT'"
-            [class.pi-shield]="activeTab === 'ADMIN'"
+            [class.pi-shield]="activeTab === 'ADMINISTRATEUR'"
           ></i>
         </div>
         <h3>
@@ -294,7 +294,7 @@ import { timeout } from 'rxjs/operators';
         </div>
       </div>
 
-      <div class="cards-grid" *ngIf="activeTab === 'ADMIN' && filteredAdmins.length > 0">
+      <div class="cards-grid" *ngIf="activeTab === 'ADMINISTRATEUR' && filteredAdmins.length > 0">
         <div class="user-card admin" *ngFor="let teacher of filteredAdmins">
           <div class="card-accent admin-accent"></div>
           <div class="card-body">
@@ -425,9 +425,10 @@ export class TeachersComponent implements OnInit {
   teachers: Teacher[] = [];
   filteredEnseignants: Teacher[] = [];
   filteredAdmins: Teacher[] = [];
-  activeTab: 'ENSEIGNANT' | 'ADMIN' = 'ENSEIGNANT';
+  activeTab: 'ENSEIGNANT' | 'ADMINISTRATEUR' = 'ENSEIGNANT';
   searchText: string = '';
   showPassword: boolean = false;
+  provisionalPassword: string = '';
 
   displayForm: boolean = false;
   editingId: number | null = null;
@@ -477,8 +478,8 @@ export class TeachersComponent implements OnInit {
         (t.matricule || '').toLowerCase().includes(text) ||
         (t.email || '').toLowerCase().includes(text),
     );
-    this.filteredEnseignants = filtered.filter((t) => t.role !== 'ADMIN');
-    this.filteredAdmins = filtered.filter((t) => t.role === 'ADMIN');
+    this.filteredEnseignants = filtered.filter((t) => t.role !== 'ADMINISTRATEUR');
+    this.filteredAdmins = filtered.filter((t) => t.role === 'ADMINISTRATEUR');
   }
 
   getInitials(prenom?: string, nom?: string): string {
@@ -492,6 +493,7 @@ export class TeachersComponent implements OnInit {
     this.errorMessage = '';
     this.isSaving = false;
     this.showPassword = false;
+    this.provisionalPassword = '';
     this.currentTeacher = { role: 'ENSEIGNANT' };
     this.displayForm = true;
   }
@@ -501,6 +503,7 @@ export class TeachersComponent implements OnInit {
     this.errorMessage = '';
     this.isSaving = false;
     this.showPassword = false;
+    this.provisionalPassword = '';
     this.currentTeacher = { ...t };
     this.displayForm = true;
   }
@@ -510,14 +513,14 @@ export class TeachersComponent implements OnInit {
 
     const teacherToSave: Teacher = {
       ...this.currentTeacher,
-      matricule: this.currentTeacher.matricule?.trim(),
-      nom: this.currentTeacher.nom?.trim(),
-      prenom: this.currentTeacher.prenom?.trim(),
-      email: this.currentTeacher.email?.trim(),
-      telephone: this.currentTeacher.telephone?.trim(),
-      adresse: this.currentTeacher.adresse?.trim(),
-      motDePasse: this.currentTeacher.motDePasse?.trim(),
+      matricule: this.currentTeacher.matricule?.trim() ?? '',
+      nom: this.currentTeacher.nom?.trim() ?? '',
+      prenom: this.currentTeacher.prenom?.trim() ?? '',
+      email: this.currentTeacher.email?.trim() ?? '',
+      telephone: this.currentTeacher.telephone?.trim() ?? '',
+      adresse: this.currentTeacher.adresse?.trim() ?? '',
       role: this.currentTeacher.role || 'ENSEIGNANT',
+      actif: true,
     };
 
     if (
@@ -533,12 +536,12 @@ export class TeachersComponent implements OnInit {
       return;
     }
 
-    if (!this.editingId && !teacherToSave.motDePasse) {
+    if (!this.editingId && !this.provisionalPassword) {
       this.errorMessage = 'Veuillez renseigner un mot de passe provisoire.';
       return;
     }
 
-    if (!this.editingId && teacherToSave.motDePasse && teacherToSave.motDePasse.length < 8) {
+    if (!this.editingId && this.provisionalPassword && this.provisionalPassword.length < 8) {
       this.errorMessage = 'Le mot de passe provisoire doit contenir au moins 8 caractères.';
       return;
     }
@@ -547,14 +550,16 @@ export class TeachersComponent implements OnInit {
 
     const request$ = this.editingId
       ? this.teacherService.update(this.editingId, teacherToSave)
-      : this.teacherService.create(teacherToSave);
+      : this.teacherService.create({
+          ...(teacherToSave as any),
+          motDePasse: this.provisionalPassword,
+        });
 
     request$.pipe(timeout(12000)).subscribe({
       next: (savedTeacher: any) => {
         const normalizedTeacher: Teacher = {
           ...teacherToSave,
           id: savedTeacher?.id || this.editingId || teacherToSave.id,
-          motDePasse: undefined,
         };
 
         if (this.editingId) {

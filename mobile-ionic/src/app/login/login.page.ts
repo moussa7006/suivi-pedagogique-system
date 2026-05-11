@@ -24,6 +24,7 @@ import {
   IonCardTitle,
   IonCardContent,
   IonSpinner,
+  ToastController,
 } from "@ionic/angular/standalone";
 import { addIcons } from "ionicons";
 import {
@@ -37,6 +38,9 @@ import {
   arrowForwardOutline,
   playOutline,
 } from "ionicons/icons";
+import { AuthService } from "../core/services/auth.service";
+import { ApiErrorService } from "../core/services/api-error.service";
+import { finalize } from "rxjs";
 
 @Component({
   selector: "app-login",
@@ -67,6 +71,8 @@ import {
 export class LoginPage {
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private authService = inject(AuthService);
+  private apiError = inject(ApiErrorService);
 
   loginForm: FormGroup;
   showPassword = false;
@@ -103,7 +109,7 @@ export class LoginPage {
     this.showPassword = !this.showPassword;
   }
 
-  async onSubmit() {
+  onSubmit() {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -111,11 +117,20 @@ export class LoginPage {
 
     this.isLoading = true;
 
-    // Simulation d'une connexion API
-    setTimeout(() => {
-      this.isLoading = false;
-      // Navigation vers les tabs après connexion
-      this.router.navigate(["/tabs"]);
-    }, 1500);
+    const credentials = {
+      email: this.loginForm.value.email,
+      motDePasse: this.loginForm.value.password,
+    };
+
+    this.authService.login(credentials)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: () => {
+          this.router.navigate(["/tabs"]);
+        },
+        error: (err) => {
+          this.apiError.presentError(err, "Email ou mot de passe incorrect.");
+        },
+      });
   }
 }
