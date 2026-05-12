@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -105,7 +105,7 @@ export class DepartementsComponent implements OnInit {
   confirmDeleteId: number | null = null;
   confirmDeleteMessage = '';
 
-  constructor(private departementService: DepartementService) {}
+  constructor(private departementService: DepartementService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadDepartements();
@@ -116,8 +116,12 @@ export class DepartementsComponent implements OnInit {
       next: (data) => {
         this.departements = data;
         this.filterDepartements();
+        this.cdr.detectChanges();
       },
-      error: () => (this.errorMessage = 'Impossible de charger les départements. Vérifiez le backend.'),
+      error: () => {
+        this.errorMessage = 'Impossible de charger les départements. Vérifiez le backend.';
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -162,8 +166,12 @@ export class DepartementsComponent implements OnInit {
         this.currentDepartement = {};
         this.editingId = null;
         this.loadDepartements();
+        this.cdr.detectChanges();
       },
-      error: (error) => this.handleSaveError(error, "Impossible d'enregistrer le département."),
+      error: (error) => {
+        this.handleSaveError(error, "Impossible d'enregistrer le département.");
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -182,8 +190,14 @@ export class DepartementsComponent implements OnInit {
     const id = this.confirmDeleteId;
     this.cancelDelete();
     this.departementService.delete(id).subscribe({
-      next: () => this.loadDepartements(),
-      error: () => (this.errorMessage = 'Impossible de supprimer ce département car il est peut-être utilisé.'),
+      next: () => {
+        this.loadDepartements();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'Impossible de supprimer ce département car il est peut-être utilisé.';
+        this.cdr.detectChanges();
+      },
     });
   }
 

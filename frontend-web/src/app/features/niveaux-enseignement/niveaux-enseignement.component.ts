@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -101,7 +101,7 @@ export class NiveauxEnseignementComponent implements OnInit {
   confirmDeleteId: number | null = null;
   confirmDeleteMessage = '';
 
-  constructor(private niveauService: NiveauEnseignementService) {}
+  constructor(private niveauService: NiveauEnseignementService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadNiveaux();
@@ -112,8 +112,12 @@ export class NiveauxEnseignementComponent implements OnInit {
       next: (data) => {
         this.niveaux = data;
         this.filterNiveaux();
+        this.cdr.detectChanges();
       },
-      error: () => (this.errorMessage = "Impossible de charger les niveaux d'enseignement."),
+      error: () => {
+        this.errorMessage = "Impossible de charger les niveaux d'enseignement.";
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -159,8 +163,12 @@ export class NiveauxEnseignementComponent implements OnInit {
         this.editingId = null;
         this.currentNiveau = {};
         this.loadNiveaux();
+        this.cdr.detectChanges();
       },
-      error: (error) => this.handleSaveError(error, "Impossible d'enregistrer le niveau."),
+      error: (error) => {
+        this.handleSaveError(error, "Impossible d'enregistrer le niveau.");
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -179,8 +187,14 @@ export class NiveauxEnseignementComponent implements OnInit {
     const id = this.confirmDeleteId;
     this.cancelDelete();
     this.niveauService.delete(id).subscribe({
-      next: () => this.loadNiveaux(),
-      error: () => (this.errorMessage = 'Impossible de supprimer ce niveau car il est peut-être utilisé.'),
+      next: () => {
+        this.loadNiveaux();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'Impossible de supprimer ce niveau car il est peut-être utilisé.';
+        this.cdr.detectChanges();
+      },
     });
   }
 

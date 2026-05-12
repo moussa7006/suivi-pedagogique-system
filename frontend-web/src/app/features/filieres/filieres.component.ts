@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -110,6 +110,7 @@ export class FilieresComponent implements OnInit {
   constructor(
     private filiereService: FiliereService,
     private departementService: DepartementService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -119,8 +120,14 @@ export class FilieresComponent implements OnInit {
 
   loadDepartements(): void {
     this.departementService.getAll().subscribe({
-      next: (data) => (this.departements = data),
-      error: () => (this.errorMessage = 'Impossible de charger les départements.'),
+      next: (data) => {
+        this.departements = data;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'Impossible de charger les départements.';
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -129,8 +136,12 @@ export class FilieresComponent implements OnInit {
       next: (data) => {
         this.filieres = data;
         this.filterFilieres();
+        this.cdr.detectChanges();
       },
-      error: () => (this.errorMessage = 'Impossible de charger les filières.'),
+      error: () => {
+        this.errorMessage = 'Impossible de charger les filières.';
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -183,8 +194,12 @@ export class FilieresComponent implements OnInit {
         this.editingId = null;
         this.currentFiliere = {};
         this.loadFilieres();
+        this.cdr.detectChanges();
       },
-      error: (error) => this.handleSaveError(error, "Impossible d'enregistrer la filière."),
+      error: (error) => {
+        this.handleSaveError(error, "Impossible d'enregistrer la filière.");
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -203,8 +218,14 @@ export class FilieresComponent implements OnInit {
     const id = this.confirmDeleteId;
     this.cancelDelete();
     this.filiereService.delete(id).subscribe({
-      next: () => this.loadFilieres(),
-      error: () => (this.errorMessage = 'Impossible de supprimer cette filière car elle est peut-être utilisée.'),
+      next: () => {
+        this.loadFilieres();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'Impossible de supprimer cette filière car elle est peut-être utilisée.';
+        this.cdr.detectChanges();
+      },
     });
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -105,7 +105,7 @@ export class AnneesUniversitairesComponent implements OnInit {
   confirmDeleteId: number | null = null;
   confirmDeleteMessage = '';
 
-  constructor(private anneeService: AnneeUniversitaireService) {}
+  constructor(private anneeService: AnneeUniversitaireService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadAnnees();
@@ -116,8 +116,12 @@ export class AnneesUniversitairesComponent implements OnInit {
       next: (data) => {
         this.annees = data;
         this.filterAnnees();
+        this.cdr.detectChanges();
       },
-      error: () => (this.errorMessage = 'Impossible de charger les années universitaires.'),
+      error: () => {
+        this.errorMessage = 'Impossible de charger les années universitaires.';
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -170,8 +174,12 @@ export class AnneesUniversitairesComponent implements OnInit {
         this.editingId = null;
         this.currentAnnee = {};
         this.loadAnnees();
+        this.cdr.detectChanges();
       },
-      error: (error) => this.handleSaveError(error, "Impossible d'enregistrer l’année universitaire."),
+      error: (error) => {
+        this.handleSaveError(error, "Impossible d'enregistrer l’année universitaire.");
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -190,8 +198,14 @@ export class AnneesUniversitairesComponent implements OnInit {
     const id = this.confirmDeleteId;
     this.cancelDelete();
     this.anneeService.delete(id).subscribe({
-      next: () => this.loadAnnees(),
-      error: () => (this.errorMessage = 'Impossible de supprimer cette année car elle est peut-être utilisée.'),
+      next: () => {
+        this.loadAnnees();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'Impossible de supprimer cette année car elle est peut-être utilisée.';
+        this.cdr.detectChanges();
+      },
     });
   }
 

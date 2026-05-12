@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -192,17 +192,22 @@ export class Matieres implements OnInit {
   constructor(
     private matiereService: MatiereService,
     private departementService: DepartementService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.loadMatieres();
-    this.departementService.getAll().subscribe((d) => (this.departements = d));
+    this.departementService.getAll().subscribe((d) => {
+      this.departements = d;
+      this.cdr.detectChanges();
+    });
   }
 
   loadMatieres() {
     this.matiereService.getAll().subscribe((data) => {
       this.matieres = data;
       this.filterMatieres();
+      this.cdr.detectChanges();
     });
   }
 
@@ -276,6 +281,7 @@ export class Matieres implements OnInit {
         this.errorMessage = '';
         this.currentMatiere = {};
         this.editingId = null;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.isSaving = false;
@@ -301,6 +307,7 @@ export class Matieres implements OnInit {
           error?.error?.error ||
           error?.error?.message ||
           'Impossible d\'enregistrer la matière. Vérifiez le backend et réessayez.';
+        this.cdr.detectChanges();
       },
     });
   }
@@ -322,6 +329,9 @@ export class Matieres implements OnInit {
 
     const id = this.confirmDeleteId;
     this.cancelDelete();
-    this.matiereService.delete(id).subscribe(() => this.loadMatieres());
+    this.matiereService.delete(id).subscribe(() => {
+      this.loadMatieres();
+      this.cdr.detectChanges();
+    });
   }
 }

@@ -68,18 +68,18 @@ import { timeout } from 'rxjs/operators';
               </div>
               <div class="input-group">
                 <label>Filière</label>
-                <select [(ngModel)]="currentClasse.filiereId">
-                  <option [value]="null" disabled>Sélectionnez une filière</option>
-                  <option *ngFor="let f of filieres" [value]="f.id">
+                <select [(ngModel)]="currentClasse.filiereId" (ngModelChange)="autoFillLibelle()">
+                  <option [ngValue]="null" disabled>Sélectionnez une filière</option>
+                  <option *ngFor="let f of filieres" [ngValue]="f.id">
                     {{ f.libelle }}
                   </option>
                 </select>
               </div>
               <div class="input-group">
                 <label>Niveau d'Enseignement</label>
-                <select [(ngModel)]="currentClasse.niveauEnseignementId">
-                  <option [value]="null" disabled>Sélectionnez un niveau</option>
-                  <option *ngFor="let n of niveauxEnseignement" [value]="n.id">
+                <select [(ngModel)]="currentClasse.niveauEnseignementId" (ngModelChange)="autoFillLibelle()">
+                  <option [ngValue]="null" disabled>Sélectionnez un niveau</option>
+                  <option *ngFor="let n of niveauxEnseignement" [ngValue]="n.id">
                     {{ n.libelle }}
                   </option>
                 </select>
@@ -233,16 +233,28 @@ export class Classes implements OnInit {
     );
   }
 
-  getFiliereLibelle(filiereId: number | undefined): string {
+  getFiliereLibelle(filiereId: number | string | undefined): string {
     if (!filiereId) return 'N/A';
-    const f = this.filieres.find((f) => f.id === filiereId);
+    const id = Number(filiereId);
+    const f = this.filieres.find((f) => f.id === id);
     return f ? f.libelle : 'N/A';
   }
 
-  getNiveauLibelle(niveauId: number | undefined): string {
+  getNiveauLibelle(niveauId: number | string | undefined): string {
     if (!niveauId) return 'N/A';
-    const n = this.niveauxEnseignement.find((n) => n.id === niveauId);
+    const id = Number(niveauId);
+    const n = this.niveauxEnseignement.find((n) => n.id === id);
     return n ? n.libelle : 'N/A';
+  }
+
+  autoFillLibelle() {
+    if (this.currentClasse.filiereId && this.currentClasse.niveauEnseignementId) {
+      const filiere = this.getFiliereLibelle(this.currentClasse.filiereId);
+      const niveau = this.getNiveauLibelle(this.currentClasse.niveauEnseignementId);
+      if (filiere !== 'N/A' && niveau !== 'N/A') {
+        this.currentClasse.libelle = `${niveau} - ${filiere}`;
+      }
+    }
   }
 
   showAddForm() {
