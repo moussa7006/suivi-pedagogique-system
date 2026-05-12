@@ -46,12 +46,7 @@ import { Seance } from '../../core/models/schedule.model';
 
           <div class="form-group">
             <label for="teacher"><i class="pi pi-qrcode"></i> Token QR</label>
-            <input
-              id="teacher"
-              type="text"
-              disabled
-              [value]="selectedSeance ? 'SEANCE-' + selectedSeance.id : 'N/A'"
-            />
+            <input id="teacher" type="text" disabled [value]="qrData || 'N/A'" />
           </div>
 
           <div class="form-group">
@@ -640,6 +635,7 @@ import { Seance } from '../../core/models/schedule.model';
 })
 export class QrGeneratorComponent implements OnInit, OnDestroy {
   qrData: string = '';
+  errorMessage: string = '';
   isRunning: boolean = false;
   timeLeft: number = 30;
   refreshInterval: number = 30;
@@ -657,17 +653,17 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.scheduleService.getAllSeances().subscribe((data) => {
-      // Pour une vraie application, filtrer uniquement les séances d'aujourd'hui
       this.seances = data;
     });
   }
 
   onSeanceChange() {
+    this.stopSession();
+    this.errorMessage = '';
+
     if (this.selectedSeanceId) {
       this.selectedSeance = this.seances.find((s) => s.id == this.selectedSeanceId) || null;
-      if (this.selectedSeance) {
-        this.qrData = 'SEANCE-' + this.selectedSeance.id;
-      }
+      this.qrData = this.selectedSeance?.qrCodeToken || '';
     } else {
       this.selectedSeance = null;
       this.qrData = '';
@@ -691,9 +687,22 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   }
 
   startSession() {
-    this.isRunning = true;
-    this.qrData = this.selectedSeance ? 'SEANCE-' + this.selectedSeance.id : '';
-    this.startTimer();
+    if (!this.selectedSeance?.id) return;
+
+    this.errorMessage = '';
+    this.scheduleService.generateQrCode(this.selectedSeance.id).subscribe({
+      next: (updatedSeance) => {
+        this.selectedSeance = updatedSeance;
+        this.qrData = updatedSeance.qrCodeToken || '';
+        this.isRunning = !!this.qrData;
+        this.startTimer();
+      },
+      error: (error) => {
+        console.error('[QR] Erreur génération QR:', error);
+        this.errorMessage = error?.error?.error || 'Impossible de générer le QR code.';
+        alert(this.errorMessage);
+      },
+    });
   }
 
   stopSession() {

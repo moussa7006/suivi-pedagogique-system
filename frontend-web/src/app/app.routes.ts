@@ -43,4 +43,33 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/pedagogy/pedagogy.component').then((m) => m.PedagogyComponent),
   },
+  {
+    path: 'departements',
+    loadComponent: () =>
+      import('./features/departements/departements.component').then((m) => m.DepartementsComponent),
+  },
+  {
+    path: 'filieres',
+    loadComponent: () =>
+      import('./features/filieres/filieres.component').then((m) => m.FilieresComponent),
+  },
+  {
+    path: 'niveaux-enseignement',
+    loadComponent: () =>
+      import('./features/niveaux-enseignement/niveaux-enseignement.component').then(
+        (m) => m.NiveauxEnseignementComponent,
+      ),
+  },
+  {
+    path: 'salles',
+    loadComponent: () =>
+      import('./features/salles/salles.component').then((m) => m.SallesComponent),
+  },
+  {
+    path: 'annees-universitaires',
+    loadComponent: () =>
+      import('./features/annees-universitaires/annees-universitaires.component').then(
+        (m) => m.AnneesUniversitairesComponent,
+      ),
+  },
 ];

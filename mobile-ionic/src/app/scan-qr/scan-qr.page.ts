@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Component, inject } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { Router, RouterLink } from "@angular/router";
 import {
   IonContent,
   IonHeader,
@@ -14,9 +15,10 @@ import {
   IonCardTitle,
   IonCardContent,
   IonText,
+  IonInput,
   ToastController,
-} from '@ionic/angular/standalone';
-import { addIcons } from 'ionicons';
+} from "@ionic/angular/standalone";
+import { addIcons } from "ionicons";
 import {
   scanOutline,
   cameraOutline,
@@ -25,18 +27,19 @@ import {
   timeOutline,
   locationOutline,
   arrowBackOutline,
-} from 'ionicons/icons';
-import { SeanceService } from '../seance.service';
-import { EmargementService } from '../core/services/emargement.service';
-import { AlertController } from '@ionic/angular/standalone';
+} from "ionicons/icons";
+import { SeanceService } from "../seance.service";
+import { EmargementService } from "../core/services/emargement.service";
+import { AlertController } from "@ionic/angular/standalone";
 
 @Component({
-  selector: 'app-scan-qr',
-  templateUrl: 'scan-qr.page.html',
-  styleUrls: ['scan-qr.page.scss'],
+  selector: "app-scan-qr",
+  templateUrl: "scan-qr.page.html",
+  styleUrls: ["scan-qr.page.scss"],
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     IonContent,
     IonHeader,
@@ -50,6 +53,7 @@ import { AlertController } from '@ionic/angular/standalone';
     IonCardTitle,
     IonCardContent,
     IonText,
+    IonInput,
   ],
 })
 export class ScanQRPage {
@@ -60,6 +64,7 @@ export class ScanQRPage {
   private router = inject(Router);
 
   isScanning = false;
+  manualToken = "";
 
   constructor() {
     addIcons({
@@ -76,72 +81,123 @@ export class ScanQRPage {
   async openScanner() {
     if (!this.seanceService.isCahierFait) {
       const alert = await this.alertController.create({
-        header: 'Action Bloquée',
-        subHeader: 'Cahier de Textes manquant',
-        message: 'Vous ne pouvez pas émarger sans avoir d\'abord saisi le contenu de votre séance dans le Cahier de Textes.',
+        header: "Action Bloquée",
+        subHeader: "Cahier de Textes manquant",
+        message:
+          "Vous ne pouvez pas émarger sans avoir d'abord saisi le contenu de votre séance dans le Cahier de Textes.",
         buttons: [
           {
-            text: 'Plus tard',
-            role: 'cancel'
+            text: "Plus tard",
+            role: "cancel",
           },
           {
-            text: 'Remplir le cahier',
+            text: "Remplir le cahier",
             handler: () => {
-              this.router.navigate(['/tabs/tabs/tab4']);
-            }
-          }
-        ]
+              this.router.navigate(["/tabs/tabs/tab4"]);
+            },
+          },
+        ],
       });
 
       await alert.present();
       return;
     }
 
-    // Simulation d'un scan de QR Code
-    // Dans une vraie app, on utiliserait @capacitor-mlkit/barcode-scanning ou un plugin similaire
+    const tokenQRCode = this.manualToken.trim();
+    if (!tokenQRCode) {
+      const alert = await this.alertController.create({
+        header: "QR Code manquant",
+        message:
+          "Veuillez scanner un QR code ou coller le token QR affiché par l'administrateur.",
+        buttons: ["OK"],
+      });
+      await alert.present();
+      return;
+    }
+
     this.isScanning = true;
+    this.getCurrentPosition()
+      .then((position) => {
+        this.emargementService
+          .scanQRCode({
+            tokenQRCode,
+            latitude: position.latitude,
+            longitude: position.longitude,
+            adresseApproximative: position.adresseApproximative,
+          })
+          .subscribe({
+            next: async (response) => {
+              this.isScanning = false;
+              const toast = await this.toastController.create({
+                message: `Émargement ${response.statut === "VALIDE" ? "validé ✅" : "enregistré (" + response.statut + ")"}`,
+                duration: 3000,
+                color: response.statut === "VALIDE" ? "success" : "warning",
+                position: "top",
+              });
+              await toast.present();
+            },
+            error: async (error) => {
+              this.isScanning = false;
 
-    // Simulation du résultat de scan
-    const tokenQRSimule = 'QR-' + Date.now();
-    const latitude = 12.6392; // Exemple: Bamako
-    const longitude = -8.0029;
-    const adresseApproximative = 'Bamako, Mali';
+              let message =
+                error?.error?.error || "Erreur lors de l'émargement.";
+              if (error.status === 400 && !error?.error?.error) {
+                message = "QR Code invalide ou séance non trouvée.";
+              } else if (error.status === 409) {
+                message = "Vous avez déjà émargé pour cette séance.";
+              } else if (error.status === 403) {
+                message = "Hors périmètre autorisé pour l'émargement.";
+              }
 
-    this.emargementService.scanQRCode({
-      tokenQRCode: tokenQRSimule,
-      latitude,
-      longitude,
-      adresseApproximative,
-    }).subscribe({
-      next: async (response) => {
+              const alert = await this.alertController.create({
+                header: "Échec de l'émargement",
+                message,
+                buttons: ["OK"],
+              });
+              await alert.present();
+            },
+          });
+      })
+      .catch(async (error) => {
         this.isScanning = false;
-        const toast = await this.toastController.create({
-          message: `Émargement ${response.statut === 'VALIDE' ? 'validé ✅' : 'enregistré (' + response.statut + ')'}`,
-          duration: 3000,
-          color: response.statut === 'VALIDE' ? 'success' : 'warning',
-          position: 'top',
-        });
-        await toast.present();
-      },
-      error: async (error) => {
-        this.isScanning = false;
-
-        let message = 'Erreur lors de l\'émargement.';
-        if (error.status === 400) {
-          message = 'QR Code invalide ou séance non trouvée.';
-        } else if (error.status === 409) {
-          message = 'Vous avez déjà émargé pour cette séance.';
-        } else if (error.status === 403) {
-          message = 'Hors périmètre autorisé pour l\'émargement.';
-        }
-
         const alert = await this.alertController.create({
-          header: 'Échec de l\'émargement',
-          message,
-          buttons: ['OK'],
+          header: "Position GPS indisponible",
+          message: error?.message || "Impossible de récupérer votre position.",
+          buttons: ["OK"],
         });
         await alert.present();
-      },
+      });
+  }
+
+  private getCurrentPosition(): Promise<{
+    latitude: number;
+    longitude: number;
+    adresseApproximative: string;
+  }> {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(
+          new Error(
+            "La géolocalisation n'est pas disponible sur cet appareil.",
+          ),
+        );
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            adresseApproximative: "Position GPS du mobile",
+          });
+        },
+        () =>
+          reject(
+            new Error("Autorisation GPS refusée ou position introuvable."),
+          ),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+      );
     });
   }
 }

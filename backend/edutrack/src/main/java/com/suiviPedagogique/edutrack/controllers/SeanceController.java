@@ -47,4 +47,14 @@ public class SeanceController {
         SeanceDto seance = seanceService.getSeanceById(id);
         return ResponseEntity.ok(seance);
     }
+
+    @PostMapping("/{id}/qr-code")
+    public ResponseEntity<SeanceDto> generateQrCode(@PathVariable Integer id) {
+        return ResponseEntity.ok(seanceService.generateQrCode(id));
+    }
+
+    @GetMapping("/{id}/qr-code")
+    public ResponseEntity<SeanceDto> getQrCode(@PathVariable Integer id) {
+        return ResponseEntity.ok(seanceService.getQrCode(id));
+    }
 }

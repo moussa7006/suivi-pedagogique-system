@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { TeacherService } from '../../core/services/teacher.service';
 import { ClasseService } from '../../core/services/classe.service';
 import { ScheduleService } from '../../core/services/schedule.service';
@@ -889,32 +891,62 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loadAdminProfile();
+    this.loadDashboardStats();
+  }
 
-    this.teacherService.getTeachers().subscribe((data) => {
-      if (!data) return;
-      this.stats[0].value = data.length;
-      this.hubTiles[2].indicator = `${data.length} enseignant${data.length > 1 ? 's' : ''}`;
-    });
+  private loadDashboardStats(): void {
+    forkJoin({
+      teachers: this.teacherService.getTeachers().pipe(
+        catchError((error) => {
+          console.error('[Dashboard] Erreur chargement enseignants:', error);
+          this.hubTiles[2].indicator = 'Erreur API';
+          return of([]);
+        }),
+      ),
+      classes: this.classeService.getAll().pipe(
+        catchError((error) => {
+          console.error('[Dashboard] Erreur chargement classes:', error);
+          this.hubTiles[0].indicator = 'Erreur API';
+          return of([]);
+        }),
+      ),
+      schedules: this.scheduleService.getAllSchedules().pipe(
+        catchError((error) => {
+          console.error('[Dashboard] Erreur chargement plannings:', error);
+          return of([]);
+        }),
+      ),
+      seances: this.scheduleService.getAllSeances().pipe(
+        catchError((error) => {
+          console.error('[Dashboard] Erreur chargement séances:', error);
+          this.hubTiles[3].indicator = 'Erreur API';
+          return of([]);
+        }),
+      ),
+      attendances: this.attendanceService.getAllAttendances().pipe(
+        catchError((error) => {
+          console.error('[Dashboard] Erreur chargement émargements:', error);
+          this.hubTiles[5].indicator = 'Erreur API';
+          return of([]);
+        }),
+      ),
+    }).subscribe(({ teachers, classes, schedules, seances, attendances }) => {
+      this.stats[0].value = teachers.length;
+      this.hubTiles[2].indicator = `${teachers.length} enseignant${teachers.length > 1 ? 's' : ''}`;
 
-    this.classeService.getAll().subscribe((data) => {
-      if (!data) return;
-      this.stats[1].value = data.length;
-      this.hubTiles[0].indicator = `${data.length} classe${data.length > 1 ? 's' : ''}`;
-    });
+      this.stats[1].value = classes.length;
+      this.hubTiles[0].indicator = `${classes.length} classe${classes.length > 1 ? 's' : ''}`;
 
-    this.scheduleService.getAllSchedules().subscribe((data) => {
-      if (!data) return;
-      this.stats[2].value = data.length;
-      this.hubTiles[3].indicator = `${data.length} séance${data.length > 1 ? 's' : ''}`;
-    });
+      this.stats[2].value = seances.length;
+      this.hubTiles[3].indicator = `${schedules.length} planning${schedules.length > 1 ? 's' : ''} / ${seances.length} séance${seances.length > 1 ? 's' : ''}`;
 
-    this.attendanceService.getAllAttendances().subscribe((data) => {
-      if (!data) return;
-      this.hubTiles[5].indicator = `${data.length} émargement${data.length > 1 ? 's' : ''}`;
-      const confirmedCount = data.filter((item) => item.statut === 'VALIDE').length;
-      this.stats[3].value = data.length ? Math.round((confirmedCount / data.length) * 100) : 0;
+      this.hubTiles[5].indicator = `${attendances.length} émargement${attendances.length > 1 ? 's' : ''}`;
+      const confirmedCount = attendances.filter((item) => item.statut === 'VALIDE').length;
+      this.stats[3].value = attendances.length
+        ? Math.round((confirmedCount / attendances.length) * 100)
+        : 0;
 
-      const sorted = data.sort(
+      const sorted = [...attendances].sort(
         (a, b) => new Date(b.dateHeureScan!).getTime() - new Date(a.dateHeureScan!).getTime(),
       );
       this.activities = sorted.slice(0, 4).map((e) => ({
@@ -924,10 +956,12 @@ export class DashboardComponent implements OnInit {
           : '??',
         action: e.statut === 'VALIDE' ? 'a émargé avec succès.' : 'a tenté un émargement.',
         meta: e.lieu || 'Séance',
-        time: new Date(e.dateHeureScan!).toLocaleTimeString('fr-FR', {
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
+        time: e.dateHeureScan
+          ? new Date(e.dateHeureScan).toLocaleTimeString('fr-FR', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+          : '--:--',
         color: e.statut === 'VALIDE' ? '#10b981' : '#f59e0b',
       }));
     });
