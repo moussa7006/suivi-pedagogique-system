@@ -25,8 +25,10 @@ ion-content {
   height: 48px;
   width: 48px;
   margin: 0 0 var(--space-lg) 0;
-  
-  ion-icon { font-size: 24px; }
+
+  ion-icon {
+    font-size: 24px;
+  }
 }
 
 .header-section {
@@ -67,7 +69,7 @@ ion-content {
     align-items: center;
     justify-content: center;
     margin: 0 auto var(--space-xl);
-    
+
     ion-icon {
       font-size: 50px;
       color: var(--accent-blue);
@@ -88,6 +90,17 @@ ion-content {
     margin-bottom: var(--space-xl);
   }
 
+  .token-input {
+    --background: #f8fafc;
+    --border-radius: 16px;
+    --padding-start: 14px;
+    --padding-end: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    margin-bottom: var(--space-lg);
+    text-align: left;
+  }
+
   .scan-btn {
     --background: var(--accent-blue);
     --border-radius: 20px;
@@ -95,8 +108,10 @@ ion-content {
     font-weight: 800;
     font-size: 16px;
     --box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2);
-    
-    &:active { transform: scale(0.97); }
+
+    &:active {
+      transform: scale(0.97);
+    }
   }
 }
 
@@ -114,12 +129,25 @@ ion-content {
     align-items: center;
     gap: 10px;
     margin-bottom: 8px;
-    
-    ion-icon { color: var(--accent-blue); font-size: 22px; }
-    h3 { font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0; }
+
+    ion-icon {
+      color: var(--accent-blue);
+      font-size: 22px;
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 0;
+    }
   }
 
   .card-content {
-    p { font-size: 14px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
+    p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin: 0;
+    }
   }
 }

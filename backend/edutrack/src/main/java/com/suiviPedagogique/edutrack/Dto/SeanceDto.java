@@ -18,6 +18,7 @@ public class SeanceDto {
     private LocalTime heureFinReelle;
     private Integer salleId;
     private Integer qrCodeId;
+    private String qrCodeToken;
     private StatutSeance statut;
 
     // IDs des entités liées

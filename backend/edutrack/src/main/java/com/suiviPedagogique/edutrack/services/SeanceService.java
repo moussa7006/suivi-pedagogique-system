@@ -10,7 +10,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +41,9 @@ public class SeanceService {
 
     @Autowired
     private SalleRepository salleRepository;
+
+    @Autowired
+    private QRCodeRepository qrCodeRepository;
 
     private Utilisateur getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -157,6 +162,46 @@ public class SeanceService {
         return convertToDto(seance);
     }
 
+    public SeanceDto generateQrCode(Integer id) {
+        Utilisateur currentUser = getCurrentUser();
+        if (currentUser.getRole() != Role.ADMINISTRATEUR) {
+            throw new AccessDeniedException("Seul l'administrateur peut générer un QR code");
+        }
+
+        Seance seance = seanceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Séance non trouvée"));
+
+        QRCode qrCode = seance.getQrCode();
+        if (qrCode == null) {
+            qrCode = new QRCode();
+        }
+
+        qrCode.setCode(UUID.randomUUID().toString());
+        qrCode.setDateHeureCreation(LocalDateTime.now());
+        qrCode.setDateHeureExpiration(LocalDateTime.of(seance.getDateCours(), seance.getHeureFinReelle()));
+        qrCode.setEstValide(true);
+
+        qrCodeRepository.save(qrCode);
+        seance.setQrCode(qrCode);
+        return convertToDto(seanceRepository.save(seance));
+    }
+
+    public SeanceDto getQrCode(Integer id) {
+        Seance seance = seanceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Séance non trouvée"));
+
+        Utilisateur currentUser = getCurrentUser();
+        if (currentUser.getRole() == Role.ENSEIGNANT && !seance.getEnseignant().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("Vous ne pouvez voir que vos propres QR codes");
+        }
+
+        if (seance.getQrCode() == null) {
+            throw new RuntimeException("Aucun QR code généré pour cette séance");
+        }
+
+        return convertToDto(seance);
+    }
+
     private SeanceDto convertToDto(Seance seance) {
         SeanceDto dto = new SeanceDto();
         dto.setId(seance.getId());
@@ -170,6 +215,7 @@ public class SeanceService {
         }
         if (seance.getQrCode() != null) {
             dto.setQrCodeId(seance.getQrCode().getId());
+            dto.setQrCodeToken(seance.getQrCode().getCode());
         }
         if (seance.getEnseignant() != null) {
             dto.setEnseignantId(seance.getEnseignant().getId());

@@ -67,6 +67,40 @@ import { AuthService } from '../../core/services/auth.service';
           </li>
         </ul>
 
+        <div class="nav-section">Référentiels</div>
+        <ul class="nav-list">
+          <li>
+            <a routerLink="/departements" routerLinkActive="active">
+              <i class="pi pi-folder"></i>
+              <span>Départements</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/filieres" routerLinkActive="active">
+              <i class="pi pi-sitemap"></i>
+              <span>Filières</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/niveaux-enseignement" routerLinkActive="active">
+              <i class="pi pi-graduation-cap"></i>
+              <span>Niveaux</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/salles" routerLinkActive="active">
+              <i class="pi pi-building"></i>
+              <span>Salles</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/annees-universitaires" routerLinkActive="active">
+              <i class="pi pi-calendar-plus"></i>
+              <span>Années universitaires</span>
+            </a>
+          </li>
+        </ul>
+
         <div class="nav-section">Pédagogie</div>
         <ul class="nav-list">
           <li>

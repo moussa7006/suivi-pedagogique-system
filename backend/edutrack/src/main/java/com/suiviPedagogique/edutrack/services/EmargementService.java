@@ -40,6 +40,14 @@ public class EmargementService {
         Seance seance = seanceRepository.findByTokenQRCode(request.getTokenQRCode())
                 .orElseThrow(() -> new RuntimeException("QR Code invalide ou séance inexistante."));
 
+        if (seance.getQrCode() == null || Boolean.FALSE.equals(seance.getQrCode().getEstValide())) {
+            throw new RuntimeException("QR Code expiré ou désactivé.");
+        }
+        if (seance.getQrCode().getDateHeureExpiration().isBefore(LocalDateTime.now())) {
+            seance.getQrCode().setEstValide(false);
+            throw new RuntimeException("QR Code expiré.");
+        }
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Utilisateur currentUser = utilisateurRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non authentifié."));

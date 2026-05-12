@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 import { EmploiDuTemps, Seance } from '../models/schedule.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ScheduleService {
   private scheduleUrl = `${environment.apiUrl}/emploi-du-temps`;
@@ -45,6 +45,14 @@ export class ScheduleService {
 
   getSeanceById(id: number): Observable<Seance> {
     return this.http.get<Seance>(`${this.seanceUrl}/${id}`);
+  }
+
+  generateQrCode(seanceId: number): Observable<Seance> {
+    return this.http.post<Seance>(`${this.seanceUrl}/${seanceId}/qr-code`, {});
+  }
+
+  getQrCode(seanceId: number): Observable<Seance> {
+    return this.http.get<Seance>(`${this.seanceUrl}/${seanceId}/qr-code`);
   }
 
   createSeance(seance: Seance): Observable<Seance> {

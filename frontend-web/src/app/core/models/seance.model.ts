@@ -7,6 +7,7 @@ export interface Seance {
   heureFinReelle: string;
   salleId: number;
   qrCodeId?: number;
+  qrCodeToken?: string;
   statut: StatutSeance;
   emploiDuTempsId: number;
   enseignantId: number;
