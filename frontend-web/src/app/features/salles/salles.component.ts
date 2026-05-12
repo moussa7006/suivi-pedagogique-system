@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -101,7 +101,7 @@ export class SallesComponent implements OnInit {
   confirmDeleteId: number | null = null;
   confirmDeleteMessage = '';
 
-  constructor(private salleService: SalleService) {}
+  constructor(private salleService: SalleService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadSalles();
@@ -112,8 +112,12 @@ export class SallesComponent implements OnInit {
       next: (data) => {
         this.salles = data;
         this.filterSalles();
+        this.cdr.detectChanges();
       },
-      error: () => (this.errorMessage = 'Impossible de charger les salles.'),
+      error: () => {
+        this.errorMessage = 'Impossible de charger les salles.';
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -166,8 +170,12 @@ export class SallesComponent implements OnInit {
         this.editingId = null;
         this.currentSalle = {};
         this.loadSalles();
+        this.cdr.detectChanges();
       },
-      error: (error) => this.handleSaveError(error, "Impossible d'enregistrer la salle."),
+      error: (error) => {
+        this.handleSaveError(error, "Impossible d'enregistrer la salle.");
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -186,8 +194,14 @@ export class SallesComponent implements OnInit {
     const id = this.confirmDeleteId;
     this.cancelDelete();
     this.salleService.delete(id).subscribe({
-      next: () => this.loadSalles(),
-      error: () => (this.errorMessage = 'Impossible de supprimer cette salle car elle est peut-être utilisée.'),
+      next: () => {
+        this.loadSalles();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'Impossible de supprimer cette salle car elle est peut-être utilisée.';
+        this.cdr.detectChanges();
+      },
     });
   }
 

@@ -32,8 +32,8 @@ public class EmargementService {
     @Autowired
     private UtilisateurRepository utilisateurRepository;
 
-    private static final double ECOLE_LAT = 36.7525;
-    private static final double ECOLE_LON = 3.04197;
+    private static final double ECOLE_LAT = 12.6392; // Bamako, Mali
+    private static final double ECOLE_LON = -8.0029;
     private static final double MAX_DISTANCE_KM = 0.5;
 
     public Emargement faireEmargement(EmargementRequest request) {

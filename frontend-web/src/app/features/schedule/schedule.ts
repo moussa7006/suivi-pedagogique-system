@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -330,6 +330,7 @@ export class Schedule implements OnInit {
     private teacherService: TeacherService,
     private salleService: SalleService,
     private anneeUniversitaireService: AnneeUniversitaireService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -340,12 +341,13 @@ export class Schedule implements OnInit {
     this.scheduleService.getAllSchedules().subscribe((s) => {
       this.schedules = s;
       this.filterSchedules();
+      this.cdr.detectChanges();
     });
-    this.classeService.getAll().subscribe((c) => (this.classes = c));
-    this.matiereService.getAll().subscribe((m) => (this.matieres = m));
-    this.teacherService.getTeachers().subscribe((t) => (this.teachers = t));
-    this.salleService.getAll().subscribe((s) => (this.salles = s));
-    this.anneeUniversitaireService.getAll().subscribe((a) => (this.anneesUniversitaires = a));
+    this.classeService.getAll().subscribe((c) => { this.classes = c; this.cdr.detectChanges(); });
+    this.matiereService.getAll().subscribe((m) => { this.matieres = m; this.cdr.detectChanges(); });
+    this.teacherService.getTeachers().subscribe((t) => { this.teachers = t; this.cdr.detectChanges(); });
+    this.salleService.getAll().subscribe((s) => { this.salles = s; this.cdr.detectChanges(); });
+    this.anneeUniversitaireService.getAll().subscribe((a) => { this.anneesUniversitaires = a; this.cdr.detectChanges(); });
   }
 
   filterSchedules() {
@@ -430,12 +432,16 @@ export class Schedule implements OnInit {
     this.scheduleService.createSchedule(scheduleToSave).subscribe(() => {
       this.displayForm = false;
       this.loadData();
+      this.cdr.detectChanges();
     });
   }
 
   delete(id: number) {
     if (confirm('Voulez-vous supprimer cette planification ?')) {
-      this.scheduleService.deleteSchedule(id).subscribe(() => this.loadData());
+      this.scheduleService.deleteSchedule(id).subscribe(() => {
+        this.loadData();
+        this.cdr.detectChanges();
+      });
     }
   }
 
@@ -447,9 +453,11 @@ export class Schedule implements OnInit {
           next: (res: any) => {
             alert(res.message);
             this.loadData();
+            this.cdr.detectChanges();
           },
           error: (err) => {
             alert(err.error?.error || "Erreur lors de l'importation");
+            this.cdr.detectChanges();
           },
         });
       }
