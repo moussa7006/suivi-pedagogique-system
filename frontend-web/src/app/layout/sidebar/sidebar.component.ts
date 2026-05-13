@@ -65,6 +65,12 @@ import { AuthService } from '../../core/services/auth.service';
               <span>Emplois du temps</span>
             </a>
           </li>
+          <li>
+            <a routerLink="/seances" routerLinkActive="active">
+              <i class="pi pi-calendar-times"></i>
+              <span>Séances (Sessions)</span>
+            </a>
+          </li>
         </ul>
 
         <div class="nav-section">Référentiels</div>

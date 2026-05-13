@@ -62,13 +62,17 @@ public class ScheduleJobService {
             }
         } else if (emploi.getTypeRecurrence() == TypeRecurrence.HEBDOMADAIRE) {
             if (emploi.getJourSemaine() != null && emploi.getJourSemaine() == mapDayOfWeek(today.getDayOfWeek())) {
-                if (!today.isBefore(emploi.getDateDebutValidite()) && !today.isAfter(emploi.getDateFinValidite())) {
+                boolean isValidStartDate = (emploi.getDateDebutValidite() == null || !today.isBefore(emploi.getDateDebutValidite()));
+                boolean isValidEndDate = (emploi.getDateFinValidite() == null || !today.isAfter(emploi.getDateFinValidite()));
+                if (isValidStartDate && isValidEndDate) {
                     shouldGenerate = true;
                 }
             }
         } else if (emploi.getTypeRecurrence() == TypeRecurrence.MENSUEL) {
             if (emploi.getJourDuMois() != null && today.getDayOfMonth() == emploi.getJourDuMois()) {
-                if (!today.isBefore(emploi.getDateDebutValidite()) && !today.isAfter(emploi.getDateFinValidite())) {
+                boolean isValidStartDate = (emploi.getDateDebutValidite() == null || !today.isBefore(emploi.getDateDebutValidite()));
+                boolean isValidEndDate = (emploi.getDateFinValidite() == null || !today.isAfter(emploi.getDateFinValidite()));
+                if (isValidStartDate && isValidEndDate) {
                     shouldGenerate = true;
                 }
             }
@@ -85,13 +89,7 @@ public class ScheduleJobService {
             seance.setClasse(emploi.getClasse());
             seance.setEmploiDuTemps(emploi);
 
-            // Initialiser l'émargement
-            Emargement emargement = new Emargement();
-            emargement.setStatut(StatutEmargement.HORS_PERIMETRE);
-            emargement.setSeance(seance);
-            seance.setEmargement(emargement);
-
-            // IMPORTANT: On ne génère pas encore le QR code.
+            // IMPORTANT: L'émargement et le QR code seront générés plus tard.
             seanceRepository.save(seance);
             System.out.println("Séance générée pour: " + emploi.getTitre());
         }
