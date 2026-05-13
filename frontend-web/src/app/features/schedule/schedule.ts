@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -95,17 +95,21 @@ import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model'
             </div>
           </div>
 
-          <div class="form-section" *ngIf="currentSchedule.typeRecurrence === 'HEBDOMADAIRE'">
+          <div class="form-section" *ngIf="currentSchedule.typeRecurrence === 'HEBDOMADAIRE' || currentSchedule.typeRecurrence === 'MENSUEL'">
             <div class="section-label">
               <i class="pi pi-clock"></i>
-              <span>Récurrence hebdomadaire</span>
+              <span>Période de validité & Récurrence</span>
             </div>
             <div class="section-grid">
-              <div class="input-group">
+              <div class="input-group" *ngIf="currentSchedule.typeRecurrence === 'HEBDOMADAIRE'">
                 <label>Jour de la semaine</label>
                 <select [(ngModel)]="currentSchedule.jourSemaine">
                   <option *ngFor="let j of jours" [value]="j">{{ j }}</option>
                 </select>
+              </div>
+              <div class="input-group" *ngIf="currentSchedule.typeRecurrence === 'MENSUEL'">
+                <label>Jour du mois</label>
+                <input type="number" [(ngModel)]="currentSchedule.jourDuMois" min="1" max="31" />
               </div>
               <div class="input-group">
                 <label>Valide à partir de</label>
@@ -131,18 +135,7 @@ import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model'
             </div>
           </div>
 
-          <div class="form-section" *ngIf="currentSchedule.typeRecurrence === 'MENSUEL'">
-            <div class="section-label">
-              <i class="pi pi-calendar"></i>
-              <span>Récurrence mensuelle</span>
-            </div>
-            <div class="section-grid">
-              <div class="input-group">
-                <label>Jour du mois</label>
-                <input type="number" [(ngModel)]="currentSchedule.jourDuMois" min="1" max="31" />
-              </div>
-            </div>
-          </div>
+
 
           <div class="form-section">
             <div class="section-label">
@@ -211,8 +204,9 @@ import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model'
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- ── Search ── -->
+      <!-- ── Search ── -->
         <div class="search-section">
           <div class="search-wrapper">
             <i class="pi pi-search"></i>
@@ -299,12 +293,11 @@ import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model'
             </div>
           </div>
         </div>
-      </div>
     </div>
   `,
   styleUrl: './schedule.scss',
 })
-export class Schedule implements OnInit {
+export class Schedule implements OnInit, OnDestroy {
   schedules: EmploiDuTemps[] = [];
   filteredSchedules: EmploiDuTemps[] = [];
   searchText: string = '';
@@ -322,6 +315,7 @@ export class Schedule implements OnInit {
   selectedTeacherId: number | null = null;
 
   jours = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
+  private refreshInterval: any;
 
   constructor(
     private scheduleService: ScheduleService,
@@ -335,13 +329,27 @@ export class Schedule implements OnInit {
 
   ngOnInit() {
     this.loadData();
+    this.refreshInterval = setInterval(() => {
+      this.loadData();
+    }, 10000); // 10 seconds auto-refresh
+  }
+
+  ngOnDestroy() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
   }
 
   loadData() {
-    this.scheduleService.getAllSchedules().subscribe((s) => {
-      this.schedules = s;
-      this.filterSchedules();
-      this.cdr.detectChanges();
+    this.scheduleService.getAllSchedules().subscribe({
+      next: (s) => {
+        this.schedules = s;
+        this.filterSchedules();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Erreur chargement emplois du temps:", err);
+      }
     });
     this.classeService.getAll().subscribe((c) => { this.classes = c; this.cdr.detectChanges(); });
     this.matiereService.getAll().subscribe((m) => { this.matieres = m; this.cdr.detectChanges(); });
@@ -351,44 +359,50 @@ export class Schedule implements OnInit {
   }
 
   filterSchedules() {
-    const text = this.searchText.toLowerCase();
-    this.filteredSchedules = this.schedules.filter(
-      (s) =>
-        (s.titre || '').toLowerCase().includes(text) ||
-        this.getSalleNom(s.salleId).toLowerCase().includes(text) ||
-        this.getEnseignantNom(s.enseignantId).toLowerCase().includes(text) ||
-        this.getMatiereLibelle(s.matiereId).toLowerCase().includes(text),
-    );
+    try {
+      const text = (this.searchText || '').toLowerCase();
+      this.filteredSchedules = (this.schedules || []).filter((s) => {
+        if (!s) return false;
+        const titre = (s.titre || '').toLowerCase();
+        const salle = (this.getSalleNom(s.salleId) || '').toLowerCase();
+        const prof = (this.getEnseignantNom(s.enseignantId) || '').toLowerCase();
+        const mat = (this.getMatiereLibelle(s.matiereId) || '').toLowerCase();
+        return titre.includes(text) || salle.includes(text) || prof.includes(text) || mat.includes(text);
+      });
+    } catch (e) {
+      console.error("Filter error:", e);
+      this.filteredSchedules = this.schedules || [];
+    }
   }
 
   getSalleNom(salleId: number | undefined): string {
-    if (!salleId) return 'N/A';
-    const s = this.salles.find((salle) => salle.id === salleId);
-    return s ? `${s.nom} (${s.batiment})` : 'N/A';
+    if (!salleId || !this.salles) return 'N/A';
+    const s = this.salles.find((salle) => salle && salle.id === salleId);
+    return s ? `${s.nom || ''} (${s.batiment || ''})` : 'N/A';
   }
 
   getClasseLibelle(classeId: number | undefined): string {
-    if (!classeId) return 'N/A';
-    const c = this.classes.find((cl) => cl.id === classeId);
-    return c ? c.libelle : 'N/A';
+    if (!classeId || !this.classes) return 'N/A';
+    const c = this.classes.find((cl) => cl && cl.id === classeId);
+    return c ? (c.libelle || 'N/A') : 'N/A';
   }
 
   getMatiereLibelle(matiereId: number | undefined): string {
-    if (!matiereId) return 'N/A';
-    const m = this.matieres.find((mat) => mat.id === matiereId);
-    return m ? m.libelle : 'N/A';
+    if (!matiereId || !this.matieres) return 'N/A';
+    const m = this.matieres.find((mat) => mat && mat.id === matiereId);
+    return m ? (m.libelle || 'N/A') : 'N/A';
   }
 
   getEnseignantNom(enseignantId: number | undefined): string {
-    if (!enseignantId) return 'N/A';
-    const t = this.teachers.find((teacher) => teacher.id === enseignantId);
-    return t ? `${t.prenom} ${t.nom}` : 'N/A';
+    if (!enseignantId || !this.teachers) return 'N/A';
+    const t = this.teachers.find((teacher) => teacher && teacher.id === enseignantId);
+    return t ? `${t.prenom || ''} ${t.nom || ''}` : 'N/A';
   }
 
   getAnneeUniversitaireLibelle(anneeId: number | undefined): string {
-    if (!anneeId) return '';
-    const a = this.anneesUniversitaires.find((au) => au.id === anneeId);
-    return a ? a.libelle : '';
+    if (!anneeId || !this.anneesUniversitaires) return '';
+    const a = this.anneesUniversitaires.find((au) => au && au.id === anneeId);
+    return a ? (a.libelle || '') : '';
   }
 
   showAddForm() {
@@ -410,6 +424,11 @@ export class Schedule implements OnInit {
     )
       return;
 
+    if (this.currentSchedule.typeRecurrence === 'UNIQUE') {
+      this.currentSchedule.dateDebutValidite = this.currentSchedule.dateSpecifique;
+      this.currentSchedule.dateFinValidite = this.currentSchedule.dateSpecifique;
+    }
+
     const scheduleToSave: EmploiDuTemps = {
       titre: this.currentSchedule.titre,
       typeRecurrence: this.currentSchedule.typeRecurrence as any,
@@ -429,10 +448,16 @@ export class Schedule implements OnInit {
         : 0,
     };
 
-    this.scheduleService.createSchedule(scheduleToSave).subscribe(() => {
-      this.displayForm = false;
-      this.loadData();
-      this.cdr.detectChanges();
+    this.scheduleService.createSchedule(scheduleToSave).subscribe({
+      next: () => {
+        this.displayForm = false;
+        this.loadData();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        alert("Erreur: " + (err.error?.message || err.error?.error || err.message));
+        console.error(err);
+      }
     });
   }
 

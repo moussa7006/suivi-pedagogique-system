@@ -32,7 +32,10 @@ import { Seance } from '../../core/models/schedule.model';
       <div class="grid-layout">
         <!-- Section Paramètres -->
         <div class="card settings-card">
-          <h3><i class="pi pi-cog"></i> Configuration de la Session</h3>
+          <div class="settings-header">
+            <h3><i class="pi pi-cog"></i> Configuration de la Session</h3>
+            <span class="auto-badge"><i class="pi pi-bolt"></i> Mode Auto Activé</span>
+          </div>
 
           <div class="form-group">
             <label for="subject"><i class="pi pi-book"></i> Séance Active</label>
@@ -106,7 +109,7 @@ import { Seance } from '../../core/models/schedule.model';
       </div>
 
       <!-- Logs de session -->
-      <div class="card logs-card">
+      <div class="card logs-card" *ngIf="false">
         <div class="logs-header">
           <h3><i class="pi pi-history"></i> Historique des scans récents</h3>
           <span class="log-count">{{ todayLogs.length }} événements</span>
@@ -208,18 +211,37 @@ import { Seance } from '../../core/models/schedule.model';
       }
 
       .settings-card {
-        h3 {
-          margin: 0 0 20px;
-          font-size: 1.05rem;
-          font-weight: 700;
-          color: #1e293b;
+        .settings-header {
           display: flex;
+          justify-content: space-between;
           align-items: center;
-          gap: 10px;
+          margin-bottom: 20px;
 
-          i {
-            color: var(--primary-color);
-            font-size: 1.1rem;
+          h3 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            i {
+              color: var(--primary-color);
+              font-size: 1.1rem;
+            }
+          }
+
+          .auto-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #16a34a;
+            background: rgba(34, 197, 94, 0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
           }
         }
       }
@@ -643,6 +665,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   selectedSeanceId: string | number = '';
   selectedSeance: Seance | null = null;
   timer: any;
+  pollingTimer: any;
   dashOffset: number = 0;
   todayLogs: any[] = [
     { id: 1, type: 'success' },
@@ -652,9 +675,78 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   constructor(private scheduleService: ScheduleService) {}
 
   ngOnInit() {
+    this.loadSeances();
+    this.pollingTimer = setInterval(() => {
+      this.loadSeances();
+    }, 60000); // Polling every 60s
+  }
+
+  loadSeances() {
     this.scheduleService.getAllSeances().subscribe((data) => {
       this.seances = data;
+      this.autoSelectSession();
     });
+  }
+
+  autoSelectSession() {
+    // Ne pas écraser si une session est déjà en cours et non terminée
+    if (this.isRunning && this.selectedSeance) {
+      const now = new Date();
+      const endTime = this.getTimeFromString(this.selectedSeance.heureFinReelle);
+      if (endTime && now < endTime) {
+        return; // Session toujours valide, on ne fait rien
+      }
+    }
+
+    const now = new Date();
+    // Chercher la séance la plus pertinente (commence dans <= 15 min, ou en cours)
+    let bestSeance: Seance | null = null;
+
+    for (const s of this.seances) {
+      const startTime = this.getTimeFromString(s.heureDebutReelle);
+      const endTime = this.getTimeFromString(s.heureFinReelle);
+      
+      if (!startTime || !endTime) continue;
+
+      const startMinus15 = new Date(startTime.getTime() - 15 * 60000);
+
+      // Si on est dans le créneau (de H-15min jusqu'à la fin)
+      if (now >= startMinus15 && now <= endTime) {
+        bestSeance = s;
+        break; // On prend la première qui correspond
+      }
+    }
+
+    if (bestSeance && bestSeance.id !== Number(this.selectedSeanceId)) {
+      this.selectedSeanceId = bestSeance.id!;
+      this.onSeanceChange();
+      this.startSession();
+    } else if (!bestSeance && this.isRunning) {
+      // S'il n'y a plus de séance valide, on arrête tout
+      this.stopSession();
+      this.selectedSeanceId = '';
+      this.selectedSeance = null;
+    }
+  }
+
+  getTimeFromString(timeStr: string | any): Date | null {
+    if (!timeStr) return null;
+    const now = new Date();
+    let hours = 0, minutes = 0;
+    
+    if (typeof timeStr === 'string') {
+      const parts = timeStr.split(':');
+      if (parts.length >= 2) {
+        hours = parseInt(parts[0], 10);
+        minutes = parseInt(parts[1], 10);
+      }
+    } else if (Array.isArray(timeStr) && timeStr.length >= 2) {
+      hours = timeStr[0];
+      minutes = timeStr[1];
+    }
+    
+    now.setHours(hours, minutes, 0, 0);
+    return now;
   }
 
   onSeanceChange() {
@@ -672,6 +764,9 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.stopSession();
+    if (this.pollingTimer) {
+      clearInterval(this.pollingTimer);
+    }
   }
 
   toggleSession() {
@@ -700,7 +795,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('[QR] Erreur génération QR:', error);
         this.errorMessage = error?.error?.error || 'Impossible de générer le QR code.';
-        alert(this.errorMessage);
+        // On ne fait pas d'alert en mode automatique pour ne pas bloquer l'écran
       },
     });
   }

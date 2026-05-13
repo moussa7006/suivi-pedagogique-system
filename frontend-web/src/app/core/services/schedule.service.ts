@@ -14,11 +14,11 @@ export class ScheduleService {
   constructor(private http: HttpClient) {}
 
   getAllSchedules(): Observable<EmploiDuTemps[]> {
-    return this.http.get<EmploiDuTemps[]>(this.scheduleUrl);
+    return this.http.get<EmploiDuTemps[]>(`${this.scheduleUrl}?t=${new Date().getTime()}`);
   }
 
   getScheduleById(id: number): Observable<EmploiDuTemps> {
-    return this.http.get<EmploiDuTemps>(`${this.scheduleUrl}/${id}`);
+    return this.http.get<EmploiDuTemps>(`${this.scheduleUrl}/${id}?t=${new Date().getTime()}`);
   }
 
   createSchedule(schedule: EmploiDuTemps): Observable<EmploiDuTemps> {

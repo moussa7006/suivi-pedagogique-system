@@ -37,6 +37,9 @@ public class EmploiDuTempsService {
     @Autowired
     private AnneeUniversitaireRepository anneeUniversitaireRepository;
 
+    @Autowired
+    private ScheduleJobService scheduleJobService;
+
     private Utilisateur getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
@@ -54,6 +57,7 @@ public class EmploiDuTempsService {
         hydrateEntity(emploi, dto);
 
         EmploiDuTemps saved = emploiDuTempsRepository.save(emploi);
+        scheduleJobService.checkAndGenerateSeanceForToday(saved);
         return convertToDto(saved);
     }
 
@@ -69,6 +73,7 @@ public class EmploiDuTempsService {
         hydrateEntity(emploi, dto);
 
         EmploiDuTemps updated = emploiDuTempsRepository.save(emploi);
+        scheduleJobService.checkAndGenerateSeanceForToday(updated);
         return convertToDto(updated);
     }
 

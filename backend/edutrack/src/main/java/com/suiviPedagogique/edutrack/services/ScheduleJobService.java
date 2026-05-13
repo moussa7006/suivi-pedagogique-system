@@ -7,6 +7,7 @@ import com.suiviPedagogique.edutrack.Entities.QRCode;
 import com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence;
 import com.suiviPedagogique.edutrack.Entities.enums.StatutSeance;
 import com.suiviPedagogique.edutrack.Entities.enums.StatutEmargement;
+import com.suiviPedagogique.edutrack.Entities.enums.JourSemaine;
 import com.suiviPedagogique.edutrack.repositories.EmploiDuTempsRepository;
 import com.suiviPedagogique.edutrack.repositories.SeanceRepository;
 import com.suiviPedagogique.edutrack.repositories.QRCodeRepository;
@@ -20,6 +21,7 @@ import java.time.LocalTime;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.time.DayOfWeek;
 
 @Service
 public class ScheduleJobService {
@@ -40,47 +42,71 @@ public class ScheduleJobService {
     @Scheduled(cron = "0 1 0 * * ?")
     @Transactional
     public void generateDailySeances() {
-        LocalDate today = LocalDate.now();
         List<EmploiDuTemps> activeSchedules = emploiDuTempsRepository.findAllActive();
-
         for (EmploiDuTemps emploi : activeSchedules) {
-            boolean shouldGenerate = false;
+            checkAndGenerateSeanceForToday(emploi);
+        }
+    }
 
-            if (emploi.getTypeRecurrence() == TypeRecurrence.UNIQUE) {
-                if (today.equals(emploi.getDateSpecifique())) {
-                    shouldGenerate = true;
-                }
-            } else if (emploi.getTypeRecurrence() == TypeRecurrence.HEBDOMADAIRE) {
-                if (emploi.getJourSemaine() != null && today.getDayOfWeek().name().equals(emploi.getJourSemaine().name())) {
-                    shouldGenerate = true;
-                }
-            } else if (emploi.getTypeRecurrence() == TypeRecurrence.MENSUEL) {
-                if (emploi.getJourDuMois() != null && today.getDayOfMonth() == emploi.getJourDuMois()) {
+    /**
+     * Vérifie si un emploi du temps s'applique à aujourd'hui et génère la séance si nécessaire.
+     */
+    @Transactional
+    public void checkAndGenerateSeanceForToday(EmploiDuTemps emploi) {
+        LocalDate today = LocalDate.now();
+        boolean shouldGenerate = false;
+
+        if (emploi.getTypeRecurrence() == TypeRecurrence.UNIQUE) {
+            if (today.equals(emploi.getDateSpecifique())) {
+                shouldGenerate = true;
+            }
+        } else if (emploi.getTypeRecurrence() == TypeRecurrence.HEBDOMADAIRE) {
+            if (emploi.getJourSemaine() != null && emploi.getJourSemaine() == mapDayOfWeek(today.getDayOfWeek())) {
+                if (!today.isBefore(emploi.getDateDebutValidite()) && !today.isAfter(emploi.getDateFinValidite())) {
                     shouldGenerate = true;
                 }
             }
-
-            if (shouldGenerate) {
-                Seance seance = new Seance();
-                seance.setDateCours(today);
-                seance.setHeureDebutReelle(emploi.getHeureDebut());
-                seance.setHeureFinReelle(emploi.getHeureFin());
-                seance.setStatut(StatutSeance.PREVUE);
-                seance.setSalle(emploi.getSalle());
-                seance.setEnseignant(emploi.getEnseignant());
-                seance.setClasse(emploi.getClasse());
-                seance.setEmploiDuTemps(emploi);
-
-                // Initialiser l'émargement
-                Emargement emargement = new Emargement();
-                emargement.setStatut(StatutEmargement.HORS_PERIMETRE);
-                emargement.setSeance(seance);
-                seance.setEmargement(emargement);
-
-                // IMPORTANT: On ne génère pas encore le QR code.
-                seanceRepository.save(seance);
-                System.out.println("Séance générée pour: " + emploi.getTitre());
+        } else if (emploi.getTypeRecurrence() == TypeRecurrence.MENSUEL) {
+            if (emploi.getJourDuMois() != null && today.getDayOfMonth() == emploi.getJourDuMois()) {
+                if (!today.isBefore(emploi.getDateDebutValidite()) && !today.isAfter(emploi.getDateFinValidite())) {
+                    shouldGenerate = true;
+                }
             }
+        }
+
+        if (shouldGenerate) {
+            Seance seance = new Seance();
+            seance.setDateCours(today);
+            seance.setHeureDebutReelle(emploi.getHeureDebut());
+            seance.setHeureFinReelle(emploi.getHeureFin());
+            seance.setStatut(StatutSeance.PREVUE);
+            seance.setSalle(emploi.getSalle());
+            seance.setEnseignant(emploi.getEnseignant());
+            seance.setClasse(emploi.getClasse());
+            seance.setEmploiDuTemps(emploi);
+
+            // Initialiser l'émargement
+            Emargement emargement = new Emargement();
+            emargement.setStatut(StatutEmargement.HORS_PERIMETRE);
+            emargement.setSeance(seance);
+            seance.setEmargement(emargement);
+
+            // IMPORTANT: On ne génère pas encore le QR code.
+            seanceRepository.save(seance);
+            System.out.println("Séance générée pour: " + emploi.getTitre());
+        }
+    }
+
+    private JourSemaine mapDayOfWeek(DayOfWeek dayOfWeek) {
+        switch (dayOfWeek) {
+            case MONDAY: return JourSemaine.LUNDI;
+            case TUESDAY: return JourSemaine.MARDI;
+            case WEDNESDAY: return JourSemaine.MERCREDI;
+            case THURSDAY: return JourSemaine.JEUDI;
+            case FRIDAY: return JourSemaine.VENDREDI;
+            case SATURDAY: return JourSemaine.SAMEDI;
+            case SUNDAY: return JourSemaine.DIMANCHE;
+            default: return null;
         }
     }
 
