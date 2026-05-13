@@ -52,14 +52,9 @@ import { Seance } from '../../core/models/schedule.model';
             <input id="teacher" type="text" disabled [value]="qrData || 'N/A'" />
           </div>
 
-          <div class="form-group">
-            <label for="duration"><i class="pi pi-clock"></i> Durée de validité (secondes)</label>
-            <input id="duration" type="number" [(ngModel)]="refreshInterval" min="10" max="300" />
-          </div>
-
           <div class="session-status" [ngClass]="{ active: isRunning }">
             <div class="status-dot"></div>
-            <span>{{ isRunning ? 'Session en cours...' : 'Session en attente' }}</span>
+            <span>{{ isRunning ? 'Session prête pour le scan' : 'En attente de session...' }}</span>
           </div>
 
           <button
@@ -76,24 +71,11 @@ import { Seance } from '../../core/models/schedule.model';
         <div class="card qr-display-card">
           <div class="qr-wrapper" [class.blurred]="!isRunning">
             @if (isRunning) {
-              <div class="timer-ring">
-                <svg viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="45" class="bg-ring"></circle>
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    class="progress-ring"
-                    [style.stroke-dashoffset]="dashOffset"
-                  ></circle>
-                </svg>
-                <span class="timer-text">{{ timeLeft }}s</span>
-              </div>
               <div class="qrcode-box">
-                <qrcode [qrdata]="qrData" [width]="280" [errorCorrectionLevel]="'M'"></qrcode>
+                <qrcode [qrdata]="qrData" [width]="320" [errorCorrectionLevel]="'M'"></qrcode>
               </div>
-              <p class="qr-payload">
-                ID: {{ qrData.split('-')[1] }} | Ver: {{ qrData.split('-')[2] }}
+              <p class="qr-payload" style="text-align: center; margin-top: 15px;">
+                <i class="pi pi-check-circle" style="color: #10b981;"></i> QR Code actif pour toute la durée du cours
               </p>
             } @else {
               <div class="placeholder">
@@ -659,14 +641,10 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   qrData: string = '';
   errorMessage: string = '';
   isRunning: boolean = false;
-  timeLeft: number = 30;
-  refreshInterval: number = 30;
   seances: Seance[] = [];
   selectedSeanceId: string | number = '';
   selectedSeance: Seance | null = null;
-  timer: any;
   pollingTimer: any;
-  dashOffset: number = 0;
   todayLogs: any[] = [
     { id: 1, type: 'success' },
     { id: 2, type: 'warning' },
@@ -712,8 +690,13 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
 
       // Si on est dans le créneau (de H-15min jusqu'à la fin)
       if (now >= startMinus15 && now <= endTime) {
-        bestSeance = s;
-        break; // On prend la première qui correspond
+        // On vérifie si le statut est PREVUE (si le prof scanne, ça passera à EN_COURS ou autre)
+        if (s.statut === 'PREVUE' || s.statut === 'EN_COURS') {
+           // On le garde actif même en cours tant qu'il n'est pas "TERMINEE"
+           // Mais si on veut le faire disparaître strictment au scan du prof, on peut faire s.statut === 'PREVUE'
+           bestSeance = s;
+           break;
+        }
       }
     }
 
@@ -790,7 +773,6 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
         this.selectedSeance = updatedSeance;
         this.qrData = updatedSeance.qrCodeToken || '';
         this.isRunning = !!this.qrData;
-        this.startTimer();
       },
       error: (error) => {
         console.error('[QR] Erreur génération QR:', error);
@@ -802,23 +784,6 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
 
   stopSession() {
     this.isRunning = false;
-    if (this.timer) clearInterval(this.timer);
-    this.timeLeft = this.refreshInterval;
-    this.dashOffset = 0;
-  }
-
-  startTimer() {
-    this.timeLeft = this.refreshInterval;
-    if (this.timer) clearInterval(this.timer);
-
-    this.timer = setInterval(() => {
-      this.timeLeft--;
-      this.dashOffset = 283 - (this.timeLeft / this.refreshInterval) * 283;
-
-      if (this.timeLeft <= 0) {
-        // En vrai, le token reste le même pour la séance, mais on simule le refresh visuel
-        this.timeLeft = this.refreshInterval;
-      }
-    }, 1000);
+    this.qrData = '';
   }
 }
