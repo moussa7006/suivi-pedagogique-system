@@ -28,7 +28,7 @@ import { AuthService } from '../../core/services/auth.service';
           <li>
             <a routerLink="/attendance" routerLinkActive="active">
               <i class="pi pi-check-square"></i>
-              <span>Présences</span>
+              <span>Émargements</span>
             </a>
           </li>
           <li>
