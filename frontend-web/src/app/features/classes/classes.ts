@@ -5,9 +5,11 @@ import { RouterLink } from '@angular/router';
 import { ClasseService } from '../../core/services/classe.service';
 import { FiliereService } from '../../core/services/filiere.service';
 import { NiveauEnseignementService } from '../../core/services/niveau-enseignement.service';
+import { AnneeUniversitaireService } from '../../core/services/annee-universitaire.service';
 import { Classe } from '../../core/models/classe.model';
 import { Filiere } from '../../core/models/filiere.model';
 import { NiveauEnseignement } from '../../core/models/niveau-enseignement.model';
+import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model';
 import { timeout } from 'rxjs/operators';
 
 @Component({
@@ -84,6 +86,15 @@ import { timeout } from 'rxjs/operators';
                   </option>
                 </select>
               </div>
+              <div class="input-group">
+                <label>Année Universitaire</label>
+                <select [(ngModel)]="currentClasse.anneeUniversitaireId">
+                  <option [ngValue]="null" disabled>Sélectionnez une année</option>
+                  <option *ngFor="let a of anneesUniversitaires" [ngValue]="a.id">
+                    {{ a.libelle }}
+                  </option>
+                </select>
+              </div>
             </div>
           </div>
           <div class="form-actions">
@@ -129,6 +140,7 @@ import { timeout } from 'rxjs/operators';
             <div class="card-badges">
               <span class="badge-niveau">{{ getFiliereLibelle(classe.filiereId) }}</span>
               <span class="badge-niveau">{{ getNiveauLibelle(classe.niveauEnseignementId) }}</span>
+              <span class="badge-niveau">{{ getAnneeUniversitaireLibelle(classe.anneeUniversitaireId) }}</span>
             </div>
           </div>
           <div class="card-actions">
@@ -169,6 +181,7 @@ export class Classes implements OnInit {
   filteredClasses: Classe[] = [];
   filieres: Filiere[] = [];
   niveauxEnseignement: NiveauEnseignement[] = [];
+  anneesUniversitaires: AnneeUniversitaire[] = [];
   searchText: string = '';
   displayForm: boolean = false;
   editingId: number | null = null;
@@ -182,6 +195,7 @@ export class Classes implements OnInit {
     private classeService: ClasseService,
     private filiereService: FiliereService,
     private niveauEnseignementService: NiveauEnseignementService,
+    private anneeUniversitaireService: AnneeUniversitaireService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -189,6 +203,7 @@ export class Classes implements OnInit {
     this.loadClasses();
     this.loadFilieres();
     this.loadNiveauxEnseignement();
+    this.loadAnneesUniversitaires();
   }
 
   private loadFilieres(): void {
@@ -208,6 +223,16 @@ export class Classes implements OnInit {
         console.error('[Classes] Erreur chargement niveaux:', err);
         this.errorMessage =
           "Impossible de charger les niveaux d'enseignement. Vérifiez le backend.";
+      },
+    });
+  }
+
+  private loadAnneesUniversitaires(): void {
+    this.anneeUniversitaireService.getAll().subscribe({
+      next: (data) => (this.anneesUniversitaires = data),
+      error: (err) => {
+        console.error('[Classes] Erreur chargement années:', err);
+        this.errorMessage = 'Impossible de charger les années universitaires. Vérifiez le backend.';
       },
     });
   }
@@ -247,6 +272,13 @@ export class Classes implements OnInit {
     return n ? n.libelle : 'N/A';
   }
 
+  getAnneeUniversitaireLibelle(anneeId: number | string | undefined): string {
+    if (!anneeId) return 'N/A';
+    const id = Number(anneeId);
+    const a = this.anneesUniversitaires.find((a) => a.id === id);
+    return a ? a.libelle : 'N/A';
+  }
+
   autoFillLibelle() {
     if (this.currentClasse.filiereId && this.currentClasse.niveauEnseignementId) {
       const filiere = this.getFiliereLibelle(this.currentClasse.filiereId);
@@ -261,7 +293,7 @@ export class Classes implements OnInit {
     this.editingId = null;
     this.errorMessage = '';
     this.isSaving = false;
-    this.currentClasse = { libelle: '', filiereId: undefined, niveauEnseignementId: undefined };
+    this.currentClasse = { libelle: '', filiereId: undefined, niveauEnseignementId: undefined, anneeUniversitaireId: undefined };
     this.displayForm = true;
   }
 
@@ -281,11 +313,12 @@ export class Classes implements OnInit {
       libelle: (this.currentClasse.libelle || '').trim(),
       filiereId: Number(this.currentClasse.filiereId),
       niveauEnseignementId: Number(this.currentClasse.niveauEnseignementId),
+      anneeUniversitaireId: this.currentClasse.anneeUniversitaireId ? Number(this.currentClasse.anneeUniversitaireId) : undefined,
     };
 
-    if (!classeToSave.libelle || !classeToSave.filiereId || !classeToSave.niveauEnseignementId) {
+    if (!classeToSave.libelle || !classeToSave.filiereId || !classeToSave.niveauEnseignementId || !classeToSave.anneeUniversitaireId) {
       this.errorMessage =
-        "Veuillez renseigner le libellé, la filière et le niveau d'enseignement avant d'enregistrer.";
+        "Veuillez renseigner le libellé, la filière, le niveau d'enseignement et l'année universitaire avant d'enregistrer.";
       return;
     }
 

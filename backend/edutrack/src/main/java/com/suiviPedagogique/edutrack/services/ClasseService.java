@@ -10,6 +10,8 @@ import com.suiviPedagogique.edutrack.repositories.ClasseRepository;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
 import com.suiviPedagogique.edutrack.repositories.FiliereRepository;
 import com.suiviPedagogique.edutrack.repositories.NiveauEnseignementRepository;
+import com.suiviPedagogique.edutrack.repositories.AnneeUniversitaireRepository;
+import com.suiviPedagogique.edutrack.Entities.AnneeUniversitaire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -33,6 +35,9 @@ public class ClasseService {
 
     @Autowired
     private NiveauEnseignementRepository niveauEnseignementRepository;
+
+    @Autowired
+    private AnneeUniversitaireRepository anneeUniversitaireRepository;
 
     private void verifyAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -59,6 +64,12 @@ public class ClasseService {
             NiveauEnseignement niveau = niveauEnseignementRepository.findById(dto.getNiveauEnseignementId())
                     .orElseThrow(() -> new RuntimeException("Niveau d'enseignement non trouvé"));
             classe.setNiveauEnseignement(niveau);
+        }
+
+        if (dto.getAnneeUniversitaireId() != null) {
+            AnneeUniversitaire anneeUniversitaire = anneeUniversitaireRepository.findById(dto.getAnneeUniversitaireId())
+                    .orElseThrow(() -> new RuntimeException("Année universitaire non trouvée"));
+            classe.setAnneeUniversitaire(anneeUniversitaire);
         }
 
         Classe saved = classeRepository.save(classe);
@@ -96,6 +107,12 @@ public class ClasseService {
             classe.setNiveauEnseignement(niveau);
         }
 
+        if (dto.getAnneeUniversitaireId() != null) {
+            AnneeUniversitaire anneeUniversitaire = anneeUniversitaireRepository.findById(dto.getAnneeUniversitaireId())
+                    .orElseThrow(() -> new RuntimeException("Année universitaire non trouvée"));
+            classe.setAnneeUniversitaire(anneeUniversitaire);
+        }
+
         Classe updated = classeRepository.save(classe);
         return convertToDto(updated);
     }
@@ -113,6 +130,7 @@ public class ClasseService {
         dto.setLibelle(classe.getLibelle());
         if (classe.getFiliere() != null) dto.setFiliereId(classe.getFiliere().getId());
         if (classe.getNiveauEnseignement() != null) dto.setNiveauEnseignementId(classe.getNiveauEnseignement().getId());
+        if (classe.getAnneeUniversitaire() != null) dto.setAnneeUniversitaireId(classe.getAnneeUniversitaire().getId());
         return dto;
     }
 }
