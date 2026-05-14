@@ -3,4 +3,5 @@ export interface Classe {
   libelle: string;
   filiereId: number;
   niveauEnseignementId: number;
+  anneeUniversitaireId?: number;
 }

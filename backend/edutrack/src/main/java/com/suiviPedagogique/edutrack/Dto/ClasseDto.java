@@ -12,4 +12,5 @@ public class ClasseDto {
     private String libelle;
     private Integer filiereId;
     private Integer niveauEnseignementId;
+    private Integer anneeUniversitaireId;
 }

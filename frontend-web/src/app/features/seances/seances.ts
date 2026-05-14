@@ -35,11 +35,6 @@ import { Salle } from '../../core/models/salle.model';
             </div>
           </div>
         </div>
-        <div class="header-actions">
-          <button class="btn btn-primary" (click)="loadSeances()">
-            <i class="pi pi-refresh"></i> Rafraîchir
-          </button>
-        </div>
       </div>
 
       <div class="table-card">

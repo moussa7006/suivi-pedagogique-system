@@ -33,4 +33,8 @@ public class Classe {
 
     @OneToMany(mappedBy = "classe")
     private List<EmploiDuTemps> emploisDuTemps;
+
+    @ManyToOne
+    @JoinColumn(name = "annee_universitaire_id", nullable = true)
+    private AnneeUniversitaire anneeUniversitaire;
 }
