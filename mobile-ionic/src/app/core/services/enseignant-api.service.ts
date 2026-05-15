@@ -3,10 +3,11 @@ import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { environment } from "../../../environments/environment";
 import {
-  CahierDeTexteDto,
-  CahierDeTexteRequest,
+  FicheProgressionDto,
+  FicheProgressionRequest,
   EmargementRequest,
   SeanceDto,
+  EmploiDuTempsDto
 } from "../models/enseignant.models";
 
 @Injectable({ providedIn: "root" })
@@ -18,19 +19,19 @@ export class EnseignantApiService {
     return this.http.get<SeanceDto[]>(`${this.baseUrl}/seances`);
   }
 
-  getEmploiDuTemps(): Observable<SeanceDto[]> {
-    return this.http.get<SeanceDto[]>(`${this.baseUrl}/emploi-du-temps`);
+  getEmploiDuTemps(): Observable<EmploiDuTempsDto[]> {
+    return this.http.get<EmploiDuTempsDto[]>(`${this.baseUrl}/emploi-du-temps`);
   }
 
-  getCahierDeTextes(): Observable<CahierDeTexteDto[]> {
-    return this.http.get<CahierDeTexteDto[]>(`${this.baseUrl}/cahier-texte`);
+  getCahierDeTextes(): Observable<FicheProgressionDto[]> {
+    return this.http.get<FicheProgressionDto[]>(`${this.baseUrl}/fiche-progression`);
   }
 
   publierCahierDeTexte(
     seanceId: number,
-    payload: CahierDeTexteRequest,
+    payload: FicheProgressionRequest,
   ): Observable<string> {
-    return this.http.post(`${this.baseUrl}/cahier-texte/${seanceId}`, payload, {
+    return this.http.post(`${this.baseUrl}/fiche-progression/${seanceId}`, payload, {
       responseType: "text",
     });
   }

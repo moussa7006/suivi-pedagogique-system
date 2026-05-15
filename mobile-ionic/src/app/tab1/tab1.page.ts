@@ -30,6 +30,8 @@ import {
   trendingUpOutline,
 } from "ionicons/icons";
 import { AuthService } from "../core/services/auth.service";
+import { EnseignantApiService } from "../core/services/enseignant-api.service";
+import { SeanceDto } from "../core/models/enseignant.models";
 import { SeanceService } from "../seance.service";
 import { CommonModule } from "@angular/common";
 
@@ -42,7 +44,8 @@ import { CommonModule } from "@angular/common";
 export class Tab1Page implements OnInit, OnDestroy {
   private router = inject(Router);
   private authService = inject(AuthService);
-  private seanceService = inject(SeanceService);
+  private seanceService = inject(SeanceService); // Keeping it for cahierFait if needed
+  private apiService = inject(EnseignantApiService);
   private alertController = inject(AlertController);
 
   private sub: Subscription | null = null;
@@ -57,11 +60,11 @@ export class Tab1Page implements OnInit, OnDestroy {
   teacherInitials = "EN";
 
   // Stats data
-  totalSeances = 48;
-  completedSeances = 36;
-  totalHeures = 85;
-  studentCount = 128;
-  completionRate = 75;
+  totalSeances = 0;
+  completedSeances = 0;
+  totalHeures = 0;
+  studentCount = 0; // Not returned directly by backend, could be calculated later
+  completionRate = 0;
 
   // Notifications
   notificationCount = 0;
@@ -108,12 +111,7 @@ export class Tab1Page implements OnInit, OnDestroy {
       this.updateNotifications();
     });
 
-    this.seanceService.totalHeures$.subscribe((heures) => {
-      this.totalHeures = heures;
-      this.updateNotifications();
-    });
-
-    this.updateNotifications();
+    this.loadRealData();
   }
 
   ngOnDestroy() {
@@ -132,6 +130,32 @@ export class Tab1Page implements OnInit, OnDestroy {
         user.nom || "",
       );
     }
+  }
+
+  private loadRealData() {
+    this.apiService.getSeances().subscribe({
+      next: (seances: SeanceDto[]) => {
+        this.totalSeances = seances.length;
+        this.completedSeances = seances.filter((s: SeanceDto) => s.statut === 'EFFECTUEE').length;
+        this.completionRate = this.totalSeances > 0 ? Math.round((this.completedSeances / this.totalSeances) * 100) : 0;
+        
+        let totalMins = 0;
+        seances.forEach((s: SeanceDto) => {
+          if (s.heureDebutReelle && s.heureFinReelle) {
+            const debutParts = s.heureDebutReelle.split(':');
+            const finParts = s.heureFinReelle.split(':');
+            const debutMins = parseInt(debutParts[0]) * 60 + parseInt(debutParts[1]);
+            const finMins = parseInt(finParts[0]) * 60 + parseInt(finParts[1]);
+            totalMins += (finMins - debutMins);
+          }
+        });
+        this.totalHeures = Math.round(totalMins / 60);
+        this.updateNotifications();
+      },
+      error: (err: any) => {
+        console.error('Erreur lors du chargement des séances', err);
+      }
+    });
   }
 
   private getInitials(firstName: string, lastName: string): string {
