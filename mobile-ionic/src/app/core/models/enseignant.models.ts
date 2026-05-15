@@ -1,33 +1,60 @@
 export interface SeanceDto {
   id: number;
-  cours?: string;
-  nomCours?: string;
-  matiere?: string;
-  salle?: string;
-  dateDebut?: string;
-  dateFin?: string;
-  heureDebut?: string;
-  heureFin?: string;
-  typeSeance?: string;
+  dateCours: string; // LocalDate is serialized as YYYY-MM-DD
+  heureDebutReelle: string; // LocalTime is serialized as HH:MM:SS
+  heureFinReelle: string;
+  salleId?: number;
+  qrCodeId?: number;
+  qrCodeToken?: string;
+  statut?: string; // Enum StatutSeance
+  emploiDuTempsId?: number;
+  enseignantId?: number;
+  classeId?: number;
+  emargementId?: number;
+  ficheProgressionId?: number;
 }
 
-export interface CahierDeTexteDto {
+export interface FicheProgressionDto {
   id: number;
-  titreCours?: string;
-  contenu?: string;
-  pieceJointe?: string;
-  statutValidite?: string;
-  dateSoumission?: string;
+  dateSaisie: string;
+  contenuDetaille: string;
+  objectifs: string;
+  travaux: string;
+  estValideAdmin: boolean;
+  dateValidation?: string;
+  enseignantNomPrenom?: string;
+  matiereLibelle?: string;
+  dateSeance?: string;
+  heureSeance?: string;
+  seanceId?: number;
 }
 
-export interface CahierDeTexteRequest {
-  titreCours: string;
-  contenu: string;
-  pieceJointe?: string;
+export interface FicheProgressionRequest {
+  contenuDetaille: string;
+  objectifs: string;
+  travaux: string;
+}
+
+export interface EmploiDuTempsDto {
+  id: number;
+  titre: string;
+  typeRecurrence: string;
+  dateDebutValidite?: string;
+  dateFinValidite?: string;
+  jourSemaine?: string;
+  jourDuMois?: number;
+  dateSpecifique?: string;
+  heureDebut: string;
+  heureFin: string;
+  salleId?: number;
+  enseignantId?: number;
+  classeId?: number;
+  matiereId?: number;
+  anneeUniversitaireId?: number;
 }
 
 export interface EmargementRequest {
   tokenQRCode: string;
-  latitudeGPS: string;
-  longitudeGPS: string;
+  latitudeGPS?: string;
+  longitudeGPS?: string;
 }
