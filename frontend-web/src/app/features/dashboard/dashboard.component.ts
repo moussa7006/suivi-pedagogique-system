@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Subscription, interval } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { TeacherService } from '../../core/services/teacher.service';
 import { ClasseService } from '../../core/services/classe.service';
@@ -779,10 +779,12 @@ interface HubTile {
     `,
   ],
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   adminName = 'Admin User';
   adminRole = 'Administrateur';
   adminInitials = 'AU';
+
+  private refreshSubscription: Subscription | null = null;
 
   hubTiles: HubTile[] = [
     {
@@ -892,6 +894,17 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     this.loadAdminProfile();
     this.loadDashboardStats();
+
+    // Auto-rafraîchissement toutes les 30 secondes
+    this.refreshSubscription = interval(30000).subscribe(() => {
+      this.loadDashboardStats();
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
   }
 
   private loadDashboardStats(): void {

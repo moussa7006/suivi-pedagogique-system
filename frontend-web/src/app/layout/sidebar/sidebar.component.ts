@@ -50,7 +50,7 @@ import { AuthService } from '../../core/services/auth.service';
           <li>
             <a routerLink="/teachers" routerLinkActive="active">
               <i class="pi pi-id-card"></i>
-              <span>Professeurs</span>
+              <span>Utilisateurs</span>
             </a>
           </li>
           <li>
