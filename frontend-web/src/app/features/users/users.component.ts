@@ -541,8 +541,18 @@ export class TeachersComponent implements OnInit {
       return;
     }
 
-    if (!this.editingId && this.provisionalPassword && this.provisionalPassword.length < 8) {
-      this.errorMessage = 'Le mot de passe provisoire doit contenir au moins 8 caractères.';
+    if (!this.editingId && this.provisionalPassword && this.provisionalPassword.length < 14) {
+      this.errorMessage = 'Le mot de passe doit contenir au moins 14 caractères.';
+      return;
+    }
+
+    if (
+      !this.editingId &&
+      this.provisionalPassword &&
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{14,}$/.test(this.provisionalPassword)
+    ) {
+      this.errorMessage =
+        'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre.';
       return;
     }
 

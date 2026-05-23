@@ -64,13 +64,34 @@
           <div class="item-content">
             <div class="label-with-icon">
               <label>Mot de passe</label>
-              <ion-icon 
-                name="create-outline" 
+              <ion-icon
+                name="create-outline"
                 class="edit-icon-direct"
                 (click)="openPasswordModal()"
               ></ion-icon>
             </div>
             <p>••••••••••••</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="icon-box">
+            <ion-icon name="moon-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>Mode Nuit</label>
+            <div class="theme-toggle-row">
+              <div class="theme-label">
+                <ion-icon
+                  [name]="isDark ? 'moon' : 'sunny'"
+                  color="warning"
+                ></ion-icon>
+                <span>{{ isDark ? 'Activé' : 'Désactivé' }}</span>
+              </div>
+              <ion-toggle
+                [checked]="isDark"
+                (ionChange)="toggleDarkMode()"
+              ></ion-toggle>
+            </div>
           </div>
         </div>
         <div class="info-item">
@@ -87,13 +108,21 @@
   </div>
 
   <!-- MODAL DE CHANGEMENT DE MOT DE PASSE (COMPACT) -->
-  <ion-modal [isOpen]="isPasswordModalOpen" (ionModalDidDismiss)="isPasswordModalOpen = false" class="password-modal-compact">
+  <ion-modal
+    [isOpen]="isPasswordModalOpen"
+    (ionModalDidDismiss)="isPasswordModalOpen = false"
+    class="password-modal-compact"
+  >
     <ng-template>
       <div class="modal-compact-container">
         <div class="drag-handle"></div>
         <div class="modal-compact-header">
           <h2>Modifier le mot de passe</h2>
-          <ion-button fill="clear" (click)="isPasswordModalOpen = false" class="btn-close-compact">
+          <ion-button
+            fill="clear"
+            (click)="isPasswordModalOpen = false"
+            class="btn-close-compact"
+          >
             <ion-icon name="close-outline"></ion-icon>
           </ion-button>
         </div>
@@ -101,35 +130,51 @@
         <div class="compact-form">
           <div class="compact-input-group">
             <ion-icon name="lock-closed-outline" class="start-icon"></ion-icon>
-            <ion-input [type]="showOldPassword ? 'text' : 'password'" placeholder="Ancien mot de passe"></ion-input>
-            <ion-icon 
-              [name]="showOldPassword ? 'eye-off-outline' : 'eye-outline'" 
+            <ion-input
+              [type]="showOldPassword ? 'text' : 'password'"
+              placeholder="Ancien mot de passe"
+            ></ion-input>
+            <ion-icon
+              [name]="showOldPassword ? 'eye-off-outline' : 'eye-outline'"
               class="eye-icon"
               (click)="showOldPassword = !showOldPassword"
             ></ion-icon>
           </div>
-          
+
           <div class="compact-input-group">
             <ion-icon name="key-outline" class="start-icon"></ion-icon>
-            <ion-input [type]="showNewPassword ? 'text' : 'password'" placeholder="Nouveau mot de passe"></ion-input>
-            <ion-icon 
-              [name]="showNewPassword ? 'eye-off-outline' : 'eye-outline'" 
+            <ion-input
+              [type]="showNewPassword ? 'text' : 'password'"
+              placeholder="Nouveau mot de passe"
+            ></ion-input>
+            <ion-icon
+              [name]="showNewPassword ? 'eye-off-outline' : 'eye-outline'"
               class="eye-icon"
               (click)="showNewPassword = !showNewPassword"
             ></ion-icon>
           </div>
-          
+
           <div class="compact-input-group">
-            <ion-icon name="checkmark-circle-outline" class="start-icon"></ion-icon>
-            <ion-input [type]="showConfirmPassword ? 'text' : 'password'" placeholder="Confirmer le mot de passe"></ion-input>
-            <ion-icon 
-              [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'" 
+            <ion-icon
+              name="checkmark-circle-outline"
+              class="start-icon"
+            ></ion-icon>
+            <ion-input
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              placeholder="Confirmer le mot de passe"
+            ></ion-input>
+            <ion-icon
+              [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"
               class="eye-icon"
               (click)="showConfirmPassword = !showConfirmPassword"
             ></ion-icon>
           </div>
-          
-          <ion-button expand="block" class="btn-save-compact" (click)="updatePassword()">
+
+          <ion-button
+            expand="block"
+            class="btn-save-compact"
+            (click)="updatePassword()"
+          >
             Enregistrer les modifications
           </ion-button>
         </div>

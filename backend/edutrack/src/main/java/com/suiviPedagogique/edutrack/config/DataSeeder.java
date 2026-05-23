@@ -20,14 +20,14 @@ public class DataSeeder {
                 admin.setNom("KEITA");
                 admin.setPrenom("Moussa Balla");
                 admin.setEmail("moussa.b.keita223@gmail.com");
-                admin.setMotDePasse(passwordEncoder.encode("admin123"));
+                admin.setMotDePasse(passwordEncoder.encode("Admin123456789!"));
                 admin.setRole(Role.ADMINISTRATEUR);
                 admin.setAdresse("Bacodjicoroni ACI");
                 admin.setTelephone("70 06 01 45");
                 admin.setMatricule("2026-ADM-001");
                 admin.setActif(true);
                 utilisateurRepository.save(admin);
-                System.out.println("=== Compte Administrateur par défaut créé (moussa.b.keita223@gmail.com / admin123) ===");
+                System.out.println("=== Compte Administrateur par defaut cree (moussa.b.keita223@gmail.com / Admin123456789!) ===");
             }
         };
     }

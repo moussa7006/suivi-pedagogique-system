@@ -1,6 +1,6 @@
 /* ============================================
-   PROFILE PAGE - Suivi Pédagogique
-   Design moderne et ultra-lisible (Zéro Noir)
+   PROFILE PAGE - Design moderne
+   Supporte light ET dark via CSS variables
    ============================================ */
 
 :host {
@@ -9,6 +9,17 @@
   --text-primary: #1e293b;
   --text-secondary: #64748b;
   --accent-color: #4361ee;
+  --border-color: #e2e8f0;
+}
+
+/* Dark mode adaptation */
+html.dark :host {
+  --profile-bg: #0f172a;
+  --card-bg: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-color: #818cf8;
+  --border-color: #334155;
 }
 
 ion-content {
@@ -33,10 +44,10 @@ ion-content {
 }
 
 /* ============================================
-   HEADER DYNAMIQUE (GLASSMORPHISM) - SMOOTH
+   HEADER DYNAMIQUE (GLASSMORPHISM)
    ============================================ */
 .profile-header-container {
-  padding: var(--space-xl) var(--space-md);
+  padding: 32px 16px;
   background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 50%, #3f37c9 100%);
   background-size: 200% 200%;
   animation: gradientShift 8s ease-in-out infinite;
@@ -46,13 +57,13 @@ ion-content {
   align-items: center;
   text-align: center;
   color: #ffffff;
-  margin-bottom: var(--space-xl);
+  margin-bottom: 24px;
   box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2);
   transition: box-shadow 0.3s ease;
 
   .avatar-container {
     position: relative;
-    margin-bottom: var(--space-md);
+    margin-bottom: 16px;
     transition: transform 0.3s ease;
 
     &:hover {
@@ -94,7 +105,7 @@ ion-content {
         background: #ffffff;
         border: none;
         border-radius: 50%;
-        color: var(--accent-color);
+        color: #4361ee;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -142,7 +153,7 @@ ion-content {
     background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(4px);
     padding: 4px 12px;
-    border-radius: var(--radius-full);
+    border-radius: 20px;
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.05em;
@@ -159,49 +170,29 @@ ion-content {
    ANIMATIONS
    ============================================ */
 @keyframes gradientShift {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 @keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(0.95);
-  }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.95); }
 }
 
 /* ============================================
-   BOTTOM SPACER (pour tab bar flottante)
-   ============================================ */
-.bottom-spacer {
-  height: 80px;
-  width: 100%;
-}
-
-/* ============================================
-   CONTENT CARDS (avec transitions)
+   CONTENT CARDS
    ============================================ */
 .profile-section {
-  padding: 0 var(--space-md);
+  padding: 0 16px;
 }
 
 .modern-card {
   background: var(--card-bg);
-  border-radius: var(--radius-xl);
-  padding: var(--space-lg);
-  margin-bottom: var(--space-lg);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--border-color);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
@@ -213,8 +204,8 @@ ion-content {
   .card-header {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-md);
+    gap: 8px;
+    margin-bottom: 16px;
 
     ion-icon {
       font-size: 22px;
@@ -241,18 +232,18 @@ ion-content {
 .info-grid {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: 16px;
 
   .info-item {
     display: flex;
     align-items: flex-start;
-    gap: var(--space-md);
+    gap: 16px;
 
     .icon-box {
       width: 36px;
       height: 36px;
       background: rgba(67, 97, 238, 0.08);
-      border-radius: var(--radius-md);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -270,13 +261,11 @@ ion-content {
         width: 100%;
         margin-bottom: 0;
 
-        label {
-          margin-bottom: 0;
-        }
+        label { margin-bottom: 0; }
 
         .edit-icon-direct {
-          color: #0052cc !important; /* Bleu électrique très visible */
-          font-size: 26px !important; /* Plus grand */
+          color: #0052cc !important;
+          font-size: 26px !important;
           cursor: pointer !important;
           display: block !important;
           visibility: visible !important;
@@ -294,7 +283,7 @@ ion-content {
       label {
         display: block;
         font-size: 11px;
-        color: #475569 !important;
+        color: var(--text-secondary);
         font-weight: 700;
         text-transform: uppercase;
         margin-bottom: 2px;
@@ -302,7 +291,7 @@ ion-content {
       p {
         margin: 0;
         font-size: 15px;
-        color: #0f172a !important;
+        color: var(--text-primary);
         font-weight: 600;
       }
     }
@@ -310,15 +299,46 @@ ion-content {
 }
 
 /* ============================================
-   MODAL COMPACT - PASSWORD (CENTRÉ)
+   THEME TOGGLE ROW
+   ============================================ */
+.theme-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+
+  .theme-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    span {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+  }
+
+  ion-toggle {
+    --background: #cbd5e1;
+    --background-checked: #4361ee;
+    --handle-background: #ffffff;
+    --handle-background-checked: #ffffff;
+    --handle-width: 22px;
+    --handle-height: 22px;
+    padding: 0;
+  }
+}
+
+/* ============================================
+   MODAL COMPACT - PASSWORD (CENTRE)
    ============================================ */
 .password-modal-compact {
-  --height: 380px; /* Augmenté pour 3 champs */
+  --height: 420px;
   --width: 90%;
   --border-radius: 24px;
   --box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
   --backdrop-opacity: 0.6;
-
   align-items: center;
   justify-content: center;
 
@@ -328,10 +348,23 @@ ion-content {
   }
 }
 
+html.dark .password-modal-compact::part(content) {
+  background: #1e293b !important;
+  border: 2px solid #334155;
+}
+
 .modal-compact-container {
   background: #ffffff !important;
   padding: 24px;
   height: 100%;
+
+  .drag-handle {
+    width: 40px;
+    height: 5px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    margin: 0 auto 16px;
+  }
 
   .modal-compact-header {
     display: flex;
@@ -342,24 +375,29 @@ ion-content {
     h2 {
       font-size: 18px;
       font-weight: 800;
-      color: #0f172a !important; /* Noir forcé */
+      color: #0f172a !important;
       margin: 0;
     }
 
     .btn-close-compact {
       --color: #64748b !important;
-      color: #64748b !important;
       margin: 0;
-      ion-icon {
-        font-size: 24px;
-      }
+      ion-icon { font-size: 24px; }
     }
   }
 }
 
+html.dark .modal-compact-container {
+  background: #1e293b !important;
+
+  .drag-handle { background: #475569; }
+  .modal-compact-header h2 { color: #f1f5f9 !important; }
+  .btn-close-compact { --color: #94a3b8 !important; }
+}
+
 .compact-form {
   .compact-input-group {
-    background: #f1f5f9 !important; /* Fond gris clair pour l'input */
+    background: #f1f5f9 !important;
     border: 2px solid #cbd5e1;
     border-radius: 16px;
     margin-bottom: 16px;
@@ -368,7 +406,7 @@ ion-content {
     padding: 4px 12px;
 
     .start-icon {
-      color: #4361ee !important; /* Bleu forcé */
+      color: #4361ee !important;
       font-size: 20px;
       margin-right: 12px;
     }
@@ -381,9 +419,8 @@ ion-content {
     }
 
     ion-input {
-      --color: #000000 !important; /* Noir pur forcé pour le texte saisi */
+      --color: #000000 !important;
       --placeholder-color: #64748b !important;
-      color: #000000 !important;
       font-weight: 700;
       font-size: 16px;
       height: 44px;
@@ -391,7 +428,7 @@ ion-content {
   }
 
   .btn-save-compact {
-    --background: #4361ee !important; /* Bleu forcé */
+    --background: #4361ee !important;
     --color: #ffffff !important;
     --border-radius: 16px;
     height: 54px;
@@ -401,13 +438,24 @@ ion-content {
   }
 }
 
+html.dark .compact-input-group {
+  background: #334155 !important;
+  border-color: #475569;
+
+  .start-icon { color: #818cf8 !important; }
+  ion-input {
+    --color: #ffffff !important;
+    --placeholder-color: #64748b !important;
+  }
+}
+
 /* ============================================
    STATS GRID
    ============================================ */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-md);
+  gap: 16px;
 
   .stat-box {
     text-align: center;
@@ -422,26 +470,22 @@ ion-content {
 
     .stat-label {
       font-size: 11px;
-      color: #64748b !important;
+      color: var(--text-secondary);
       font-weight: 700;
       text-transform: uppercase;
     }
 
-    &.success .stat-value {
-      color: #4cc9f0;
-    }
-    &.secondary .stat-value {
-      color: #3f37c9;
-    }
+    &.success .stat-value { color: #4cc9f0; }
+    &.secondary .stat-value { color: #3f37c9; }
   }
 }
 
 /* ============================================
-   LOGOUT BUTTON - REDESIGN ROUGE VIF
+   LOGOUT BUTTON
    ============================================ */
 .logout-btn-container {
-  padding: var(--space-lg);
-  margin-top: var(--space-lg);
+  padding: 20px;
+  margin-top: 20px;
 
   .modern-logout-btn {
     --background: #ffffff;
@@ -457,16 +501,13 @@ ion-content {
     margin: 0;
     letter-spacing: 0.02em;
 
-    &::part(native) {
-      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+    &::part(native) { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
 
     &:hover {
       --background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
       --color: #ffffff;
       --border-color: transparent;
-      --box-shadow:
-        0 10px 30px rgba(220, 38, 38, 0.45), 0 0 20px rgba(220, 38, 38, 0.15);
+      --box-shadow: 0 10px 30px rgba(220, 38, 38, 0.45), 0 0 20px rgba(220, 38, 38, 0.15);
       transform: translateY(-3px) scale(1.02);
     }
 
@@ -481,8 +522,13 @@ ion-content {
       transition: transform 0.3s ease;
     }
 
-    &:hover ion-icon {
-      transform: translateX(4px) scale(1.1);
-    }
+    &:hover ion-icon { transform: translateX(4px) scale(1.1); }
   }
+}
+
+html.dark .modern-logout-btn {
+  --background: #1e293b;
+  --color: #f87171;
+  --border-color: #f87171;
+  --box-shadow: 0 4px 12px rgba(248, 113, 113, 0.15);
 }

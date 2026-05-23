@@ -1,6 +1,5 @@
 <ion-content class="login-content" [fullscreen]="true">
   <div class="login-container">
-    
     <!-- Branding Section -->
     <div class="brand-section animate-fade-in">
       <div class="logo-container">
@@ -17,7 +16,6 @@
       </div>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        
         <div class="input-wrapper">
           <ion-item lines="none">
             <ion-icon name="mail-outline" slot="start"></ion-icon>
@@ -35,7 +33,7 @@
             <ion-input
               [type]="showPassword ? 'text' : 'password'"
               formControlName="password"
-              placeholder="Mot de passe"
+              placeholder="Mot de passe (min. 14 car.)"
             ></ion-input>
             <ion-icon
               [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
@@ -44,6 +42,20 @@
               style="cursor: pointer; opacity: 0.5"
             ></ion-icon>
           </ion-item>
+          <div
+            class="validation-hint"
+            *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.errors"
+          >
+            <small *ngIf="loginForm.get('password')?.errors?.['required']"
+              >Le mot de passe est requis</small
+            >
+            <small *ngIf="loginForm.get('password')?.errors?.['minlength']"
+              >Minimum 14 caractères</small
+            >
+            <small *ngIf="loginForm.get('password')?.errors?.['pattern']"
+              >Majuscule, minuscule et chiffre requis</small
+            >
+          </div>
         </div>
 
         <ion-button
@@ -62,6 +74,5 @@
     <div class="university-footer animate-fade-in">
       <p>© 2026 Université du Mali</p>
     </div>
-
   </div>
 </ion-content>

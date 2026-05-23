@@ -158,6 +158,17 @@
       --color: var(--text-main);
     }
   }
+
+  .validation-hint {
+    padding: 6px 16px 0;
+    small {
+      display: block;
+      color: #ef4444;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+  }
 }
 
 /* ============================================

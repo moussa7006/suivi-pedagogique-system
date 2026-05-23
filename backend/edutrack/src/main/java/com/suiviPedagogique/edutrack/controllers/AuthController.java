@@ -84,6 +84,18 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(error);
             }
 
+            if (newPassword.length() < 14) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Le mot de passe doit contenir au moins 14 caractères");
+                return ResponseEntity.badRequest().body(error);
+            }
+
+            if (!newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{14,}$")) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre");
+                return ResponseEntity.badRequest().body(error);
+            }
+
             authService.changePassword(email, newPassword);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Mot de passe modifié avec succès");

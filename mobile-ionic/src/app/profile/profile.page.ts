@@ -24,9 +24,11 @@ import {
   IonModal,
   IonInput,
   IonButtons,
+  IonToggle,
   ToastController,
 } from "@ionic/angular/standalone";
 import { addIcons } from "ionicons";
+import { ThemeService } from "../core/services/theme.service";
 import {
   personOutline,
   mailOutline,
@@ -53,6 +55,9 @@ import {
   eyeOutline,
   eyeOffOutline,
   trashOutline,
+  moonOutline,
+  moon,
+  sunny,
 } from "ionicons/icons";
 
 import {
@@ -91,6 +96,7 @@ import { finalize } from "rxjs";
     IonModal,
     IonInput,
     IonButtons,
+    IonToggle,
   ],
 })
 export class ProfilePage implements OnInit {
@@ -103,6 +109,8 @@ export class ProfilePage implements OnInit {
   private router = inject(Router);
   private ngZone = inject(NgZone);
 
+  private themeService = inject(ThemeService);
+  isDark = this.themeService.isDark;
   isPasswordModalOpen = false;
   showOldPassword = false;
   showNewPassword = false;
@@ -163,6 +171,9 @@ export class ProfilePage implements OnInit {
       createOutline,
       eyeOutline,
       eyeOffOutline,
+      moonOutline,
+      moon,
+      sunny,
     });
   }
 
@@ -214,12 +225,29 @@ export class ProfilePage implements OnInit {
     this.isPasswordModalOpen = true;
   }
 
+  toggleDarkMode() {
+    this.isDark = this.themeService.toggle();
+  }
+
   updatePassword() {
-    if (!this.newPassword || this.newPassword.length < 8) {
+    if (!this.newPassword || this.newPassword.length < 14) {
+      this.presentToast(
+        "Le mot de passe doit contenir au moins 14 caractères.",
+        "danger",
+      );
+      return;
+    }
+
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{14,}$/.test(this.newPassword)) {
+      this.presentToast(
+        "Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre.",
+        "danger",
+      );
       return;
     }
 
     if (this.newPassword !== this.confirmPassword) {
+      this.presentToast("Les mots de passe ne correspondent pas.", "danger");
       return;
     }
 
@@ -335,6 +363,16 @@ export class ProfilePage implements OnInit {
     } catch (e) {
       console.warn("Impossible de sauvegarder la photo dans le stockage local");
     }
+  }
+
+  private async presentToast(message: string, color: string = "danger") {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color,
+      position: "top",
+    });
+    await toast.present();
   }
 
   private loadPhotoFromStorage() {
