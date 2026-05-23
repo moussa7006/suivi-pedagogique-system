@@ -47,6 +47,15 @@ public class AuthService {
             throw new RuntimeException("Erreur : Ce numéro de téléphone est déjà utilisé !");
         }
 
+        // Validation avancée du mot de passe
+        String motDePasse = requestdto.getMotDePasse();
+        if (motDePasse == null || motDePasse.length() < 14) {
+            throw new RuntimeException("Erreur : Le mot de passe doit contenir au moins 14 caractères");
+        }
+        if (!motDePasse.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{14,}$")) {
+            throw new RuntimeException("Erreur : Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre");
+        }
+
         // Cryptage du mot de passe
         String motDePasseCrypte = passwordEncoder.encode(requestdto.getMotDePasse());
 
@@ -97,6 +106,14 @@ public class AuthService {
 
     @Transactional
     public void changePassword(String email, String newPassword) {
+        // Validation du nouveau mot de passe
+        if (newPassword == null || newPassword.length() < 14) {
+            throw new RuntimeException("Le mot de passe doit contenir au moins 14 caractères");
+        }
+        if (!newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{14,}$")) {
+            throw new RuntimeException("Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre");
+        }
+
         Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         utilisateur.setMotDePasse(passwordEncoder.encode(newPassword));

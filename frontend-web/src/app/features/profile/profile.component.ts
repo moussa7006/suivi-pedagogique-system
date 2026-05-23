@@ -1103,7 +1103,7 @@ export class ProfileComponent implements OnInit {
             ...this.profileForm,
             ...updatedUser,
             id: this.profile.id,
-            role: currentUser.role // On garde le rôle actuel pour éviter de perdre les droits si le backend ne le renvoie pas ou le change
+            role: currentUser.role, // On garde le rôle actuel pour éviter de perdre les droits si le backend ne le renvoie pas ou le change
           };
 
           this.authService.updateCurrentUser(nextUser);
@@ -1126,8 +1126,14 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    if (this.newPassword.length < 6) {
-      this.passwordErrorMessage = 'Le mot de passe doit contenir au moins 6 caractères.';
+    if (this.newPassword.length < 14) {
+      this.passwordErrorMessage = 'Le mot de passe doit contenir au moins 14 caractères.';
+      return;
+    }
+
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{14,}$/.test(this.newPassword)) {
+      this.passwordErrorMessage =
+        'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre.';
       return;
     }
 

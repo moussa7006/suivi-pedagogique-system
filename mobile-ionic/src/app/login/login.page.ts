@@ -93,7 +93,14 @@ export class LoginPage {
 
     this.loginForm = this.fb.group({
       email: ["", [Validators.required, Validators.email]],
-      password: ["", [Validators.required, Validators.minLength(8)]],
+      password: [
+        "",
+        [
+          Validators.required,
+          Validators.minLength(14),
+          Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{14,}$/),
+        ],
+      ],
     });
   }
 
@@ -122,7 +129,8 @@ export class LoginPage {
       motDePasse: this.loginForm.value.password,
     };
 
-    this.authService.login(credentials)
+    this.authService
+      .login(credentials)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: () => {
