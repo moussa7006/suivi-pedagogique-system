@@ -36,3 +36,8 @@ Thumbs.db
 ### Misc ###
 *.txt
 !README.txt
+
+### Local debug/test scripts with development credentials ###
+scripts/debug*.sh
+scripts/test_*.sh
+scripts/test_*.py
