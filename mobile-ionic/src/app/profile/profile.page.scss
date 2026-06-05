@@ -1,6 +1,5 @@
 /* ============================================
    PROFILE PAGE - Design moderne
-   Supporte light ET dark via CSS variables
    ============================================ */
 
 :host {
@@ -12,15 +11,6 @@
   --border-color: #e2e8f0;
 }
 
-/* Dark mode adaptation */
-html.dark :host {
-  --profile-bg: #0f172a;
-  --card-bg: #1e293b;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --accent-color: #818cf8;
-  --border-color: #334155;
-}
 
 ion-content {
   --background: var(--profile-bg);
@@ -298,37 +288,7 @@ ion-content {
   }
 }
 
-/* ============================================
-   THEME TOGGLE ROW
-   ============================================ */
-.theme-toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
 
-  .theme-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    span {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-  }
-
-  ion-toggle {
-    --background: #cbd5e1;
-    --background-checked: #4361ee;
-    --handle-background: #ffffff;
-    --handle-background-checked: #ffffff;
-    --handle-width: 22px;
-    --handle-height: 22px;
-    padding: 0;
-  }
-}
 
 /* ============================================
    MODAL COMPACT - PASSWORD (CENTRE)
@@ -348,10 +308,6 @@ ion-content {
   }
 }
 
-html.dark .password-modal-compact::part(content) {
-  background: #1e293b !important;
-  border: 2px solid #334155;
-}
 
 .modal-compact-container {
   background: #ffffff !important;
@@ -387,13 +343,6 @@ html.dark .password-modal-compact::part(content) {
   }
 }
 
-html.dark .modal-compact-container {
-  background: #1e293b !important;
-
-  .drag-handle { background: #475569; }
-  .modal-compact-header h2 { color: #f1f5f9 !important; }
-  .btn-close-compact { --color: #94a3b8 !important; }
-}
 
 .compact-form {
   .compact-input-group {
@@ -438,16 +387,6 @@ html.dark .modal-compact-container {
   }
 }
 
-html.dark .compact-input-group {
-  background: #334155 !important;
-  border-color: #475569;
-
-  .start-icon { color: #818cf8 !important; }
-  ion-input {
-    --color: #ffffff !important;
-    --placeholder-color: #64748b !important;
-  }
-}
 
 /* ============================================
    STATS GRID
@@ -524,11 +463,4 @@ html.dark .compact-input-group {
 
     &:hover ion-icon { transform: translateX(4px) scale(1.1); }
   }
-}
-
-html.dark .modern-logout-btn {
-  --background: #1e293b;
-  --color: #f87171;
-  --border-color: #f87171;
-  --box-shadow: 0 4px 12px rgba(248, 113, 113, 0.15);
 }

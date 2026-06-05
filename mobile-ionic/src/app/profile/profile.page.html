@@ -73,27 +73,7 @@
             <p>••••••••••••</p>
           </div>
         </div>
-        <div class="info-item">
-          <div class="icon-box">
-            <ion-icon name="moon-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <label>Mode Nuit</label>
-            <div class="theme-toggle-row">
-              <div class="theme-label">
-                <ion-icon
-                  [name]="isDark ? 'moon' : 'sunny'"
-                  color="warning"
-                ></ion-icon>
-                <span>{{ isDark ? 'Activé' : 'Désactivé' }}</span>
-              </div>
-              <ion-toggle
-                [checked]="isDark"
-                (ionChange)="toggleDarkMode()"
-              ></ion-toggle>
-            </div>
-          </div>
-        </div>
+
         <div class="info-item">
           <div class="icon-box">
             <ion-icon name="notifications-outline"></ion-icon>
