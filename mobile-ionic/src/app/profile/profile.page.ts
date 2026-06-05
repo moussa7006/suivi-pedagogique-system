@@ -24,11 +24,9 @@ import {
   IonModal,
   IonInput,
   IonButtons,
-  IonToggle,
   ToastController,
 } from "@ionic/angular/standalone";
 import { addIcons } from "ionicons";
-import { ThemeService } from "../core/services/theme.service";
 import {
   personOutline,
   mailOutline,
@@ -55,9 +53,6 @@ import {
   eyeOutline,
   eyeOffOutline,
   trashOutline,
-  moonOutline,
-  moon,
-  sunny,
 } from "ionicons/icons";
 
 import {
@@ -96,7 +91,6 @@ import { finalize } from "rxjs";
     IonModal,
     IonInput,
     IonButtons,
-    IonToggle,
   ],
 })
 export class ProfilePage implements OnInit {
@@ -109,8 +103,6 @@ export class ProfilePage implements OnInit {
   private router = inject(Router);
   private ngZone = inject(NgZone);
 
-  private themeService = inject(ThemeService);
-  isDark = this.themeService.isDark;
   isPasswordModalOpen = false;
   showOldPassword = false;
   showNewPassword = false;
@@ -171,9 +163,6 @@ export class ProfilePage implements OnInit {
       createOutline,
       eyeOutline,
       eyeOffOutline,
-      moonOutline,
-      moon,
-      sunny,
     });
   }
 
@@ -223,10 +212,6 @@ export class ProfilePage implements OnInit {
     this.newPassword = "";
     this.confirmPassword = "";
     this.isPasswordModalOpen = true;
-  }
-
-  toggleDarkMode() {
-    this.isDark = this.themeService.toggle();
   }
 
   updatePassword() {

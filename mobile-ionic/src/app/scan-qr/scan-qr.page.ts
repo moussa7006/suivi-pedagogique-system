@@ -93,7 +93,7 @@ export class ScanQRPage {
           {
             text: "Remplir le cahier",
             handler: () => {
-              this.router.navigate(["/tabs/tabs/tab4"]);
+              this.router.navigate(["/tabs/tabs/tab3"]);
             },
           },
         ],
