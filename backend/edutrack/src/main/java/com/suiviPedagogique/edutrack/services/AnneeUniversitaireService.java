@@ -49,7 +49,13 @@ public class AnneeUniversitaireService {
         if (dto.getLibelle() != null) annee.setLibelle(dto.getLibelle());
         if (dto.getDateDebut() != null) annee.setDateDebut(dto.getDateDebut());
         if (dto.getDateFin() != null) annee.setDateFin(dto.getDateFin());
-        if (dto.getActive() != null) annee.setActive(dto.getActive());
+        
+        if (annee.getDateDebut() != null && annee.getDateFin() != null) {
+            java.time.LocalDate today = java.time.LocalDate.now();
+            annee.setActive(!today.isBefore(annee.getDateDebut()) && !today.isAfter(annee.getDateFin()));
+        } else {
+            annee.setActive(false);
+        }
     }
 
     private AnneeUniversitaireDto toDto(AnneeUniversitaire annee) {
