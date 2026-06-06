@@ -54,7 +54,7 @@ public class EmploiDuTempsService {
         }
 
         EmploiDuTemps emploi = new EmploiDuTemps();
-        hydrateEntity(emploi, dto);
+        hydrateEntity(emploi, dto, null);
 
         EmploiDuTemps saved = emploiDuTempsRepository.save(emploi);
         scheduleJobService.checkAndGenerateSeanceForToday(saved);
@@ -70,7 +70,7 @@ public class EmploiDuTempsService {
         EmploiDuTemps emploi = emploiDuTempsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Emploi du temps non trouvé"));
         
-        hydrateEntity(emploi, dto);
+        hydrateEntity(emploi, dto, id);
 
         EmploiDuTemps updated = emploiDuTempsRepository.save(emploi);
         scheduleJobService.checkAndGenerateSeanceForToday(updated);
@@ -107,7 +107,7 @@ public class EmploiDuTempsService {
         return convertToDto(emploi);
     }
 
-    private void hydrateEntity(EmploiDuTemps emploi, EmploiDuTempsDto dto) {
+    private void hydrateEntity(EmploiDuTemps emploi, EmploiDuTempsDto dto, Integer emploiId) {
         emploi.setTitre(dto.getTitre());
         emploi.setTypeRecurrence(dto.getTypeRecurrence());
         emploi.setDateDebutValidite(dto.getDateDebutValidite());
@@ -127,6 +127,7 @@ public class EmploiDuTempsService {
         if (dto.getEnseignantId() != null) {
             Enseignant enseignant = enseignantRepository.findById(dto.getEnseignantId())
                     .orElseThrow(() -> new RuntimeException("Enseignant non trouvé"));
+            checkProfAvailability(enseignant, dto, emploiId);
             emploi.setEnseignant(enseignant);
         }
         if (dto.getClasseId() != null) {
@@ -166,5 +167,57 @@ public class EmploiDuTempsService {
         if (emploi.getAnneeUniversitaire() != null) dto.setAnneeUniversitaireId(emploi.getAnneeUniversitaire().getId());
         
         return dto;
+    }
+
+    private com.suiviPedagogique.edutrack.Entities.enums.JourSemaine toJourSemaine(java.time.DayOfWeek dayOfWeek) {
+        switch (dayOfWeek) {
+            case MONDAY: return com.suiviPedagogique.edutrack.Entities.enums.JourSemaine.LUNDI;
+            case TUESDAY: return com.suiviPedagogique.edutrack.Entities.enums.JourSemaine.MARDI;
+            case WEDNESDAY: return com.suiviPedagogique.edutrack.Entities.enums.JourSemaine.MERCREDI;
+            case THURSDAY: return com.suiviPedagogique.edutrack.Entities.enums.JourSemaine.JEUDI;
+            case FRIDAY: return com.suiviPedagogique.edutrack.Entities.enums.JourSemaine.VENDREDI;
+            case SATURDAY: return com.suiviPedagogique.edutrack.Entities.enums.JourSemaine.SAMEDI;
+            case SUNDAY: return com.suiviPedagogique.edutrack.Entities.enums.JourSemaine.DIMANCHE;
+            default: return null;
+        }
+    }
+
+    private void checkProfAvailability(Enseignant enseignant, EmploiDuTempsDto dto, Integer excludeId) {
+        List<EmploiDuTemps> emplois = emploiDuTempsRepository.findByEnseignantId(enseignant.getId());
+        for (EmploiDuTemps e : emplois) {
+            if (excludeId != null && e.getId().equals(excludeId)) {
+                continue;
+            }
+            
+            if (e.getDateDebutValidite().isAfter(dto.getDateFinValidite()) || e.getDateFinValidite().isBefore(dto.getDateDebutValidite())) {
+                continue;
+            }
+            if (!e.getHeureDebut().isBefore(dto.getHeureFin()) || !e.getHeureFin().isAfter(dto.getHeureDebut())) {
+                continue;
+            }
+            
+            boolean conflict = false;
+            if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE) {
+                conflict = e.getDateSpecifique().equals(dto.getDateSpecifique());
+            } else if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.HEBDOMADAIRE && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.HEBDOMADAIRE) {
+                conflict = e.getJourSemaine() == dto.getJourSemaine();
+            } else if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.MENSUEL && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.MENSUEL) {
+                conflict = e.getJourDuMois().equals(dto.getJourDuMois());
+            } else if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.HEBDOMADAIRE) {
+                conflict = toJourSemaine(e.getDateSpecifique().getDayOfWeek()) == dto.getJourSemaine();
+            } else if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.HEBDOMADAIRE && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE) {
+                conflict = toJourSemaine(dto.getDateSpecifique().getDayOfWeek()) == e.getJourSemaine();
+            } else if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.MENSUEL) {
+                conflict = e.getDateSpecifique().getDayOfMonth() == dto.getJourDuMois();
+            } else if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.MENSUEL && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE) {
+                conflict = dto.getDateSpecifique().getDayOfMonth() == e.getJourDuMois();
+            } else {
+                conflict = true;
+            }
+            
+            if (conflict) {
+                throw new RuntimeException("L'enseignant a déjà un cours programmé sur ce créneau horaire.");
+            }
+        }
     }
 }

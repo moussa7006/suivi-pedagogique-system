@@ -59,7 +59,7 @@ public class SeanceService {
         }
 
         Seance seance = new Seance();
-        hydrateSeance(seance, dto);
+        hydrateSeance(seance, dto, null);
 
         Seance saved = seanceRepository.save(seance);
         return convertToDto(saved);
@@ -74,13 +74,13 @@ public class SeanceService {
         Seance seance = seanceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Séance non trouvée"));
 
-        hydrateSeance(seance, dto);
+        hydrateSeance(seance, dto, id);
 
         Seance updated = seanceRepository.save(seance);
         return convertToDto(updated);
     }
 
-    private void hydrateSeance(Seance seance, SeanceDto dto) {
+    private void hydrateSeance(Seance seance, SeanceDto dto, Integer seanceId) {
         seance.setDateCours(dto.getDateCours());
         seance.setHeureDebutReelle(dto.getHeureDebutReelle());
         seance.setHeureFinReelle(dto.getHeureFinReelle());
@@ -95,6 +95,7 @@ public class SeanceService {
         if (dto.getEnseignantId() != null) {
             Enseignant enseignant = enseignantRepository.findById(dto.getEnseignantId())
                     .orElseThrow(() -> new RuntimeException("Enseignant non trouvé"));
+            checkProfAvailability(enseignant, dto, seanceId);
             seance.setEnseignant(enseignant);
         }
 
@@ -233,5 +234,20 @@ public class SeanceService {
             dto.setFicheProgressionId(seance.getFicheProgression().getId());
         }
         return dto;
+    }
+
+    private void checkProfAvailability(Enseignant enseignant, SeanceDto dto, Integer excludeId) {
+        List<Seance> seances = seanceRepository.findByEnseignantId(enseignant.getId());
+        for (Seance s : seances) {
+            if (excludeId != null && s.getId().equals(excludeId)) {
+                continue;
+            }
+            if (s.getDateCours().equals(dto.getDateCours())) {
+                if (!s.getHeureDebutReelle().isBefore(dto.getHeureFinReelle()) || !s.getHeureFinReelle().isAfter(dto.getHeureDebutReelle())) {
+                    continue;
+                }
+                throw new RuntimeException("L'enseignant a déjà une séance programmée sur ce créneau horaire le " + dto.getDateCours() + ".");
+            }
+        }
     }
 }
