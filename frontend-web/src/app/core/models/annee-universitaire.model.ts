@@ -3,5 +3,5 @@ export interface AnneeUniversitaire {
   libelle: string;
   dateDebut: string;
   dateFin: string;
-  active: boolean;
+  active?: boolean;
 }

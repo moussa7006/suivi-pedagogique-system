@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { Seance } from '../../core/models/schedule.model';
+import { NotificationService } from '../../shared/notification/notification.service';
 
 @Component({
   selector: 'app-qr-generator',
@@ -75,7 +76,8 @@ import { Seance } from '../../core/models/schedule.model';
                 <qrcode [qrdata]="qrData" [width]="320" [errorCorrectionLevel]="'M'"></qrcode>
               </div>
               <p class="qr-payload" style="text-align: center; margin-top: 15px;">
-                <i class="pi pi-check-circle" style="color: #10b981;"></i> QR Code actif pour toute la durée du cours
+                <i class="pi pi-check-circle" style="color: #10b981;"></i> QR Code actif pour toute
+                la durée du cours
               </p>
             } @else {
               <div class="placeholder">
@@ -650,7 +652,10 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
     { id: 2, type: 'warning' },
   ];
 
-  constructor(private scheduleService: ScheduleService) {}
+  constructor(
+    private scheduleService: ScheduleService,
+    private notificationService: NotificationService,
+  ) {}
 
   ngOnInit() {
     this.loadSeances();
@@ -683,7 +688,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
     for (const s of this.seances) {
       const startTime = this.getTimeFromString(s.heureDebutReelle);
       const endTime = this.getTimeFromString(s.heureFinReelle);
-      
+
       if (!startTime || !endTime) continue;
 
       const startMinus15 = new Date(startTime.getTime() - 15 * 60000);
@@ -692,10 +697,10 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
       if (now >= startMinus15 && now <= endTime) {
         // On vérifie si le statut est PREVUE (si le prof scanne, ça passera à EN_COURS ou autre)
         if (s.statut === 'PREVUE' || s.statut === 'EN_COURS') {
-           // On le garde actif même en cours tant qu'il n'est pas "TERMINEE"
-           // Mais si on veut le faire disparaître strictment au scan du prof, on peut faire s.statut === 'PREVUE'
-           bestSeance = s;
-           break;
+          // On le garde actif même en cours tant qu'il n'est pas "TERMINEE"
+          // Mais si on veut le faire disparaître strictment au scan du prof, on peut faire s.statut === 'PREVUE'
+          bestSeance = s;
+          break;
         }
       }
     }
@@ -715,8 +720,9 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   getTimeFromString(timeStr: string | any): Date | null {
     if (!timeStr) return null;
     const now = new Date();
-    let hours = 0, minutes = 0;
-    
+    let hours = 0,
+      minutes = 0;
+
     if (typeof timeStr === 'string') {
       const parts = timeStr.split(':');
       if (parts.length >= 2) {
@@ -727,7 +733,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
       hours = timeStr[0];
       minutes = timeStr[1];
     }
-    
+
     now.setHours(hours, minutes, 0, 0);
     return now;
   }
@@ -759,7 +765,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
       if (this.selectedSeance) {
         this.startSession();
       } else {
-        alert("Veuillez d'abord sélectionner une séance.");
+        this.notificationService.error("Veuillez d'abord sélectionner une séance.");
       }
     }
   }
@@ -776,8 +782,9 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('[QR] Erreur génération QR:', error);
-        this.errorMessage = error?.error?.error || 'Impossible de générer le QR code.';
-        // On ne fait pas d'alert en mode automatique pour ne pas bloquer l'écran
+        const message = error?.error?.error || 'Impossible de générer le QR code.';
+        this.errorMessage = message;
+        this.notificationService.error(message);
       },
     });
   }
