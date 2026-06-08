@@ -9,6 +9,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -163,6 +164,7 @@ public class SeanceService {
         return convertToDto(seance);
     }
 
+    @Transactional
     public SeanceDto generateQrCode(Integer id) {
         Utilisateur currentUser = getCurrentUser();
         if (currentUser.getRole() != Role.ADMINISTRATEUR) {
@@ -171,6 +173,8 @@ public class SeanceService {
 
         Seance seance = seanceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Séance non trouvée"));
+
+        validateNoActiveQrOverlapForTeacher(seance);
 
         QRCode qrCode = seance.getQrCode();
         if (qrCode == null) {
@@ -237,17 +241,40 @@ public class SeanceService {
     }
 
     private void checkProfAvailability(Enseignant enseignant, SeanceDto dto, Integer excludeId) {
-        List<Seance> seances = seanceRepository.findByEnseignantId(enseignant.getId());
-        for (Seance s : seances) {
-            if (excludeId != null && s.getId().equals(excludeId)) {
-                continue;
-            }
-            if (s.getDateCours().equals(dto.getDateCours())) {
-                if (!s.getHeureDebutReelle().isBefore(dto.getHeureFinReelle()) || !s.getHeureFinReelle().isAfter(dto.getHeureDebutReelle())) {
-                    continue;
-                }
-                throw new RuntimeException("L'enseignant a déjà une séance programmée sur ce créneau horaire le " + dto.getDateCours() + ".");
-            }
+        if (dto.getDateCours() == null || dto.getHeureDebutReelle() == null || dto.getHeureFinReelle() == null) {
+            return;
+        }
+
+        List<Seance> overlaps = seanceRepository.findOverlappingSeancesForTeacher(
+                enseignant.getId(),
+                dto.getDateCours(),
+                dto.getHeureDebutReelle(),
+                dto.getHeureFinReelle(),
+                excludeId
+        );
+
+        if (!overlaps.isEmpty()) {
+            throw new RuntimeException("L'enseignant a déjà une séance programmée sur ce créneau horaire le " + dto.getDateCours() + ".");
+        }
+    }
+
+    private void validateNoActiveQrOverlapForTeacher(Seance seance) {
+        if (seance.getEnseignant() == null || seance.getDateCours() == null
+                || seance.getHeureDebutReelle() == null || seance.getHeureFinReelle() == null) {
+            throw new RuntimeException("La séance est incomplète : impossible de générer un QR code.");
+        }
+
+        List<Seance> overlaps = seanceRepository.findOverlappingSeancesWithActiveQrForTeacher(
+                seance.getEnseignant().getId(),
+                seance.getDateCours(),
+                seance.getHeureDebutReelle(),
+                seance.getHeureFinReelle(),
+                seance.getId(),
+                LocalDateTime.now()
+        );
+
+        if (!overlaps.isEmpty()) {
+            throw new RuntimeException("Impossible de générer le QR code : cet enseignant possède déjà un QR code actif sur un autre cours simultané.");
         }
     }
 }

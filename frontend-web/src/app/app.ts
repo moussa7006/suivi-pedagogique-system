@@ -3,11 +3,19 @@ import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { SidebarComponent } from './layout/sidebar/sidebar.component';
 import { CommonModule } from '@angular/common';
+import { NotificationComponent } from './shared/notification/notification.component';
+import { ConfirmationDialogComponent } from './shared/confirmation/confirmation-dialog.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, CommonModule],
+  imports: [
+    RouterOutlet,
+    SidebarComponent,
+    CommonModule,
+    NotificationComponent,
+    ConfirmationDialogComponent,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

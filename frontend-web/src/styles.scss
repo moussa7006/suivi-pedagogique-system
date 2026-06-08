@@ -63,6 +63,64 @@ app-root {
   height: 100%;
 }
 
+.error-banner,
+.form-message.error {
+  position: fixed !important;
+  top: 22px !important;
+  left: 50% !important;
+  right: auto !important;
+  z-index: 10000 !important;
+  width: min(420px, calc(100vw - 32px)) !important;
+  margin: 0 !important;
+  padding: 16px 18px 16px 56px !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.97) !important;
+  color: #991b1b !important;
+  border: 1px solid rgba(254, 202, 202, 0.95) !important;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18) !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  transform: translateX(-50%) !important;
+  animation: toastInCentered 0.24s ease-out !important;
+}
+
+.error-banner::before,
+.form-message.error::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: #ef4444;
+}
+
+.error-banner i,
+.form-message.error i {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+@keyframes toastInCentered {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 :focus-visible {
   outline: none;
 }

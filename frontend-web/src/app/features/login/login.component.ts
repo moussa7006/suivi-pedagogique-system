@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../shared/notification/notification.service';
 
 @Component({
   selector: 'app-login',
@@ -814,6 +815,7 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
+    private notificationService: NotificationService,
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -833,11 +835,14 @@ export class LoginComponent {
         next: () => this.router.navigate(['/dashboard']),
         error: () => {
           this.isLoading = false;
-          alert('Échec de connexion. Vérifiez vos identifiants.');
+          this.notificationService.error('Échec de connexion. Vérifiez vos identifiants.');
         },
       });
     } else {
       this.loginForm.markAllAsTouched();
+      this.notificationService.error(
+        'Veuillez renseigner vos identifiants avant de vous connecter.',
+      );
     }
   }
 }

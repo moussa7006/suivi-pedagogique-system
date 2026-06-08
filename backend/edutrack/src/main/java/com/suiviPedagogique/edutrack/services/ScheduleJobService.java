@@ -79,6 +79,21 @@ public class ScheduleJobService {
         }
 
         if (shouldGenerate) {
+            if (seanceRepository.existsByEmploiDuTempsIdAndDateCours(emploi.getId(), today)) {
+                return;
+            }
+
+            if (!seanceRepository.findOverlappingSeancesForTeacher(
+                    emploi.getEnseignant().getId(),
+                    today,
+                    emploi.getHeureDebut(),
+                    emploi.getHeureFin(),
+                    null
+            ).isEmpty()) {
+                System.out.println("Séance non générée pour " + emploi.getTitre() + " : enseignant déjà occupé sur ce créneau.");
+                return;
+            }
+
             Seance seance = new Seance();
             seance.setDateCours(today);
             seance.setHeureDebutReelle(emploi.getHeureDebut());
@@ -93,6 +108,17 @@ public class ScheduleJobService {
             seanceRepository.save(seance);
             System.out.println("Séance générée pour: " + emploi.getTitre());
         }
+    }
+
+    private boolean hasActiveQrOverlapForTeacher(Seance seance) {
+        return !seanceRepository.findOverlappingSeancesWithActiveQrForTeacher(
+                seance.getEnseignant().getId(),
+                seance.getDateCours(),
+                seance.getHeureDebutReelle(),
+                seance.getHeureFinReelle(),
+                seance.getId(),
+                LocalDateTime.now()
+        ).isEmpty();
     }
 
     private JourSemaine mapDayOfWeek(DayOfWeek dayOfWeek) {
@@ -123,6 +149,11 @@ public class ScheduleJobService {
             if (seance.getHeureDebutReelle() != null) {
                 // Si l'heure actuelle est à moins de 15 minutes du début (ou déjà commencée mais pas de QR)
                 if (now.isAfter(seance.getHeureDebutReelle().minusMinutes(15))) {
+                    if (hasActiveQrOverlapForTeacher(seance)) {
+                        System.out.println("QR Code non généré pour la séance " + seance.getId() + " : enseignant déjà associé à un QR actif sur un cours simultané.");
+                        continue;
+                    }
+
                     QRCode qrCode = new QRCode();
                     qrCode.setCode(UUID.randomUUID().toString());
                     qrCode.setDateHeureCreation(LocalDateTime.now());
