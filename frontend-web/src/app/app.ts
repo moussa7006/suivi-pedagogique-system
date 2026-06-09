@@ -3,11 +3,12 @@ import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { SidebarComponent } from './layout/sidebar/sidebar.component';
 import { CommonModule } from '@angular/common';
+import { AlertDialogComponent } from './shared/alert-dialog/alert-dialog.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, CommonModule],
+  imports: [RouterOutlet, SidebarComponent, CommonModule, AlertDialogComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

@@ -9,6 +9,7 @@ import { Seance } from '../../core/models/schedule.model';
 import { Classe } from '../../core/models/classe.model';
 import { Teacher } from '../../core/models/user.model';
 import { Salle } from '../../core/models/salle.model';
+import { AlertDialogService } from '../../shared/alert-dialog/alert-dialog.service';
 
 @Component({
   selector: 'app-seances',
@@ -29,9 +30,7 @@ import { Salle } from '../../core/models/salle.model';
             </a>
             <div class="header-left-titles">
               <h1>Séances (Sessions réelles)</h1>
-              <p>
-                Aperçu des séances générées par le système ({{ seances.length }} au total)
-              </p>
+              <p>Aperçu des séances générées par le système ({{ seances.length }} au total)</p>
             </div>
           </div>
         </div>
@@ -57,7 +56,8 @@ import { Salle } from '../../core/models/salle.model';
               </tr>
               <tr *ngFor="let s of seances">
                 <td>
-                  <strong>{{ s.dateCours }}</strong><br />
+                  <strong>{{ s.dateCours }}</strong
+                  ><br />
                   <small>{{ s.heureDebutReelle }} - {{ s.heureFinReelle }}</small>
                 </td>
                 <td>
@@ -81,7 +81,7 @@ import { Salle } from '../../core/models/salle.model';
                 </td>
                 <td>
                   <div class="status-group">
-                    <span class="status-pill" [ngClass]="s.statut?.toLowerCase()">
+                    <span class="status-pill" [ngClass]="s.statut.toLowerCase()">
                       <span class="status-dot"></span>
                       {{ s.statut || 'N/A' }}
                     </span>
@@ -337,14 +337,18 @@ import { Salle } from '../../core/models/salle.model';
           background: rgba(219, 234, 254, 0.85);
           color: #1d4ed8;
           border-color: rgba(59, 130, 246, 0.4);
-          .status-dot { background: #3b82f6; }
+          .status-dot {
+            background: #3b82f6;
+          }
         }
 
         &.terminee {
           background: rgba(220, 252, 231, 0.85);
           color: #166534;
           border-color: rgba(34, 197, 94, 0.4);
-          .status-dot { background: #22c55e; }
+          .status-dot {
+            background: #22c55e;
+          }
         }
       }
 
@@ -359,8 +363,8 @@ import { Salle } from '../../core/models/salle.model';
         padding: 2px 8px;
         border-radius: 4px;
       }
-    `
-  ]
+    `,
+  ],
 })
 export class SeancesComponent implements OnInit, OnDestroy {
   seances: Seance[] = [];
@@ -373,13 +377,14 @@ export class SeancesComponent implements OnInit, OnDestroy {
     private scheduleService: ScheduleService,
     private teacherService: TeacherService,
     private salleService: SalleService,
-    private classeService: ClasseService
+    private classeService: ClasseService,
+    private alertDialog: AlertDialogService,
   ) {}
 
   ngOnInit() {
     this.loadData();
     this.loadSeances();
-    
+
     // Rafraîchissement automatique toutes les 30 secondes
     this.pollingTimer = setInterval(() => {
       this.loadSeances();
@@ -393,9 +398,9 @@ export class SeancesComponent implements OnInit, OnDestroy {
   }
 
   loadData() {
-    this.teacherService.getTeachers().subscribe(t => this.teachers = t);
-    this.salleService.getAll().subscribe(s => this.salles = s);
-    this.classeService.getAll().subscribe(c => this.classes = c);
+    this.teacherService.getTeachers().subscribe((t) => (this.teachers = t));
+    this.salleService.getAll().subscribe((s) => (this.salles = s));
+    this.classeService.getAll().subscribe((c) => (this.classes = c));
   }
 
   loadSeances() {
@@ -412,7 +417,7 @@ export class SeancesComponent implements OnInit, OnDestroy {
           const hrA = a.heureDebutReelle ? a.heureDebutReelle.toString() : '00:00:00';
           const dtB = b.dateCours ? b.dateCours.toString() : '1970-01-01';
           const hrB = b.heureDebutReelle ? b.heureDebutReelle.toString() : '00:00:00';
-          
+
           const dateA = new Date(dtA + 'T' + hrA).getTime();
           const dateB = new Date(dtB + 'T' + hrB).getTime();
           return dateB - dateA;
@@ -420,14 +425,18 @@ export class SeancesComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Erreur lors du chargement des séances:', err);
-        alert('Erreur serveur: Impossible de charger les séances. ' + (err.message || ''));
-      }
+        this.alertDialog.open({
+          title: 'Chargement impossible',
+          message: 'Erreur serveur: Impossible de charger les séances. ' + (err.message || ''),
+          variant: 'error',
+        });
+      },
     });
   }
 
   getEnseignantNom(s: Seance): string {
     if (s.enseignantId) {
-      const t = this.teachers.find(teacher => teacher.id === s.enseignantId);
+      const t = this.teachers.find((teacher) => teacher.id === s.enseignantId);
       if (t) return `${t.prenom} ${t.nom}`;
     }
     return `Enseignant #${s.enseignantId || '?'}`;
@@ -435,7 +444,7 @@ export class SeancesComponent implements OnInit, OnDestroy {
 
   getSalleNom(s: Seance): string {
     if (s.salleId) {
-      const salle = this.salles.find(sa => sa.id === s.salleId);
+      const salle = this.salles.find((sa) => sa.id === s.salleId);
       if (salle) return `${salle.nom} (${salle.batiment})`;
     }
     return `Salle #${s.salleId || '?'}`;
@@ -443,7 +452,7 @@ export class SeancesComponent implements OnInit, OnDestroy {
 
   getClasseLibelle(s: Seance): string {
     if (s.classeId) {
-      const c = this.classes.find(cl => cl.id === s.classeId);
+      const c = this.classes.find((cl) => cl.id === s.classeId);
       if (c) return c.libelle;
     }
     return `Classe #${s.classeId || '?'}`;

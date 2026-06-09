@@ -3,6 +3,7 @@ package com.suiviPedagogique.edutrack.services;
 import com.suiviPedagogique.edutrack.Dto.AnneeUniversitaireDto;
 import com.suiviPedagogique.edutrack.Entities.AnneeUniversitaire;
 import com.suiviPedagogique.edutrack.repositories.AnneeUniversitaireRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,6 +36,7 @@ public class AnneeUniversitaireService {
     public AnneeUniversitaireDto update(Integer id, AnneeUniversitaireDto dto) {
         AnneeUniversitaire annee = anneeUniversitaireRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Année universitaire non trouvée"));
+
         hydrate(annee, dto);
         return toDto(anneeUniversitaireRepository.save(annee));
     }
@@ -49,7 +51,7 @@ public class AnneeUniversitaireService {
         if (dto.getLibelle() != null) annee.setLibelle(dto.getLibelle());
         if (dto.getDateDebut() != null) annee.setDateDebut(dto.getDateDebut());
         if (dto.getDateFin() != null) annee.setDateFin(dto.getDateFin());
-        
+
         if (annee.getDateDebut() != null && annee.getDateFin() != null) {
             java.time.LocalDate today = java.time.LocalDate.now();
             annee.setActive(!today.isBefore(annee.getDateDebut()) && !today.isAfter(annee.getDateFin()));
