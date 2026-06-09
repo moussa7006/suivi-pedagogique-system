@@ -11,6 +11,8 @@ import com.suiviPedagogique.edutrack.Entities.enums.JourSemaine;
 import com.suiviPedagogique.edutrack.repositories.EmploiDuTempsRepository;
 import com.suiviPedagogique.edutrack.repositories.SeanceRepository;
 import com.suiviPedagogique.edutrack.repositories.QRCodeRepository;
+import com.suiviPedagogique.edutrack.repositories.AnneeUniversitaireRepository;
+import com.suiviPedagogique.edutrack.Entities.AnneeUniversitaire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,9 @@ public class ScheduleJobService {
 
     @Autowired
     private QRCodeRepository qrCodeRepository;
+
+    @Autowired
+    private AnneeUniversitaireRepository anneeUniversitaireRepository;
 
     /**
      * S'exécute tous les jours à 00:01
@@ -165,6 +170,25 @@ public class ScheduleJobService {
                     seanceRepository.save(seance);
                     System.out.println("QR Code généré pour la séance " + seance.getId());
                 }
+            }
+        }
+    }
+
+    /**
+     * S'exécute tous les jours à 00:05
+     * Met à jour le statut actif des années universitaires en fonction de la date du jour.
+     */
+    @Scheduled(cron = "0 5 0 * * ?")
+    @Transactional
+    public void updateAnneeUniversitaireStatus() {
+        List<AnneeUniversitaire> annees = anneeUniversitaireRepository.findAll();
+        LocalDate today = LocalDate.now();
+        for (AnneeUniversitaire annee : annees) {
+            boolean shouldBeActive = !today.isBefore(annee.getDateDebut()) && !today.isAfter(annee.getDateFin());
+            if (annee.getActive() == null || annee.getActive() != shouldBeActive) {
+                annee.setActive(shouldBeActive);
+                anneeUniversitaireRepository.save(annee);
+                System.out.println("Année universitaire '" + annee.getLibelle() + "' mise à jour: active = " + shouldBeActive);
             }
         }
     }
