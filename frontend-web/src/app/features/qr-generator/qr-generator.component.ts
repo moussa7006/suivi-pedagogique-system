@@ -666,27 +666,12 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   }
 
   autoSelectSession() {
-    const now = new Date();
-    // Chercher la séance la plus pertinente (commence dans <= 15 min, ou en cours)
     let bestSeance: Seance | null = null;
 
     for (const s of this.seances) {
-      const startTime = this.getTimeFromString(s.heureDebutReelle);
-      const endTime = this.getTimeFromString(s.heureFinReelle);
-
-      if (!startTime || !endTime) continue;
-
-      const startMinus15 = new Date(startTime.getTime() - 15 * 60000);
-
-      // Si on est dans le créneau (de H-15min jusqu'à la fin)
-      if (now >= startMinus15 && now <= endTime) {
-        // On vérifie si le statut est PREVUE (si le prof scanne, ça passera à EN_COURS ou autre)
-        if (s.statut === 'PREVUE' || s.statut === 'EN_COURS') {
-          // On le garde actif même en cours tant qu'il n'est pas "TERMINEE"
-          // Mais si on veut le faire disparaître strictment au scan du prof, on peut faire s.statut === 'PREVUE'
-          bestSeance = s;
-          break;
-        }
+      if (this.canDisplayQrForSeance(s)) {
+        bestSeance = s;
+        break;
       }
     }
 
@@ -701,27 +686,6 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
       this.selectedSeanceId = '';
       this.selectedSeance = null;
     }
-  }
-
-  getTimeFromString(timeStr: string | any): Date | null {
-    if (!timeStr) return null;
-    const now = new Date();
-    let hours = 0,
-      minutes = 0;
-
-    if (typeof timeStr === 'string') {
-      const parts = timeStr.split(':');
-      if (parts.length >= 2) {
-        hours = parseInt(parts[0], 10);
-        minutes = parseInt(parts[1], 10);
-      }
-    } else if (Array.isArray(timeStr) && timeStr.length >= 2) {
-      hours = timeStr[0];
-      minutes = timeStr[1];
-    }
-
-    now.setHours(hours, minutes, 0, 0);
-    return now;
   }
 
   onSeanceChange() {
@@ -744,8 +708,96 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   }
 
   private updateQrDisplayFromSelectedSeance() {
-    this.qrData = this.selectedSeance?.qrCodeToken || '';
+    if (!this.selectedSeance || !this.canDisplayQrForSeance(this.selectedSeance)) {
+      this.clearQrDisplay();
+      return;
+    }
+
+    this.qrData = this.selectedSeance.qrCodeToken || '';
     this.isRunning = !!this.qrData;
+  }
+
+  private canDisplayQrForSeance(seance: Seance): boolean {
+    if (!seance.qrCodeToken || (seance.statut !== 'PREVUE' && seance.statut !== 'EN_COURS')) {
+      return false;
+    }
+
+    const startDateTime = this.getDateTimeFromSeance(seance.dateCours, seance.heureDebutReelle);
+    const endDateTime = this.getDateTimeFromSeance(seance.dateCours, seance.heureFinReelle);
+
+    if (!startDateTime || !endDateTime) {
+      return false;
+    }
+
+    const now = new Date();
+    const visibleFrom = new Date(startDateTime.getTime() - 15 * 60000);
+
+    return now >= visibleFrom && now <= endDateTime;
+  }
+
+  private getDateTimeFromSeance(dateValue: string | any, timeValue: string | any): Date | null {
+    const dateParts = this.extractDateParts(dateValue);
+    const timeParts = this.extractTimeParts(timeValue);
+
+    if (!dateParts || !timeParts) {
+      return null;
+    }
+
+    return new Date(
+      dateParts.year,
+      dateParts.month - 1,
+      dateParts.day,
+      timeParts.hours,
+      timeParts.minutes,
+      timeParts.seconds,
+      0,
+    );
+  }
+
+  private extractDateParts(
+    dateValue: string | any,
+  ): { year: number; month: number; day: number } | null {
+    if (!dateValue) {
+      return null;
+    }
+
+    if (typeof dateValue === 'string') {
+      const [year, month, day] = dateValue.split('-').map((part) => Number(part));
+      if (year && month && day) {
+        return { year, month, day };
+      }
+    }
+
+    if (Array.isArray(dateValue) && dateValue.length >= 3) {
+      return { year: Number(dateValue[0]), month: Number(dateValue[1]), day: Number(dateValue[2]) };
+    }
+
+    return null;
+  }
+
+  private extractTimeParts(
+    timeValue: string | any,
+  ): { hours: number; minutes: number; seconds: number } | null {
+    if (!timeValue) {
+      return null;
+    }
+
+    if (typeof timeValue === 'string') {
+      const [hours, minutes, seconds = 0] = timeValue.split(':').map((part) => Number(part));
+      if (Number.isFinite(hours) && Number.isFinite(minutes)) {
+        return { hours, minutes, seconds: Number(seconds) || 0 };
+      }
+    }
+
+    if (Array.isArray(timeValue) && timeValue.length >= 2) {
+      return {
+        hours: Number(timeValue[0]),
+        minutes: Number(timeValue[1]),
+        seconds: Number(timeValue[2]) || 0,
+      };
+    }
+
+    return null;
   }
 
   private clearQrDisplay() {

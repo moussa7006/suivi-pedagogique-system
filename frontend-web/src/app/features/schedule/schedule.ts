@@ -8,12 +8,14 @@ import { MatiereService } from '../../core/services/matiere.service';
 import { TeacherService } from '../../core/services/teacher.service';
 import { SalleService } from '../../core/services/salle.service';
 import { AnneeUniversitaireService } from '../../core/services/annee-universitaire.service';
+import { FiliereService } from '../../core/services/filiere.service';
 import { EmploiDuTemps } from '../../core/models/schedule.model';
 import { Classe } from '../../core/models/classe.model';
 import { Matiere } from '../../core/models/matiere.model';
 import { Teacher } from '../../core/models/user.model';
 import { Salle } from '../../core/models/salle.model';
 import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model';
+import { Filiere } from '../../core/models/filiere.model';
 import { AlertDialogService } from '../../shared/alert-dialog/alert-dialog.service';
 
 @Component({
@@ -181,19 +183,30 @@ import { AlertDialogService } from '../../shared/alert-dialog/alert-dialog.servi
             <div class="section-grid">
               <div class="input-group">
                 <label>Classe</label>
-                <select [(ngModel)]="selectedClasseId">
-                  <option [value]="null" disabled>Sélectionnez une classe</option>
-                  <option *ngFor="let c of classes" [value]="c.id">
+                <select [(ngModel)]="selectedClasseId" (ngModelChange)="onClasseChange()">
+                  <option [ngValue]="null" disabled>Sélectionnez une classe</option>
+                  <option *ngFor="let c of classes" [ngValue]="c.id">
                     {{ c.libelle }}
                   </option>
                 </select>
               </div>
               <div class="input-group">
                 <label>Matière</label>
-                <select [(ngModel)]="selectedMatiereId">
-                  <option [value]="null" disabled>Sélectionnez une matière</option>
-                  <option *ngFor="let m of matieres" [value]="m.id">{{ m.libelle }}</option>
+                <select [(ngModel)]="selectedMatiereId" [disabled]="!selectedClasseId">
+                  <option [ngValue]="null" disabled>
+                    {{
+                      selectedClasseId
+                        ? 'Sélectionnez une matière'
+                        : 'Sélectionnez d’abord une classe'
+                    }}
+                  </option>
+                  <option *ngFor="let m of filteredMatieres" [ngValue]="m.id">
+                    {{ m.libelle }}
+                  </option>
                 </select>
+                <small class="field-hint" *ngIf="selectedClasseId && filteredMatieres.length === 0">
+                  Aucune matière liée à la classe sélectionnée.
+                </small>
               </div>
               <div class="input-group">
                 <label>Enseignant</label>
@@ -313,6 +326,7 @@ export class Schedule implements OnInit, OnDestroy {
   searchText: string = '';
   classes: Classe[] = [];
   matieres: Matiere[] = [];
+  filieres: Filiere[] = [];
   teachers: Teacher[] = [];
   salles: Salle[] = [];
   anneesUniversitaires: AnneeUniversitaire[] = [];
@@ -332,6 +346,7 @@ export class Schedule implements OnInit, OnDestroy {
     private scheduleService: ScheduleService,
     private classeService: ClasseService,
     private matiereService: MatiereService,
+    private filiereService: FiliereService,
     private teacherService: TeacherService,
     private salleService: SalleService,
     private anneeUniversitaireService: AnneeUniversitaireService,
@@ -369,6 +384,10 @@ export class Schedule implements OnInit, OnDestroy {
     });
     this.matiereService.getAll().subscribe((m) => {
       this.matieres = m;
+      this.cdr.detectChanges();
+    });
+    this.filiereService.getAll().subscribe((f) => {
+      this.filieres = f;
       this.cdr.detectChanges();
     });
     this.teacherService.getTeachers().subscribe((t) => {
@@ -426,6 +445,44 @@ export class Schedule implements OnInit, OnDestroy {
     if (!enseignantId || !this.teachers) return 'N/A';
     const t = this.teachers.find((teacher) => teacher && teacher.id === enseignantId);
     return t ? `${t.prenom || ''} ${t.nom || ''}` : 'N/A';
+  }
+
+  get filteredMatieres(): Matiere[] {
+    if (!this.selectedClasseId) {
+      return [];
+    }
+
+    const departementId = this.getSelectedClasseDepartementId();
+    if (!departementId) {
+      return [];
+    }
+
+    return this.matieres.filter((matiere) => matiere.departementId === departementId);
+  }
+
+  onClasseChange(): void {
+    if (
+      this.selectedMatiereId &&
+      !this.isMatiereCompatibleWithSelectedClasse(this.selectedMatiereId)
+    ) {
+      this.selectedMatiereId = null;
+    }
+  }
+
+  private isMatiereCompatibleWithSelectedClasse(matiereId: number): boolean {
+    return this.filteredMatieres.some((matiere) => matiere.id === Number(matiereId));
+  }
+
+  private getSelectedClasseDepartementId(): number | null {
+    const selectedClasse = this.classes.find(
+      (classe) => classe.id === Number(this.selectedClasseId),
+    );
+    if (!selectedClasse) {
+      return null;
+    }
+
+    const filiere = this.filieres.find((item) => item.id === selectedClasse.filiereId);
+    return filiere?.departementId || null;
   }
 
   getAnneeUniversitaireLibelle(anneeId: number | undefined): string {
