@@ -4,14 +4,9 @@ import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 import {
   IonContent,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonButton,
   IonIcon,
-  IonCard,
   IonBadge,
-  IonList,
   IonSegment,
   IonSegmentButton,
   IonLabel,
@@ -27,10 +22,27 @@ import {
   arrowDownOutline,
   arrowBackOutline,
 } from "ionicons/icons";
+import { forkJoin } from "rxjs";
 import { ScheduleService } from "../core/services/schedule.service";
 import { EmargementService } from "../core/services/emargement.service";
+import { FicheProgressionService } from "../core/services/fiche-progression.service";
+import { MatiereService } from "../core/services/matiere.service";
 import { Seance } from "../core/models/seance.model";
 import { Emargement as EmargementModel } from "../core/models/attendance.model";
+import { FicheProgression } from "../core/models/fiche-progression.model";
+import { Matiere } from "../core/models/matiere.model";
+
+interface HistoriqueItem {
+  id?: number;
+  matiere: string;
+  date: Date;
+  heure: string;
+  contenu: string;
+  status: "completed" | "in_progress" | "planned";
+  presents: number;
+  total: number;
+  duree: number;
+}
 
 @Component({
   selector: "app-historique",
@@ -41,35 +53,33 @@ import { Emargement as EmargementModel } from "../core/models/attendance.model";
     FormsModule,
     RouterLink,
     IonContent,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonButton,
     IonIcon,
-    IonCard,
     IonBadge,
-    IonList,
     IonSegment,
     IonSegmentButton,
     IonLabel,
   ],
 })
 export class HistoriquePage implements OnInit {
-  private scheduleService = inject(ScheduleService);
-  private emargementService = inject(EmargementService);
+  private readonly scheduleService = inject(ScheduleService);
+  private readonly emargementService = inject(EmargementService);
+  private readonly ficheProgressionService = inject(FicheProgressionService);
+  private readonly matiereService = inject(MatiereService);
 
   filterPeriod = "all";
-
   stats = {
     seancesCompletees: 0,
     moyennePresence: 0,
   };
 
-  seances: any[] = [];
-  seancesData: Seance[] = [];
-  emargementsData: EmargementModel[] = [];
+  seances: HistoriqueItem[] = [];
+  private seancesData: Seance[] = [];
+  private emargementsData: EmargementModel[] = [];
+  private fichesProgression: FicheProgression[] = [];
+  private matieres: Matiere[] = [];
 
-  get filteredSeances() {
+  get filteredSeances(): HistoriqueItem[] {
     if (this.filterPeriod === "all") {
       return this.seances;
     }
@@ -83,7 +93,7 @@ export class HistoriquePage implements OnInit {
       cutoff.setMonth(now.getMonth() - 1);
     }
 
-    return this.seances.filter((s) => new Date(s.date) >= cutoff);
+    return this.seances.filter((s) => s.date >= cutoff);
   }
 
   constructor() {
@@ -99,75 +109,127 @@ export class HistoriquePage implements OnInit {
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadHistorique();
   }
 
-  private loadHistorique() {
-    // Charger les séances
-    this.scheduleService.getSeances().subscribe({
-      next: (data) => {
-        this.seancesData = data;
+  filterByPeriod(): void {
+    // Filtrage géré par le getter filteredSeances.
+  }
+
+  private loadHistorique(): void {
+    forkJoin({
+      seances: this.scheduleService.getSeances(),
+      emargements: this.emargementService.getEmargements(),
+      fiches: this.ficheProgressionService.getFichesProgression(),
+      matieres: this.matiereService.getAll(),
+    }).subscribe({
+      next: ({ seances, emargements, fiches, matieres }) => {
+        this.seancesData = seances || [];
+        this.emargementsData = emargements || [];
+        this.fichesProgression = fiches || [];
+        this.matieres = matieres || [];
         this.buildHistorique();
       },
       error: () => {
         this.seancesData = [];
-        this.buildHistorique();
-      },
-    });
-
-    // Charger les émargements
-    this.emargementService.getEmargements().subscribe({
-      next: (data) => {
-        this.emargementsData = data;
-        this.buildHistorique();
-      },
-      error: () => {
         this.emargementsData = [];
+        this.fichesProgression = [];
+        this.matieres = [];
         this.buildHistorique();
       },
     });
   }
 
-  private buildHistorique() {
-    // Fusionner les données de séances avec les infos d'émargements
-    const now = new Date();
-    this.seances = this.seancesData.map((s) => {
-      const emargement = this.emargementsData.find((e) => e.id === s.emargementId);
+  private buildHistorique(): void {
+    this.seances = this.seancesData
+      .map((seance) => {
+        const fiche = this.findFicheForSeance(seance);
+        const emargement = this.findEmargementForSeance(seance);
 
-      return {
-        id: s.id,
-        matiere: `Séance #${s.id}`,
-        date: new Date(s.dateCours),
-        heure: `${s.heureDebutReelle} - ${s.heureFinReelle}`,
-        contenu: `Statut: ${s.statut}`,
-        status: s.statut === 'TERMINEE' ? 'completed' :
-                s.statut === 'EN_COURS' ? 'in_progress' : 'planned',
-        presents: emargement ? 1 : 0,
-        total: 1,
-        duree: this.calculerDureeMinutes(s.heureDebutReelle, s.heureFinReelle),
-      };
-    });
+        return {
+          id: seance.id,
+          matiere:
+            fiche?.matiereLibelle ||
+            this.getMatiereLabelFromFiche(fiche) ||
+            `Séance #${seance.id}`,
+          date: this.parseDate(seance.dateCours),
+          heure: `${this.formatTime(seance.heureDebutReelle)} - ${this.formatTime(seance.heureFinReelle)}`,
+          contenu:
+            fiche?.contenuDetaille || `Statut de la séance : ${seance.statut}`,
+          status: this.mapStatus(seance.statut),
+          presents: emargement ? 1 : 0,
+          total: 1,
+          duree: this.calculerDureeMinutes(
+            seance.heureDebutReelle,
+            seance.heureFinReelle,
+          ),
+        };
+      })
+      .sort((a, b) => b.date.getTime() - a.date.getTime());
 
     this.stats.seancesCompletees = this.seances.filter(
-      (s) => s.status === 'completed'
+      (s) => s.status === "completed",
     ).length;
-    this.stats.moyennePresence = this.seances.length > 0
-      ? Math.round(
-          (this.seances.reduce((acc, s) => acc + s.presents, 0) /
-            this.seances.reduce((acc, s) => acc + s.total, 0)) *
-            100
-        )
-      : 0;
+    const total = this.seances.reduce((acc, s) => acc + s.total, 0);
+    const presents = this.seances.reduce((acc, s) => acc + s.presents, 0);
+    this.stats.moyennePresence =
+      total > 0 ? Math.round((presents / total) * 100) : 0;
+  }
+
+  private findFicheForSeance(seance: Seance): FicheProgression | undefined {
+    return this.fichesProgression.find(
+      (fiche) =>
+        fiche.seanceId === seance.id || fiche.id === seance.ficheProgressionId,
+    );
+  }
+
+  private findEmargementForSeance(seance: Seance): EmargementModel | undefined {
+    return this.emargementsData.find(
+      (emargement) => emargement.id === seance.emargementId,
+    );
+  }
+
+  private getMatiereLabelFromFiche(fiche?: FicheProgression): string {
+    if (!fiche?.matiereLibelle) {
+      return "";
+    }
+
+    const matiere = this.matieres.find(
+      (item) => item.libelle === fiche.matiereLibelle,
+    );
+    return matiere?.libelle || fiche.matiereLibelle;
+  }
+
+  private mapStatus(statut: string): "completed" | "in_progress" | "planned" {
+    if (statut === "TERMINEE") return "completed";
+    if (statut === "EN_COURS") return "in_progress";
+    return "planned";
   }
 
   private calculerDureeMinutes(debut: string, fin: string): number {
-    const [h1, m1] = debut.split(':').map(Number);
-    const [h2, m2] = fin.split(':').map(Number);
-    return (h2 * 60 + m2) - (h1 * 60 + m1);
+    const start = this.toMinutes(debut);
+    const end = this.toMinutes(fin);
+    return start !== null && end !== null && end > start ? end - start : 0;
   }
 
-  filterByPeriod() {
-    // Filtrage déjà géré par le getter filteredSeances
+  private toMinutes(value?: string): number | null {
+    if (!value) return null;
+    const [hours, minutes] = value.split(":").map(Number);
+    return Number.isFinite(hours) && Number.isFinite(minutes)
+      ? hours * 60 + minutes
+      : null;
+  }
+
+  private parseDate(value?: string): Date {
+    if (!value) return new Date();
+    const [year, month, day] = value.split("-").map(Number);
+    return year && month && day
+      ? new Date(year, month - 1, day)
+      : new Date(value);
+  }
+
+  private formatTime(value?: string): string {
+    return value ? value.substring(0, 5) : "--:--";
   }
 }
