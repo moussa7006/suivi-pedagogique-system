@@ -1,5 +1,5 @@
 import { Component, inject } from "@angular/core";
-import { Router, RouterLink } from "@angular/router";
+import { Router } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import {
   FormsModule,
@@ -10,21 +10,11 @@ import {
 } from "@angular/forms";
 import {
   IonContent,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonItem,
-  IonLabel,
   IonInput,
   IonButton,
   IonIcon,
-  IonText,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
   IonSpinner,
-  ToastController,
 } from "@ionic/angular/standalone";
 import { addIcons } from "ionicons";
 import {
@@ -48,23 +38,13 @@ import { finalize } from "rxjs";
   styleUrls: ["login.page.scss"],
   imports: [
     CommonModule,
-    RouterLink,
     FormsModule,
     ReactiveFormsModule,
     IonContent,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonItem,
-    IonLabel,
     IonInput,
     IonButton,
     IonIcon,
-    IonText,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardContent,
     IonSpinner,
   ],
 })
@@ -93,14 +73,7 @@ export class LoginPage {
 
     this.loginForm = this.fb.group({
       email: ["", [Validators.required, Validators.email]],
-      password: [
-        "",
-        [
-          Validators.required,
-          Validators.minLength(14),
-          Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{14,}$/),
-        ],
-      ],
+      password: ["", [Validators.required]],
     });
   }
 
