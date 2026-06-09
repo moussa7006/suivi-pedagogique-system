@@ -9,6 +9,7 @@ import com.suiviPedagogique.edutrack.repositories.EmargementRepository;
 import com.suiviPedagogique.edutrack.repositories.SeanceRepository;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -32,9 +33,17 @@ public class EmargementService {
     @Autowired
     private UtilisateurRepository utilisateurRepository;
 
-    private static final double ECOLE_LAT = 12.6392; // Bamako, Mali
-    private static final double ECOLE_LON = -8.0029;
-    private static final double MAX_DISTANCE_KM = 0.5;
+    @Value("${emargement.geolocation.enabled:false}")
+    private boolean geolocationEnabled;
+
+    @Value("${emargement.geolocation.school-latitude:12.6392}")
+    private double ecoleLat;
+
+    @Value("${emargement.geolocation.school-longitude:-8.0029}")
+    private double ecoleLon;
+
+    @Value("${emargement.geolocation.max-distance-km:0.5}")
+    private double maxDistanceKm;
 
     public Emargement faireEmargement(EmargementRequest request) {
         Seance seance = seanceRepository.findByTokenQRCode(request.getTokenQRCode())
@@ -66,12 +75,18 @@ public class EmargementService {
             throw new RuntimeException("L'émargement doit se faire pendant les heures de la séance.");
         }
 
-        double enseignantLat = request.getLatitude() != null ? request.getLatitude().doubleValue() : 0.0;
-        double enseignantLon = request.getLongitude() != null ? request.getLongitude().doubleValue() : 0.0;
+        if (geolocationEnabled) {
+            if (request.getLatitude() == null || request.getLongitude() == null) {
+                throw new RuntimeException("Position GPS manquante. Activez la localisation et autorisez l'application.");
+            }
 
-        double distance = calculateDistanceInKilometers(enseignantLat, enseignantLon, ECOLE_LAT, ECOLE_LON);
-        if (distance > MAX_DISTANCE_KM) {
-            throw new RuntimeException("Échec de la géolocalisation. Vous êtes trop loin de l'école (" + Math.round(distance * 1000) + "m).");
+            double enseignantLat = request.getLatitude().doubleValue();
+            double enseignantLon = request.getLongitude().doubleValue();
+            double distance = calculateDistanceInKilometers(enseignantLat, enseignantLon, ecoleLat, ecoleLon);
+
+            if (distance > maxDistanceKm) {
+                throw new RuntimeException("Échec de la géolocalisation. Vous êtes trop loin de l'école (" + Math.round(distance * 1000) + "m, maximum autorisé: " + Math.round(maxDistanceKm * 1000) + "m).");
+            }
         }
 
         Emargement emargement = seance.getEmargement();

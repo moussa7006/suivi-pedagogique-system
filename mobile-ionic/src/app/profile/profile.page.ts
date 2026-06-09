@@ -1,29 +1,13 @@
 import { Component, inject, OnInit, NgZone } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { Router, RouterLink } from "@angular/router";
-import { SeanceService } from "../seance.service";
+import { RouterLink } from "@angular/router";
 import {
   IonContent,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonButton,
   IonIcon,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  IonItem,
-  IonLabel,
   IonAvatar,
-  IonBadge,
-  IonList,
-  IonProgressBar,
-  IonSelect,
-  IonSelectOption,
   IonModal,
   IonInput,
-  IonButtons,
   ToastController,
 } from "@ionic/angular/standalone";
 import { addIcons } from "ionicons";
@@ -55,10 +39,8 @@ import {
   trashOutline,
 } from "ionicons/icons";
 
-import {
-  AlertController,
-  ActionSheetController,
-} from "@ionic/angular/standalone";
+import { ActionSheetController } from "@ionic/angular/standalone";
+import { Preferences } from "@capacitor/preferences";
 import { AuthService } from "../core/services/auth.service";
 import { ScheduleService } from "../core/services/schedule.service";
 import { finalize } from "rxjs";
@@ -71,37 +53,20 @@ import { finalize } from "rxjs";
     CommonModule,
     RouterLink,
     IonContent,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonButton,
     IonIcon,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardContent,
-    IonItem,
-    IonLabel,
     IonAvatar,
-    IonBadge,
-    IonList,
-    IonProgressBar,
-    IonSelect,
-    IonSelectOption,
     IonModal,
     IonInput,
-    IonButtons,
   ],
 })
 export class ProfilePage implements OnInit {
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
-  private seanceService = inject(SeanceService);
-  private alertController = inject(AlertController);
   private actionSheetController = inject(ActionSheetController);
   private toastController = inject(ToastController);
-  private router = inject(Router);
   private ngZone = inject(NgZone);
+  private readonly profilePhotoKey = "profile_photo";
 
   isPasswordModalOpen = false;
   showOldPassword = false;
@@ -167,11 +132,11 @@ export class ProfilePage implements OnInit {
   }
 
   ngOnInit() {
-    this.loadUserProfile();
+    void this.loadUserProfile();
   }
 
-  private loadUserProfile() {
-    const user = this.authService.getUser();
+  private async loadUserProfile(): Promise<void> {
+    const user = await this.authService.getUser();
     if (user) {
       this.teacher = {
         ...this.teacher,
@@ -185,7 +150,7 @@ export class ProfilePage implements OnInit {
         avatar: `https://i.pravatar.cc/150?u=${user.email || user.id || "default"}`,
       };
       // Charger la photo sauvegardée si elle existe
-      this.loadPhotoFromStorage();
+      await this.loadPhotoFromStorage();
     }
 
     // Charger les statistiques depuis l'API des séances
@@ -287,7 +252,7 @@ export class ProfilePage implements OnInit {
           icon: "trash-outline",
           handler: () => {
             this.teacher.avatar = "";
-            this.savePhotoToStorage("");
+            void this.savePhotoToStorage("");
           },
           role: "destructive",
         },
@@ -319,7 +284,7 @@ export class ProfilePage implements OnInit {
       if (image.dataUrl) {
         this.ngZone.run(() => {
           this.teacher.avatar = image.dataUrl!;
-          this.savePhotoToStorage(image.dataUrl!);
+          void this.savePhotoToStorage(image.dataUrl!);
         });
       }
     } catch (error: any) {
@@ -342,11 +307,17 @@ export class ProfilePage implements OnInit {
     }
   }
 
-  private savePhotoToStorage(dataUrl: string) {
+  private async savePhotoToStorage(dataUrl: string): Promise<void> {
     try {
-      localStorage.setItem("profile_photo", dataUrl);
-    } catch (e) {
-      console.warn("Impossible de sauvegarder la photo dans le stockage local");
+      if (dataUrl) {
+        await Preferences.set({ key: this.profilePhotoKey, value: dataUrl });
+      } else {
+        await Preferences.remove({ key: this.profilePhotoKey });
+      }
+    } catch {
+      console.warn(
+        "Impossible de sauvegarder la photo dans le stockage mobile",
+      );
     }
   }
 
@@ -360,13 +331,13 @@ export class ProfilePage implements OnInit {
     await toast.present();
   }
 
-  private loadPhotoFromStorage() {
+  private async loadPhotoFromStorage(): Promise<void> {
     try {
-      const saved = localStorage.getItem("profile_photo");
-      if (saved) {
-        this.teacher.avatar = saved;
+      const saved = await Preferences.get({ key: this.profilePhotoKey });
+      if (saved.value) {
+        this.teacher.avatar = saved.value;
       }
-    } catch (e) {
+    } catch {
       // Ignorer
     }
   }
@@ -382,6 +353,6 @@ export class ProfilePage implements OnInit {
   }
 
   logout() {
-    this.authService.logout();
+    void this.authService.logout();
   }
 }

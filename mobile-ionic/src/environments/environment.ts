@@ -1,17 +1,7 @@
-// This file can be replaced during build by using the `fileReplacements` array.
-// `ng build` replaces `environment.ts` with `environment.prod.ts`.
-// The list of file replacements can be found in `angular.json`.
-
+// En développement navigateur, localhost pointe vers la machine qui lance Ionic.
+// Sur émulateur Android, utilisez plutôt http://10.0.2.2:8099/api.
+// Sur téléphone réel, remplacez par l'IP locale du PC backend, ex: http://192.168.1.15:8099/api.
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:8099/api'
+  apiBaseUrl: "http://localhost:8099/api",
 };
-
-/*
- * For easier debugging in development mode, you can import the following file
- * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
- *
- * This import should be commented out in production mode because it will have a negative impact
- * on performance if an error is thrown.
- */
-// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.

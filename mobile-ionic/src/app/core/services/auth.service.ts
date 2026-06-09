@@ -1,7 +1,8 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
-import { Observable, tap } from "rxjs";
+import { Preferences } from "@capacitor/preferences";
+import { Observable, from, map, switchMap } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { LoginRequest, LoginResponse } from "../models/auth.models";
 import { TokenStorageService } from "./token-storage.service";
@@ -12,59 +13,67 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly tokenStorage = inject(TokenStorageService);
   private readonly authApiUrl = `${environment.apiBaseUrl}/auth`;
+  private readonly userKey = "auth_user";
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${this.authApiUrl}/login`, credentials)
       .pipe(
-        tap((response) => {
-          this.tokenStorage.setToken(response.token);
-          this.setUser(response);
-        }),
+        switchMap((response) =>
+          from(
+            Promise.all([
+              this.tokenStorage.setToken(response.token),
+              this.setUser(response),
+            ]),
+          ).pipe(map(() => response)),
+        ),
       );
   }
 
   changePassword(newPassword: string): Observable<any> {
-    return this.http.post(`${this.authApiUrl}/change-password`, { newPassword });
+    return this.http.post(`${this.authApiUrl}/change-password`, {
+      newPassword,
+    });
   }
 
-  isAuthenticated(): boolean {
-    return !!this.tokenStorage.getToken();
+  async isAuthenticated(): Promise<boolean> {
+    return !!(await this.tokenStorage.getToken());
   }
 
-  // Gestion du token
-  setToken(token: string): void {
-    this.tokenStorage.setToken(token);
+  async setToken(token: string): Promise<void> {
+    await this.tokenStorage.setToken(token);
   }
 
-  getToken(): string | null {
+  getToken(): Promise<string | null> {
     return this.tokenStorage.getToken();
   }
 
-  // Gestion de l'utilisateur
-  setUser(user: any): void {
-    localStorage.setItem('user', JSON.stringify(user));
+  async setUser(user: any): Promise<void> {
+    await Preferences.set({ key: this.userKey, value: JSON.stringify(user) });
   }
 
-  getUser(): any {
-    const user = localStorage.getItem('user');
-    if (user) {
-      try {
-        return JSON.parse(user);
-      } catch {
-        return null;
-      }
+  async getUser(): Promise<any | null> {
+    const result = await Preferences.get({ key: this.userKey });
+    if (!result.value) {
+      return null;
     }
-    return null;
+
+    try {
+      return JSON.parse(result.value);
+    } catch {
+      return null;
+    }
   }
 
-  isLoggedIn(): boolean {
-    return !!this.getToken();
+  isLoggedIn(): Promise<boolean> {
+    return this.isAuthenticated();
   }
 
-  logout(): void {
-    this.tokenStorage.clearToken();
-    localStorage.removeItem('user');
-    void this.router.navigate(['/login']);
+  async logout(): Promise<void> {
+    await Promise.all([
+      this.tokenStorage.clearToken(),
+      Preferences.remove({ key: this.userKey }),
+    ]);
+    void this.router.navigate(["/login"]);
   }
 }

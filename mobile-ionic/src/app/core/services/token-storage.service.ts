@@ -1,18 +1,20 @@
 import { Injectable } from "@angular/core";
+import { Preferences } from "@capacitor/preferences";
 
 @Injectable({ providedIn: "root" })
 export class TokenStorageService {
   private readonly tokenKey = "auth_token";
 
-  getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+  async getToken(): Promise<string | null> {
+    const result = await Preferences.get({ key: this.tokenKey });
+    return result.value;
   }
 
-  setToken(token: string): void {
-    localStorage.setItem(this.tokenKey, token);
+  async setToken(token: string): Promise<void> {
+    await Preferences.set({ key: this.tokenKey, value: token });
   }
 
-  clearToken(): void {
-    localStorage.removeItem(this.tokenKey);
+  async clearToken(): Promise<void> {
+    await Preferences.remove({ key: this.tokenKey });
   }
 }
