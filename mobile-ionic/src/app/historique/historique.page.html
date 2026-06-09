@@ -70,9 +70,10 @@
               {{ seance.date | date:'EEEE d MMMM y' }}
             </div>
             <ion-badge
-              [class]="seance.status === 'completed' ? 'badge-success' : 'badge-warning'"
+              [class]="seance.status === 'completed' ? 'badge-success' : seance.status === 'in_progress' ? 'badge-warning' : 'badge-info'"
             >
-              {{ seance.status === 'completed' ? 'Terminée' : 'En cours' }}
+              {{ seance.status === 'completed' ? 'Terminée' : seance.status ===
+              'in_progress' ? 'En cours' : 'Prévue' }}
             </ion-badge>
           </div>
           <div class="timeline-body">

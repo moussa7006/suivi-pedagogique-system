@@ -1,6 +1,6 @@
-import { Component, inject, OnInit, OnDestroy } from "@angular/core";
+import { Component, inject, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
-import { Subscription } from "rxjs";
+import { forkJoin } from "rxjs";
 import {
   IonContent,
   IonButton,
@@ -30,9 +30,10 @@ import {
   trendingUpOutline,
 } from "ionicons/icons";
 import { AuthService } from "../core/services/auth.service";
-import { EnseignantApiService } from "../core/services/enseignant-api.service";
-import { SeanceDto } from "../core/models/enseignant.models";
-import { SeanceService } from "../seance.service";
+import { ScheduleService } from "../core/services/schedule.service";
+import { FicheProgressionService } from "../core/services/fiche-progression.service";
+import { FicheProgression } from "../core/models/fiche-progression.model";
+import { Seance } from "../core/models/seance.model";
 import { CommonModule } from "@angular/common";
 
 @Component({
@@ -41,14 +42,12 @@ import { CommonModule } from "@angular/common";
   styleUrls: ["tab1.page.scss"],
   imports: [CommonModule, IonContent, IonButton, IonIcon, IonBadge],
 })
-export class Tab1Page implements OnInit, OnDestroy {
+export class Tab1Page implements OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
-  private seanceService = inject(SeanceService); // Keeping it for cahierFait if needed
-  private apiService = inject(EnseignantApiService);
+  private scheduleService = inject(ScheduleService);
+  private ficheProgressionService = inject(FicheProgressionService);
   private alertController = inject(AlertController);
-
-  private sub: Subscription | null = null;
 
   isCahierFait = false;
 
@@ -101,25 +100,15 @@ export class Tab1Page implements OnInit, OnDestroy {
       checkmarkCircleOutline,
       trendingUpOutline,
     });
-
-    this.loadUser();
   }
 
   ngOnInit() {
-    this.sub = this.seanceService.isCahierFait$.subscribe((status) => {
-      this.isCahierFait = status;
-      this.updateNotifications();
-    });
-
+    void this.loadUser();
     this.loadRealData();
   }
 
-  ngOnDestroy() {
-    if (this.sub) this.sub.unsubscribe();
-  }
-
-  private loadUser(): void {
-    const user = this.authService.getUser();
+  private async loadUser(): Promise<void> {
+    const user = await this.authService.getUser();
     if (user) {
       this.teacher = {
         firstName: user.prenom || "Enseignant",
@@ -133,29 +122,89 @@ export class Tab1Page implements OnInit, OnDestroy {
   }
 
   private loadRealData() {
-    this.apiService.getSeances().subscribe({
-      next: (seances: SeanceDto[]) => {
+    forkJoin({
+      seances: this.scheduleService.getSeances(),
+      fiches: this.ficheProgressionService.getFichesProgression(),
+    }).subscribe({
+      next: ({ seances, fiches }) => {
         this.totalSeances = seances.length;
-        this.completedSeances = seances.filter((s: SeanceDto) => s.statut === 'EFFECTUEE').length;
-        this.completionRate = this.totalSeances > 0 ? Math.round((this.completedSeances / this.totalSeances) * 100) : 0;
-        
+        this.completedSeances = seances.filter(
+          (s: Seance) => s.statut === "TERMINEE",
+        ).length;
+        this.completionRate =
+          this.totalSeances > 0
+            ? Math.round((this.completedSeances / this.totalSeances) * 100)
+            : 0;
+        this.isCahierFait = this.hasCurrentSeanceCahier(seances, fiches);
+
         let totalMins = 0;
-        seances.forEach((s: SeanceDto) => {
+        seances.forEach((s: Seance) => {
           if (s.heureDebutReelle && s.heureFinReelle) {
-            const debutParts = s.heureDebutReelle.split(':');
-            const finParts = s.heureFinReelle.split(':');
-            const debutMins = parseInt(debutParts[0]) * 60 + parseInt(debutParts[1]);
-            const finMins = parseInt(finParts[0]) * 60 + parseInt(finParts[1]);
-            totalMins += (finMins - debutMins);
+            const debutParts = s.heureDebutReelle.split(":");
+            const finParts = s.heureFinReelle.split(":");
+            const debutMins =
+              parseInt(debutParts[0], 10) * 60 + parseInt(debutParts[1], 10);
+            const finMins =
+              parseInt(finParts[0], 10) * 60 + parseInt(finParts[1], 10);
+            totalMins += finMins - debutMins;
           }
         });
         this.totalHeures = Math.round(totalMins / 60);
         this.updateNotifications();
       },
       error: (err: any) => {
-        console.error('Erreur lors du chargement des séances', err);
-      }
+        console.error("Erreur lors du chargement des séances", err);
+      },
     });
+  }
+
+  private hasCurrentSeanceCahier(
+    seances: Seance[],
+    fiches: FicheProgression[],
+  ): boolean {
+    const now = new Date();
+    const currentOrNextSeance =
+      seances.find((seance) => {
+        const start = this.combineDateAndTime(
+          seance.dateCours,
+          seance.heureDebutReelle,
+        );
+        const end = this.combineDateAndTime(
+          seance.dateCours,
+          seance.heureFinReelle,
+        );
+        return start && end && now >= start && now <= end;
+      }) ||
+      seances.find(
+        (seance) => seance.statut === "PREVUE" || seance.statut === "EN_COURS",
+      );
+
+    if (!currentOrNextSeance?.id) {
+      return fiches.length > 0;
+    }
+
+    return (
+      !!currentOrNextSeance.ficheProgressionId ||
+      fiches.some((fiche) => fiche.seanceId === currentOrNextSeance.id)
+    );
+  }
+
+  private combineDateAndTime(
+    dateValue?: string,
+    timeValue?: string,
+  ): Date | null {
+    if (!dateValue || !timeValue) return null;
+    const [year, month, day] = dateValue.split("-").map(Number);
+    const [hours, minutes] = timeValue.split(":").map(Number);
+    if (
+      !year ||
+      !month ||
+      !day ||
+      !Number.isFinite(hours) ||
+      !Number.isFinite(minutes)
+    )
+      return null;
+    return new Date(year, month - 1, day, hours, minutes, 0, 0);
   }
 
   private getInitials(firstName: string, lastName: string): string {

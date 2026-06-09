@@ -1,9 +1,6 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { RouterLink } from "@angular/router";
-import { SeanceService } from "../seance.service";
 import {
-  FormsModule,
   ReactiveFormsModule,
   FormBuilder,
   FormGroup,
@@ -11,51 +8,35 @@ import {
 } from "@angular/forms";
 import {
   IonContent,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonButton,
   IonIcon,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  IonItem,
-  IonLabel,
   IonInput,
   IonTextarea,
   IonSelect,
   IonSelectOption,
-  IonList,
   IonBadge,
   IonSpinner,
+  ToastController,
 } from "@ionic/angular/standalone";
 import { addIcons } from "ionicons";
 import {
   documentTextOutline,
-  addCircleOutline,
   calendarOutline,
   bookOutline,
   timeOutline,
   checkmarkCircleOutline,
-  alertCircleOutline,
-  pencilOutline,
-  listCircleOutline,
-  eyeOutline,
   createOutline,
-  saveOutline,
-  closeCircleOutline,
-  checkmarkDoneOutline,
-  arrowBackOutline,
-  addOutline,
-  closeOutline,
   arrowForwardOutline,
   listOutline,
-  time,
+  closeOutline,
+  addOutline,
+  checkmarkDoneOutline,
 } from "ionicons/icons";
+import { forkJoin, finalize } from "rxjs";
 import { FicheProgressionService } from "../core/services/fiche-progression.service";
+import { ScheduleService } from "../core/services/schedule.service";
 import { FicheProgression } from "../core/models/fiche-progression.model";
-import { finalize } from "rxjs";
+import { Seance } from "../core/models/seance.model";
 
 @Component({
   selector: "app-cahier-textes",
@@ -64,77 +45,57 @@ import { finalize } from "rxjs";
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    RouterLink,
     ReactiveFormsModule,
     IonContent,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonButton,
     IonIcon,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardContent,
-    IonItem,
-    IonLabel,
     IonInput,
     IonTextarea,
     IonSelect,
     IonSelectOption,
-    IonList,
     IonBadge,
     IonSpinner,
   ],
 })
 export class CahierTextesPage implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly ficheProgressionService = inject(FicheProgressionService);
+  private readonly scheduleService = inject(ScheduleService);
+  private readonly toastController = inject(ToastController);
+
   seanceForm: FormGroup;
   isSubmitting = false;
+  isLoading = false;
   showForm = false;
-  private seanceService = inject(SeanceService);
-  private ficheProgressionService = inject(FicheProgressionService);
   totalHeures = 0;
-
   fichesProgression: FicheProgression[] = [];
-
-  private fb = inject(FormBuilder);
+  seancesDisponibles: Seance[] = [];
 
   constructor() {
-    this.totalHeures = this.seanceService.totalHeures;
     addIcons({
       documentTextOutline,
-      addCircleOutline,
       calendarOutline,
       bookOutline,
       timeOutline,
       checkmarkCircleOutline,
-      alertCircleOutline,
-      pencilOutline,
-      listCircleOutline,
-      eyeOutline,
       createOutline,
-      saveOutline,
-      closeCircleOutline,
-      checkmarkDoneOutline,
-      arrowBackOutline,
-      addOutline,
-      closeOutline,
       arrowForwardOutline,
       listOutline,
-      time,
+      closeOutline,
+      addOutline,
+      checkmarkDoneOutline,
     });
 
     this.seanceForm = this.fb.group({
-      matiere: ["", Validators.required],
-      date: ["", Validators.required],
-      heure: ["08:00 - 10:00"],
+      seanceId: [null, Validators.required],
       contenu: ["", [Validators.required, Validators.minLength(20)]],
+      objectifs: ["", [Validators.required, Validators.minLength(5)]],
+      travaux: [""],
     });
   }
 
-  ngOnInit() {
-    this.loadFichesProgression();
+  ngOnInit(): void {
+    this.loadData();
   }
 
   get getValidatedCount(): number {
@@ -148,59 +109,130 @@ export class CahierTextesPage implements OnInit {
   get seances() {
     return this.fichesProgression.map((f) => ({
       id: f.id,
-      matiere: f.matiereLibelle,
-      date: f.dateSeance,
-      heure: f.heureSeance,
+      matiere: f.matiereLibelle || f.objectifs || "Séance",
+      date: f.dateSeance || f.dateSaisie,
+      heure: f.heureSeance || "Horaire non précisé",
       contenu: f.contenuDetaille,
       status: f.estValideAdmin ? "Validé" : "En attente",
     }));
   }
 
-  private loadFichesProgression() {
-    this.ficheProgressionService.getFichesProgression().subscribe({
-      next: (data) => {
-        this.fichesProgression = data;
-      },
-      error: () => {
-        this.fichesProgression = [];
-      },
-    });
+  get selectedSeanceLabel(): string {
+    const seance = this.seancesDisponibles.find(
+      (item) => item.id === Number(this.seanceForm.value.seanceId),
+    );
+    return seance ? this.formatSeanceLabel(seance) : "";
   }
 
-  onSubmit() {
+  loadData(): void {
+    this.isLoading = true;
+    forkJoin({
+      fiches: this.ficheProgressionService.getFichesProgression(),
+      seances: this.scheduleService.getSeances(),
+    })
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: ({ fiches, seances }) => {
+          this.fichesProgression = fiches || [];
+          this.seancesDisponibles = (seances || []).filter(
+            (seance) => !this.hasFicheProgression(seance),
+          );
+          this.totalHeures = this.fichesProgression.reduce(
+            (total, fiche) =>
+              total + this.extractDurationHours(fiche.heureSeance),
+            0,
+          );
+        },
+        error: () =>
+          this.presentToast("Impossible de charger les séances.", "danger"),
+      });
+  }
+
+  onSubmit(): void {
     if (this.seanceForm.invalid) {
       this.seanceForm.markAllAsTouched();
       return;
     }
 
-    this.isSubmitting = true;
-
-    // Pour l'exemple, on utilise un seanceId fictif (1)
-    // Idéalement, on devrait sélectionner une séance depuis l'API
+    const seanceId = Number(this.seanceForm.value.seanceId);
     const payload = {
-      dateSaisie: this.seanceForm.value.date,
+      dateSaisie: new Date().toISOString().slice(0, 10),
       contenuDetaille: this.seanceForm.value.contenu,
-      objectifs: this.seanceForm.value.matiere,
-      travaux: "",
+      objectifs: this.seanceForm.value.objectifs,
+      travaux: this.seanceForm.value.travaux || "",
     };
 
+    this.isSubmitting = true;
     this.ficheProgressionService
-      .createFicheProgression(1, payload)
+      .createFicheProgression(seanceId, payload)
       .pipe(finalize(() => (this.isSubmitting = false)))
       .subscribe({
-        next: (fiche) => {
-          this.fichesProgression.unshift(fiche);
-          this.seanceService.setTableauFait(true);
+        next: async () => {
+          await this.presentToast("Cahier de textes enregistré.", "success");
           this.seanceForm.reset();
           this.showForm = false;
+          this.loadData();
         },
-        error: () => {
-          // En cas d'erreur, on garde les données mockées comme fallback
-          this.seanceService.setTableauFait(true);
-          this.isSubmitting = false;
-          this.seanceForm.reset();
-          this.showForm = false;
+        error: (error) => {
+          const message =
+            typeof error?.error === "string"
+              ? error.error
+              : error?.error?.message ||
+                "Impossible d'enregistrer le cahier de textes.";
+          this.presentToast(message, "danger");
         },
       });
+  }
+
+  formatSeanceLabel(seance: Seance): string {
+    return `${seance.dateCours} • ${this.formatTime(seance.heureDebutReelle)} - ${this.formatTime(
+      seance.heureFinReelle,
+    )} • ${seance.statut}`;
+  }
+
+  private hasFicheProgression(seance: Seance): boolean {
+    return (
+      !!seance.ficheProgressionId ||
+      this.fichesProgression.some((fiche) => fiche.seanceId === seance.id)
+    );
+  }
+
+  private extractDurationHours(heureSeance?: string): number {
+    if (!heureSeance || !heureSeance.includes("-")) {
+      return 0;
+    }
+
+    const [start, end] = heureSeance.split("-").map((value) => value.trim());
+    const startMinutes = this.toMinutes(start);
+    const endMinutes = this.toMinutes(end);
+    return startMinutes !== null &&
+      endMinutes !== null &&
+      endMinutes > startMinutes
+      ? Math.round(((endMinutes - startMinutes) / 60) * 10) / 10
+      : 0;
+  }
+
+  private toMinutes(value: string): number | null {
+    const [hours, minutes] = value.split(":").map(Number);
+    return Number.isFinite(hours) && Number.isFinite(minutes)
+      ? hours * 60 + minutes
+      : null;
+  }
+
+  private formatTime(value?: string): string {
+    return value ? value.substring(0, 5) : "--:--";
+  }
+
+  private async presentToast(
+    message: string,
+    color: "success" | "danger" | "warning" = "success",
+  ) {
+    const toast = await this.toastController.create({
+      message,
+      color,
+      duration: 3000,
+      position: "top",
+    });
+    await toast.present();
   }
 }
