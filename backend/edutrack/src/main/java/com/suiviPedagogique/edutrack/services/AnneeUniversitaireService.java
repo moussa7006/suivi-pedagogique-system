@@ -36,6 +36,7 @@ public class AnneeUniversitaireService {
     public AnneeUniversitaireDto update(Integer id, AnneeUniversitaireDto dto) {
         AnneeUniversitaire annee = anneeUniversitaireRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Année universitaire non trouvée"));
+
         hydrate(annee, dto);
         return toDto(anneeUniversitaireRepository.save(annee));
     }

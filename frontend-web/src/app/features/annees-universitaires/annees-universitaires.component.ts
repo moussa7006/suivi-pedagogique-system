@@ -41,13 +41,28 @@ import { AnneeUniversitaireService } from '../../core/services/annee-universitai
           <div class="section-grid">
             <div class="input-group">
               <label>Libellé</label
-              ><input type="text" [(ngModel)]="currentAnnee.libelle" placeholder="Ex: 2025-2026" />
+              ><input
+                type="text"
+                [(ngModel)]="currentAnnee.libelle"
+                placeholder="Ex: 2025-2026"
+                readonly
+              />
             </div>
             <div class="input-group">
-              <label>Date début</label><input type="date" [(ngModel)]="currentAnnee.dateDebut" />
+              <label>Date début</label
+              ><input
+                type="date"
+                [(ngModel)]="currentAnnee.dateDebut"
+                (ngModelChange)="syncLibelleFromDates()"
+              />
             </div>
             <div class="input-group">
-              <label>Date fin</label><input type="date" [(ngModel)]="currentAnnee.dateFin" />
+              <label>Date fin</label
+              ><input
+                type="date"
+                [(ngModel)]="currentAnnee.dateFin"
+                (ngModelChange)="syncLibelleFromDates()"
+              />
             </div>
             <div class="input-group">
               <label>Statut</label>
@@ -189,14 +204,21 @@ export class AnneesUniversitairesComponent implements OnInit {
   }
 
   save(): void {
+    this.syncLibelleFromDates();
+
     const anneeToSave: AnneeUniversitaire = {
       libelle: (this.currentAnnee.libelle || '').trim(),
       dateDebut: this.currentAnnee.dateDebut || '',
       dateFin: this.currentAnnee.dateFin || '',
     };
 
-    if (!anneeToSave.libelle || !anneeToSave.dateDebut || !anneeToSave.dateFin) {
-      this.errorMessage = 'Veuillez renseigner le libellé, la date de début et la date de fin.';
+    if (!anneeToSave.dateDebut || !anneeToSave.dateFin) {
+      this.errorMessage = 'Veuillez renseigner la date de début et la date de fin.';
+      return;
+    }
+
+    if (!anneeToSave.libelle) {
+      this.errorMessage = 'Le libellé n’a pas pu être généré automatiquement à partir des dates.';
       return;
     }
 
@@ -224,6 +246,36 @@ export class AnneesUniversitairesComponent implements OnInit {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  syncLibelleFromDates(): void {
+    const generatedLibelle = this.generateLibelleFromDates(
+      this.currentAnnee.dateDebut,
+      this.currentAnnee.dateFin,
+    );
+
+    if (generatedLibelle) {
+      this.currentAnnee.libelle = generatedLibelle;
+    }
+  }
+
+  private generateLibelleFromDates(dateDebut?: string, dateFin?: string): string {
+    const anneeDebut = this.extractYear(dateDebut);
+    const anneeFin = this.extractYear(dateFin);
+
+    if (!anneeDebut || !anneeFin) {
+      return '';
+    }
+
+    return `${anneeDebut}-${anneeFin}`;
+  }
+
+  private extractYear(date?: string): string {
+    if (!date || date.length < 4) {
+      return '';
+    }
+
+    return date.substring(0, 4);
   }
 
   delete(id: number): void {

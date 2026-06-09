@@ -8,12 +8,14 @@ import { MatiereService } from '../../core/services/matiere.service';
 import { TeacherService } from '../../core/services/teacher.service';
 import { SalleService } from '../../core/services/salle.service';
 import { AnneeUniversitaireService } from '../../core/services/annee-universitaire.service';
+import { FiliereService } from '../../core/services/filiere.service';
 import { EmploiDuTemps } from '../../core/models/schedule.model';
 import { Classe } from '../../core/models/classe.model';
 import { Matiere } from '../../core/models/matiere.model';
 import { Teacher } from '../../core/models/user.model';
 import { Salle } from '../../core/models/salle.model';
 import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model';
+import { Filiere } from '../../core/models/filiere.model';
 import { NotificationService } from '../../shared/notification/notification.service';
 import { ConfirmationService } from '../../shared/confirmation/confirmation.service';
 
@@ -55,6 +57,11 @@ import { ConfirmationService } from '../../shared/confirmation/confirmation.serv
             <i class="pi pi-calendar-plus"></i> Nouvelle Planification
           </button>
         </div>
+      </div>
+
+      <div class="error-banner" *ngIf="errorMessage">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>{{ errorMessage }}</span>
       </div>
 
       <!-- ── Form Card ── -->
@@ -177,19 +184,30 @@ import { ConfirmationService } from '../../shared/confirmation/confirmation.serv
             <div class="section-grid">
               <div class="input-group">
                 <label>Classe</label>
-                <select [(ngModel)]="selectedClasseId">
-                  <option [value]="null" disabled>Sélectionnez une classe</option>
-                  <option *ngFor="let c of classes" [value]="c.id">
+                <select [(ngModel)]="selectedClasseId" (ngModelChange)="onClasseChange()">
+                  <option [ngValue]="null" disabled>Sélectionnez une classe</option>
+                  <option *ngFor="let c of classes" [ngValue]="c.id">
                     {{ c.libelle }}
                   </option>
                 </select>
               </div>
               <div class="input-group">
                 <label>Matière</label>
-                <select [(ngModel)]="selectedMatiereId">
-                  <option [value]="null" disabled>Sélectionnez une matière</option>
-                  <option *ngFor="let m of matieres" [value]="m.id">{{ m.libelle }}</option>
+                <select [(ngModel)]="selectedMatiereId" [disabled]="!selectedClasseId">
+                  <option [ngValue]="null" disabled>
+                    {{
+                      selectedClasseId
+                        ? 'Sélectionnez une matière'
+                        : 'Sélectionnez d’abord une classe'
+                    }}
+                  </option>
+                  <option *ngFor="let m of filteredMatieres" [ngValue]="m.id">
+                    {{ m.libelle }}
+                  </option>
                 </select>
+                <small class="field-hint" *ngIf="selectedClasseId && filteredMatieres.length === 0">
+                  Aucune matière liée à la classe sélectionnée.
+                </small>
               </div>
               <div class="input-group">
                 <label>Enseignant</label>
@@ -309,11 +327,13 @@ export class Schedule implements OnInit, OnDestroy {
   searchText: string = '';
   classes: Classe[] = [];
   matieres: Matiere[] = [];
+  filieres: Filiere[] = [];
   teachers: Teacher[] = [];
   salles: Salle[] = [];
   anneesUniversitaires: AnneeUniversitaire[] = [];
 
   displayForm: boolean = false;
+  errorMessage: string = '';
 
   currentSchedule: Partial<EmploiDuTemps> = {};
   selectedClasseId: number | null = null;
@@ -327,6 +347,7 @@ export class Schedule implements OnInit, OnDestroy {
     private scheduleService: ScheduleService,
     private classeService: ClasseService,
     private matiereService: MatiereService,
+    private filiereService: FiliereService,
     private teacherService: TeacherService,
     private salleService: SalleService,
     private anneeUniversitaireService: AnneeUniversitaireService,
@@ -365,6 +386,10 @@ export class Schedule implements OnInit, OnDestroy {
     });
     this.matiereService.getAll().subscribe((m) => {
       this.matieres = m;
+      this.cdr.detectChanges();
+    });
+    this.filiereService.getAll().subscribe((f) => {
+      this.filieres = f;
       this.cdr.detectChanges();
     });
     this.teacherService.getTeachers().subscribe((t) => {
@@ -424,6 +449,44 @@ export class Schedule implements OnInit, OnDestroy {
     return t ? `${t.prenom || ''} ${t.nom || ''}` : 'N/A';
   }
 
+  get filteredMatieres(): Matiere[] {
+    if (!this.selectedClasseId) {
+      return [];
+    }
+
+    const departementId = this.getSelectedClasseDepartementId();
+    if (!departementId) {
+      return [];
+    }
+
+    return this.matieres.filter((matiere) => matiere.departementId === departementId);
+  }
+
+  onClasseChange(): void {
+    if (
+      this.selectedMatiereId &&
+      !this.isMatiereCompatibleWithSelectedClasse(this.selectedMatiereId)
+    ) {
+      this.selectedMatiereId = null;
+    }
+  }
+
+  private isMatiereCompatibleWithSelectedClasse(matiereId: number): boolean {
+    return this.filteredMatieres.some((matiere) => matiere.id === Number(matiereId));
+  }
+
+  private getSelectedClasseDepartementId(): number | null {
+    const selectedClasse = this.classes.find(
+      (classe) => classe.id === Number(this.selectedClasseId),
+    );
+    if (!selectedClasse) {
+      return null;
+    }
+
+    const filiere = this.filieres.find((item) => item.id === selectedClasse.filiereId);
+    return filiere?.departementId || null;
+  }
+
   getAnneeUniversitaireLibelle(anneeId: number | undefined): string {
     if (!anneeId || !this.anneesUniversitaires) return '';
     const a = this.anneesUniversitaires.find((au) => au && au.id === anneeId);
@@ -431,6 +494,7 @@ export class Schedule implements OnInit, OnDestroy {
   }
 
   showAddForm() {
+    this.errorMessage = '';
     this.currentSchedule = { typeRecurrence: 'HEBDOMADAIRE', jourSemaine: 'LUNDI' };
     this.selectedClasseId = null;
     this.selectedMatiereId = null;
@@ -439,6 +503,8 @@ export class Schedule implements OnInit, OnDestroy {
   }
 
   save() {
+    this.errorMessage = '';
+
     if (
       !this.selectedClasseId ||
       !this.selectedMatiereId ||
@@ -446,12 +512,37 @@ export class Schedule implements OnInit, OnDestroy {
       !this.currentSchedule.salleId ||
       !this.currentSchedule.heureDebut ||
       !this.currentSchedule.heureFin
-    )
+    ) {
+      this.errorMessage =
+        'Veuillez renseigner la classe, la matière, l’enseignant, la salle et les horaires avant de planifier.';
+      this.cdr.detectChanges();
       return;
+    }
+
+    if (!this.currentSchedule.anneeUniversitaireId) {
+      this.errorMessage = 'Veuillez sélectionner une année universitaire avant de planifier.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (this.currentSchedule.heureDebut >= this.currentSchedule.heureFin) {
+      this.errorMessage = 'L’heure de début doit être antérieure à l’heure de fin.';
+      this.cdr.detectChanges();
+      return;
+    }
 
     if (this.currentSchedule.typeRecurrence === 'UNIQUE') {
+      if (!this.currentSchedule.dateSpecifique) {
+        this.errorMessage = 'Veuillez sélectionner la date spécifique de cette planification.';
+        this.cdr.detectChanges();
+        return;
+      }
       this.currentSchedule.dateDebutValidite = this.currentSchedule.dateSpecifique;
       this.currentSchedule.dateFinValidite = this.currentSchedule.dateSpecifique;
+    } else if (!this.currentSchedule.dateDebutValidite || !this.currentSchedule.dateFinValidite) {
+      this.errorMessage = 'Veuillez renseigner la période de validité de cette planification.';
+      this.cdr.detectChanges();
+      return;
     }
 
     const scheduleToSave: EmploiDuTemps = {
@@ -468,25 +559,26 @@ export class Schedule implements OnInit, OnDestroy {
       enseignantId: Number(this.selectedTeacherId),
       classeId: Number(this.selectedClasseId),
       matiereId: Number(this.selectedMatiereId),
-      anneeUniversitaireId: this.currentSchedule.anneeUniversitaireId
-        ? Number(this.currentSchedule.anneeUniversitaireId)
-        : 0,
+      anneeUniversitaireId: Number(this.currentSchedule.anneeUniversitaireId),
     };
 
     this.scheduleService.createSchedule(scheduleToSave).subscribe({
       next: () => {
+        this.errorMessage = '';
         this.displayForm = false;
         this.loadData();
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.notificationService.error(
+        const message =
           err.error?.message ||
-            err.error?.error ||
-            err.message ||
-            'Impossible d’enregistrer la planification.',
-        );
+          err.error?.error ||
+          err.message ||
+          'Impossible d’enregistrer la planification.';
+        this.errorMessage = message;
+        this.notificationService.error(message);
         console.error(err);
+        this.cdr.detectChanges();
       },
     });
   }
