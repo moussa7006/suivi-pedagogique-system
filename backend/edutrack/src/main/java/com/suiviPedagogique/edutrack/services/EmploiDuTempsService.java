@@ -10,6 +10,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,7 +32,7 @@ public class EmploiDuTempsService {
 
     @Autowired
     private MatiereRepository matiereRepository;
-    
+
     @Autowired
     private SalleRepository salleRepository;
 
@@ -69,7 +71,7 @@ public class EmploiDuTempsService {
 
         EmploiDuTemps emploi = emploiDuTempsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Emploi du temps non trouvé"));
-        
+
         hydrateEntity(emploi, dto, id);
 
         EmploiDuTemps updated = emploiDuTempsRepository.save(emploi);
@@ -117,7 +119,7 @@ public class EmploiDuTempsService {
         emploi.setDateSpecifique(dto.getDateSpecifique());
         emploi.setHeureDebut(dto.getHeureDebut());
         emploi.setHeureFin(dto.getHeureFin());
-        
+
         if (dto.getSalleId() != null) {
             Salle salle = salleRepository.findById(dto.getSalleId())
                     .orElseThrow(() -> new RuntimeException("Salle non trouvée"));
@@ -159,13 +161,13 @@ public class EmploiDuTempsService {
         dto.setDateSpecifique(emploi.getDateSpecifique());
         dto.setHeureDebut(emploi.getHeureDebut());
         dto.setHeureFin(emploi.getHeureFin());
-        
+
         if (emploi.getSalle() != null) dto.setSalleId(emploi.getSalle().getId());
         if (emploi.getEnseignant() != null) dto.setEnseignantId(emploi.getEnseignant().getId());
         if (emploi.getClasse() != null) dto.setClasseId(emploi.getClasse().getId());
         if (emploi.getMatiere() != null) dto.setMatiereId(emploi.getMatiere().getId());
         if (emploi.getAnneeUniversitaire() != null) dto.setAnneeUniversitaireId(emploi.getAnneeUniversitaire().getId());
-        
+
         return dto;
     }
 
@@ -183,41 +185,169 @@ public class EmploiDuTempsService {
     }
 
     private void checkProfAvailability(Enseignant enseignant, EmploiDuTempsDto dto, Integer excludeId) {
+        validateSchedulePayload(dto);
+
         List<EmploiDuTemps> emplois = emploiDuTempsRepository.findByEnseignantId(enseignant.getId());
-        for (EmploiDuTemps e : emplois) {
-            if (excludeId != null && e.getId().equals(excludeId)) {
+        for (EmploiDuTemps existingSchedule : emplois) {
+            if (excludeId != null && existingSchedule.getId().equals(excludeId)) {
                 continue;
             }
-            
-            if (e.getDateDebutValidite().isAfter(dto.getDateFinValidite()) || e.getDateFinValidite().isBefore(dto.getDateDebutValidite())) {
+
+            if (!timeRangesOverlap(
+                    existingSchedule.getHeureDebut(),
+                    existingSchedule.getHeureFin(),
+                    dto.getHeureDebut(),
+                    dto.getHeureFin())) {
                 continue;
             }
-            if (!e.getHeureDebut().isBefore(dto.getHeureFin()) || !e.getHeureFin().isAfter(dto.getHeureDebut())) {
+
+            LocalDate start = maxDate(getStartDate(existingSchedule), getStartDate(dto));
+            LocalDate end = minDate(getEndDate(existingSchedule), getEndDate(dto));
+            if (start == null || end == null || start.isAfter(end)) {
                 continue;
             }
-            
-            boolean conflict = false;
-            if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE) {
-                conflict = e.getDateSpecifique().equals(dto.getDateSpecifique());
-            } else if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.HEBDOMADAIRE && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.HEBDOMADAIRE) {
-                conflict = e.getJourSemaine() == dto.getJourSemaine();
-            } else if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.MENSUEL && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.MENSUEL) {
-                conflict = e.getJourDuMois().equals(dto.getJourDuMois());
-            } else if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.HEBDOMADAIRE) {
-                conflict = toJourSemaine(e.getDateSpecifique().getDayOfWeek()) == dto.getJourSemaine();
-            } else if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.HEBDOMADAIRE && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE) {
-                conflict = toJourSemaine(dto.getDateSpecifique().getDayOfWeek()) == e.getJourSemaine();
-            } else if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.MENSUEL) {
-                conflict = e.getDateSpecifique().getDayOfMonth() == dto.getJourDuMois();
-            } else if (e.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.MENSUEL && dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE) {
-                conflict = dto.getDateSpecifique().getDayOfMonth() == e.getJourDuMois();
-            } else {
-                conflict = true;
-            }
-            
-            if (conflict) {
-                throw new RuntimeException("L'enseignant a déjà un cours programmé sur ce créneau horaire.");
+
+            LocalDate conflictDate = findFirstConflictDate(existingSchedule, dto, start, end);
+            if (conflictDate != null) {
+                throw new RuntimeException(buildTeacherConflictMessage(enseignant, existingSchedule, dto, conflictDate));
             }
         }
+    }
+
+    private void validateSchedulePayload(EmploiDuTempsDto dto) {
+        if (dto.getTypeRecurrence() == null) {
+            throw new RuntimeException("Le type de récurrence est obligatoire.");
+        }
+        if (dto.getHeureDebut() == null || dto.getHeureFin() == null) {
+            throw new RuntimeException("Les heures de début et de fin sont obligatoires.");
+        }
+        if (!dto.getHeureDebut().isBefore(dto.getHeureFin())) {
+            throw new RuntimeException("L'heure de début doit être antérieure à l'heure de fin.");
+        }
+        if (getStartDate(dto) == null || getEndDate(dto) == null) {
+            throw new RuntimeException("Les dates de validité de la planification sont obligatoires.");
+        }
+        if (getStartDate(dto).isAfter(getEndDate(dto))) {
+            throw new RuntimeException("La date de début de validité doit être antérieure ou égale à la date de fin.");
+        }
+        if (dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.HEBDOMADAIRE && dto.getJourSemaine() == null) {
+            throw new RuntimeException("Le jour de la semaine est obligatoire pour une planification hebdomadaire.");
+        }
+        if (dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.MENSUEL
+                && (dto.getJourDuMois() == null || dto.getJourDuMois() < 1 || dto.getJourDuMois() > 31)) {
+            throw new RuntimeException("Le jour du mois doit être compris entre 1 et 31 pour une planification mensuelle.");
+        }
+        if (dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE && dto.getDateSpecifique() == null) {
+            throw new RuntimeException("La date spécifique est obligatoire pour une planification unique.");
+        }
+    }
+
+    private LocalDate findFirstConflictDate(EmploiDuTemps existingSchedule, EmploiDuTempsDto newSchedule, LocalDate start, LocalDate end) {
+        LocalDate current = start;
+        while (!current.isAfter(end)) {
+            if (appliesOn(existingSchedule, current) && appliesOn(newSchedule, current)) {
+                return current;
+            }
+            current = current.plusDays(1);
+        }
+        return null;
+    }
+
+    private boolean appliesOn(EmploiDuTemps emploi, LocalDate date) {
+        if (date == null || date.isBefore(getStartDate(emploi)) || date.isAfter(getEndDate(emploi))) {
+            return false;
+        }
+
+        switch (emploi.getTypeRecurrence()) {
+            case UNIQUE:
+                return date.equals(emploi.getDateSpecifique());
+            case HEBDOMADAIRE:
+                return emploi.getJourSemaine() != null && emploi.getJourSemaine() == toJourSemaine(date.getDayOfWeek());
+            case MENSUEL:
+                return emploi.getJourDuMois() != null && emploi.getJourDuMois() == date.getDayOfMonth();
+            default:
+                return false;
+        }
+    }
+
+    private boolean appliesOn(EmploiDuTempsDto dto, LocalDate date) {
+        if (date == null || date.isBefore(getStartDate(dto)) || date.isAfter(getEndDate(dto))) {
+            return false;
+        }
+
+        switch (dto.getTypeRecurrence()) {
+            case UNIQUE:
+                return date.equals(dto.getDateSpecifique());
+            case HEBDOMADAIRE:
+                return dto.getJourSemaine() != null && dto.getJourSemaine() == toJourSemaine(date.getDayOfWeek());
+            case MENSUEL:
+                return dto.getJourDuMois() != null && dto.getJourDuMois() == date.getDayOfMonth();
+            default:
+                return false;
+        }
+    }
+
+    private boolean timeRangesOverlap(java.time.LocalTime existingStart, java.time.LocalTime existingEnd,
+                                      java.time.LocalTime newStart, java.time.LocalTime newEnd) {
+        return existingStart != null && existingEnd != null && newStart != null && newEnd != null
+                && existingStart.isBefore(newEnd) && existingEnd.isAfter(newStart);
+    }
+
+    private LocalDate getStartDate(EmploiDuTemps emploi) {
+        if (emploi.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE) {
+            return emploi.getDateSpecifique();
+        }
+        return emploi.getDateDebutValidite();
+    }
+
+    private LocalDate getEndDate(EmploiDuTemps emploi) {
+        if (emploi.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE) {
+            return emploi.getDateSpecifique();
+        }
+        return emploi.getDateFinValidite();
+    }
+
+    private LocalDate getStartDate(EmploiDuTempsDto dto) {
+        if (dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE) {
+            return dto.getDateSpecifique();
+        }
+        return dto.getDateDebutValidite();
+    }
+
+    private LocalDate getEndDate(EmploiDuTempsDto dto) {
+        if (dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.UNIQUE) {
+            return dto.getDateSpecifique();
+        }
+        return dto.getDateFinValidite();
+    }
+
+    private LocalDate maxDate(LocalDate first, LocalDate second) {
+        if (first == null) return second;
+        if (second == null) return first;
+        return first.isAfter(second) ? first : second;
+    }
+
+    private LocalDate minDate(LocalDate first, LocalDate second) {
+        if (first == null) return second;
+        if (second == null) return first;
+        return first.isBefore(second) ? first : second;
+    }
+
+    private String buildTeacherConflictMessage(Enseignant enseignant, EmploiDuTemps existingSchedule,
+                                               EmploiDuTempsDto newSchedule, LocalDate conflictDate) {
+        String teacherName = (enseignant.getPrenom() + " " + enseignant.getNom()).trim();
+        String title = existingSchedule.getTitre() != null && !existingSchedule.getTitre().isBlank()
+                ? existingSchedule.getTitre()
+                : "un autre cours";
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        return "Planification impossible : l'enseignant " + teacherName
+                + " est déjà affecté à " + title
+                + " le " + conflictDate.format(dateFormatter)
+                + " de " + existingSchedule.getHeureDebut()
+                + " à " + existingSchedule.getHeureFin()
+                + ". Le nouveau créneau " + newSchedule.getHeureDebut()
+                + " - " + newSchedule.getHeureFin()
+                + " chevauche ce cours.";
     }
 }

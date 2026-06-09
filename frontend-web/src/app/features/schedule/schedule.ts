@@ -14,6 +14,7 @@ import { Matiere } from '../../core/models/matiere.model';
 import { Teacher } from '../../core/models/user.model';
 import { Salle } from '../../core/models/salle.model';
 import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model';
+import { AlertDialogService } from '../../shared/alert-dialog/alert-dialog.service';
 
 @Component({
   selector: 'app-schedule',
@@ -53,6 +54,11 @@ import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model'
             <i class="pi pi-calendar-plus"></i> Nouvelle Planification
           </button>
         </div>
+      </div>
+
+      <div class="error-banner" *ngIf="errorMessage">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>{{ errorMessage }}</span>
       </div>
 
       <!-- ── Form Card ── -->
@@ -95,7 +101,13 @@ import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model'
             </div>
           </div>
 
-          <div class="form-section" *ngIf="currentSchedule.typeRecurrence === 'HEBDOMADAIRE' || currentSchedule.typeRecurrence === 'MENSUEL'">
+          <div
+            class="form-section"
+            *ngIf="
+              currentSchedule.typeRecurrence === 'HEBDOMADAIRE' ||
+              currentSchedule.typeRecurrence === 'MENSUEL'
+            "
+          >
             <div class="section-label">
               <i class="pi pi-clock"></i>
               <span>Période de validité & Récurrence</span>
@@ -134,8 +146,6 @@ import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model'
               </div>
             </div>
           </div>
-
-
 
           <div class="form-section">
             <div class="section-label">
@@ -207,92 +217,92 @@ import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model'
       </div>
 
       <!-- ── Search ── -->
-        <div class="search-section">
-          <div class="search-wrapper">
-            <i class="pi pi-search"></i>
-            <input
-              type="text"
-              placeholder="Rechercher titre, salle, enseignant..."
-              [(ngModel)]="searchText"
-              (input)="filterSchedules()"
-            />
-          </div>
+      <div class="search-section">
+        <div class="search-wrapper">
+          <i class="pi pi-search"></i>
+          <input
+            type="text"
+            placeholder="Rechercher titre, salle, enseignant..."
+            [(ngModel)]="searchText"
+            (input)="filterSchedules()"
+          />
         </div>
+      </div>
 
-        <!-- ── Empty State ── -->
-        <div class="empty-state" *ngIf="filteredSchedules.length === 0">
-          <div class="empty-icon">
-            <i class="pi pi-calendar"></i>
-          </div>
-          <h3>Aucune planification trouvée</h3>
-          <p>Créez une nouvelle planification pour commencer.</p>
+      <!-- ── Empty State ── -->
+      <div class="empty-state" *ngIf="filteredSchedules.length === 0">
+        <div class="empty-icon">
+          <i class="pi pi-calendar"></i>
         </div>
+        <h3>Aucune planification trouvée</h3>
+        <p>Créez une nouvelle planification pour commencer.</p>
+      </div>
 
-        <!-- ── Cards Grid ── -->
-        <div class="cards-grid" *ngIf="filteredSchedules.length > 0">
-          <div class="schedule-card" *ngFor="let s of filteredSchedules">
-            <div class="card-accent"></div>
-            <div class="card-body">
-              <div class="card-header-row">
-                <div class="card-title">{{ s.titre || 'Sans-titre' }}</div>
-                <span class="badge-type" [ngClass]="s.typeRecurrence?.toLowerCase()">
-                  {{ s.typeRecurrence }}
+      <!-- ── Cards Grid ── -->
+      <div class="cards-grid" *ngIf="filteredSchedules.length > 0">
+        <div class="schedule-card" *ngFor="let s of filteredSchedules">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-header-row">
+              <div class="card-title">{{ s.titre || 'Sans-titre' }}</div>
+              <span class="badge-type" [ngClass]="s.typeRecurrence.toLowerCase()">
+                {{ s.typeRecurrence }}
+              </span>
+            </div>
+
+            <div class="card-schedule-info">
+              <div class="schedule-row">
+                <i class="pi pi-calendar"></i>
+                <span>
+                  <ng-container *ngIf="s.typeRecurrence === 'HEBDOMADAIRE'">{{
+                    s.jourSemaine
+                  }}</ng-container>
+                  <ng-container *ngIf="s.typeRecurrence === 'UNIQUE'">{{
+                    s.dateSpecifique
+                  }}</ng-container>
+                  <ng-container *ngIf="s.typeRecurrence === 'MENSUEL'"
+                    >Le {{ s.jourDuMois }} du mois</ng-container
+                  >
                 </span>
               </div>
-
-              <div class="card-schedule-info">
-                <div class="schedule-row">
-                  <i class="pi pi-calendar"></i>
-                  <span>
-                    <ng-container *ngIf="s.typeRecurrence === 'HEBDOMADAIRE'">{{
-                      s.jourSemaine
-                    }}</ng-container>
-                    <ng-container *ngIf="s.typeRecurrence === 'UNIQUE'">{{
-                      s.dateSpecifique
-                    }}</ng-container>
-                    <ng-container *ngIf="s.typeRecurrence === 'MENSUEL'"
-                      >Le {{ s.jourDuMois }} du mois</ng-container
-                    >
-                  </span>
-                </div>
-                <div class="schedule-row">
-                  <i class="pi pi-clock"></i>
-                  <span>{{ s.heureDebut }} - {{ s.heureFin }}</span>
-                </div>
-                <div class="schedule-row">
-                  <i class="pi pi-map-marker"></i>
-                  <span>{{ getSalleNom(s.salleId) }}</span>
-                </div>
+              <div class="schedule-row">
+                <i class="pi pi-clock"></i>
+                <span>{{ s.heureDebut }} - {{ s.heureFin }}</span>
               </div>
-
-              <div class="card-divider"></div>
-
-              <div class="card-cours-info">
-                <div class="cours-row">
-                  <i class="pi pi-folder"></i>
-                  <span>{{ getClasseLibelle(s.classeId) }}</span>
-                </div>
-                <div class="cours-row">
-                  <i class="pi pi-book"></i>
-                  <span>{{ getMatiereLibelle(s.matiereId) }}</span>
-                </div>
-                <div class="cours-row">
-                  <i class="pi pi-user"></i>
-                  <span>{{ getEnseignantNom(s.enseignantId) }}</span>
-                </div>
-                <div class="cours-row" *ngIf="s.anneeUniversitaireId">
-                  <i class="pi pi-calendar"></i>
-                  <span>{{ getAnneeUniversitaireLibelle(s.anneeUniversitaireId) }}</span>
-                </div>
+              <div class="schedule-row">
+                <i class="pi pi-map-marker"></i>
+                <span>{{ getSalleNom(s.salleId) }}</span>
               </div>
             </div>
-            <div class="card-actions">
-              <button class="btn-icon-sm delete" (click)="delete(s.id!)" title="Supprimer">
-                <i class="pi pi-trash"></i>
-              </button>
+
+            <div class="card-divider"></div>
+
+            <div class="card-cours-info">
+              <div class="cours-row">
+                <i class="pi pi-folder"></i>
+                <span>{{ getClasseLibelle(s.classeId) }}</span>
+              </div>
+              <div class="cours-row">
+                <i class="pi pi-book"></i>
+                <span>{{ getMatiereLibelle(s.matiereId) }}</span>
+              </div>
+              <div class="cours-row">
+                <i class="pi pi-user"></i>
+                <span>{{ getEnseignantNom(s.enseignantId) }}</span>
+              </div>
+              <div class="cours-row" *ngIf="s.anneeUniversitaireId">
+                <i class="pi pi-calendar"></i>
+                <span>{{ getAnneeUniversitaireLibelle(s.anneeUniversitaireId) }}</span>
+              </div>
             </div>
           </div>
+          <div class="card-actions">
+            <button class="btn-icon-sm delete" (click)="delete(s.id!)" title="Supprimer">
+              <i class="pi pi-trash"></i>
+            </button>
+          </div>
         </div>
+      </div>
     </div>
   `,
   styleUrl: './schedule.scss',
@@ -308,6 +318,7 @@ export class Schedule implements OnInit, OnDestroy {
   anneesUniversitaires: AnneeUniversitaire[] = [];
 
   displayForm: boolean = false;
+  errorMessage: string = '';
 
   currentSchedule: Partial<EmploiDuTemps> = {};
   selectedClasseId: number | null = null;
@@ -324,7 +335,8 @@ export class Schedule implements OnInit, OnDestroy {
     private teacherService: TeacherService,
     private salleService: SalleService,
     private anneeUniversitaireService: AnneeUniversitaireService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private alertDialog: AlertDialogService,
   ) {}
 
   ngOnInit() {
@@ -348,14 +360,29 @@ export class Schedule implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error("Erreur chargement emplois du temps:", err);
-      }
+        console.error('Erreur chargement emplois du temps:', err);
+      },
     });
-    this.classeService.getAll().subscribe((c) => { this.classes = c; this.cdr.detectChanges(); });
-    this.matiereService.getAll().subscribe((m) => { this.matieres = m; this.cdr.detectChanges(); });
-    this.teacherService.getTeachers().subscribe((t) => { this.teachers = t; this.cdr.detectChanges(); });
-    this.salleService.getAll().subscribe((s) => { this.salles = s; this.cdr.detectChanges(); });
-    this.anneeUniversitaireService.getAll().subscribe((a) => { this.anneesUniversitaires = a; this.cdr.detectChanges(); });
+    this.classeService.getAll().subscribe((c) => {
+      this.classes = c;
+      this.cdr.detectChanges();
+    });
+    this.matiereService.getAll().subscribe((m) => {
+      this.matieres = m;
+      this.cdr.detectChanges();
+    });
+    this.teacherService.getTeachers().subscribe((t) => {
+      this.teachers = t;
+      this.cdr.detectChanges();
+    });
+    this.salleService.getAll().subscribe((s) => {
+      this.salles = s;
+      this.cdr.detectChanges();
+    });
+    this.anneeUniversitaireService.getAll().subscribe((a) => {
+      this.anneesUniversitaires = a;
+      this.cdr.detectChanges();
+    });
   }
 
   filterSchedules() {
@@ -367,10 +394,12 @@ export class Schedule implements OnInit, OnDestroy {
         const salle = (this.getSalleNom(s.salleId) || '').toLowerCase();
         const prof = (this.getEnseignantNom(s.enseignantId) || '').toLowerCase();
         const mat = (this.getMatiereLibelle(s.matiereId) || '').toLowerCase();
-        return titre.includes(text) || salle.includes(text) || prof.includes(text) || mat.includes(text);
+        return (
+          titre.includes(text) || salle.includes(text) || prof.includes(text) || mat.includes(text)
+        );
       });
     } catch (e) {
-      console.error("Filter error:", e);
+      console.error('Filter error:', e);
       this.filteredSchedules = this.schedules || [];
     }
   }
@@ -384,13 +413,13 @@ export class Schedule implements OnInit, OnDestroy {
   getClasseLibelle(classeId: number | undefined): string {
     if (!classeId || !this.classes) return 'N/A';
     const c = this.classes.find((cl) => cl && cl.id === classeId);
-    return c ? (c.libelle || 'N/A') : 'N/A';
+    return c ? c.libelle || 'N/A' : 'N/A';
   }
 
   getMatiereLibelle(matiereId: number | undefined): string {
     if (!matiereId || !this.matieres) return 'N/A';
     const m = this.matieres.find((mat) => mat && mat.id === matiereId);
-    return m ? (m.libelle || 'N/A') : 'N/A';
+    return m ? m.libelle || 'N/A' : 'N/A';
   }
 
   getEnseignantNom(enseignantId: number | undefined): string {
@@ -402,10 +431,11 @@ export class Schedule implements OnInit, OnDestroy {
   getAnneeUniversitaireLibelle(anneeId: number | undefined): string {
     if (!anneeId || !this.anneesUniversitaires) return '';
     const a = this.anneesUniversitaires.find((au) => au && au.id === anneeId);
-    return a ? (a.libelle || '') : '';
+    return a ? a.libelle || '' : '';
   }
 
   showAddForm() {
+    this.errorMessage = '';
     this.currentSchedule = { typeRecurrence: 'HEBDOMADAIRE', jourSemaine: 'LUNDI' };
     this.selectedClasseId = null;
     this.selectedMatiereId = null;
@@ -414,6 +444,8 @@ export class Schedule implements OnInit, OnDestroy {
   }
 
   save() {
+    this.errorMessage = '';
+
     if (
       !this.selectedClasseId ||
       !this.selectedMatiereId ||
@@ -421,12 +453,37 @@ export class Schedule implements OnInit, OnDestroy {
       !this.currentSchedule.salleId ||
       !this.currentSchedule.heureDebut ||
       !this.currentSchedule.heureFin
-    )
+    ) {
+      this.errorMessage =
+        'Veuillez renseigner la classe, la matière, l’enseignant, la salle et les horaires avant de planifier.';
+      this.cdr.detectChanges();
       return;
+    }
+
+    if (!this.currentSchedule.anneeUniversitaireId) {
+      this.errorMessage = 'Veuillez sélectionner une année universitaire avant de planifier.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (this.currentSchedule.heureDebut >= this.currentSchedule.heureFin) {
+      this.errorMessage = 'L’heure de début doit être antérieure à l’heure de fin.';
+      this.cdr.detectChanges();
+      return;
+    }
 
     if (this.currentSchedule.typeRecurrence === 'UNIQUE') {
+      if (!this.currentSchedule.dateSpecifique) {
+        this.errorMessage = 'Veuillez sélectionner la date spécifique de cette planification.';
+        this.cdr.detectChanges();
+        return;
+      }
       this.currentSchedule.dateDebutValidite = this.currentSchedule.dateSpecifique;
       this.currentSchedule.dateFinValidite = this.currentSchedule.dateSpecifique;
+    } else if (!this.currentSchedule.dateDebutValidite || !this.currentSchedule.dateFinValidite) {
+      this.errorMessage = 'Veuillez renseigner la période de validité de cette planification.';
+      this.cdr.detectChanges();
+      return;
     }
 
     const scheduleToSave: EmploiDuTemps = {
@@ -443,21 +500,25 @@ export class Schedule implements OnInit, OnDestroy {
       enseignantId: Number(this.selectedTeacherId),
       classeId: Number(this.selectedClasseId),
       matiereId: Number(this.selectedMatiereId),
-      anneeUniversitaireId: this.currentSchedule.anneeUniversitaireId
-        ? Number(this.currentSchedule.anneeUniversitaireId)
-        : 0,
+      anneeUniversitaireId: Number(this.currentSchedule.anneeUniversitaireId),
     };
 
     this.scheduleService.createSchedule(scheduleToSave).subscribe({
       next: () => {
+        this.errorMessage = '';
         this.displayForm = false;
         this.loadData();
         this.cdr.detectChanges();
       },
       error: (err) => {
-        alert("Erreur: " + (err.error?.message || err.error?.error || err.message));
+        this.errorMessage =
+          err.error?.message ||
+          err.error?.error ||
+          err.message ||
+          'Impossible d’enregistrer la planification.';
         console.error(err);
-      }
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -476,12 +537,20 @@ export class Schedule implements OnInit, OnDestroy {
       if (confirm(`Voulez-vous importer les emplois du temps depuis le fichier ${file.name} ?`)) {
         this.scheduleService.importSchedules(file).subscribe({
           next: (res: any) => {
-            alert(res.message);
+            this.alertDialog.open({
+              title: 'Importation réussie',
+              message: res.message || 'Planifications importées avec succès.',
+              variant: 'success',
+            });
             this.loadData();
             this.cdr.detectChanges();
           },
           error: (err) => {
-            alert(err.error?.error || "Erreur lors de l'importation");
+            this.alertDialog.open({
+              title: 'Importation impossible',
+              message: err.error?.error || "Erreur lors de l'importation",
+              variant: 'error',
+            });
             this.cdr.detectChanges();
           },
         });

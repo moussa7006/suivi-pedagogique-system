@@ -1,0 +1,135 @@
+.alert-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(5px);
+}
+
+.alert-dialog {
+  width: min(440px, 100%);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.25);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 26px;
+  text-align: center;
+  animation: pop-in 0.18s ease-out;
+}
+
+.alert-icon {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 16px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 1.65rem;
+}
+
+.alert-content {
+  h2 {
+    margin: 0 0 8px;
+    color: #0f172a;
+    font-size: 1.22rem;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0;
+    color: #475569;
+    font-size: 0.96rem;
+    line-height: 1.55;
+    white-space: pre-line;
+  }
+}
+
+.alert-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 22px;
+}
+
+.btn-ok {
+  min-width: 112px;
+  border: none;
+  border-radius: 999px;
+  padding: 11px 22px;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.04);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(59, 130, 246, 0.35);
+    outline-offset: 3px;
+  }
+}
+
+.alert-dialog.info {
+  .alert-icon {
+    color: #2563eb;
+    background: #dbeafe;
+  }
+
+  .btn-ok {
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.28);
+  }
+}
+
+.alert-dialog.success {
+  .alert-icon {
+    color: #16a34a;
+    background: #dcfce7;
+  }
+
+  .btn-ok {
+    background: linear-gradient(135deg, #16a34a, #059669);
+    box-shadow: 0 10px 22px rgba(22, 163, 74, 0.24);
+  }
+}
+
+.alert-dialog.warning {
+  .alert-icon {
+    color: #d97706;
+    background: #fef3c7;
+  }
+
+  .btn-ok {
+    background: linear-gradient(135deg, #d97706, #ea580c);
+    box-shadow: 0 10px 22px rgba(217, 119, 6, 0.24);
+  }
+}
+
+.alert-dialog.error {
+  .alert-icon {
+    color: #dc2626;
+    background: #fee2e2;
+  }
+
+  .btn-ok {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    box-shadow: 0 10px 22px rgba(220, 38, 38, 0.24);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
