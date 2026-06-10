@@ -299,23 +299,6 @@ export class ScanQRPage implements OnDestroy {
       return false;
     }
 
-    if (!this.hasCahierForSeance(this.selectedSeance)) {
-      const alert = await this.alertController.create({
-        header: "Cahier de textes manquant",
-        message:
-          "Vous devez d'abord remplir le cahier de textes pour cette séance avant d'émarger.",
-        buttons: [
-          { text: "Annuler", role: "cancel" },
-          {
-            text: "Remplir le cahier",
-            handler: () => this.router.navigate(["/tabs/tabs/tab3"]),
-          },
-        ],
-      });
-      await alert.present();
-      return false;
-    }
-
     return true;
   }
 
@@ -336,12 +319,19 @@ export class ScanQRPage implements OnDestroy {
             this.isScanning = false;
             this.manualToken = "";
             const toast = await this.toastController.create({
-              message: `Émargement ${response.statut === "VALIDE" ? "validé ✅" : "enregistré (" + response.statut + ")"}`,
-              duration: 3000,
-              color: response.statut === "VALIDE" ? "success" : "warning",
+              message:
+                "Scan validé ✅ Remplissez maintenant la fiche de progression.",
+              duration: 2500,
+              color: "success",
               position: "top",
             });
             await toast.present();
+            await this.router.navigate(["/tabs/tabs/tab3"], {
+              queryParams: {
+                seanceId: response.seanceId || this.selectedSeanceId,
+                fromScan: true,
+              },
+            });
           },
           error: async (error) => {
             this.isScanning = false;

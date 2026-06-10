@@ -22,8 +22,8 @@ import { FicheProgression } from '../../core/models/lesson-log.model';
               <i class="pi pi-arrow-left"></i>
             </a>
             <div class="header-left-titles">
-              <h1>Validation Pédagogique</h1>
-              <p>Vérifiez et approuvez les fiches de progression des enseignants</p>
+              <h1>Fiches de Progression</h1>
+              <p>Consultez les fiches de progression validées automatiquement après scan</p>
             </div>
           </div>
         </div>
@@ -49,7 +49,7 @@ import { FicheProgression } from '../../core/models/lesson-log.model';
           </div>
           <div class="stat-content">
             <span class="value">{{ getPendingCount() }}</span>
-            <span class="label">À Valider</span>
+            <span class="label">À finaliser</span>
           </div>
         </div>
         <div class="summary-card success">
@@ -58,7 +58,7 @@ import { FicheProgression } from '../../core/models/lesson-log.model';
           </div>
           <div class="stat-content">
             <span class="value">{{ getValidatedCount() }}</span>
-            <span class="label">Approuvées</span>
+            <span class="label">Validées</span>
           </div>
         </div>
       </div>
@@ -74,10 +74,7 @@ import { FicheProgression } from '../../core/models/lesson-log.model';
                   <span class="subject">{{ log.matiereLibelle }} • {{ log.dateSeance }}</span>
                 </div>
               </div>
-              <div
-                class="status-badge"
-                [ngClass]="getStatusClass(log.estValideAdmin)"
-              >
+              <div class="status-badge" [ngClass]="getStatusClass(log.estValideAdmin)">
                 <span class="status-dot"></span>
                 {{ getStatutLabel(log.estValideAdmin) }}
               </div>
@@ -124,21 +121,10 @@ import { FicheProgression } from '../../core/models/lesson-log.model';
                 </div>
               </div>
 
-              @if (log.estValideAdmin == null || log.estValideAdmin === false) {
-                <div class="actions">
-                  <button class="btn btn-approve" (click)="updateStatus(log.id!, true)">
-                    <i class="pi pi-check"></i> Approuver
-                  </button>
-                  <button class="btn btn-reject" (click)="updateStatus(log.id!, false)">
-                    <i class="pi pi-times"></i> Rejeter
-                  </button>
-                </div>
-              } @else {
-                <div class="validated-label approved">
-                  <i class="pi pi-check-circle"></i>
-                  <span>Fiche approuvée</span>
-                </div>
-              }
+              <div class="validated-label" [ngClass]="getStatusClass(log.estValideAdmin)">
+                <i class="pi pi-check-circle"></i>
+                <span>{{ getStatutLabel(log.estValideAdmin) }}</span>
+              </div>
             </div>
           </div>
         }
@@ -654,26 +640,16 @@ export class PedagogyComponent implements OnInit {
     return this.lessonLogs.filter((log) => log.estValideAdmin === true).length;
   }
 
-  updateStatus(id: number, estValideAdmin: boolean) {
-    this.pedagogyService.validerFicheProgression(id, estValideAdmin).subscribe(() => {
-      this.loadLogs();
-    });
-  }
-
   getStatutLabel(estValideAdmin: boolean | null | undefined): string {
     if (estValideAdmin === true) {
-      return 'Approuvé';
-    } else if (estValideAdmin === false) {
-      return 'Rejeté';
+      return 'Validée automatiquement';
     }
-    return 'En attente';
+    return 'À finaliser';
   }
 
   getStatusClass(estValideAdmin: boolean | null | undefined): string {
     if (estValideAdmin === true) {
       return 'approved';
-    } else if (estValideAdmin === false) {
-      return 'rejected';
     }
     return 'pending';
   }

@@ -39,7 +39,7 @@
       </div>
       <div class="stat-content">
         <span class="stat-value">{{ getPendingCount }}</span>
-        <span class="stat-label">En attente</span>
+        <span class="stat-label">À finaliser</span>
       </div>
     </div>
   </div>
@@ -68,7 +68,10 @@
         </div>
         <div>
           <h2>Nouvelle séance</h2>
-          <p>Remplissez les détails du cours</p>
+          <p>
+            Remplissez les détails du cours pour valider automatiquement
+            l'émargement
+          </p>
         </div>
       </div>
 
@@ -153,7 +156,7 @@
         >
           <ion-spinner *ngIf="isSubmitting" name="crescent"></ion-spinner>
           <ng-container *ngIf="!isSubmitting">
-            <span>Publier au cahier de textes</span>
+            <span>Enregistrer et valider l'émargement</span>
             <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
           </ng-container>
         </ion-button>
