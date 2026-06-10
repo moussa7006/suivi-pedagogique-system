@@ -3,6 +3,7 @@ package com.suiviPedagogique.edutrack.security;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -10,22 +11,31 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor("edutrack_secret_key_for_jwt_authentication_2024_minimum_32_chars".getBytes());
-    private final long EXPIRATION_TIME = 86400000; // 24h
+    private final SecretKey secretKey;
+    private final long expirationTime;
+
+    public JwtUtil(@Value("${app.jwt.secret}") String jwtSecret,
+                   @Value("${app.jwt.expiration-ms}") long expirationTime) {
+        if (jwtSecret.getBytes().length < 32) {
+            throw new IllegalArgumentException("La clé JWT doit contenir au moins 32 octets.");
+        }
+        this.secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        this.expirationTime = expirationTime;
+    }
 
     public String generateToken(String email, String role) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(SECRET_KEY)
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+                .signWith(secretKey)
                 .compact();
     }
 
     public Claims extractClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
+                .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

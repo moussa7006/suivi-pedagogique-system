@@ -1,16 +1,10 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { RouterLink } from "@angular/router";
 import {
   IonContent,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
   IonIcon,
   IonBadge,
-  IonList,
 } from "@ionic/angular/standalone";
 import { addIcons } from "ionicons";
 import {
@@ -33,19 +27,7 @@ import { ScheduleService } from "../core/services/schedule.service";
   templateUrl: "planning.page.html",
   styleUrls: ["planning.page.scss"],
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    IonContent,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonButton,
-    IonIcon,
-    IonBadge,
-    IonList,
-  ],
+  imports: [CommonModule, IonContent, IonButton, IonIcon, IonBadge],
 })
 export class PlanningPage implements OnInit {
   private scheduleService = inject(ScheduleService);

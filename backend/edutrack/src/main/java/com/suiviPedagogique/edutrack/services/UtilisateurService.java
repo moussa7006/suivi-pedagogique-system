@@ -54,6 +54,7 @@ public class UtilisateurService {
         if(dto.getTelephone() != null) u.setTelephone(dto.getTelephone());
         if(dto.getAdresse() != null) u.setAdresse(dto.getAdresse());
         if(dto.getMatricule() != null) u.setMatricule(dto.getMatricule());
+        if(dto.getRole() != null) u.setRole(normalizeRole(dto.getRole()));
         if(dto.getActif() != null) u.setActif(dto.getActif());
 
         return convertToDto(utilisateurRepository.save(u));
@@ -64,6 +65,19 @@ public class UtilisateurService {
         Utilisateur u = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         utilisateurRepository.delete(u);
+    }
+
+    private Role normalizeRole(String role) {
+        if (role == null) {
+            throw new IllegalArgumentException("Le rôle est obligatoire");
+        }
+
+        String normalizedRole = role.trim().toUpperCase();
+        if (normalizedRole.equals("ADMIN")) {
+            return Role.ADMINISTRATEUR;
+        }
+
+        return Role.valueOf(normalizedRole);
     }
 
     private UtilisateurDto convertToDto(Utilisateur u) {
