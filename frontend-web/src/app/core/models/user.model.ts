@@ -10,6 +10,7 @@ export interface Utilisateur {
   adresse: string;
   role: Role;
   actif: boolean;
+  motDePasse?: string;
 }
 
 export interface Enseignant extends Utilisateur {

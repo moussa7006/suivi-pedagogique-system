@@ -66,7 +66,8 @@ import { timeout } from 'rxjs/operators';
       <!-- ── Form Card ── -->
       <div class="form-card" *ngIf="displayForm">
         <div class="form-card-header">
-          <h3>{{ editingId ? 'Modifier l'utilisateur' : 'Nouvel utilisateur' }}</h3>
+          <h3 *ngIf="editingId">Modifier l'utilisateur</h3>
+          <h3 *ngIf="!editingId">Nouvel utilisateur</h3>
         </div>
         <div class="form-card-body">
           <div *ngIf="errorMessage" class="error-banner">
@@ -124,7 +125,7 @@ import { timeout } from 'rxjs/operators';
                 <label>Téléphone</label>
                 <input type="text" [(ngModel)]="currentTeacher.telephone" placeholder="+223..." />
               </div>
-              <div class="input-group" *ngIf="!editingId">
+              <div class="input-group">
                 <label>Adresse</label>
                 <input
                   type="text"
@@ -135,19 +136,23 @@ import { timeout } from 'rxjs/operators';
             </div>
           </div>
 
-          <div class="form-section" *ngIf="!editingId">
+          <div class="form-section">
             <div class="section-label">
               <i class="pi pi-lock"></i>
               <span>Sécurité</span>
             </div>
             <div class="section-grid">
               <div class="input-group">
-                <label>Mot de Passe (provisoire)</label>
+                <label>{{ editingId ? 'Nouveau mot de passe' : 'Mot de passe provisoire' }}</label>
                 <div class="password-wrapper">
                   <input
                     [type]="showPassword ? 'text' : 'password'"
                     [(ngModel)]="provisionalPassword"
-                    placeholder="Minimum 8 caractères"
+                    [placeholder]="
+                      editingId
+                        ? 'Laisser vide pour conserver le mot de passe actuel'
+                        : 'Minimum 14 caractères, majuscule, minuscule et chiffre'
+                    "
                     class="password-input"
                   />
                   <button
@@ -167,6 +172,10 @@ import { timeout } from 'rxjs/operators';
                   </button>
                 </div>
               </div>
+              <p class="field-help" *ngIf="editingId">
+                Remplis ce champ uniquement si tu veux réinitialiser le mot de passe de cet
+                utilisateur.
+              </p>
             </div>
           </div>
 
@@ -249,7 +258,16 @@ import { timeout } from 'rxjs/operators';
 
       <!-- ── Cards Grid ── -->
       <div class="cards-grid" *ngIf="activeTab === 'ENSEIGNANT' && filteredEnseignants.length > 0">
-        <div class="user-card enseignant" *ngFor="let teacher of filteredEnseignants">
+        <div
+          class="user-card enseignant clickable-card"
+          *ngFor="let teacher of filteredEnseignants"
+          role="button"
+          tabindex="0"
+          title="Cliquer pour modifier"
+          (click)="showEditForm(teacher)"
+          (keydown.enter)="showEditForm(teacher)"
+          (keydown.space)="$event.preventDefault(); showEditForm(teacher)"
+        >
           <div class="card-accent"></div>
           <div class="card-body">
             <div class="card-avatar">
@@ -279,12 +297,16 @@ import { timeout } from 'rxjs/operators';
             </div>
           </div>
           <div class="card-actions">
-            <button class="btn-icon-sm edit" (click)="showEditForm(teacher)" title="Modifier">
+            <button
+              class="btn-icon-sm edit"
+              (click)="$event.stopPropagation(); showEditForm(teacher)"
+              title="Modifier"
+            >
               <i class="pi pi-pencil"></i>
             </button>
             <button
               class="btn-icon-sm delete"
-              (click)="deleteTeacher(teacher.id!)"
+              (click)="$event.stopPropagation(); deleteTeacher(teacher.id!)"
               title="Supprimer"
             >
               <i class="pi pi-trash"></i>
@@ -294,7 +316,16 @@ import { timeout } from 'rxjs/operators';
       </div>
 
       <div class="cards-grid" *ngIf="activeTab === 'ADMINISTRATEUR' && filteredAdmins.length > 0">
-        <div class="user-card admin" *ngFor="let teacher of filteredAdmins">
+        <div
+          class="user-card admin clickable-card"
+          *ngFor="let teacher of filteredAdmins"
+          role="button"
+          tabindex="0"
+          title="Cliquer pour modifier"
+          (click)="showEditForm(teacher)"
+          (keydown.enter)="showEditForm(teacher)"
+          (keydown.space)="$event.preventDefault(); showEditForm(teacher)"
+        >
           <div class="card-accent admin-accent"></div>
           <div class="card-body">
             <div class="card-avatar admin-avatar">
@@ -324,12 +355,16 @@ import { timeout } from 'rxjs/operators';
             </div>
           </div>
           <div class="card-actions">
-            <button class="btn-icon-sm edit" (click)="showEditForm(teacher)" title="Modifier">
+            <button
+              class="btn-icon-sm edit"
+              (click)="$event.stopPropagation(); showEditForm(teacher)"
+              title="Modifier"
+            >
               <i class="pi pi-pencil"></i>
             </button>
             <button
               class="btn-icon-sm delete"
-              (click)="deleteTeacher(teacher.id!)"
+              (click)="$event.stopPropagation(); deleteTeacher(teacher.id!)"
               title="Supprimer"
             >
               <i class="pi pi-trash"></i>
@@ -547,13 +582,12 @@ export class TeachersComponent implements OnInit {
       return;
     }
 
-    if (!this.editingId && this.provisionalPassword && this.provisionalPassword.length < 14) {
+    if (this.provisionalPassword && this.provisionalPassword.length < 14) {
       this.errorMessage = 'Le mot de passe doit contenir au moins 14 caractères.';
       return;
     }
 
     if (
-      !this.editingId &&
       this.provisionalPassword &&
       !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{14,}$/.test(this.provisionalPassword)
     ) {
@@ -564,12 +598,13 @@ export class TeachersComponent implements OnInit {
 
     this.isSaving = true;
 
+    const payload: Teacher = this.provisionalPassword
+      ? { ...teacherToSave, motDePasse: this.provisionalPassword }
+      : teacherToSave;
+
     const request$ = this.editingId
-      ? this.userService.update(this.editingId, teacherToSave)
-      : this.userService.create({
-          ...(teacherToSave as any),
-          motDePasse: this.provisionalPassword,
-        });
+      ? this.userService.update(this.editingId, payload)
+      : this.userService.create(payload);
 
     request$.pipe(timeout(12000)).subscribe({
       next: (savedTeacher: any) => {
@@ -650,8 +685,26 @@ export class TeachersComponent implements OnInit {
     this.cancelDelete();
 
     this.userService.delete(id).subscribe({
-      next: () => this.loadTeachers(),
-      error: (err) => console.error('Erreur lors de la suppression', err),
+      next: () => {
+        this.teachers = this.teachers.filter((teacher) => teacher.id !== id);
+        this.filterTeachers();
+        this.showResultDialog(
+          'Suppression effectuée',
+          "L'utilisateur a été supprimé de la liste.",
+          'success',
+        );
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erreur lors de la suppression', err);
+        this.showResultDialog(
+          'Suppression impossible',
+          err?.error?.error ||
+            err?.error?.message ||
+            'Impossible de supprimer cet utilisateur. Vérifiez le backend puis réessayez.',
+          'error',
+        );
+      },
     });
   }
 

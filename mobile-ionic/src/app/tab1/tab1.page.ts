@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
-import { Subscription } from "rxjs";
+import { forkJoin } from "rxjs";
 import {
   IonContent,
   IonButton,
@@ -31,8 +31,10 @@ import {
 } from "ionicons/icons";
 import { AuthService } from "../core/services/auth.service";
 import { EnseignantApiService } from "../core/services/enseignant-api.service";
-import { SeanceDto } from "../core/models/enseignant.models";
-import { SeanceService } from "../seance.service";
+import {
+  FicheProgressionDto,
+  SeanceDto,
+} from "../core/models/enseignant.models";
 import { CommonModule } from "@angular/common";
 
 @Component({
@@ -44,13 +46,11 @@ import { CommonModule } from "@angular/common";
 export class Tab1Page implements OnInit, OnDestroy {
   private router = inject(Router);
   private authService = inject(AuthService);
-  private seanceService = inject(SeanceService); // Keeping it for cahierFait if needed
   private apiService = inject(EnseignantApiService);
   private alertController = inject(AlertController);
 
-  private sub: Subscription | null = null;
-
-  isCahierFait = false;
+  isCahierFait = true;
+  pendingCahiersCount = 0;
 
   teacher = {
     firstName: "Enseignant",
@@ -106,17 +106,10 @@ export class Tab1Page implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.sub = this.seanceService.isCahierFait$.subscribe((status) => {
-      this.isCahierFait = status;
-      this.updateNotifications();
-    });
-
     this.loadRealData();
   }
 
-  ngOnDestroy() {
-    if (this.sub) this.sub.unsubscribe();
-  }
+  ngOnDestroy() {}
 
   private loadUser(): void {
     const user = this.authService.getUser();
@@ -133,29 +126,68 @@ export class Tab1Page implements OnInit, OnDestroy {
   }
 
   private loadRealData() {
-    this.apiService.getSeances().subscribe({
-      next: (seances: SeanceDto[]) => {
+    forkJoin({
+      seances: this.apiService.getSeances(),
+      fiches: this.apiService.getCahierDeTextes(),
+    }).subscribe({
+      next: ({ seances, fiches }) => {
         this.totalSeances = seances.length;
-        this.completedSeances = seances.filter((s: SeanceDto) => s.statut === 'EFFECTUEE').length;
-        this.completionRate = this.totalSeances > 0 ? Math.round((this.completedSeances / this.totalSeances) * 100) : 0;
-        
+        this.completedSeances = seances.filter((s: SeanceDto) =>
+          this.isCompletedSeance(s),
+        ).length;
+        this.completionRate =
+          this.totalSeances > 0
+            ? Math.round((this.completedSeances / this.totalSeances) * 100)
+            : 0;
+        this.pendingCahiersCount = this.countSeancesWithoutCahier(
+          seances,
+          fiches,
+        );
+        this.isCahierFait = this.pendingCahiersCount === 0;
+
         let totalMins = 0;
         seances.forEach((s: SeanceDto) => {
           if (s.heureDebutReelle && s.heureFinReelle) {
-            const debutParts = s.heureDebutReelle.split(':');
-            const finParts = s.heureFinReelle.split(':');
-            const debutMins = parseInt(debutParts[0]) * 60 + parseInt(debutParts[1]);
+            const debutParts = s.heureDebutReelle.split(":");
+            const finParts = s.heureFinReelle.split(":");
+            const debutMins =
+              parseInt(debutParts[0]) * 60 + parseInt(debutParts[1]);
             const finMins = parseInt(finParts[0]) * 60 + parseInt(finParts[1]);
-            totalMins += (finMins - debutMins);
+            totalMins += finMins - debutMins;
           }
         });
         this.totalHeures = Math.round(totalMins / 60);
         this.updateNotifications();
       },
       error: (err: any) => {
-        console.error('Erreur lors du chargement des séances', err);
-      }
+        console.error("Erreur lors du chargement des données enseignant", err);
+        this.pendingNotifications = [
+          "Impossible de charger les notifications pour le moment.",
+        ];
+        this.notificationCount = 1;
+      },
     });
+  }
+
+  private isCompletedSeance(seance: SeanceDto): boolean {
+    const status = (seance.statut || "").toUpperCase();
+    return ["TERMINEE", "TERMINÉE", "EFFECTUEE", "EFFECTUÉE"].includes(status);
+  }
+
+  private countSeancesWithoutCahier(
+    seances: SeanceDto[],
+    fiches: FicheProgressionDto[],
+  ): number {
+    const seanceIdsWithFiche = new Set(
+      fiches
+        .map((fiche) => fiche.seanceId)
+        .filter((id): id is number => typeof id === "number"),
+    );
+
+    return seances.filter(
+      (seance) =>
+        !seance.ficheProgressionId && !seanceIdsWithFiche.has(seance.id),
+    ).length;
   }
 
   private getInitials(firstName: string, lastName: string): string {
@@ -168,9 +200,11 @@ export class Tab1Page implements OnInit, OnDestroy {
     let count = 0;
     const notifications: string[] = [];
 
-    if (!this.isCahierFait) {
-      count++;
-      notifications.push("Cahier de textes à remplir");
+    if (this.pendingCahiersCount > 0) {
+      count += this.pendingCahiersCount;
+      notifications.push(
+        `${this.pendingCahiersCount} cahier${this.pendingCahiersCount > 1 ? "s" : ""} de textes à compléter`,
+      );
     }
 
     const uncompleted = this.totalSeances - this.completedSeances;
