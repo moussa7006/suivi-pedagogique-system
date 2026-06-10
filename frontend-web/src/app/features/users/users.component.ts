@@ -1,9 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TeacherService } from '../../core/services/teacher.service';
+import { UserService } from '../../core/services/user.service';
 import { Teacher } from '../../core/models/teacher.model';
 import { timeout } from 'rxjs/operators';
 
@@ -101,7 +100,7 @@ import { timeout } from 'rxjs/operators';
                 <label>Rôle</label>
                 <select [(ngModel)]="currentTeacher.role">
                   <option value="ENSEIGNANT">Enseignant</option>
-                  <option value="ADMIN">Administrateur</option>
+                  <option value="ADMINISTRATEUR">Administrateur</option>
                 </select>
               </div>
             </div>
@@ -447,7 +446,7 @@ export class TeachersComponent implements OnInit {
   isImporting = false;
 
   constructor(
-    private teacherService: TeacherService,
+    private userService: UserService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -456,7 +455,7 @@ export class TeachersComponent implements OnInit {
   }
 
   loadTeachers() {
-    this.teacherService.getTeachers().subscribe({
+    this.userService.getUsers().subscribe({
       next: (data) => {
         console.log('Données brutes reçues du backend :', data);
         this.teachers = data;
@@ -478,14 +477,21 @@ export class TeachersComponent implements OnInit {
         (t.matricule || '').toLowerCase().includes(text) ||
         (t.email || '').toLowerCase().includes(text),
     );
-    this.filteredEnseignants = filtered.filter((t) => t.role !== 'ADMINISTRATEUR');
-    this.filteredAdmins = filtered.filter((t) => t.role === 'ADMINISTRATEUR');
+    this.filteredEnseignants = filtered.filter((t) => this.normalizeRole(t.role) === 'ENSEIGNANT');
+    this.filteredAdmins = filtered.filter((t) => this.normalizeRole(t.role) === 'ADMINISTRATEUR');
   }
 
   getInitials(prenom?: string, nom?: string): string {
     const p = (prenom || '').charAt(0).toUpperCase();
     const n = (nom || '').charAt(0).toUpperCase();
     return p + n || '??';
+  }
+
+  private normalizeRole(role?: string): 'ENSEIGNANT' | 'ADMINISTRATEUR' {
+    const normalizedRole = (role || '').trim().toUpperCase();
+    return normalizedRole === 'ADMIN' || normalizedRole === 'ADMINISTRATEUR'
+      ? 'ADMINISTRATEUR'
+      : 'ENSEIGNANT';
   }
 
   showAddForm() {
@@ -519,7 +525,7 @@ export class TeachersComponent implements OnInit {
       email: this.currentTeacher.email?.trim() ?? '',
       telephone: this.currentTeacher.telephone?.trim() ?? '',
       adresse: this.currentTeacher.adresse?.trim() ?? '',
-      role: this.currentTeacher.role || 'ENSEIGNANT',
+      role: this.normalizeRole(this.currentTeacher.role || 'ENSEIGNANT'),
       actif: true,
     };
 
@@ -559,8 +565,8 @@ export class TeachersComponent implements OnInit {
     this.isSaving = true;
 
     const request$ = this.editingId
-      ? this.teacherService.update(this.editingId, teacherToSave)
-      : this.teacherService.create({
+      ? this.userService.update(this.editingId, teacherToSave)
+      : this.userService.create({
           ...(teacherToSave as any),
           motDePasse: this.provisionalPassword,
         });
@@ -578,6 +584,8 @@ export class TeachersComponent implements OnInit {
           );
         } else {
           this.teachers = [normalizedTeacher, ...this.teachers];
+          this.activeTab =
+            normalizedTeacher.role === 'ADMINISTRATEUR' ? 'ADMINISTRATEUR' : 'ENSEIGNANT';
         }
 
         this.filterTeachers();
@@ -641,7 +649,7 @@ export class TeachersComponent implements OnInit {
     const id = this.confirmDeleteId;
     this.cancelDelete();
 
-    this.teacherService.delete(id).subscribe({
+    this.userService.delete(id).subscribe({
       next: () => this.loadTeachers(),
       error: (err) => console.error('Erreur lors de la suppression', err),
     });
@@ -695,7 +703,7 @@ export class TeachersComponent implements OnInit {
     this.importReportSummary = [];
     this.importReportErrors = [];
 
-    this.teacherService.importTeachers(file).subscribe({
+    this.userService.importTeachers(file).subscribe({
       next: (res: any) => {
         this.isImporting = false;
 

@@ -1,6 +1,5 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { RouterLink } from "@angular/router";
 import { SeanceService } from "../seance.service";
 import {
   FormsModule,
@@ -11,22 +10,10 @@ import {
 } from "@angular/forms";
 import {
   IonContent,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonButton,
   IonIcon,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  IonItem,
-  IonLabel,
   IonInput,
   IonTextarea,
-  IonSelect,
-  IonSelectOption,
-  IonList,
   IonBadge,
   IonSpinner,
 } from "@ionic/angular/standalone";
@@ -54,7 +41,9 @@ import {
   time,
 } from "ionicons/icons";
 import { FicheProgressionService } from "../core/services/fiche-progression.service";
+import { ScheduleService } from "../core/services/schedule.service";
 import { FicheProgression } from "../core/models/fiche-progression.model";
+import { Seance } from "../core/models/seance.model";
 import { finalize } from "rxjs";
 
 @Component({
@@ -65,25 +54,12 @@ import { finalize } from "rxjs";
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
     ReactiveFormsModule,
     IonContent,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonButton,
     IonIcon,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardContent,
-    IonItem,
-    IonLabel,
     IonInput,
     IonTextarea,
-    IonSelect,
-    IonSelectOption,
-    IonList,
     IonBadge,
     IonSpinner,
   ],
@@ -94,9 +70,11 @@ export class CahierTextesPage implements OnInit {
   showForm = false;
   private seanceService = inject(SeanceService);
   private ficheProgressionService = inject(FicheProgressionService);
+  private scheduleService = inject(ScheduleService);
   totalHeures = 0;
 
   fichesProgression: FicheProgression[] = [];
+  seancesDisponibles: Seance[] = [];
 
   private fb = inject(FormBuilder);
 
@@ -126,6 +104,7 @@ export class CahierTextesPage implements OnInit {
     });
 
     this.seanceForm = this.fb.group({
+      seanceId: [null, Validators.required],
       matiere: ["", Validators.required],
       date: ["", Validators.required],
       heure: ["08:00 - 10:00"],
@@ -135,6 +114,7 @@ export class CahierTextesPage implements OnInit {
 
   ngOnInit() {
     this.loadFichesProgression();
+    this.loadSeancesDisponibles();
   }
 
   get getValidatedCount(): number {
@@ -156,6 +136,38 @@ export class CahierTextesPage implements OnInit {
     }));
   }
 
+  private loadSeancesDisponibles() {
+    this.scheduleService.getSeances().subscribe({
+      next: (seances) => {
+        this.seancesDisponibles = seances.filter((s) => !s.ficheProgressionId);
+        const selected = this.seancesDisponibles[0] || seances[0];
+
+        if (selected?.id) {
+          this.seanceForm.patchValue({
+            seanceId: selected.id,
+            date: selected.dateCours,
+            heure: `${selected.heureDebutReelle} - ${selected.heureFinReelle}`,
+          });
+        }
+      },
+      error: () => {
+        this.seancesDisponibles = [];
+      },
+    });
+  }
+
+  onSeanceChange() {
+    const seanceId = Number(this.seanceForm.value.seanceId);
+    const selected = this.seancesDisponibles.find((s) => s.id === seanceId);
+
+    if (selected) {
+      this.seanceForm.patchValue({
+        date: selected.dateCours,
+        heure: `${selected.heureDebutReelle} - ${selected.heureFinReelle}`,
+      });
+    }
+  }
+
   private loadFichesProgression() {
     this.ficheProgressionService.getFichesProgression().subscribe({
       next: (data) => {
@@ -175,8 +187,7 @@ export class CahierTextesPage implements OnInit {
 
     this.isSubmitting = true;
 
-    // Pour l'exemple, on utilise un seanceId fictif (1)
-    // Idéalement, on devrait sélectionner une séance depuis l'API
+    const seanceId = Number(this.seanceForm.value.seanceId);
     const payload = {
       dateSaisie: this.seanceForm.value.date,
       contenuDetaille: this.seanceForm.value.contenu,
@@ -185,7 +196,7 @@ export class CahierTextesPage implements OnInit {
     };
 
     this.ficheProgressionService
-      .createFicheProgression(1, payload)
+      .createFicheProgression(seanceId, payload)
       .pipe(finalize(() => (this.isSubmitting = false)))
       .subscribe({
         next: (fiche) => {
