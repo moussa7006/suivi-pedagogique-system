@@ -1,93 +1,176 @@
 <ion-content [fullscreen]="true">
-  <!-- Bouton Retour -->
   <ion-button fill="clear" class="back-btn" routerLink="/tabs/tabs/tab1">
     <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
   </ion-button>
 
-  <!-- Header Dynamique -->
-  <div class="profile-header-container">
-    <div class="avatar-container">
-      <div class="avatar-edit-wrapper">
-        <ion-avatar>
-          <img [src]="teacher.avatar" [alt]="teacher.firstName" />
-        </ion-avatar>
-        <button class="edit-photo-btn" (click)="changePhoto()">
-          <ion-icon name="camera-outline"></ion-icon>
-        </button>
-      </div>
-      <div class="online-indicator"></div>
+  <section class="profile-hero">
+    <div class="avatar-shell">
+      <ion-avatar>
+        <img [src]="teacher.avatar" [alt]="fullName" />
+      </ion-avatar>
+      <button
+        class="edit-photo-btn"
+        type="button"
+        (click)="changePhoto()"
+        aria-label="Changer la photo"
+      >
+        <ion-icon name="camera-outline"></ion-icon>
+      </button>
+      <span class="online-dot"></span>
     </div>
-    <h2>{{ teacher.firstName }} {{ teacher.lastName }}</h2>
-    <div class="matricule-badge">ID: {{ teacher.matricule }}</div>
-  </div>
 
-  <div class="profile-section">
-    <!-- Profil Enseignant (Détails) -->
-    <div class="modern-card">
+    <div class="hero-text">
+      <p class="eyebrow">Profil enseignant</p>
+      <h1>{{ fullName }}</h1>
+      <div class="hero-badges">
+        <span>{{ roleLabel }}</span>
+        <span>{{ teacher.status }}</span>
+      </div>
+    </div>
+  </section>
+
+  <main class="profile-section">
+    <section class="summary-card">
+      <div class="summary-avatar">{{ teacherInitials }}</div>
+      <div>
+        <p class="summary-label">Identifiant</p>
+        <h2>{{ teacher.matricule || 'Matricule non renseigné' }}</h2>
+      </div>
+    </section>
+
+    <section class="modern-card">
       <div class="card-header">
         <ion-icon name="person-circle-outline"></ion-icon>
-        <h3>Profil Enseignant</h3>
+        <div>
+          <h3>Identité</h3>
+          <p>Informations principales du compte</p>
+        </div>
       </div>
-      <div class="info-grid">
-        <div class="info-item">
+
+      <div class="info-list">
+        <div class="info-row">
           <div class="icon-box">
             <ion-icon name="person-outline"></ion-icon>
           </div>
           <div class="item-content">
-            <label>Nom Complet</label>
-            <p>{{ teacher.firstName }} {{ teacher.lastName }}</p>
+            <label>Prénom</label>
+            <p>{{ teacher.firstName || 'Non renseigné' }}</p>
           </div>
         </div>
-        <div class="info-item">
+
+        <div class="info-row">
           <div class="icon-box">
-            <ion-icon name="mail-outline"></ion-icon>
+            <ion-icon name="person-outline"></ion-icon>
           </div>
+          <div class="item-content">
+            <label>Nom</label>
+            <p>{{ teacher.lastName || 'Non renseigné' }}</p>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="business-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>Rôle</label>
+            <p>{{ roleLabel }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="modern-card">
+      <div class="card-header">
+        <ion-icon name="mail-outline"></ion-icon>
+        <div>
+          <h3>Coordonnées</h3>
+          <p>Contacts et adresse professionnelle</p>
+        </div>
+      </div>
+
+      <div class="info-list">
+        <div class="info-row">
+          <div class="icon-box"><ion-icon name="mail-outline"></ion-icon></div>
           <div class="item-content">
             <label>Email</label>
-            <p>{{ teacher.email }}</p>
+            <p class="breakable">{{ teacher.email || 'Non renseigné' }}</p>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="icon-box"><ion-icon name="call-outline"></ion-icon></div>
+          <div class="item-content">
+            <label>Téléphone</label>
+            <p>{{ teacher.telephone || 'Non renseigné' }}</p>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="location-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>Adresse</label>
+            <p>{{ teacher.adresse || 'Non renseignée' }}</p>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Sécurité & Préférences -->
-    <div class="modern-card">
+    <section class="modern-card">
+      <div class="card-header">
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        <div>
+          <h3>Activité pédagogique</h3>
+          <p>Résumé de vos séances</p>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <span class="stat-value"
+            >{{ teacher.statistiques.totalSeances }}</span
+          >
+          <span class="stat-label">Séances</span>
+        </div>
+        <div class="stat-box success">
+          <span class="stat-value">{{ teacher.volumeHoraire.effectue }}h</span>
+          <span class="stat-label">Effectuées</span>
+        </div>
+        <div class="stat-box secondary">
+          <span class="stat-value">{{ teacher.volumeHoraire.restant }}h</span>
+          <span class="stat-label">Restantes</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="modern-card security-card">
       <div class="card-header">
         <ion-icon name="shield-checkmark-outline"></ion-icon>
-        <h3>Sécurité & Appli</h3>
-      </div>
-      <div class="info-grid">
-        <div class="info-item">
-          <div class="icon-box">
-            <ion-icon name="lock-closed-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <div class="label-with-icon">
-              <label>Mot de passe</label>
-              <ion-icon
-                name="create-outline"
-                class="edit-icon-direct"
-                (click)="openPasswordModal()"
-              ></ion-icon>
-            </div>
-            <p>••••••••••••</p>
-          </div>
-        </div>
-
-        <div class="info-item">
-          <div class="icon-box">
-            <ion-icon name="notifications-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <label>Notifications</label>
-            <p>Activées</p>
-          </div>
+        <div>
+          <h3>Sécurité</h3>
+          <p>Gestion de l’accès au compte</p>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- MODAL DE CHANGEMENT DE MOT DE PASSE (COMPACT) -->
+      <button
+        class="security-action"
+        type="button"
+        (click)="openPasswordModal()"
+      >
+        <div class="icon-box">
+          <ion-icon name="lock-closed-outline"></ion-icon>
+        </div>
+        <div class="item-content">
+          <label>Mot de passe</label>
+          <p>Modifier mon mot de passe</p>
+        </div>
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </button>
+    </section>
+  </main>
+
   <ion-modal
     [isOpen]="isPasswordModalOpen"
     (ionModalDidDismiss)="isPasswordModalOpen = false"
@@ -97,7 +180,13 @@
       <div class="modal-compact-container">
         <div class="drag-handle"></div>
         <div class="modal-compact-header">
-          <h2>Modifier le mot de passe</h2>
+          <div>
+            <h2>Modifier le mot de passe</h2>
+            <p>
+              Utilisez au moins 14 caractères avec majuscule, minuscule et
+              chiffre.
+            </p>
+          </div>
           <ion-button
             fill="clear"
             (click)="isPasswordModalOpen = false"
@@ -109,21 +198,9 @@
 
         <div class="compact-form">
           <div class="compact-input-group">
-            <ion-icon name="lock-closed-outline" class="start-icon"></ion-icon>
-            <ion-input
-              [type]="showOldPassword ? 'text' : 'password'"
-              placeholder="Ancien mot de passe"
-            ></ion-input>
-            <ion-icon
-              [name]="showOldPassword ? 'eye-off-outline' : 'eye-outline'"
-              class="eye-icon"
-              (click)="showOldPassword = !showOldPassword"
-            ></ion-icon>
-          </div>
-
-          <div class="compact-input-group">
             <ion-icon name="key-outline" class="start-icon"></ion-icon>
             <ion-input
+              [(ngModel)]="newPassword"
               [type]="showNewPassword ? 'text' : 'password'"
               placeholder="Nouveau mot de passe"
             ></ion-input>
@@ -140,6 +217,7 @@
               class="start-icon"
             ></ion-icon>
             <ion-input
+              [(ngModel)]="confirmPassword"
               [type]="showConfirmPassword ? 'text' : 'password'"
               placeholder="Confirmer le mot de passe"
             ></ion-input>
@@ -153,16 +231,17 @@
           <ion-button
             expand="block"
             class="btn-save-compact"
+            [disabled]="isChangingPassword"
             (click)="updatePassword()"
           >
-            Enregistrer les modifications
+            {{ isChangingPassword ? 'Enregistrement...' : 'Enregistrer les
+            modifications' }}
           </ion-button>
         </div>
       </div>
     </ng-template>
   </ion-modal>
 
-  <!-- Bouton Déconnexion -->
   <div class="logout-btn-container">
     <ion-button
       expand="block"
@@ -171,7 +250,7 @@
       class="modern-logout-btn"
     >
       <ion-icon slot="start" name="log-out-outline"></ion-icon>
-      Déconnexion de l'Espace
+      Déconnexion
     </ion-button>
   </div>
 </ion-content>

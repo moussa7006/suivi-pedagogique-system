@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +19,9 @@ public class UtilisateurService {
 
     @Autowired
     private UtilisateurRepository utilisateurRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private void verifyAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -32,6 +36,7 @@ public class UtilisateurService {
     public List<UtilisateurDto> getAllUtilisateurs() {
         verifyAdmin();
         return utilisateurRepository.findAll().stream()
+                .filter(u -> Boolean.TRUE.equals(u.getActif()))
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -56,6 +61,11 @@ public class UtilisateurService {
         if(dto.getMatricule() != null) u.setMatricule(dto.getMatricule());
         if(dto.getRole() != null) u.setRole(normalizeRole(dto.getRole()));
         if(dto.getActif() != null) u.setActif(dto.getActif());
+        if(dto.getMotDePasse() != null && !dto.getMotDePasse().isBlank()) {
+            validatePassword(dto.getMotDePasse());
+            u.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
+            u.setForcePasswordChange(false);
+        }
 
         return convertToDto(utilisateurRepository.save(u));
     }
@@ -64,7 +74,17 @@ public class UtilisateurService {
         verifyAdmin();
         Utilisateur u = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-        utilisateurRepository.delete(u);
+        u.setActif(false);
+        utilisateurRepository.save(u);
+    }
+
+    private void validatePassword(String motDePasse) {
+        if (motDePasse.length() < 14) {
+            throw new IllegalArgumentException("Le mot de passe doit contenir au moins 14 caractères");
+        }
+        if (!motDePasse.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{14,}$")) {
+            throw new IllegalArgumentException("Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre");
+        }
     }
 
     private Role normalizeRole(String role) {

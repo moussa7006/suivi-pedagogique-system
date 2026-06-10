@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, NgZone } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 import { Router, RouterLink } from "@angular/router";
-import { SeanceService } from "../seance.service";
 import {
   IonContent,
   IonButton,
@@ -38,6 +38,7 @@ import {
   eyeOutline,
   eyeOffOutline,
   trashOutline,
+  closeOutline,
 } from "ionicons/icons";
 
 import {
@@ -54,6 +55,7 @@ import { finalize } from "rxjs";
   styleUrls: ["profile.page.scss"],
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     IonContent,
     IonButton,
@@ -66,7 +68,6 @@ import { finalize } from "rxjs";
 export class ProfilePage implements OnInit {
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
-  private seanceService = inject(SeanceService);
   private alertController = inject(AlertController);
   private actionSheetController = inject(ActionSheetController);
   private toastController = inject(ToastController);
@@ -91,6 +92,7 @@ export class ProfilePage implements OnInit {
     email: "",
     telephone: "",
     adresse: "",
+    role: "ENSEIGNANT",
     subjects: [] as string[],
     status: "Actif",
     avatar: "https://i.pravatar.cc/150?u=default",
@@ -127,6 +129,7 @@ export class ProfilePage implements OnInit {
       cameraOutline,
       imagesOutline,
       trashOutline,
+      closeOutline,
       globeOutline,
       chevronForwardOutline,
       keyOutline,
@@ -152,6 +155,7 @@ export class ProfilePage implements OnInit {
         email: user.email || "",
         telephone: user.telephone || "",
         adresse: user.adresse || "",
+        role: user.role || "ENSEIGNANT",
         avatar: `https://i.pravatar.cc/150?u=${user.email || user.id || "default"}`,
       };
       // Charger la photo sauvegardée si elle existe
@@ -175,6 +179,24 @@ export class ProfilePage implements OnInit {
         // Garder les valeurs par défaut
       },
     });
+  }
+
+  get fullName(): string {
+    return (
+      `${this.teacher.firstName} ${this.teacher.lastName}`.trim() ||
+      "Enseignant"
+    );
+  }
+
+  get teacherInitials(): string {
+    const first = this.teacher.firstName?.charAt(0).toUpperCase() || "E";
+    const last = this.teacher.lastName?.charAt(0).toUpperCase() || "N";
+    return `${first}${last}`;
+  }
+
+  get roleLabel(): string {
+    const role = this.teacher.role?.toUpperCase();
+    return role === "ADMINISTRATEUR" ? "Administrateur" : "Enseignant";
   }
 
   openPasswordModal() {
@@ -236,11 +258,13 @@ export class ProfilePage implements OnInit {
 
   async changePhoto() {
     const actionSheet = await this.actionSheetController.create({
-      header: "Changer la photo de profil",
+      header: "Modifier la photo",
+      cssClass: "profile-photo-sheet",
       buttons: [
         {
-          text: "Prendre une photo",
+          text: "Prendre une nouvelle photo",
           icon: "camera-outline",
+          cssClass: "sheet-action-primary",
           handler: () => {
             this.takePhoto("camera");
           },
@@ -248,15 +272,17 @@ export class ProfilePage implements OnInit {
         {
           text: "Choisir depuis la galerie",
           icon: "images-outline",
+          cssClass: "sheet-action-primary",
           handler: () => {
             this.takePhoto("gallery");
           },
         },
         {
-          text: "Supprimer la photo",
+          text: "Retirer la photo actuelle",
           icon: "trash-outline",
+          cssClass: "sheet-action-danger",
           handler: () => {
-            this.teacher.avatar = "";
+            this.teacher.avatar = `https://i.pravatar.cc/150?u=${this.teacher.email || this.teacher.id || "default"}`;
             this.savePhotoToStorage("");
           },
           role: "destructive",
@@ -264,6 +290,7 @@ export class ProfilePage implements OnInit {
         {
           text: "Annuler",
           icon: "close-outline",
+          cssClass: "sheet-action-cancel",
           role: "cancel",
         },
       ],
