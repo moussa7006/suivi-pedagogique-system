@@ -18,6 +18,7 @@ import {
   IonSpinner,
   ToastController,
 } from "@ionic/angular/standalone";
+import { ActivatedRoute } from "@angular/router";
 import { addIcons } from "ionicons";
 import {
   documentTextOutline,
@@ -62,6 +63,7 @@ export class CahierTextesPage implements OnInit {
   private readonly ficheProgressionService = inject(FicheProgressionService);
   private readonly scheduleService = inject(ScheduleService);
   private readonly toastController = inject(ToastController);
+  private readonly route = inject(ActivatedRoute);
 
   seanceForm: FormGroup;
   isSubmitting = false;
@@ -70,6 +72,7 @@ export class CahierTextesPage implements OnInit {
   totalHeures = 0;
   fichesProgression: FicheProgression[] = [];
   seancesDisponibles: Seance[] = [];
+  openedFromScan = false;
 
   constructor() {
     addIcons({
@@ -137,6 +140,7 @@ export class CahierTextesPage implements OnInit {
           this.seancesDisponibles = (seances || []).filter(
             (seance) => !this.hasFicheProgression(seance),
           );
+          this.applyScanContext();
           this.totalHeures = this.fichesProgression.reduce(
             (total, fiche) =>
               total + this.extractDurationHours(fiche.heureSeance),
@@ -168,9 +172,15 @@ export class CahierTextesPage implements OnInit {
       .pipe(finalize(() => (this.isSubmitting = false)))
       .subscribe({
         next: async () => {
-          await this.presentToast("Cahier de textes enregistré.", "success");
+          await this.presentToast(
+            this.openedFromScan
+              ? "Fiche enregistrée. Émargement validé automatiquement."
+              : "Cahier de textes enregistré.",
+            "success",
+          );
           this.seanceForm.reset();
           this.showForm = false;
+          this.openedFromScan = false;
           this.loadData();
         },
         error: (error) => {
@@ -188,6 +198,24 @@ export class CahierTextesPage implements OnInit {
     return `${seance.dateCours} • ${this.formatTime(seance.heureDebutReelle)} - ${this.formatTime(
       seance.heureFinReelle,
     )} • ${seance.statut}`;
+  }
+
+  private applyScanContext(): void {
+    const seanceId = Number(this.route.snapshot.queryParamMap.get("seanceId"));
+    this.openedFromScan =
+      this.route.snapshot.queryParamMap.get("fromScan") === "true";
+
+    if (!this.openedFromScan || !seanceId) {
+      return;
+    }
+
+    const seanceIsAvailable = this.seancesDisponibles.some(
+      (seance) => seance.id === seanceId,
+    );
+    if (seanceIsAvailable) {
+      this.showForm = true;
+      this.seanceForm.patchValue({ seanceId });
+    }
   }
 
   private hasFicheProgression(seance: Seance): boolean {

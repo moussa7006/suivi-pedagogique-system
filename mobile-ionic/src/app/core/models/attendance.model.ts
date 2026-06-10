@@ -1,4 +1,4 @@
-import { StatutEmargement } from './enums';
+import { StatutEmargement } from "./enums";
 
 export interface EmargementRequest {
   tokenQRCode: string;
@@ -17,4 +17,11 @@ export interface Emargement {
   enseignantNomPrenom: string;
   lieu: string;
   heureSeance: string;
+}
+
+export interface EmargementScanResponse {
+  message: string;
+  statut: StatutEmargement;
+  seanceId: number;
+  emargementId: number;
 }

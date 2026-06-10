@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 import { FicheProgression, FicheProgressionRequest } from '../models/lesson-log.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PedagogyService {
   private apiUrl = `${environment.apiUrl}/fiche-progression`;
@@ -16,12 +16,11 @@ export class PedagogyService {
     return this.http.get<FicheProgression[]>(this.apiUrl);
   }
 
-  remplirFicheProgression(seanceId: number, request: FicheProgressionRequest): Observable<FicheProgression> {
+  remplirFicheProgression(
+    seanceId: number,
+    request: FicheProgressionRequest,
+  ): Observable<FicheProgression> {
     return this.http.post<FicheProgression>(`${this.apiUrl}/${seanceId}`, request);
-  }
-
-  validerFicheProgression(id: number, estValideAdmin: boolean): Observable<FicheProgression> {
-    return this.http.put<FicheProgression>(`${this.apiUrl}/${id}/valider`, { estValideAdmin });
   }
 
   // Alias pour la rétrocompatibilité
