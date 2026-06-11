@@ -1,4 +1,5 @@
 package com.suiviPedagogique.edutrack.Entities;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LignesHonoraires {
+public class DetailHonoraire {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
