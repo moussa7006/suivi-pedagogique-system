@@ -21,4 +21,5 @@ public class UtilisateurDto {
     private String adresse;
     private String role;
     private Boolean actif;
+    private String photoUrl;
 }
