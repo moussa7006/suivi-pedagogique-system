@@ -175,7 +175,7 @@ export class CahierTextesPage implements OnInit {
           await this.presentToast(
             this.openedFromScan
               ? "Fiche enregistrée. Émargement validé automatiquement."
-              : "Cahier de textes enregistré.",
+              : "Fiche de progression enregistrée.",
             "success",
           );
           this.seanceForm.reset();
@@ -188,7 +188,7 @@ export class CahierTextesPage implements OnInit {
             typeof error?.error === "string"
               ? error.error
               : error?.error?.message ||
-                "Impossible d'enregistrer le cahier de textes.";
+                "Impossible d'enregistrer la fiche de progression.";
           this.presentToast(message, "danger");
         },
       });

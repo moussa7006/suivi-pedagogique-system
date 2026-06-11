@@ -33,7 +33,9 @@ export class App {
   ) {}
 
   get isLoginPage(): boolean {
-    return this.router.url.startsWith('/login');
+    return ['/login', '/forgot-password', '/reset-password', '/change-password'].some((path) =>
+      this.router.url.startsWith(path),
+    );
   }
 
   @HostListener('document:click')
@@ -60,6 +62,11 @@ export class App {
   goToProfile(): void {
     this.isProfileMenuOpen = false;
     this.router.navigate(['/profile']);
+  }
+
+  goToChangePassword(): void {
+    this.isProfileMenuOpen = false;
+    this.router.navigate(['/change-password']);
   }
 
   get adminName(): string {

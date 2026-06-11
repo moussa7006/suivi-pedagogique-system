@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
@@ -32,6 +33,11 @@ public class UtilisateurController {
     @PutMapping("/modifier/{id}")
     public ResponseEntity<UtilisateurDto> updateUtilisateur(@PathVariable Integer id, @RequestBody UtilisateurDto dto) {
         return ResponseEntity.ok(utilisateurService.updateUtilisateur(id, dto));
+    }
+
+    @PatchMapping("/{id}/photo")
+    public ResponseEntity<UtilisateurDto> updatePhotoProfil(@PathVariable Integer id, @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(utilisateurService.updatePhotoProfil(id, body.getOrDefault("photoUrl", "")));
     }
 
     @DeleteMapping("/supprimer/{id}")

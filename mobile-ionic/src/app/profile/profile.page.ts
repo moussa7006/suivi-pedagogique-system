@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, NgZone } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 import {
   IonContent,
@@ -40,9 +41,9 @@ import {
 } from "ionicons/icons";
 
 import { ActionSheetController } from "@ionic/angular/standalone";
-import { Preferences } from "@capacitor/preferences";
 import { AuthService } from "../core/services/auth.service";
 import { ScheduleService } from "../core/services/schedule.service";
+import { UtilisateurService } from "../core/services/utilisateur.service";
 import { finalize } from "rxjs";
 
 @Component({
@@ -51,6 +52,7 @@ import { finalize } from "rxjs";
   styleUrls: ["profile.page.scss"],
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     IonContent,
     IonButton,
@@ -63,10 +65,10 @@ import { finalize } from "rxjs";
 export class ProfilePage implements OnInit {
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
+  private utilisateurService = inject(UtilisateurService);
   private actionSheetController = inject(ActionSheetController);
   private toastController = inject(ToastController);
   private ngZone = inject(NgZone);
-  private readonly profilePhotoKey = "profile_photo";
 
   isPasswordModalOpen = false;
   showOldPassword = false;
@@ -147,10 +149,10 @@ export class ProfilePage implements OnInit {
         email: user.email || "",
         telephone: user.telephone || "",
         adresse: user.adresse || "",
-        avatar: `https://i.pravatar.cc/150?u=${user.email || user.id || "default"}`,
+        avatar:
+          user.photoUrl ||
+          `https://i.pravatar.cc/150?u=${user.email || user.id || "default"}`,
       };
-      // Charger la photo sauvegardée si elle existe
-      await this.loadPhotoFromStorage();
     }
 
     // Charger les statistiques depuis l'API des séances
@@ -180,6 +182,11 @@ export class ProfilePage implements OnInit {
   }
 
   updatePassword() {
+    if (!this.oldPassword) {
+      this.presentToast("Veuillez renseigner l'ancien mot de passe.", "danger");
+      return;
+    }
+
     if (!this.newPassword || this.newPassword.length < 14) {
       this.presentToast(
         "Le mot de passe doit contenir au moins 14 caractères.",
@@ -188,9 +195,13 @@ export class ProfilePage implements OnInit {
       return;
     }
 
-    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{14,}$/.test(this.newPassword)) {
+    if (
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{14,}$/.test(
+        this.newPassword,
+      )
+    ) {
       this.presentToast(
-        "Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre.",
+        "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un symbole.",
         "danger",
       );
       return;
@@ -204,10 +215,13 @@ export class ProfilePage implements OnInit {
     this.isChangingPassword = true;
 
     this.authService
-      .changePassword(this.newPassword)
+      .changePassword(this.oldPassword, this.newPassword)
       .pipe(finalize(() => (this.isChangingPassword = false)))
       .subscribe({
         next: async () => {
+          this.oldPassword = "";
+          this.newPassword = "";
+          this.confirmPassword = "";
           this.isPasswordModalOpen = false;
           const toast = await this.toastController.create({
             message: "Mot de passe modifié avec succès.",
@@ -217,9 +231,11 @@ export class ProfilePage implements OnInit {
           });
           await toast.present();
         },
-        error: async () => {
+        error: async (err) => {
           const toast = await this.toastController.create({
-            message: "Erreur lors de la modification du mot de passe.",
+            message:
+              err?.error?.error ||
+              "Erreur lors de la modification du mot de passe.",
             duration: 3000,
             color: "danger",
             position: "top",
@@ -251,8 +267,7 @@ export class ProfilePage implements OnInit {
           text: "Supprimer la photo",
           icon: "trash-outline",
           handler: () => {
-            this.teacher.avatar = "";
-            void this.savePhotoToStorage("");
+            void this.saveProfilePhoto("");
           },
           role: "destructive",
         },
@@ -283,8 +298,7 @@ export class ProfilePage implements OnInit {
 
       if (image.dataUrl) {
         this.ngZone.run(() => {
-          this.teacher.avatar = image.dataUrl!;
-          void this.savePhotoToStorage(image.dataUrl!);
+          void this.saveProfilePhoto(image.dataUrl!);
         });
       }
     } catch (error: any) {
@@ -307,18 +321,49 @@ export class ProfilePage implements OnInit {
     }
   }
 
-  private async savePhotoToStorage(dataUrl: string): Promise<void> {
-    try {
-      if (dataUrl) {
-        await Preferences.set({ key: this.profilePhotoKey, value: dataUrl });
-      } else {
-        await Preferences.remove({ key: this.profilePhotoKey });
-      }
-    } catch {
-      console.warn(
-        "Impossible de sauvegarder la photo dans le stockage mobile",
+  private async saveProfilePhoto(photoUrl: string): Promise<void> {
+    const user = await this.authService.getUser();
+
+    if (!user?.id) {
+      await this.presentToast(
+        "Impossible de retrouver l’identifiant du compte connecté.",
+        "danger",
       );
+      return;
     }
+
+    this.utilisateurService.modifierPhoto(user.id, photoUrl).subscribe({
+      next: async (updatedUser) => {
+        const nextUser = {
+          ...user,
+          ...updatedUser,
+          photoUrl,
+        };
+
+        if (!photoUrl) {
+          delete nextUser.photoUrl;
+        }
+
+        await this.authService.setUser(nextUser);
+        this.teacher.avatar =
+          photoUrl ||
+          `https://i.pravatar.cc/150?u=${this.teacher.email || this.teacher.id || "default"}`;
+        await this.presentToast(
+          photoUrl
+            ? "Photo de profil mise à jour."
+            : "Photo de profil supprimée.",
+          "success",
+        );
+      },
+      error: async () => {
+        await this.presentToast(
+          photoUrl
+            ? "Impossible d’enregistrer cette photo."
+            : "Impossible de supprimer la photo.",
+          "danger",
+        );
+      },
+    });
   }
 
   private async presentToast(message: string, color: string = "danger") {
@@ -329,17 +374,6 @@ export class ProfilePage implements OnInit {
       position: "top",
     });
     await toast.present();
-  }
-
-  private async loadPhotoFromStorage(): Promise<void> {
-    try {
-      const saved = await Preferences.get({ key: this.profilePhotoKey });
-      if (saved.value) {
-        this.teacher.avatar = saved.value;
-      }
-    } catch {
-      // Ignorer
-    }
   }
 
   getProgressPercent() {

@@ -30,8 +30,28 @@ export class AuthService {
       );
   }
 
-  changePassword(newPassword: string): Observable<any> {
+  changePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Observable<any> {
     return this.http.post(`${this.authApiUrl}/change-password`, {
+      currentPassword,
+      newPassword,
+    });
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.authApiUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(
+    email: string,
+    code: string,
+    newPassword: string,
+  ): Observable<any> {
+    return this.http.post(`${this.authApiUrl}/reset-password`, {
+      email,
+      code,
       newPassword,
     });
   }

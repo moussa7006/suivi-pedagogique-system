@@ -6,7 +6,6 @@ import {
   IonButton,
   IonIcon,
   IonBadge,
-  AlertController,
 } from "@ionic/angular/standalone";
 import { addIcons } from "ionicons";
 import {
@@ -28,6 +27,8 @@ import {
   schoolOutline,
   checkmarkCircleOutline,
   trendingUpOutline,
+  closeOutline,
+  sparklesOutline,
 } from "ionicons/icons";
 import { AuthService } from "../core/services/auth.service";
 import { ScheduleService } from "../core/services/schedule.service";
@@ -35,6 +36,15 @@ import { FicheProgressionService } from "../core/services/fiche-progression.serv
 import { FicheProgression } from "../core/models/fiche-progression.model";
 import { Seance } from "../core/models/seance.model";
 import { CommonModule } from "@angular/common";
+
+interface NotificationItem {
+  title: string;
+  message: string;
+  icon: string;
+  type: "warning" | "info" | "success";
+  actionLabel?: string;
+  actionRoute?: string;
+}
 
 @Component({
   selector: "app-tab1",
@@ -47,7 +57,6 @@ export class Tab1Page implements OnInit {
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
   private ficheProgressionService = inject(FicheProgressionService);
-  private alertController = inject(AlertController);
 
   isCahierFait = false;
 
@@ -67,7 +76,8 @@ export class Tab1Page implements OnInit {
 
   // Notifications
   notificationCount = 0;
-  pendingNotifications: string[] = [];
+  pendingNotifications: NotificationItem[] = [];
+  showNotifications = false;
 
   // Gauge SVG constants
   readonly gaugeCircumference = 2 * Math.PI * 52; // ≈ 326.73
@@ -99,6 +109,8 @@ export class Tab1Page implements OnInit {
       schoolOutline,
       checkmarkCircleOutline,
       trendingUpOutline,
+      closeOutline,
+      sparklesOutline,
     });
   }
 
@@ -215,33 +227,52 @@ export class Tab1Page implements OnInit {
 
   private updateNotifications() {
     let count = 0;
-    const notifications: string[] = [];
+    const notifications: NotificationItem[] = [];
 
     if (!this.isCahierFait) {
       count++;
-      notifications.push("Cahier de textes à remplir");
+      notifications.push({
+        title: "Fiche de progression à remplir",
+        message:
+          "Scannez le QR Code de la séance puis complétez la fiche pour valider l'émargement.",
+        icon: "document-text-outline",
+        type: "warning",
+        actionLabel: "Remplir",
+        actionRoute: "/tabs/tabs/tab3",
+      });
     }
 
     const uncompleted = this.totalSeances - this.completedSeances;
     if (uncompleted > 0) {
       count += uncompleted;
-      notifications.push(uncompleted + " séance(s) non complétée(s)");
+      notifications.push({
+        title: `${uncompleted} séance(s) à finaliser`,
+        message:
+          "Consultez votre planning pour suivre les séances prévues ou en cours.",
+        icon: "calendar-outline",
+        type: "info",
+        actionLabel: "Voir planning",
+        actionRoute: "/tabs/tabs/tab2",
+      });
     }
 
     this.notificationCount = count;
     this.pendingNotifications = notifications;
   }
 
-  async openNotifications() {
-    const alert = await this.alertController.create({
-      header: "Notifications",
-      message:
-        this.pendingNotifications.length > 0
-          ? this.pendingNotifications.map((n) => "• " + n).join("<br>")
-          : "Aucune notification pour le moment.",
-      buttons: ["OK"],
-    });
-    await alert.present();
+  openNotifications() {
+    this.showNotifications = true;
+  }
+
+  closeNotifications() {
+    this.showNotifications = false;
+  }
+
+  handleNotificationAction(notification: NotificationItem) {
+    this.closeNotifications();
+    if (notification.actionRoute) {
+      this.navigateTo(notification.actionRoute);
+    }
   }
 
   navigateTo(path: string) {
