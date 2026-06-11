@@ -60,5 +60,5 @@ public class Seance {
     private FicheProgression ficheProgression;
 
     @OneToOne(mappedBy = "seance")
-    private LignesHonoraires ligneHonoraire;
+    private DetailHonoraire detailHonoraire;
 }

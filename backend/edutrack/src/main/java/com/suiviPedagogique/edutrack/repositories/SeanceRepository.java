@@ -19,6 +19,8 @@ public interface SeanceRepository extends JpaRepository<Seance, Integer> {
 
     List<Seance> findByDateCours(LocalDate dateCours);
 
+    List<Seance> findByEnseignantIdAndDateCoursBetween(Integer enseignantId, LocalDate startDate, LocalDate endDate);
+
     @Query("SELECT s FROM Seance s WHERE s.qrCode.code = :token")
     Optional<Seance> findByTokenQRCode(String token);
 
