@@ -2,15 +2,22 @@ import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { environment } from "../../../environments/environment";
-import { EmargementRequest, Emargement } from "../models/attendance.model";
+import {
+  EmargementRequest,
+  Emargement,
+  EmargementScanResponse,
+} from "../models/attendance.model";
 
 @Injectable({ providedIn: "root" })
 export class EmargementService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiBaseUrl;
 
-  scanQRCode(payload: EmargementRequest): Observable<Emargement> {
-    return this.http.post<Emargement>(`${this.baseUrl}/emargements/scan`, payload);
+  scanQRCode(payload: EmargementRequest): Observable<EmargementScanResponse> {
+    return this.http.post<EmargementScanResponse>(
+      `${this.baseUrl}/emargements/scan`,
+      payload,
+    );
   }
 
   getEmargements(): Observable<Emargement[]> {

@@ -93,14 +93,14 @@ public class EmargementService {
         if (emargement == null) {
             emargement = new Emargement();
         } else if (emargement.getStatut() == StatutEmargement.VALIDE) {
-            throw new RuntimeException("Émargement déjà effectué pour cette séance.");
+            throw new RuntimeException("Émargement déjà validé pour cette séance.");
         }
 
         emargement.setDateHeureScan(LocalDateTime.now());
         emargement.setLatitude(request.getLatitude());
         emargement.setLongitude(request.getLongitude());
         emargement.setAdresseApproximative(request.getAdresseApproximative() != null ? request.getAdresseApproximative() : "QR Code");
-        emargement.setStatut(StatutEmargement.VALIDE);
+        emargement.setStatut(StatutEmargement.EN_ATTENTE_FICHE);
         emargement.setEnseignant(seance.getEnseignant());
         emargement.setSeance(seance);
 

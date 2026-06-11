@@ -14,7 +14,8 @@
     </div>
     <h2>Scanner pour émarger</h2>
     <p>
-      Sélectionnez la séance, puis scannez le QR Code affiché par le système.
+      Sélectionnez la séance, scannez le QR Code, puis remplissez
+      automatiquement la fiche de progression.
     </p>
 
     <div class="selected-seance-card" *ngIf="selectedSeance">
@@ -47,13 +48,14 @@
       class="status-hint"
       *ngIf="selectedSeance && !hasCahierForSeance(selectedSeance)"
     >
-      Vous devez remplir le cahier de textes de cette séance avant d'émarger.
+      Après un scan valide, la fiche de progression s'ouvrira automatiquement
+      pour finaliser l'émargement.
     </p>
     <p
       class="status-hint success"
       *ngIf="selectedSeance && hasCahierForSeance(selectedSeance)"
     >
-      Cahier de textes détecté : vous pouvez scanner le QR Code.
+      Cette séance possède déjà une fiche de progression.
     </p>
 
     <div class="camera-preview" *ngIf="isCameraOpen">
@@ -109,9 +111,8 @@
     </div>
     <div class="card-content">
       <p>
-        L'émargement est validé uniquement si le cahier de textes de la séance
-        est enregistré, le QR Code est encore valide et votre position GPS est
-        autorisée.
+        Le scan du QR Code est obligatoire. Après un scan valide, remplissez la
+        fiche de progression : l'émargement sera alors validé automatiquement.
       </p>
     </div>
   </div>

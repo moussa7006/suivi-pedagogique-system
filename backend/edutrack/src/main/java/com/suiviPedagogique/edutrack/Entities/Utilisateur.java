@@ -47,4 +47,7 @@ public class Utilisateur {
 
     @Column(nullable = false)
     private Boolean forcePasswordChange = false;
+
+    @Column(columnDefinition = "TEXT")
+    private String photoUrl;
 }

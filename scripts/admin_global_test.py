@@ -335,6 +335,31 @@ def login_teacher_and_create_progress():
     teacher_token = body.get("token")
     if not teacher_token:
         raise RuntimeError("Token enseignant absent")
+
+    _, seance_with_qr = request(
+        "POST",
+        f"{API}/seances/{created['seance']['id']}/qr-code",
+        admin_token,
+        {},
+        expected={200},
+    )
+    token_qr = seance_with_qr.get("qrCodeToken")
+    if not token_qr:
+        raise RuntimeError("Token QR absent")
+
+    request(
+        "POST",
+        f"{API}/emargements/scan",
+        teacher_token,
+        {
+            "tokenQRCode": token_qr,
+            "latitude": 12.6392,
+            "longitude": -8.0029,
+            "adresseApproximative": "Test automatisé",
+        },
+        expected={200},
+    )
+
     payload = {
         "dateSaisie": start,
         "contenuDetaille": "Cours test global admin",
@@ -351,22 +376,24 @@ def login_teacher_and_create_progress():
     return str(body)
 
 
-step("Créer fiche progression côté enseignant", login_teacher_and_create_progress)
+step(
+    "Scanner puis créer fiche progression côté enseignant",
+    login_teacher_and_create_progress,
+)
 
 
-def validate_progress_admin():
+def verify_progress_auto_validated():
     fiches = get("/fiche-progression")
     matching = [f for f in fiches if f.get("seanceId") == created["seance"]["id"]]
     if not matching:
         raise RuntimeError("Fiche créée introuvable")
     created["fiche"] = matching[0]
-    body = update(
-        f"/fiche-progression/{created['fiche']['id']}/valider", {"estValideAdmin": True}
-    )
-    return f"fiche={body.get('id')} validée"
+    if created["fiche"].get("estValideAdmin") is not True:
+        raise RuntimeError("La fiche devrait être validée automatiquement")
+    return f"fiche={created['fiche'].get('id')} auto-validée"
 
 
-step("Valider fiche progression côté admin", validate_progress_admin)
+step("Vérifier auto-validation fiche progression", verify_progress_auto_validated)
 
 step(
     "Lister présences / émargements",

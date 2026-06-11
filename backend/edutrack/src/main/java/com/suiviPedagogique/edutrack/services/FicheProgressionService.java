@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,12 +54,18 @@ public class FicheProgressionService {
             throw new RuntimeException("Vous n'êtes pas l'enseignant assigné à cette séance.");
         }
 
+        Emargement emargement = seance.getEmargement();
+        if (emargement == null) {
+            throw new RuntimeException("Vous devez d'abord scanner le QR Code de la séance avant de remplir la fiche de progression.");
+        }
+
         FicheProgression fiche = new FicheProgression();
         fiche.setContenuDetaille(request.getContenuDetaille());
         fiche.setObjectifs(request.getObjectifs());
         fiche.setTravaux(request.getTravaux());
         fiche.setDateSaisie(LocalDate.now());
-        fiche.setEstValideAdmin(false);
+        fiche.setEstValideAdmin(true);
+        fiche.setDateValidation(LocalDate.now());
         fiche.setEnseignant(seance.getEnseignant());
         fiche.setSeance(seance);
 
@@ -68,28 +74,10 @@ public class FicheProgressionService {
         seance.setFicheProgression(fiche);
         seanceRepository.save(seance);
 
-        LocalDate today = LocalDate.now();
-        LocalTime now = LocalTime.now();
+        emargement.setStatut(StatutEmargement.VALIDE);
+        emargementRepository.save(emargement);
 
-        boolean estDansLesTemps = true;
-        if (!seance.getDateCours().equals(today)) {
-            estDansLesTemps = false;
-        } else if (now.isAfter(seance.getHeureFinReelle())) {
-            estDansLesTemps = false;
-        }
-
-        Emargement emargement = seance.getEmargement();
-        if (emargement != null) {
-            if (estDansLesTemps) {
-                emargement.setStatut(StatutEmargement.VALIDE);
-                emargementRepository.save(emargement);
-                return "Fiche de progression enregistrée et émargement confirmé avec succès.";
-            } else {
-                return "Fiche de progression enregistrée. L'émargement reste non confirmé car le délai est dépassé.";
-            }
-        }
-
-        return "Fiche de progression enregistrée. (Aucun émargement trouvé à confirmer).";
+        return "Fiche de progression enregistrée et émargement validé automatiquement.";
     }
 
     public List<FicheProgressionDto> getAllFicheProgressions() {
@@ -102,7 +90,7 @@ public class FicheProgressionService {
             dto.setTravaux(f.getTravaux());
             dto.setEstValideAdmin(f.getEstValideAdmin());
             dto.setDateValidation(f.getDateValidation());
-            
+
             Seance seance = f.getSeance();
             if (seance != null) {
                 dto.setSeanceId(seance.getId());
@@ -123,22 +111,4 @@ public class FicheProgressionService {
         }).collect(Collectors.toList());
     }
 
-    @Transactional
-    public FicheProgressionDto validerFicheProgression(Integer id, Boolean estValide) {
-        FicheProgression f = ficheProgressionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Fiche de progression introuvable."));
-        f.setEstValideAdmin(estValide);
-        f.setDateValidation(LocalDate.now());
-        ficheProgressionRepository.save(f);
-        
-        FicheProgressionDto dto = new FicheProgressionDto();
-        dto.setId(f.getId());
-        dto.setDateSaisie(f.getDateSaisie());
-        dto.setContenuDetaille(f.getContenuDetaille());
-        dto.setObjectifs(f.getObjectifs());
-        dto.setTravaux(f.getTravaux());
-        dto.setEstValideAdmin(f.getEstValideAdmin());
-        dto.setDateValidation(f.getDateValidation());
-        return dto;
-    }
 }
