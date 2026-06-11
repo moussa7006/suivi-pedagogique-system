@@ -55,7 +55,24 @@ public class UtilisateurService {
         if(dto.getAdresse() != null) u.setAdresse(dto.getAdresse());
         if(dto.getMatricule() != null) u.setMatricule(dto.getMatricule());
         if(dto.getActif() != null) u.setActif(dto.getActif());
+        if(dto.getPhotoUrl() != null) u.setPhotoUrl(dto.getPhotoUrl());
 
+        return convertToDto(utilisateurRepository.save(u));
+    }
+
+    public UtilisateurDto updatePhotoProfil(Integer id, String photoUrl) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+        Utilisateur currentUser = utilisateurRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new RuntimeException("Utilisateur actuel non trouvé"));
+
+        if (!currentUser.getId().equals(id) && currentUser.getRole() != Role.ADMINISTRATEUR) {
+            throw new AccessDeniedException("Vous ne pouvez modifier que votre propre photo de profil");
+        }
+
+        Utilisateur u = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        u.setPhotoUrl(photoUrl);
         return convertToDto(utilisateurRepository.save(u));
     }
 
@@ -77,6 +94,7 @@ public class UtilisateurService {
         dto.setMatricule(u.getMatricule());
         dto.setRole(u.getRole().name());
         dto.setActif(u.getActif());
+        dto.setPhotoUrl(u.getPhotoUrl());
         return dto;
     }
 }

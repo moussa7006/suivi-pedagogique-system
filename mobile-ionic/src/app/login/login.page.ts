@@ -1,5 +1,5 @@
 import { Component, inject } from "@angular/core";
-import { Router } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import {
   FormsModule,
@@ -27,6 +27,7 @@ import {
   alertCircleOutline,
   arrowForwardOutline,
   playOutline,
+  helpCircleOutline,
 } from "ionicons/icons";
 import { AuthService } from "../core/services/auth.service";
 import { ApiErrorService } from "../core/services/api-error.service";
@@ -40,6 +41,7 @@ import { finalize } from "rxjs";
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    RouterLink,
     IonContent,
     IonItem,
     IonInput,
@@ -69,6 +71,7 @@ export class LoginPage {
       alertCircleOutline,
       arrowForwardOutline,
       playOutline,
+      helpCircleOutline,
     });
 
     this.loginForm = this.fb.group({
@@ -106,7 +109,13 @@ export class LoginPage {
       .login(credentials)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
-        next: () => {
+        next: (user) => {
+          if (user?.forcePasswordChange) {
+            this.router.navigate(["/change-password"], {
+              state: { forced: true },
+            });
+            return;
+          }
           this.router.navigate(["/tabs"]);
         },
         error: (err) => {

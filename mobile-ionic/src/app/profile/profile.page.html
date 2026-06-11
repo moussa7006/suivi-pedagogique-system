@@ -113,6 +113,7 @@
             <ion-input
               [type]="showOldPassword ? 'text' : 'password'"
               placeholder="Ancien mot de passe"
+              [(ngModel)]="oldPassword"
             ></ion-input>
             <ion-icon
               [name]="showOldPassword ? 'eye-off-outline' : 'eye-outline'"
@@ -126,6 +127,7 @@
             <ion-input
               [type]="showNewPassword ? 'text' : 'password'"
               placeholder="Nouveau mot de passe"
+              [(ngModel)]="newPassword"
             ></ion-input>
             <ion-icon
               [name]="showNewPassword ? 'eye-off-outline' : 'eye-outline'"
@@ -142,6 +144,7 @@
             <ion-input
               [type]="showConfirmPassword ? 'text' : 'password'"
               placeholder="Confirmer le mot de passe"
+              [(ngModel)]="confirmPassword"
             ></ion-input>
             <ion-icon
               [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"

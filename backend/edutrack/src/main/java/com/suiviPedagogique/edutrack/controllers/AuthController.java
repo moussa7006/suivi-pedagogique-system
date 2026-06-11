@@ -1,19 +1,23 @@
 package com.suiviPedagogique.edutrack.controllers;
 
-
+import com.suiviPedagogique.edutrack.Dto.ChangePasswordRequest;
+import com.suiviPedagogique.edutrack.Dto.ForgotPasswordRequest;
 import com.suiviPedagogique.edutrack.Dto.LoginRequest;
 import com.suiviPedagogique.edutrack.Dto.RegistrationRequest;
+import com.suiviPedagogique.edutrack.Dto.ResetPasswordRequest;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
-import com.suiviPedagogique.edutrack.services.AuthService;
 import com.suiviPedagogique.edutrack.security.JwtUtil;
+import com.suiviPedagogique.edutrack.services.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,10 +31,6 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    /*public AuthController(AuthService authService) {
-        this.authService = authService;
-    }*/
-
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationRequest request) {
         try {
@@ -38,17 +38,16 @@ public class AuthController {
             Map<String, Object> response = new HashMap<>();
             response.put("id", nouvelUtilisateur.getId());
             response.put("role", nouvelUtilisateur.getRole());
+            response.put("forcePasswordChange", nouvelUtilisateur.getForcePasswordChange());
             response.put("message", "Succès ! Utilisateur inscrit.");
             return ResponseEntity.status(201).body(response);
         } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.status(409).body(error);
+            return conflict(e.getMessage());
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         try {
             Utilisateur utilisateur = authService.authentifier(loginRequest);
             String token = jwtUtil.generateToken(utilisateur.getEmail(), utilisateur.getRole().name());
@@ -63,6 +62,7 @@ public class AuthController {
             response.put("telephone", utilisateur.getTelephone());
             response.put("adresse", utilisateur.getAdresse());
             response.put("role", utilisateur.getRole());
+            response.put("photoUrl", utilisateur.getPhotoUrl());
             response.put("forcePasswordChange", utilisateur.getForcePasswordChange() != null ? utilisateur.getForcePasswordChange() : false);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -71,39 +71,58 @@ public class AuthController {
             return ResponseEntity.status(401).body(error);
         }
     }
+
     @PostMapping("/change-password")
-    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
         try {
-            org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
-            String newPassword = request.get("newPassword");
+            authService.changePassword(email, request.getCurrentPassword(), request.getNewPassword());
 
-            if (newPassword == null || newPassword.trim().isEmpty()) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Le nouveau mot de passe ne peut pas être vide");
-                return ResponseEntity.badRequest().body(error);
-            }
-
-            if (newPassword.length() < 14) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Le mot de passe doit contenir au moins 14 caractères");
-                return ResponseEntity.badRequest().body(error);
-            }
-
-            if (!newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{14,}$")) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre");
-                return ResponseEntity.badRequest().body(error);
-            }
-
-            authService.changePassword(email, newPassword);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Mot de passe modifié avec succès");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
-            error.put("error", "Erreur lors du changement de mot de passe");
-            return ResponseEntity.status(500).body(error);
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        try {
+            authService.createPasswordResetCode(request.getEmail());
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Si cet email est associé à un compte, un code de réinitialisation a été envoyé.");
+            response.put("expiresInMinutes", 10);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return badRequest(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        try {
+            authService.resetPassword(request.getEmail(), request.getCode(), request.getNewPassword());
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Mot de passe réinitialisé avec succès");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return badRequest(e.getMessage());
+        }
+    }
+
+    private ResponseEntity<Map<String, String>> conflict(String message) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", message);
+        return ResponseEntity.status(409).body(error);
+    }
+
+    private ResponseEntity<Map<String, String>> badRequest(String message) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", message);
+        return ResponseEntity.badRequest().body(error);
     }
 }

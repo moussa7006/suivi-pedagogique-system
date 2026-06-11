@@ -28,12 +28,87 @@
     <div class="header-right">
       <ion-button fill="clear" class="notif-btn" (click)="openNotifications()">
         <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
-        <ion-badge color="danger" class="notif-badge"
-          >{{ notificationCount }}</ion-badge
+        <ion-badge
+          *ngIf="notificationCount > 0"
+          color="danger"
+          class="notif-badge"
         >
+          {{ notificationCount > 9 ? '9+' : notificationCount }}
+        </ion-badge>
       </ion-button>
     </div>
   </div>
+
+  <div
+    class="notif-overlay"
+    *ngIf="showNotifications"
+    (click)="closeNotifications()"
+  ></div>
+
+  <section class="notif-panel" *ngIf="showNotifications">
+    <div class="notif-panel__handle"></div>
+    <div class="notif-panel__header">
+      <div>
+        <span class="notif-panel__eyebrow">
+          <ion-icon name="sparkles-outline"></ion-icon>
+          Centre d'alertes
+        </span>
+        <h2>Notifications</h2>
+        <p>
+          {{ notificationCount }} élément{{ notificationCount > 1 ? 's' : '' }}
+          à suivre
+        </p>
+      </div>
+      <ion-button
+        fill="clear"
+        class="notif-panel__close"
+        (click)="closeNotifications()"
+      >
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div
+      class="notif-list"
+      *ngIf="pendingNotifications.length > 0; else emptyNotifications"
+    >
+      <article
+        class="notif-card"
+        *ngFor="let notification of pendingNotifications; let i = index"
+        [class.notif-card--warning]="notification.type === 'warning'"
+        [class.notif-card--info]="notification.type === 'info'"
+        [class.notif-card--success]="notification.type === 'success'"
+        [style.--delay]="(i * 70) + 'ms'"
+      >
+        <div class="notif-card__icon">
+          <ion-icon [name]="notification.icon"></ion-icon>
+        </div>
+        <div class="notif-card__content">
+          <h3>{{ notification.title }}</h3>
+          <p>{{ notification.message }}</p>
+          <button
+            *ngIf="notification.actionLabel"
+            type="button"
+            class="notif-card__action"
+            (click)="handleNotificationAction(notification)"
+          >
+            {{ notification.actionLabel }}
+            <ion-icon name="trending-up-outline"></ion-icon>
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <ng-template #emptyNotifications>
+      <div class="notif-empty">
+        <div class="notif-empty__icon">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+        </div>
+        <h3>Tout est à jour</h3>
+        <p>Aucune notification pour le moment. Continuez comme ça !</p>
+      </div>
+    </ng-template>
+  </section>
 
   <!-- ========================================= -->
   <!-- QUICK STATS ROW                           -->
@@ -65,14 +140,14 @@
   <!-- ACTION TILES GRID 2x2                     -->
   <!-- ========================================= -->
   <div class="action-grid animate-slide-up" style="--delay: 200ms">
-    <!-- TILE 1 - Cahier de Textes -->
+    <!-- TILE 1 - Fiche de Progression -->
     <div class="action-card" (click)="navigateTo('/tabs/tabs/tab3')">
       <div class="action-card__bg action-card__bg--blue"></div>
       <div class="action-card__icon action-card__icon--blue">
         <ion-icon name="book-outline"></ion-icon>
       </div>
-      <span class="action-card__label">Cahier de Textes</span>
-      <span class="action-card__desc">Remplir le cahier</span>
+      <span class="action-card__label">Fiche de Progression</span>
+      <span class="action-card__desc">Remplir la fiche</span>
       <ion-badge
         *ngIf="!isCahierFait"
         color="warning"

@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../shared/notification/notification.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <div class="login-page">
       <!-- Left: Branding Panel -->
@@ -53,14 +53,14 @@ import { NotificationService } from '../../shared/notification/notification.serv
 
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="portal-form">
             <div class="form-group">
-              <label for="username">Identifiant</label>
+              <label for="username">Email</label>
               <div class="input-wrapper">
                 <i class="pi pi-user icon-left"></i>
                 <input
                   id="username"
                   type="text"
                   formControlName="username"
-                  placeholder="Entrez votre identifiant"
+                  placeholder="Entrez votre email"
                   autocomplete="username"
                 />
               </div>
@@ -68,7 +68,7 @@ import { NotificationService } from '../../shared/notification/notification.serv
                 class="error-msg"
                 *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
               >
-                <i class="pi pi-exclamation-circle"></i> Identifiant requis (min. 3 caractères)
+                <i class="pi pi-exclamation-circle"></i> Email valide requis
               </span>
             </div>
 
@@ -96,7 +96,7 @@ import { NotificationService } from '../../shared/notification/notification.serv
                 class="error-msg"
                 *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
               >
-                <i class="pi pi-exclamation-circle"></i> Mot de passe requis (min. 4 caractères)
+                <i class="pi pi-exclamation-circle"></i> Mot de passe requis
               </span>
             </div>
 
@@ -110,6 +110,10 @@ import { NotificationService } from '../../shared/notification/notification.serv
               >
             </button>
           </form>
+
+          <div class="auth-links">
+            <a routerLink="/forgot-password">Mot de passe oublié ?</a>
+          </div>
 
           <div class="security-footer">
             <i class="pi pi-shield"></i>
@@ -799,6 +803,17 @@ import { NotificationService } from '../../shared/notification/notification.serv
           border-radius: 10px;
         }
 
+        .auth-links {
+          margin: 14px 0 4px;
+          text-align: right;
+        }
+
+        .auth-links a {
+          color: #2563eb;
+          font-weight: 800;
+          text-decoration: none;
+        }
+
         .security-footer {
           margin-top: 12px;
         }
@@ -818,8 +833,8 @@ export class LoginComponent {
     private notificationService: NotificationService,
   ) {
     this.loginForm = this.fb.group({
-      username: ['', [Validators.required, Validators.minLength(3)]],
-      password: ['', [Validators.required, Validators.minLength(4)]],
+      username: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required]],
     });
   }
 
@@ -832,7 +847,13 @@ export class LoginComponent {
         motDePasse: formValue.password,
       };
       this.authService.login(payload).subscribe({
-        next: () => this.router.navigate(['/dashboard']),
+        next: (user) => {
+          if (user?.forcePasswordChange) {
+            this.router.navigate(['/change-password'], { state: { forced: true } });
+            return;
+          }
+          this.router.navigate(['/dashboard']);
+        },
         error: () => {
           this.isLoading = false;
           this.notificationService.error('Échec de connexion. Vérifiez vos identifiants.');

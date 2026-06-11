@@ -1,9 +1,9 @@
 package com.suiviPedagogique.edutrack.Dto;
 
+import com.suiviPedagogique.edutrack.security.PasswordPolicy;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -15,15 +15,11 @@ public class RegistrationRequest {
     private String nom;
     @NotBlank(message = "Le prénom est obligatoire")
     private String prenom;
-    @Email(message = "Email invalide")
+    @Email(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$", message = "Format d'email invalide")
     @NotBlank(message = "L'email est obligatoire")
     private String email;
     @NotBlank(message = "Le mot de passe est obligatoire")
-    @Size(min = 14, message = "Le mot de passe doit contenir au moins 14 caractères")
-    @Pattern(
-        regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{14,}$",
-        message = "Le mot de passe doit contenir au moins 14 caractères, dont une majuscule, une minuscule et un chiffre"
-    )
+    @Pattern(regexp = PasswordPolicy.REGEX, message = PasswordPolicy.MESSAGE)
     private String motDePasse;
     @NotBlank(message = "Le matricule est obligatoire")
     private String matricule;
