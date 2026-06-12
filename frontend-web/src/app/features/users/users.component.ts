@@ -701,9 +701,9 @@ export class TeachersComponent implements OnInit {
 
   downloadImportTemplate() {
     const csvContent = [
-      'nom,prenom,email,telephone,matricule',
-      'Keita,Moussa,moussa.keita@example.com,70000000,ENS-001',
-      'Diarra,Aminata,aminata.diarra@example.com,71000000,ENS-002',
+      'nom,prenom,email,telephone,matricule,adresse,specialite,grade,dateEmbauche',
+      'Keita,Moussa,moussa.keita@example.com,70000000,ENS-001,Bamako,Mathématiques,Assistant,2026-01-15',
+      'Diarra,Aminata,aminata.diarra@example.com,71000000,ENS-002,Bamako,Informatique,Maître assistant,15/01/2026',
     ].join('\n');
 
     const blob = new Blob(['\uFEFF' + csvContent], {
