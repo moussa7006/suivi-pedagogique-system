@@ -11,6 +11,9 @@ export interface Utilisateur {
   role: Role;
   actif: boolean;
   photoUrl?: string;
+  specialite?: string;
+  dateEmbauche?: string;
+  grade?: string;
 }
 
 export interface Enseignant extends Utilisateur {

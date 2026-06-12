@@ -5,6 +5,7 @@ import com.suiviPedagogique.edutrack.Dto.ForgotPasswordRequest;
 import com.suiviPedagogique.edutrack.Dto.LoginRequest;
 import com.suiviPedagogique.edutrack.Dto.RegistrationRequest;
 import com.suiviPedagogique.edutrack.Dto.ResetPasswordRequest;
+import com.suiviPedagogique.edutrack.Entities.Enseignant;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
 import com.suiviPedagogique.edutrack.security.JwtUtil;
 import com.suiviPedagogique.edutrack.services.AuthService;
@@ -37,8 +38,23 @@ public class AuthController {
             Utilisateur nouvelUtilisateur = authService.inscription(request);
             Map<String, Object> response = new HashMap<>();
             response.put("id", nouvelUtilisateur.getId());
+            response.put("matricule", nouvelUtilisateur.getMatricule());
+            response.put("nom", nouvelUtilisateur.getNom());
+            response.put("prenom", nouvelUtilisateur.getPrenom());
+            response.put("email", nouvelUtilisateur.getEmail());
+            response.put("telephone", nouvelUtilisateur.getTelephone());
+            response.put("adresse", nouvelUtilisateur.getAdresse());
             response.put("role", nouvelUtilisateur.getRole());
+            response.put("actif", nouvelUtilisateur.getActif());
+            response.put("photoUrl", nouvelUtilisateur.getPhotoUrl());
             response.put("forcePasswordChange", nouvelUtilisateur.getForcePasswordChange());
+
+            if (nouvelUtilisateur instanceof Enseignant enseignant) {
+                response.put("specialite", enseignant.getSpecialite());
+                response.put("dateEmbauche", enseignant.getDateEmbauche());
+                response.put("grade", enseignant.getGrade());
+            }
+
             response.put("message", "Succès ! Utilisateur inscrit.");
             return ResponseEntity.status(201).body(response);
         } catch (Exception e) {
@@ -64,6 +80,13 @@ public class AuthController {
             response.put("role", utilisateur.getRole());
             response.put("photoUrl", utilisateur.getPhotoUrl());
             response.put("forcePasswordChange", utilisateur.getForcePasswordChange() != null ? utilisateur.getForcePasswordChange() : false);
+
+            if (utilisateur instanceof Enseignant enseignant) {
+                response.put("specialite", enseignant.getSpecialite());
+                response.put("dateEmbauche", enseignant.getDateEmbauche());
+                response.put("grade", enseignant.getGrade());
+            }
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
