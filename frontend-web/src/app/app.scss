@@ -412,3 +412,74 @@
     padding: 24px 20px;
   }
 }
+
+@media (max-width: 640px) {
+  .app-header {
+    height: auto;
+    min-height: 64px;
+    padding: 10px 12px;
+    gap: 10px;
+
+    .header-left {
+      min-width: 0;
+      gap: 10px;
+
+      .page-context {
+        min-width: 0;
+      }
+
+      .breadcrumb {
+        display: block;
+        max-width: 42vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    .header-right {
+      gap: 8px;
+
+      .icon-btn,
+      .user-pill .avatar-photo,
+      .user-pill .avatar-initials {
+        width: 38px;
+        height: 38px;
+      }
+
+      .user-pill {
+        gap: 6px;
+        padding: 4px 7px;
+        border-radius: 13px;
+      }
+
+      .profile-dropdown {
+        position: fixed;
+        top: 66px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+      }
+    }
+  }
+}
+
+@media (max-width: 420px) {
+  .app-header {
+    .header-left .breadcrumb {
+      max-width: 34vw;
+    }
+
+    .header-right .icon-btn {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 360px) {
+  .app-header {
+    .header-left .breadcrumb {
+      display: none;
+    }
+  }
+}

@@ -47,6 +47,24 @@ public interface SeanceRepository extends JpaRepository<Seance, Integer> {
 
     @Query("""
             SELECT s FROM Seance s
+            WHERE s.salle.id = :salleId
+              AND s.dateCours = :dateCours
+              AND s.heureDebutReelle <= :currentTime
+              AND s.heureFinReelle >= :currentTime
+              AND s.qrCode IS NOT NULL
+              AND s.qrCode.estValide = true
+              AND s.qrCode.dateHeureExpiration > :now
+            ORDER BY s.heureDebutReelle ASC
+            """)
+    List<Seance> findActiveQrCodesBySalle(
+            @Param("salleId") Integer salleId,
+            @Param("dateCours") LocalDate dateCours,
+            @Param("currentTime") LocalTime currentTime,
+            @Param("now") LocalDateTime now
+    );
+
+    @Query("""
+            SELECT s FROM Seance s
             WHERE s.enseignant.id = :enseignantId
               AND s.dateCours = :dateCours
               AND (:excludeId IS NULL OR s.id <> :excludeId)

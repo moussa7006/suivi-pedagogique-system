@@ -25,6 +25,9 @@ public class Salle {
     @Column(nullable = false)
     private String equipement;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String adresseIp;
+
+    @Column(unique = true)
+    private String tokenAffichage;
 }

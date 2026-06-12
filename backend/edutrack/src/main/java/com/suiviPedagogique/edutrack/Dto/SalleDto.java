@@ -14,4 +14,5 @@ public class SalleDto {
     private Integer capacite;
     private String equipement;
     private String adresseIp;
+    private String tokenAffichage;
 }
