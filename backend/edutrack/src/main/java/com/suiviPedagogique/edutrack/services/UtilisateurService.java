@@ -1,6 +1,7 @@
 package com.suiviPedagogique.edutrack.services;
 
 import com.suiviPedagogique.edutrack.Dto.UtilisateurDto;
+import com.suiviPedagogique.edutrack.Entities.Enseignant;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
 import com.suiviPedagogique.edutrack.Entities.enums.Role;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
@@ -57,6 +58,12 @@ public class UtilisateurService {
         if(dto.getActif() != null) u.setActif(dto.getActif());
         if(dto.getPhotoUrl() != null) u.setPhotoUrl(dto.getPhotoUrl());
 
+        if (u instanceof Enseignant enseignant) {
+            if (dto.getSpecialite() != null) enseignant.setSpecialite(dto.getSpecialite());
+            if (dto.getDateEmbauche() != null) enseignant.setDateEmbauche(dto.getDateEmbauche());
+            if (dto.getGrade() != null) enseignant.setGrade(dto.getGrade());
+        }
+
         return convertToDto(utilisateurRepository.save(u));
     }
 
@@ -95,6 +102,13 @@ public class UtilisateurService {
         dto.setRole(u.getRole().name());
         dto.setActif(u.getActif());
         dto.setPhotoUrl(u.getPhotoUrl());
+
+        if (u instanceof Enseignant enseignant) {
+            dto.setSpecialite(enseignant.getSpecialite());
+            dto.setDateEmbauche(enseignant.getDateEmbauche());
+            dto.setGrade(enseignant.getGrade());
+        }
+
         return dto;
     }
 }
