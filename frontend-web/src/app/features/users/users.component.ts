@@ -171,6 +171,31 @@ import { timeout } from 'rxjs/operators';
             </div>
           </div>
 
+          <div class="form-section" *ngIf="currentTeacher.role === 'ENSEIGNANT'">
+            <div class="section-label">
+              <i class="pi pi-briefcase"></i>
+              <span>Informations enseignant</span>
+            </div>
+            <div class="section-grid">
+              <div class="input-group">
+                <label>Spécialité</label>
+                <input
+                  type="text"
+                  [(ngModel)]="currentTeacher.specialite"
+                  placeholder="Ex: Mathématiques"
+                />
+              </div>
+              <div class="input-group">
+                <label>Grade</label>
+                <input type="text" [(ngModel)]="currentTeacher.grade" placeholder="Ex: Assistant" />
+              </div>
+              <div class="input-group">
+                <label>Date d'embauche</label>
+                <input type="date" [(ngModel)]="currentTeacher.dateEmbauche" />
+              </div>
+            </div>
+          </div>
+
           <div class="form-actions">
             <button class="btn btn-outline" (click)="displayForm = false" [disabled]="isSaving">
               Annuler
@@ -276,6 +301,18 @@ import { timeout } from 'rxjs/operators';
               <div class="detail-item">
                 <i class="pi pi-map-marker"></i>
                 <span>{{ teacher.adresse }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="pi pi-book"></i>
+                <span>{{ teacher.specialite || 'Spécialité non renseignée' }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="pi pi-briefcase"></i>
+                <span>{{ teacher.grade || 'Grade non renseigné' }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="pi pi-calendar"></i>
+                <span>{{ teacher.dateEmbauche || 'Date non renseignée' }}</span>
               </div>
             </div>
           </div>
@@ -521,6 +558,16 @@ export class TeachersComponent implements OnInit {
       adresse: this.currentTeacher.adresse?.trim() ?? '',
       role: this.currentTeacher.role || 'ENSEIGNANT',
       actif: true,
+      specialite:
+        this.currentTeacher.role === 'ENSEIGNANT'
+          ? this.currentTeacher.specialite?.trim()
+          : undefined,
+      dateEmbauche:
+        this.currentTeacher.role === 'ENSEIGNANT'
+          ? this.currentTeacher.dateEmbauche || undefined
+          : undefined,
+      grade:
+        this.currentTeacher.role === 'ENSEIGNANT' ? this.currentTeacher.grade?.trim() : undefined,
     };
 
     if (
@@ -654,9 +701,9 @@ export class TeachersComponent implements OnInit {
 
   downloadImportTemplate() {
     const csvContent = [
-      'nom,prenom,email,telephone,matricule',
-      'Keita,Moussa,moussa.keita@example.com,70000000,ENS-001',
-      'Diarra,Aminata,aminata.diarra@example.com,71000000,ENS-002',
+      'nom,prenom,email,telephone,matricule,adresse,specialite,grade,dateEmbauche',
+      'Keita,Moussa,moussa.keita@example.com,70000000,ENS-001,Bamako,Mathématiques,Assistant,2026-01-15',
+      'Diarra,Aminata,aminata.diarra@example.com,71000000,ENS-002,Bamako,Informatique,Maître assistant,15/01/2026',
     ].join('\n');
 
     const blob = new Blob(['\uFEFF' + csvContent], {

@@ -32,9 +32,13 @@ import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -49,6 +53,8 @@ public class ExcelImportService {
     private final SalleRepository salleRepository;
     private final AnneeUniversitaireRepository anneeUniversitaireRepository;
     private static final String DEFAULT_TEACHER_PASSWORD = "Intec@2026";
+    private static final String DEFAULT_ADDRESS = "Non renseignée";
+    private static final String DEFAULT_TEACHER_VALUE = "Non spécifié";
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", Pattern.CASE_INSENSITIVE);
 
     private final PasswordEncoder passwordEncoder;
@@ -87,6 +93,7 @@ public class ExcelImportService {
         DataFormatter formatter = new DataFormatter();
         String defaultPasswordHash = passwordEncoder.encode(DEFAULT_TEACHER_PASSWORD);
         int totalRows = 0;
+        LocalDate defaultDateEmbauche = LocalDate.now();
 
         Set<String> emailsInFile = new HashSet<>();
         Set<String> matriculesInFile = new HashSet<>();
@@ -109,6 +116,7 @@ public class ExcelImportService {
 
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
+            Map<String, Integer> columns = resolveHeaderColumns(sheet.getRow(0), formatter);
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
@@ -118,13 +126,18 @@ public class ExcelImportService {
                     continue;
                 }
 
-                String nom = getCellValue(row, 0, formatter);
-                String prenom = getCellValue(row, 1, formatter);
-                String email = getCellValue(row, 2, formatter);
-                String telephone = getCellValue(row, 3, formatter);
-                String matricule = getCellValue(row, 4, formatter);
+                String nom = getCellValue(row, columnIndex(columns, 0, "nom"), formatter);
+                String prenom = getCellValue(row, columnIndex(columns, 1, "prenom", "prénom"), formatter);
+                String email = getCellValue(row, columnIndex(columns, 2, "email", "mail"), formatter);
+                String telephone = getCellValue(row, columnIndex(columns, 3, "telephone", "téléphone", "tel"), formatter);
+                String matricule = getCellValue(row, columnIndex(columns, 4, "matricule"), formatter);
+                String adresse = getCellValue(row, columnIndex(columns, 5, "adresse"), formatter);
+                String specialite = getCellValue(row, columnIndex(columns, 6, "specialite", "spécialité"), formatter);
+                String grade = getCellValue(row, columnIndex(columns, 7, "grade"), formatter);
+                String dateEmbaucheValue = getCellValue(row, columnIndex(columns, 8, "dateEmbauche", "date embauche", "date d'embauche", "date_Embauche"), formatter);
 
-                if (isBlank(nom) && isBlank(prenom) && isBlank(email) && isBlank(telephone) && isBlank(matricule)) {
+                if (isBlank(nom) && isBlank(prenom) && isBlank(email) && isBlank(telephone) && isBlank(matricule)
+                        && isBlank(adresse) && isBlank(specialite) && isBlank(grade) && isBlank(dateEmbaucheValue)) {
                     continue;
                 }
 
@@ -144,6 +157,9 @@ public class ExcelImportService {
                 }
                 if (isBlank(prenom)) {
                     rowErrors.add("prénom obligatoire");
+                }
+                if (isBlank(telephone)) {
+                    rowErrors.add("téléphone obligatoire");
                 }
                 if (isBlank(email)) {
                     rowErrors.add("email obligatoire");
@@ -169,6 +185,15 @@ public class ExcelImportService {
                     }
                 }
 
+                LocalDate dateEmbauche = defaultDateEmbauche;
+                if (!isBlank(dateEmbaucheValue)) {
+                    try {
+                        dateEmbauche = parseDate(dateEmbaucheValue);
+                    } catch (IllegalArgumentException e) {
+                        rowErrors.add("date d'embauche invalide, utilisez yyyy-MM-dd ou dd/MM/yyyy");
+                    }
+                }
+
                 if (!rowErrors.isEmpty()) {
                     errors.add("Ligne " + numeroLigne + " : " + String.join(", ", rowErrors) + ".");
                     continue;
@@ -180,15 +205,15 @@ public class ExcelImportService {
                 ens.setEmail(email);
                 ens.setTelephone(telephone);
                 ens.setMatricule(matricule);
+                ens.setAdresse(isBlank(adresse) ? DEFAULT_ADDRESS : adresse);
                 ens.setRole(Role.ENSEIGNANT);
                 ens.setMotDePasse(defaultPasswordHash);
                 ens.setForcePasswordChange(true);
                 ens.setActif(true);
-                
-                // Valeurs par défaut pour les nouveaux champs
-                ens.setSpecialite("Non spécifié");
-                ens.setDateEmbauche(LocalDate.now());
-                ens.setGrade("Non spécifié");
+
+                ens.setSpecialite(isBlank(specialite) ? DEFAULT_TEACHER_VALUE : specialite);
+                ens.setDateEmbauche(dateEmbauche);
+                ens.setGrade(isBlank(grade) ? DEFAULT_TEACHER_VALUE : grade);
 
                 enseignantsToSave.add(ens);
             }
@@ -202,10 +227,48 @@ public class ExcelImportService {
     }
 
     private String getCellValue(Row row, int cellIndex, DataFormatter formatter) {
-        if (row == null || row.getCell(cellIndex) == null) {
+        if (row == null || cellIndex < 0 || row.getCell(cellIndex) == null) {
             return "";
         }
         return formatter.formatCellValue(row.getCell(cellIndex)).trim();
+    }
+
+    private Map<String, Integer> resolveHeaderColumns(Row headerRow, DataFormatter formatter) {
+        Map<String, Integer> columns = new HashMap<>();
+        if (headerRow == null) {
+            return columns;
+        }
+
+        for (int i = 0; i < headerRow.getLastCellNum(); i++) {
+            String header = normalizeHeader(getCellValue(headerRow, i, formatter));
+            if (!header.isEmpty()) {
+                columns.put(header, i);
+            }
+        }
+
+        return columns;
+    }
+
+    private int columnIndex(Map<String, Integer> columns, int fallbackIndex, String... aliases) {
+        for (String alias : aliases) {
+            Integer index = columns.get(normalizeHeader(alias));
+            if (index != null) {
+                return index;
+            }
+        }
+
+        return columns.isEmpty() ? fallbackIndex : -1;
+    }
+
+    private String normalizeHeader(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        return Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9]", "");
     }
 
     private boolean isBlank(String value) {
@@ -222,6 +285,24 @@ public class ExcelImportService {
 
     private String buildDefaultMatricule(int numeroLigne) {
         return "ENS-" + System.currentTimeMillis() + "-" + numeroLigne;
+    }
+
+    private LocalDate parseDate(String value) {
+        String trimmedValue = value.trim();
+        List<DateTimeFormatter> formatters = List.of(
+                DateTimeFormatter.ISO_LOCAL_DATE,
+                DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        );
+
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                return LocalDate.parse(trimmedValue, formatter);
+            } catch (Exception ignored) {
+                // Essayer le format suivant.
+            }
+        }
+
+        throw new IllegalArgumentException("Date invalide");
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -247,8 +328,8 @@ public class ExcelImportService {
                 String heureFinStr = row.getCell(4).getStringCellValue();
                 String nomSalle = row.getCell(5).getStringCellValue();
                 String emailEnseignant = row.getCell(6).getStringCellValue();
-                String nomMatiere = row.getCell(7).getStringCellValue(); 
-                String nomClasse = row.getCell(8).getStringCellValue(); 
+                String nomMatiere = row.getCell(7).getStringCellValue();
+                String nomClasse = row.getCell(8).getStringCellValue();
                 String libelleAnnee = row.getCell(9) != null ? row.getCell(9).getStringCellValue() : null;
 
                 Enseignant ens = enseignantRepository.findByEmail(emailEnseignant)
@@ -263,12 +344,12 @@ public class ExcelImportService {
                         .filter(c -> c.getLibelle().equalsIgnoreCase(nomClasse))
                         .findFirst()
                         .orElseThrow(() -> new RuntimeException("Classe introuvable (Libellé: " + nomClasse + ") à la ligne " + numeroLigne));
-                        
+
                 Salle salle = salleRepository.findAll().stream()
                         .filter(s -> s.getNom().equalsIgnoreCase(nomSalle))
                         .findFirst()
                         .orElseThrow(() -> new RuntimeException("Salle introuvable (Nom: " + nomSalle + "). L'importation est bloquée à la ligne " + numeroLigne));
-                        
+
                 AnneeUniversitaire annee;
                 if (libelleAnnee != null && !libelleAnnee.isEmpty()) {
                     annee = anneeUniversitaireRepository.findAll().stream()

@@ -1,5 +1,7 @@
 package com.suiviPedagogique.edutrack.Dto;
 
+import java.time.LocalDate;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,4 +24,7 @@ public class UtilisateurDto {
     private String role;
     private Boolean actif;
     private String photoUrl;
+    private String specialite;
+    private LocalDate dateEmbauche;
+    private String grade;
 }
