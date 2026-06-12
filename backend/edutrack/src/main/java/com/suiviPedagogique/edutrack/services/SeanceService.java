@@ -1,5 +1,6 @@
 package com.suiviPedagogique.edutrack.services;
 
+import com.suiviPedagogique.edutrack.Dto.QrSalleDisplayDto;
 import com.suiviPedagogique.edutrack.Dto.SeanceDto;
 import com.suiviPedagogique.edutrack.Entities.*;
 import com.suiviPedagogique.edutrack.Entities.enums.Role;
@@ -11,7 +12,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -189,6 +192,35 @@ public class SeanceService {
         qrCodeRepository.save(qrCode);
         seance.setQrCode(qrCode);
         return convertToDto(seanceRepository.save(seance));
+    }
+
+    public QrSalleDisplayDto getQrCodeActifPourSalle(String tokenAffichage) {
+        Salle salle = salleRepository.findByTokenAffichage(tokenAffichage)
+                .orElseThrow(() -> new RuntimeException("Écran de salle non autorisé"));
+
+        List<Seance> seances = seanceRepository.findActiveQrCodesBySalle(
+                salle.getId(),
+                LocalDate.now(),
+                LocalTime.now(),
+                LocalDateTime.now()
+        );
+
+        if (seances.isEmpty()) {
+            return null;
+        }
+
+        Seance seance = seances.get(0);
+        return new QrSalleDisplayDto(
+                seance.getId(),
+                salle.getId(),
+                salle.getNom(),
+                seance.getQrCode().getCode(),
+                seance.getQrCode().getDateHeureExpiration(),
+                seance.getEnseignant() != null
+                        ? seance.getEnseignant().getPrenom() + " " + seance.getEnseignant().getNom()
+                        : null,
+                seance.getClasse() != null ? seance.getClasse().getLibelle() : null
+        );
     }
 
     public SeanceDto getQrCode(Integer id) {
