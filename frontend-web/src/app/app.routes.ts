@@ -26,6 +26,13 @@ export const routes: Routes = [
       ),
   },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
+  {
+    path: 'salle-display/:token',
+    loadComponent: () =>
+      import('./features/salle-display/salle-display.component').then(
+        (m) => m.SalleDisplayComponent,
+      ),
+  },
   { path: 'dashboard', component: DashboardComponent },
   {
     path: 'profile',

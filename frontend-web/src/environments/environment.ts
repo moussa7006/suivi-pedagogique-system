@@ -1,4 +1,6 @@
+const apiHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8099/api',
+  apiUrl: `http://${apiHost}:8099/api`,
 };
