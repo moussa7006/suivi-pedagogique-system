@@ -33,9 +33,13 @@ export class App {
   ) {}
 
   get isLoginPage(): boolean {
-    return ['/login', '/forgot-password', '/reset-password', '/change-password'].some((path) =>
-      this.router.url.startsWith(path),
-    );
+    return [
+      '/login',
+      '/forgot-password',
+      '/reset-password',
+      '/change-password',
+      '/salle-display',
+    ].some((path) => this.router.url.startsWith(path));
   }
 
   @HostListener('document:click')

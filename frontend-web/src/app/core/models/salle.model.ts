@@ -4,5 +4,6 @@ export interface Salle {
   batiment: string;
   capacite: number;
   equipement: string;
-  adresseIp: string;
+  adresseIp?: string;
+  tokenAffichage?: string;
 }

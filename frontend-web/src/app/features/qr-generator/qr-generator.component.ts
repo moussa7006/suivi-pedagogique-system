@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -69,7 +69,7 @@ import { NotificationService } from '../../shared/notification/notification.serv
           <div class="qr-wrapper" [class.blurred]="!isRunning">
             @if (isRunning && qrData) {
               <div class="qrcode-box">
-                <qrcode [qrdata]="qrData" [width]="320" [errorCorrectionLevel]="'M'"></qrcode>
+                <qrcode [qrdata]="qrData" [width]="qrWidth" [errorCorrectionLevel]="'M'"></qrcode>
               </div>
               <p class="qr-payload" style="text-align: center; margin-top: 15px;">
                 <i class="pi pi-check-circle" style="color: #10b981;"></i> QR Code actif pour toute
@@ -385,17 +385,18 @@ import { NotificationService } from '../../shared/notification/notification.serv
         align-items: center;
         justify-content: center;
         position: relative;
-        min-height: 480px;
+        min-height: clamp(340px, 52vw, 480px);
+        overflow: hidden;
       }
 
       .qr-wrapper {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 32px;
+        gap: clamp(16px, 4vw, 32px);
         transition: all 0.4s ease;
         width: 100%;
-        max-width: 380px;
+        max-width: min(380px, 100%);
 
         &.blurred {
           filter: grayscale(0.7) opacity(0.5);
@@ -403,13 +404,15 @@ import { NotificationService } from '../../shared/notification/notification.serv
       }
 
       .qrcode-box {
-        padding: 20px;
+        width: min(100%, 380px);
+        padding: clamp(10px, 3vw, 20px);
         border-radius: 14px;
         border: 2px dashed rgba(226, 232, 240, 0.9);
         background: #f8fafc;
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
         transition: all 0.3s ease;
 
         .session-active & {
@@ -630,8 +633,28 @@ import { NotificationService } from '../../shared/notification/notification.serv
           grid-template-columns: 1fr;
         }
 
+        .settings-card .settings-header {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 10px;
+        }
+
         .qr-display-card {
-          min-height: 400px;
+          min-height: 380px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .card {
+          padding: 14px;
+        }
+
+        .qr-display-card {
+          min-height: 330px;
+        }
+
+        .placeholder {
+          padding: 32px 12px;
         }
       }
     `,
@@ -644,6 +667,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   seances: Seance[] = [];
   selectedSeanceId: string | number = '';
   selectedSeance: Seance | null = null;
+  qrWidth = 320;
   pollingTimer: any;
   todayLogs: any[] = [
     { id: 1, type: 'success' },
@@ -656,10 +680,16 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.updateQrWidth();
     this.loadSeances();
     this.pollingTimer = setInterval(() => {
       this.loadSeances();
     }, 60000); // Polling every 60s
+  }
+
+  @HostListener('window:resize')
+  onWindowResize() {
+    this.updateQrWidth();
   }
 
   loadSeances() {
@@ -709,6 +739,11 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
     if (this.pollingTimer) {
       clearInterval(this.pollingTimer);
     }
+  }
+
+  private updateQrWidth() {
+    const viewport = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    this.qrWidth = Math.max(220, Math.min(320, viewport - 96));
   }
 
   private updateQrDisplayFromSelectedSeance() {
