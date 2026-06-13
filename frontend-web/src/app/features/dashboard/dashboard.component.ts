@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { forkJoin, of, Subscription, interval } from 'rxjs';
@@ -7,6 +7,7 @@ import { TeacherService } from '../../core/services/teacher.service';
 import { ClasseService } from '../../core/services/classe.service';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { AttendanceService } from '../../core/services/attendance.service';
+import { MatiereService } from '../../core/services/matiere.service';
 
 interface StatCard {
   label: string;
@@ -863,22 +864,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
       trendClass: 'neutral',
     },
     {
+      label: 'Matières',
+      value: 0,
+      suffix: '',
+      icon: 'pi pi-book',
+      color: '#f97316',
+      trend: 'Actives',
+      trendClass: 'neutral',
+    },
+    {
       label: 'Séances',
       value: 0,
       suffix: '',
       icon: 'pi pi-calendar-plus',
-      color: '#f97316',
+      color: '#7c3aed',
       trend: 'Planifiées',
       trendClass: 'neutral',
-    },
-    {
-      label: 'Présence',
-      value: 92,
-      suffix: '%',
-      icon: 'pi pi-check-circle',
-      color: '#7c3aed',
-      trend: '+4%',
-      trendClass: 'positive',
     },
   ];
 
@@ -887,6 +888,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private teacherService: TeacherService,
     private classeService: ClasseService,
+    private matiereService: MatiereService,
     private scheduleService: ScheduleService,
     private attendanceService: AttendanceService,
   ) {}
@@ -907,6 +909,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  @HostListener('window:focus')
+  onWindowFocus(): void {
+    this.loadDashboardStats();
+  }
+
+  @HostListener('document:visibilitychange')
+  onVisibilityChange(): void {
+    if (!document.hidden) {
+      this.loadDashboardStats();
+    }
+  }
+
   private loadDashboardStats(): void {
     forkJoin({
       teachers: this.teacherService.getTeachers().pipe(
@@ -920,6 +934,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
         catchError((error) => {
           console.error('[Dashboard] Erreur chargement classes:', error);
           this.hubTiles[0].indicator = 'Erreur API';
+          return of([]);
+        }),
+      ),
+      matieres: this.matiereService.getAll().pipe(
+        catchError((error) => {
+          console.error('[Dashboard] Erreur chargement matières:', error);
+          this.hubTiles[1].indicator = 'Erreur API';
           return of([]);
         }),
       ),
@@ -943,21 +964,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
           return of([]);
         }),
       ),
-    }).subscribe(({ teachers, classes, schedules, seances, attendances }) => {
-      this.stats[0].value = teachers.length;
-      this.hubTiles[2].indicator = `${teachers.length} enseignant${teachers.length > 1 ? 's' : ''}`;
+    }).subscribe(({ teachers, classes, matieres, schedules, seances, attendances }) => {
+      const teacherCount = teachers.length;
+      const classCount = classes.length;
+      const matiereCount = matieres.length;
+      const seanceCount = seances.length;
+      const scheduleCount = schedules.length;
+      const attendanceCount = attendances.length;
 
-      this.stats[1].value = classes.length;
-      this.hubTiles[0].indicator = `${classes.length} classe${classes.length > 1 ? 's' : ''}`;
+      this.stats[0].value = teacherCount;
+      this.hubTiles[2].indicator = `${teacherCount} enseignant${teacherCount > 1 ? 's' : ''}`;
 
-      this.stats[2].value = seances.length;
-      this.hubTiles[3].indicator = `${schedules.length} planning${schedules.length > 1 ? 's' : ''} / ${seances.length} séance${seances.length > 1 ? 's' : ''}`;
+      this.stats[1].value = classCount;
+      this.hubTiles[0].indicator = `${classCount} classe${classCount > 1 ? 's' : ''}`;
 
-      this.hubTiles[5].indicator = `${attendances.length} émargement${attendances.length > 1 ? 's' : ''}`;
-      const confirmedCount = attendances.filter((item) => item.statut === 'VALIDE').length;
-      this.stats[3].value = attendances.length
-        ? Math.round((confirmedCount / attendances.length) * 100)
-        : 0;
+      this.stats[2].value = matiereCount;
+      this.hubTiles[1].indicator = `${matiereCount} matière${matiereCount > 1 ? 's' : ''}`;
+
+      this.stats[3].value = seanceCount;
+      this.hubTiles[3].indicator = `${scheduleCount} planning${scheduleCount > 1 ? 's' : ''} / ${seanceCount} séance${seanceCount > 1 ? 's' : ''}`;
+
+      this.hubTiles[5].indicator = `${attendanceCount} émargement${attendanceCount > 1 ? 's' : ''}`;
 
       const sorted = [...attendances].sort(
         (a, b) => new Date(b.dateHeureScan!).getTime() - new Date(a.dateHeureScan!).getTime(),
