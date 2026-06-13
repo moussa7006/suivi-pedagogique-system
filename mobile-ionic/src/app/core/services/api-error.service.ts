@@ -6,7 +6,10 @@ import { ToastController } from "@ionic/angular/standalone";
 export class ApiErrorService {
   private readonly toastController = inject(ToastController);
 
-  extractMessage(error: unknown, fallback = "Une erreur est survenue."): string {
+  extractMessage(
+    error: unknown,
+    fallback = "Une erreur est survenue.",
+  ): string {
     if (!(error instanceof HttpErrorResponse)) {
       return fallback;
     }
@@ -16,7 +19,11 @@ export class ApiErrorService {
     }
 
     if (typeof error.error === "string" && error.error.trim().length > 0) {
-      return error.error;
+      const rawError = error.error.trim();
+      if (this.looksLikeHtml(rawError)) {
+        return this.messageForStatus(error.status, fallback);
+      }
+      return rawError;
     }
 
     if (typeof error.error === "object" && error.error !== null) {
@@ -31,11 +38,39 @@ export class ApiErrorService {
       }
     }
 
+    return this.messageForStatus(error.status, fallback);
+  }
+
+  private looksLikeHtml(value: string): boolean {
+    const normalized = value.toLowerCase();
+    return (
+      normalized.startsWith("<!doctype html") ||
+      normalized.startsWith("<html") ||
+      normalized.includes("<body")
+    );
+  }
+
+  private messageForStatus(status: number, fallback: string): string {
+    if (status === 0) {
+      return "Impossible de joindre le serveur. Vérifiez que le backend est démarré.";
+    }
+    if (status === 401 || status === 403) {
+      return "Email ou mot de passe incorrect.";
+    }
+    if (status === 404) {
+      return "API introuvable. Vérifiez la configuration du proxy mobile.";
+    }
+    if (status >= 500) {
+      return "Erreur serveur. Réessayez dans un instant.";
+    }
     return fallback;
   }
 
   async presentError(error: unknown, fallback?: string): Promise<void> {
-    const message = this.extractMessage(error, fallback);
+    const message = this.extractMessage(
+      error,
+      fallback ?? "Une erreur est survenue.",
+    );
     const toast = await this.toastController.create({
       message,
       duration: 2800,
