@@ -76,6 +76,11 @@ export const routes: Routes = [
       import('./features/pedagogy/pedagogy.component').then((m) => m.PedagogyComponent),
   },
   {
+    path: 'honoraires',
+    loadComponent: () =>
+      import('./features/honoraires/honoraires.component').then((m) => m.HonorairesComponent),
+  },
+  {
     path: 'departements',
     loadComponent: () =>
       import('./features/departements/departements.component').then((m) => m.DepartementsComponent),

@@ -26,6 +26,11 @@ export const routes: Routes = [
       {
         path: "tab4",
         loadComponent: () =>
+          import("../honoraires/honoraires.page").then((m) => m.HonorairesPage),
+      },
+      {
+        path: "tab5",
+        loadComponent: () =>
           import("../profile/profile.page").then((m) => m.ProfilePage),
       },
       {
