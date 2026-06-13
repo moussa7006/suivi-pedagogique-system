@@ -71,6 +71,12 @@ import { AuthService } from '../../core/services/auth.service';
               <span>Séances (Sessions)</span>
             </a>
           </li>
+          <li>
+            <a routerLink="/honoraires" routerLinkActive="active">
+              <i class="pi pi-money-bill"></i>
+              <span>Honoraires</span>
+            </a>
+          </li>
         </ul>
 
         <div class="nav-section">Référentiels</div>

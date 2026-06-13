@@ -12,6 +12,7 @@ import {
   calendarOutline,
   bookOutline,
   personOutline,
+  cashOutline,
 } from "ionicons/icons";
 
 @Component({
@@ -28,6 +29,7 @@ export class TabsPage {
       gridOutline,
       calendarOutline,
       bookOutline,
+      cashOutline,
       personOutline,
     });
   }
