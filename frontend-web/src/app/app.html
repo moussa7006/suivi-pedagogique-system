@@ -1,0 +1,131 @@
+<app-notification></app-notification>
+<app-confirmation-dialog></app-confirmation-dialog>
+
+<div
+  class="layout-wrapper"
+  [class.authenticated]="authService.isLoggedIn()"
+  [class.login-layout]="isLoginPage"
+>
+  <!-- Sidebar : Uniquement si connecté -->
+  <app-sidebar
+    *ngIf="authService.isLoggedIn()"
+    [isMobileMenuOpen]="isMobileMenuOpen"
+    (mobileMenuClosed)="isMobileMenuOpen = false"
+  >
+  </app-sidebar>
+
+  <!-- Backdrop Mobile pour fermer le menu -->
+  <div 
+    class="mobile-backdrop" 
+    *ngIf="isMobileMenuOpen" 
+    (click)="isMobileMenuOpen = false"
+  ></div>
+
+  <main class="layout-main">
+    <!-- Topbar : Uniquement si connecté -->
+    <header class="app-header" *ngIf="authService.isLoggedIn()">
+      <div class="header-left">
+        <button class="mobile-toggle" (click)="toggleMobileMenu()">
+          <i class="pi pi-bars"></i>
+        </button>
+        <div class="page-context">
+          <span class="breadcrumb">EduTrack / Dashboard</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button class="icon-btn">
+          <i class="pi pi-bell"></i>
+          <span class="dot"></span>
+        </button>
+
+        <div class="divider"></div>
+
+        <div class="profile-menu-wrapper" (click)="$event.stopPropagation()">
+          <button
+            class="user-pill"
+            type="button"
+            [class.open]="isProfileMenuOpen"
+            (click)="toggleProfileMenu($event)"
+            aria-label="Ouvrir le menu profil administrateur"
+          >
+            <ng-container *ngIf="adminPhotoUrl; else topbarInitials">
+              <img
+                class="avatar-photo"
+                [src]="adminPhotoUrl"
+                alt="Photo de profil administrateur"
+              />
+            </ng-container>
+            <ng-template #topbarInitials>
+              <div class="avatar-initials">{{ adminInitials }}</div>
+            </ng-template>
+            <div class="user-meta">
+              <span class="name">{{ adminName }}</span>
+              <span class="role">{{ adminRole }}</span>
+            </div>
+            <i class="pi pi-chevron-down" [class.rotate]="isProfileMenuOpen"></i>
+          </button>
+
+          <div class="profile-dropdown" *ngIf="isProfileMenuOpen">
+            <div class="dropdown-header">
+              <ng-container *ngIf="adminPhotoUrl; else dropdownInitials">
+                <img
+                  class="avatar-photo large"
+                  [src]="adminPhotoUrl"
+                  alt="Photo de profil administrateur"
+                />
+              </ng-container>
+              <ng-template #dropdownInitials>
+                <div class="avatar-initials large">{{ adminInitials }}</div>
+              </ng-template>
+              <div>
+                <strong>{{ adminName }}</strong>
+                <span>{{ adminRole }}</span>
+              </div>
+            </div>
+
+            <button class="dropdown-item" type="button" (click)="goToProfile()">
+              <i class="pi pi-user"></i>
+              Voir mon profil
+            </button>
+
+            <button class="dropdown-item" type="button" (click)="goToChangePassword()">
+              <i class="pi pi-key"></i>
+              Changer le mot de passe
+            </button>
+
+            <button class="dropdown-item danger" type="button" (click)="logout()">
+              <i class="pi pi-sign-out"></i>
+              Déconnexion
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Zone de contenu -->
+    <div class="layout-content">
+      <router-outlet></router-outlet>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar (Visible only on mobile) -->
+    <nav class="mobile-bottom-nav" *ngIf="authService.isLoggedIn()">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <i class="pi pi-home"></i>
+        <span>Accueil</span>
+      </a>
+      <a routerLink="/attendance" routerLinkActive="active" class="nav-item">
+        <i class="pi pi-check-square"></i>
+        <span>Émargements</span>
+      </a>
+      <a routerLink="/qr-generator" routerLinkActive="active" class="nav-item">
+        <i class="pi pi-qrcode"></i>
+        <span>QR Code</span>
+      </a>
+      <button class="nav-item menu-trigger" (click)="isMobileMenuOpen = true">
+        <i class="pi pi-bars"></i>
+        <span>Menu</span>
+      </button>
+    </nav>
+  </main>
+</div>

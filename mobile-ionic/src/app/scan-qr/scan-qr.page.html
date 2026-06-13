@@ -1,0 +1,119 @@
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-button fill="clear" class="back-btn-header" routerLink="/tabs/tabs/tab1">
+    <ion-icon name="arrow-back-outline"></ion-icon>
+  </ion-button>
+
+  <div class="header-section">
+    <h1 class="page-title">Émargement</h1>
+    <p class="page-subtitle">Scannez le QR Code de la séance</p>
+  </div>
+
+  <div class="scanner-card animate-scale-in">
+    <div class="scanner-icon-wrapper">
+      <ion-icon name="scan-outline"></ion-icon>
+    </div>
+    <h2>Scanner pour émarger</h2>
+    <p>
+      Sélectionnez la séance, scannez le QR Code, puis remplissez
+      automatiquement la fiche de progression.
+    </p>
+
+    <div class="selected-seance-card" *ngIf="selectedSeance">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <div>
+        <strong>Séance sélectionnée</strong>
+        <span>{{ formatSeanceLabel(selectedSeance) }}</span>
+      </div>
+    </div>
+
+    <p class="status-hint" *ngIf="!isLoading && seances.length === 0">
+      Aucune séance disponible pour votre compte. Retournez au planning ou
+      actualisez les données.
+    </p>
+
+    <div class="form-group">
+      <ion-select
+        label="Séance"
+        label-placement="stacked"
+        placeholder="Sélectionnez la séance concernée"
+        [(ngModel)]="selectedSeanceId"
+      >
+        <ion-select-option *ngFor="let seance of seances" [value]="seance.id">
+          {{ formatSeanceLabel(seance) }}
+        </ion-select-option>
+      </ion-select>
+    </div>
+
+    <p
+      class="status-hint"
+      *ngIf="selectedSeance && !hasCahierForSeance(selectedSeance)"
+    >
+      Après un scan valide, la fiche de progression s'ouvrira automatiquement
+      pour finaliser l'émargement.
+    </p>
+    <p
+      class="status-hint success"
+      *ngIf="selectedSeance && hasCahierForSeance(selectedSeance)"
+    >
+      Cette séance possède déjà une fiche de progression.
+    </p>
+
+    <div class="camera-preview" *ngIf="isCameraOpen">
+      <video #previewVideo playsinline muted></video>
+    </div>
+
+    <ion-button
+      expand="block"
+      class="scan-btn"
+      (click)="openScanner()"
+      [disabled]="isScanning || isLoading"
+      *ngIf="!isCameraOpen"
+    >
+      <ion-icon slot="start" name="camera-outline"></ion-icon>
+      {{ isScanning ? 'Validation...' : selectedSeance ? 'Scanner le QR Code' :
+      'Sélectionnez une séance' }}
+    </ion-button>
+
+    <ion-button
+      expand="block"
+      color="danger"
+      fill="outline"
+      (click)="stopCamera()"
+      *ngIf="isCameraOpen"
+    >
+      <ion-icon slot="start" name="stop-circle-outline"></ion-icon>
+      Arrêter la caméra
+    </ion-button>
+
+    <div class="manual-fallback" *ngIf="canUseManualFallback">
+      <ion-input
+        class="token-input"
+        label="Token QR de secours"
+        label-placement="stacked"
+        placeholder="Collez temporairement le token QR"
+        [(ngModel)]="manualToken"
+      ></ion-input>
+      <ion-button
+        expand="block"
+        fill="outline"
+        (click)="submitManualToken()"
+        [disabled]="isScanning"
+      >
+        Valider le token de secours
+      </ion-button>
+    </div>
+  </div>
+
+  <div class="info-card animate-slide-up" style="--delay: 100ms">
+    <div class="card-header">
+      <ion-icon name="checkmark-circle-outline"></ion-icon>
+      <h3>Instructions</h3>
+    </div>
+    <div class="card-content">
+      <p>
+        Le scan du QR Code est obligatoire. Après un scan valide, remplissez la
+        fiche de progression : l'émargement sera alors validé automatiquement.
+      </p>
+    </div>
+  </div>
+</ion-content>

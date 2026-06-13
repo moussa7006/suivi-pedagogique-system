@@ -1,0 +1,6 @@
+.git
+backend
+database
+docs
+frontend-web
+mobile-rn

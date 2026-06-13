@@ -1,0 +1,139 @@
+import { Component, HostListener } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
+import { AuthService } from './core/services/auth.service';
+import { SidebarComponent } from './layout/sidebar/sidebar.component';
+import { CommonModule } from '@angular/common';
+import { NotificationComponent } from './shared/notification/notification.component';
+import { ConfirmationDialogComponent } from './shared/confirmation/confirmation-dialog.component';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [
+    RouterOutlet,
+    SidebarComponent,
+    CommonModule,
+    NotificationComponent,
+    ConfirmationDialogComponent,
+  ],
+  templateUrl: './app.html',
+  styleUrl: './app.scss',
+})
+export class App {
+  isMobileMenuOpen = false;
+  isProfileMenuOpen = false;
+
+  public authService = {
+    isLoggedIn: () => !this.isLoginPage && this.authServiceInternal.isLoggedIn(),
+  };
+
+  constructor(
+    public router: Router,
+    private authServiceInternal: AuthService,
+  ) {}
+
+  get isLoginPage(): boolean {
+    return [
+      '/login',
+      '/forgot-password',
+      '/reset-password',
+      '/change-password',
+      '/salle-display',
+    ].some((path) => this.router.url.startsWith(path));
+  }
+
+  @HostListener('document:click')
+  closeProfileMenu(): void {
+    this.isProfileMenuOpen = false;
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  toggleProfileMenu(event: Event): void {
+    event.stopPropagation();
+    this.isProfileMenuOpen = !this.isProfileMenuOpen;
+  }
+
+  logout(): void {
+    this.authServiceInternal.logout();
+    this.isProfileMenuOpen = false;
+    this.isMobileMenuOpen = false;
+    this.router.navigate(['/login']);
+  }
+
+  goToProfile(): void {
+    this.isProfileMenuOpen = false;
+    this.router.navigate(['/profile']);
+  }
+
+  goToChangePassword(): void {
+    this.isProfileMenuOpen = false;
+    this.router.navigate(['/change-password']);
+  }
+
+  get adminName(): string {
+    const user = this.getStoredUser();
+
+    if (user?.prenom && user?.nom) {
+      return `${user.prenom} ${user.nom}`;
+    }
+
+    if (user?.email) {
+      return this.formatNameFromEmail(user.email);
+    }
+
+    return 'Admin User';
+  }
+
+  get adminRole(): string {
+    const role = this.getStoredUser()?.role;
+
+    if (!role) {
+      return 'Administrateur';
+    }
+
+    return role.toUpperCase() === 'ADMIN' ? 'Administrateur' : role;
+  }
+
+  get adminInitials(): string {
+    const initials = this.adminName
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
+
+    return initials || 'AU';
+  }
+
+  get adminPhotoUrl(): string {
+    return this.getStoredUser()?.photoUrl || '';
+  }
+
+  private getStoredUser(): any | null {
+    const savedUser = localStorage.getItem('user');
+
+    if (!savedUser) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(savedUser);
+    } catch {
+      return null;
+    }
+  }
+
+  private formatNameFromEmail(email: string): string {
+    const localPart = email.split('@')[0];
+
+    return localPart
+      .replace(/[._-]+/g, ' ')
+      .split(' ')
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(' ');
+  }
+}

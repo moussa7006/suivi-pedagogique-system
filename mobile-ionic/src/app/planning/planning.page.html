@@ -1,0 +1,132 @@
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Header -->
+  <div class="header-section animate-fade-in">
+    <div class="header-top">
+      <div>
+        <h1 class="page-title">Mon Planning</h1>
+        <p class="page-subtitle">{{ today | date:'EEEE d MMMM y' }}</p>
+      </div>
+      <div class="header-actions">
+        <ion-button fill="clear" class="icon-btn" (click)="refreshPlanning()">
+          <ion-icon name="refresh-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sélecteur de jour amélioré -->
+  <div class="week-selector animate-slide-up">
+    <div
+      *ngFor="let day of weekDays; let i = index"
+      class="day-chip"
+      [class.active]="i === selectedDayIndex"
+      (click)="selectDay(i)"
+    >
+      <span class="day-name">{{ day.name }}</span>
+      <span class="day-number">{{ day.number }}</span>
+      <div class="day-indicator" *ngIf="i === selectedDayIndex"></div>
+    </div>
+  </div>
+
+  <!-- Résumé du jour -->
+  <div class="day-summary animate-fade-in">
+    <div class="summary-badge">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <span
+        >{{ emploisDuTemps.length }} séance{{ emploisDuTemps.length > 1 ? 's' :
+        '' }} aujourd'hui</span
+      >
+    </div>
+  </div>
+
+  <!-- Timeline des cours -->
+  <div class="timeline-container">
+    <div
+      *ngFor="let cours of emploisDuTemps; let i = index"
+      class="course-card animate-slide-up"
+      [style.--delay]="(i * 100) + 'ms'"
+      [class.completed]="cours.status === 'completed'"
+      [class.in-progress]="cours.status === 'in-progress'"
+    >
+      <!-- Ligne de temps -->
+      <div class="timeline-line">
+        <div class="timeline-dot" [class]="cours.status">
+          <ion-icon
+            [name]="cours.status === 'completed' ? 'checkmark-outline' : cours.status === 'in-progress' ? 'play-outline' : 'time-outline'"
+          ></ion-icon>
+        </div>
+        <div class="timeline-connector"></div>
+      </div>
+
+      <!-- Contenu du cours -->
+      <div class="course-content">
+        <div class="course-time">
+          <ion-icon name="time-outline"></ion-icon>
+          <span>{{ cours.horaire }}</span>
+        </div>
+
+        <div class="course-body">
+          <div class="course-header-row">
+            <h3>{{ cours.matiere }}</h3>
+            <ion-badge
+              [color]="cours.status === 'completed' ? 'success' : cours.status === 'in-progress' ? 'warning' : 'primary'"
+              class="status-badge"
+            >
+              {{ cours.statusLabel }}
+            </ion-badge>
+          </div>
+
+          <div class="course-meta">
+            <div class="meta-item">
+              <ion-icon name="location-outline"></ion-icon>
+              <span>{{ cours.salle }}</span>
+            </div>
+            <div class="meta-item" *ngIf="cours.enseignant">
+              <ion-icon name="person-outline"></ion-icon>
+              <span>{{ cours.enseignant }}</span>
+            </div>
+            <div class="meta-item">
+              <ion-icon name="repeat-outline"></ion-icon>
+              <span>{{ cours.type }}</span>
+            </div>
+          </div>
+
+          <ion-button
+            *ngIf="cours.hasQrCode"
+            expand="block"
+            size="small"
+            class="scan-action"
+            routerLink="/scan-qr"
+            [queryParams]="{ seanceId: cours.seanceId }"
+          >
+            <ion-icon slot="start" name="scan-outline"></ion-icon>
+            Scanner / émarger
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div
+    *ngIf="emploisDuTemps.length === 0 && !isLoading"
+    class="empty-state animate-fade-in"
+  >
+    <div class="empty-illustration">
+      <ion-icon name="calendar-outline"></ion-icon>
+    </div>
+    <h3>Aucun cours programmé</h3>
+    <p>
+      Profitez de votre journée ! Aucune séance n'est prévue pour aujourd'hui.
+    </p>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="skeleton-card" *ngFor="let _ of [1,2,3]">
+      <div class="skeleton-line skeleton-time"></div>
+      <div class="skeleton-line skeleton-title"></div>
+      <div class="skeleton-line skeleton-meta"></div>
+    </div>
+  </div>
+</ion-content>
