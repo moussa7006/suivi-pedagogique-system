@@ -1,5 +1,6 @@
 package com.suiviPedagogique.edutrack.services;
 
+import com.suiviPedagogique.edutrack.Dto.QrSalleDisplayDto;
 import com.suiviPedagogique.edutrack.Dto.SeanceDto;
 import com.suiviPedagogique.edutrack.Entities.*;
 import com.suiviPedagogique.edutrack.Entities.enums.Role;
@@ -9,8 +10,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -59,7 +63,7 @@ public class SeanceService {
         }
 
         Seance seance = new Seance();
-        hydrateSeance(seance, dto);
+        hydrateSeance(seance, dto, null);
 
         Seance saved = seanceRepository.save(seance);
         return convertToDto(saved);
@@ -74,13 +78,13 @@ public class SeanceService {
         Seance seance = seanceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Séance non trouvée"));
 
-        hydrateSeance(seance, dto);
+        hydrateSeance(seance, dto, id);
 
         Seance updated = seanceRepository.save(seance);
         return convertToDto(updated);
     }
 
-    private void hydrateSeance(Seance seance, SeanceDto dto) {
+    private void hydrateSeance(Seance seance, SeanceDto dto, Integer seanceId) {
         seance.setDateCours(dto.getDateCours());
         seance.setHeureDebutReelle(dto.getHeureDebutReelle());
         seance.setHeureFinReelle(dto.getHeureFinReelle());
@@ -95,6 +99,7 @@ public class SeanceService {
         if (dto.getEnseignantId() != null) {
             Enseignant enseignant = enseignantRepository.findById(dto.getEnseignantId())
                     .orElseThrow(() -> new RuntimeException("Enseignant non trouvé"));
+            checkProfAvailability(enseignant, dto, seanceId);
             seance.setEnseignant(enseignant);
         }
 
@@ -162,6 +167,7 @@ public class SeanceService {
         return convertToDto(seance);
     }
 
+    @Transactional
     public SeanceDto generateQrCode(Integer id) {
         Utilisateur currentUser = getCurrentUser();
         if (currentUser.getRole() != Role.ADMINISTRATEUR) {
@@ -170,6 +176,8 @@ public class SeanceService {
 
         Seance seance = seanceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Séance non trouvée"));
+
+        validateNoActiveQrOverlapForTeacher(seance);
 
         QRCode qrCode = seance.getQrCode();
         if (qrCode == null) {
@@ -184,6 +192,35 @@ public class SeanceService {
         qrCodeRepository.save(qrCode);
         seance.setQrCode(qrCode);
         return convertToDto(seanceRepository.save(seance));
+    }
+
+    public QrSalleDisplayDto getQrCodeActifPourSalle(String tokenAffichage) {
+        Salle salle = salleRepository.findByTokenAffichage(tokenAffichage)
+                .orElseThrow(() -> new RuntimeException("Écran de salle non autorisé"));
+
+        List<Seance> seances = seanceRepository.findActiveQrCodesBySalle(
+                salle.getId(),
+                LocalDate.now(),
+                LocalTime.now(),
+                LocalDateTime.now()
+        );
+
+        if (seances.isEmpty()) {
+            return null;
+        }
+
+        Seance seance = seances.get(0);
+        return new QrSalleDisplayDto(
+                seance.getId(),
+                salle.getId(),
+                salle.getNom(),
+                seance.getQrCode().getCode(),
+                seance.getQrCode().getDateHeureExpiration(),
+                seance.getEnseignant() != null
+                        ? seance.getEnseignant().getPrenom() + " " + seance.getEnseignant().getNom()
+                        : null,
+                seance.getClasse() != null ? seance.getClasse().getLibelle() : null
+        );
     }
 
     public SeanceDto getQrCode(Integer id) {
@@ -233,5 +270,43 @@ public class SeanceService {
             dto.setFicheProgressionId(seance.getFicheProgression().getId());
         }
         return dto;
+    }
+
+    private void checkProfAvailability(Enseignant enseignant, SeanceDto dto, Integer excludeId) {
+        if (dto.getDateCours() == null || dto.getHeureDebutReelle() == null || dto.getHeureFinReelle() == null) {
+            return;
+        }
+
+        List<Seance> overlaps = seanceRepository.findOverlappingSeancesForTeacher(
+                enseignant.getId(),
+                dto.getDateCours(),
+                dto.getHeureDebutReelle(),
+                dto.getHeureFinReelle(),
+                excludeId
+        );
+
+        if (!overlaps.isEmpty()) {
+            throw new RuntimeException("L'enseignant a déjà une séance programmée sur ce créneau horaire le " + dto.getDateCours() + ".");
+        }
+    }
+
+    private void validateNoActiveQrOverlapForTeacher(Seance seance) {
+        if (seance.getEnseignant() == null || seance.getDateCours() == null
+                || seance.getHeureDebutReelle() == null || seance.getHeureFinReelle() == null) {
+            throw new RuntimeException("La séance est incomplète : impossible de générer un QR code.");
+        }
+
+        List<Seance> overlaps = seanceRepository.findOverlappingSeancesWithActiveQrForTeacher(
+                seance.getEnseignant().getId(),
+                seance.getDateCours(),
+                seance.getHeureDebutReelle(),
+                seance.getHeureFinReelle(),
+                seance.getId(),
+                LocalDateTime.now()
+        );
+
+        if (!overlaps.isEmpty()) {
+            throw new RuntimeException("Impossible de générer le QR code : cet enseignant possède déjà un QR code actif sur un autre cours simultané.");
+        }
     }
 }

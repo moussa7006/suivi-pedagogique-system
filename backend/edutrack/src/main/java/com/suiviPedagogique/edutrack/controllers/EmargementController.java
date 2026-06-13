@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.suiviPedagogique.edutrack.Entities.enums.StatutEmargement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,9 +20,11 @@ public class EmargementController {
     public ResponseEntity<?> scanQRCode(@RequestBody EmargementRequest request) {
         try {
             com.suiviPedagogique.edutrack.Entities.Emargement emargement = emargementService.faireEmargement(request);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Émargement validé avec succès !");
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Scan validé. Veuillez remplir la fiche de progression pour finaliser l'émargement.");
             response.put("statut", emargement.getStatut().name());
+            response.put("seanceId", emargement.getSeance().getId());
+            response.put("emargementId", emargement.getId());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> errorResponse = new HashMap<>();

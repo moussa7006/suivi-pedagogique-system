@@ -1,4 +1,4 @@
-import { Role } from './enums';
+import { Role } from "./enums";
 
 export interface Utilisateur {
   id?: number;
@@ -10,6 +10,7 @@ export interface Utilisateur {
   adresse: string;
   role: Role;
   actif?: boolean;
+  photoUrl?: string;
 }
 
 export interface LoginRequest {
@@ -28,6 +29,7 @@ export interface LoginResponse {
   adresse: string;
   role: Role;
   forcePasswordChange: boolean;
+  photoUrl?: string;
 }
 
 export interface ChangePasswordRequest {

@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/fiche-progression")
@@ -43,13 +42,4 @@ public class FicheProgressionController {
         return ResponseEntity.ok(ficheProgressionService.getAllFicheProgressions());
     }
 
-    @PutMapping("/{id}/valider")
-    @PreAuthorize("hasRole('ADMINISTRATEUR')")
-    @Operation(summary = "Valider ou rejeter une fiche de progression", description = "Permet à l'admin d'approuver ou rejeter la fiche de progression")
-    public ResponseEntity<FicheProgressionDto> validerFicheProgression(
-            @PathVariable Integer id,
-            @RequestBody Map<String, Boolean> body) {
-        Boolean estValideAdmin = body.get("estValideAdmin");
-        return ResponseEntity.ok(ficheProgressionService.validerFicheProgression(id, estValideAdmin));
-    }
 }

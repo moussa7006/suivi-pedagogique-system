@@ -5,6 +5,7 @@ import com.suiviPedagogique.edutrack.Entities.AnneeUniversitaire;
 import com.suiviPedagogique.edutrack.repositories.AnneeUniversitaireRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,7 @@ public class AnneeUniversitaireService {
     public AnneeUniversitaireDto update(Integer id, AnneeUniversitaireDto dto) {
         AnneeUniversitaire annee = anneeUniversitaireRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Année universitaire non trouvée"));
+
         hydrate(annee, dto);
         return toDto(anneeUniversitaireRepository.save(annee));
     }
@@ -49,16 +51,33 @@ public class AnneeUniversitaireService {
         if (dto.getLibelle() != null) annee.setLibelle(dto.getLibelle());
         if (dto.getDateDebut() != null) annee.setDateDebut(dto.getDateDebut());
         if (dto.getDateFin() != null) annee.setDateFin(dto.getDateFin());
-        if (dto.getActive() != null) annee.setActive(dto.getActive());
+
+        if (annee.getDateDebut() == null || annee.getDateFin() == null) {
+            throw new IllegalArgumentException("Les dates de début et de fin sont obligatoires");
+        }
+        if (!annee.getDateDebut().isBefore(annee.getDateFin())) {
+            throw new IllegalArgumentException("La date de début doit être antérieure à la date de fin");
+        }
+
+        annee.setActive(isActive(annee.getDateDebut(), annee.getDateFin()));
+    }
+
+    private boolean isActive(LocalDate dateDebut, LocalDate dateFin) {
+        LocalDate today = LocalDate.now();
+        return !today.isBefore(dateDebut) && !today.isAfter(dateFin);
     }
 
     private AnneeUniversitaireDto toDto(AnneeUniversitaire annee) {
+        Boolean active = annee.getDateDebut() != null && annee.getDateFin() != null
+                ? isActive(annee.getDateDebut(), annee.getDateFin())
+                : annee.getActive();
+
         return new AnneeUniversitaireDto(
                 annee.getId(),
                 annee.getLibelle(),
                 annee.getDateDebut(),
                 annee.getDateFin(),
-                annee.getActive()
+                active
         );
     }
 }

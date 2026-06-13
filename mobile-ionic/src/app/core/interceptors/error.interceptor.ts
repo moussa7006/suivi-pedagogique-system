@@ -15,7 +15,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       const isLoginEndpoint = req.url.includes("/auth/login");
 
       if (isUnauthorized && !isLoginEndpoint) {
-        tokenStorage.clearToken();
+        void tokenStorage.clearToken();
         void router.navigate(["/login"]);
       }
 

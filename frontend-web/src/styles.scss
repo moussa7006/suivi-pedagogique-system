@@ -63,6 +63,64 @@ app-root {
   height: 100%;
 }
 
+.error-banner,
+.form-message.error {
+  position: fixed !important;
+  top: 22px !important;
+  left: 50% !important;
+  right: auto !important;
+  z-index: 10000 !important;
+  width: min(420px, calc(100vw - 32px)) !important;
+  margin: 0 !important;
+  padding: 16px 18px 16px 56px !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.97) !important;
+  color: #991b1b !important;
+  border: 1px solid rgba(254, 202, 202, 0.95) !important;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18) !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  transform: translateX(-50%) !important;
+  animation: toastInCentered 0.24s ease-out !important;
+}
+
+.error-banner::before,
+.form-message.error::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: #ef4444;
+}
+
+.error-banner i,
+.form-message.error i {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+@keyframes toastInCentered {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 :focus-visible {
   outline: none;
 }
@@ -966,5 +1024,295 @@ app-dashboard {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Responsive foundation                                                       */
+/* -------------------------------------------------------------------------- */
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+:where(.page-container, .attendance-page, .pedagogy-container, .qr-container, .profile-page, .dashboard) {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+:where(.card, .form-card, .table-card, .ref-card, .class-card, .schedule-card, .user-card, .log-card, .summary-card, .stat-card, .hub-tile) {
+  min-width: 0;
+}
+
+:where(.page-header, .header-left, .header-left-top, .header-left-titles, .header-actions, .form-actions, .card-actions, .confirm-actions) {
+  min-width: 0;
+}
+
+:where(.page-header h1, .page-header p, .card-title, .card-name, .detail-item span, .log-card, .content-text, .field-value) {
+  overflow-wrap: anywhere;
+}
+
+:where(.section-grid, .form-grid, .cards-grid, .stats-grid, .stats-summary, .stats-row, .hub-grid, .content-grid) {
+  min-width: 0;
+}
+
+:where(.table-card, .table-responsive, .table-scrollless) {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+:where(table) {
+  max-width: 100%;
+}
+
+:where(.form-row, .filter-row, .filters-row, .toolbar, .table-header, .custom-table-header, .table-header-top, .stats-row, .header-actions, .form-actions, .card-actions) {
+  min-width: 0;
+}
+
+:where(.form-row, .filter-row, .filters-row, .toolbar, .table-header, .custom-table-header, .table-header-top) {
+  flex-wrap: wrap;
+}
+
+:where(.input-group, .search-container, .search-wrapper, .centered-search) {
+  min-width: min(100%, 220px) !important;
+}
+
+:where(.input-group input, .input-group select, .input-group textarea, input, select, textarea) {
+  min-width: 0;
+}
+
+:where(.pro-table, .attendance-table, .custom-table, .data-table) {
+  min-width: 680px;
+}
+
+:where(.card-title, .card-subtitle, .detail-item, .dropdown-header, .user-meta, .name, .role, td, th) {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1200px) {
+  .layout-content {
+    padding-inline: clamp(18px, 3vw, 32px) !important;
+  }
+
+  :where(.stats-overview) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  :where(.section-grid, .form-grid, .content-grid) {
+    grid-template-columns: 1fr !important;
+  }
+
+  :where(.cards-grid, .hub-grid, .stats-grid, .stats-summary, .stats-overview) {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)) !important;
+  }
+
+  :where(.page-header) {
+    align-items: flex-start !important;
+  }
+
+  :where(.header-actions) {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  html {
+    font-size: 15px;
+  }
+
+  .layout-content {
+    padding: 16px 12px 32px !important;
+  }
+
+  :where(.page-container, .attendance-page, .pedagogy-container, .qr-container, .dashboard) {
+    gap: 16px !important;
+  }
+
+  :where(.page-header) {
+    flex-direction: column !important;
+    gap: 14px !important;
+  }
+
+  :where(.header-left, .header-left-top) {
+    width: 100%;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  :where(.header-actions, .form-actions, .confirm-actions) {
+    width: 100%;
+    justify-content: stretch !important;
+  }
+
+  :where(.header-actions .btn, .form-actions .btn, .confirm-actions .btn, .card-actions .btn, .card-actions button) {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0 !important;
+  }
+
+  :where(.card-actions, .action-buttons) {
+    flex-wrap: wrap;
+    justify-content: stretch !important;
+  }
+
+  :where(.action-buttons .btn-icon, .card-actions .btn-icon-sm) {
+    flex: 1 1 42px;
+  }
+
+  :where(.btn) {
+    white-space: normal !important;
+    text-align: center;
+  }
+
+  :where(.form-card-body, .card-body) {
+    padding: 16px !important;
+  }
+
+  :where(.form-section) {
+    padding: 12px !important;
+  }
+
+  :where(.cards-grid) {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  :where(.tabs-pill) {
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+    border-radius: 18px !important;
+  }
+
+  :where(.tab-btn) {
+    flex: 1 0 auto;
+    justify-content: center;
+    padding-inline: 14px !important;
+  }
+
+  :where(.search-wrapper) {
+    max-width: 100% !important;
+  }
+
+  :where(.table-header, .custom-table-header, .table-header-top, .toolbar, .filter-row, .filters-row) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  :where(.search-container, .search-wrapper, .centered-search) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  :where(.stat-card, .summary-card, .mini-stat) {
+    align-items: flex-start !important;
+  }
+
+  :where(.detail-item) {
+    align-items: flex-start !important;
+  }
+
+  :where(.detail-item span) {
+    white-space: normal !important;
+    text-overflow: clip !important;
+  }
+
+  :where(.pro-table, .attendance-table, .custom-table, .data-table) {
+    min-width: 560px;
+  }
+}
+
+@media (max-width: 520px) {
+  :where(.form-card, .table-card, .ref-card, .class-card, .schedule-card, .user-card, .log-card, .summary-card, .stat-card) {
+    padding-inline: clamp(14px, 4vw, 18px) !important;
+  }
+
+  :where(.form-card-header, .table-header, .custom-table-header, .card-actions) {
+    padding-inline: 16px !important;
+  }
+
+  :where(.empty-state) {
+    padding: 32px 16px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .layout-content {
+    padding-inline: 10px !important;
+  }
+
+  :where(.card, .form-card, .table-card, .ref-card, .class-card, .schedule-card, .user-card, .log-card) {
+    border-radius: 14px !important;
+  }
+
+  :where(.page-header h1) {
+    font-size: clamp(1.25rem, 8vw, 1.65rem) !important;
+  }
+
+  :where(.btn-back-arrow, .back-arrow-only, .qr-back-arrow-only) {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    border-radius: 12px !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Aggressive Global Responsive Overrides                                     */
+/* -------------------------------------------------------------------------- */
+
+/* Prevent tables from overflowing their containers */
+:where(.table-card) {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: auto !important;
+}
+
+:where(.data-table, .pro-table, table) {
+  min-width: 100%; /* Don't force min-width if not necessary on mobile, but keep it if defined. */
+}
+
+/* Stack grids to 1 column on tablets/mobiles */
+@media (max-width: 768px) {
+  :where(.form-grid, .section-grid, .cards-grid, .hub-grid, .stats-grid) {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Make sure modals fit the screen */
+  :where(.confirm-dialog, .form-card) {
+    width: 95vw !important;
+    max-width: 100% !important;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  :where(.confirm-dialog) {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Ensure actions stack cleanly */
+  :where(.form-actions, .confirm-actions, .card-actions) {
+    flex-direction: column !important;
+    width: 100%;
+  }
+
+  :where(.form-actions .btn, .confirm-actions .btn, .card-actions .btn) {
+    width: 100% !important;
+    margin: 4px 0 !important;
   }
 }

@@ -90,6 +90,18 @@
               <span>{{ cours.type }}</span>
             </div>
           </div>
+
+          <ion-button
+            *ngIf="cours.hasQrCode"
+            expand="block"
+            size="small"
+            class="scan-action"
+            routerLink="/scan-qr"
+            [queryParams]="{ seanceId: cours.seanceId }"
+          >
+            <ion-icon slot="start" name="scan-outline"></ion-icon>
+            Scanner / émarger
+          </ion-button>
         </div>
       </div>
     </div>

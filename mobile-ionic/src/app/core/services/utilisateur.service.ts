@@ -10,10 +10,33 @@ export class UtilisateurService {
   private readonly baseUrl = environment.apiBaseUrl;
 
   listerTous(): Observable<Utilisateur[]> {
-    return this.http.get<Utilisateur[]>(`${this.baseUrl}/utilisateurs/lister-tous`);
+    return this.http.get<Utilisateur[]>(
+      `${this.baseUrl}/utilisateurs/lister-tous`,
+    );
   }
 
   listerParId(id: number): Observable<Utilisateur> {
-    return this.http.get<Utilisateur>(`${this.baseUrl}/utilisateurs/lister/${id}`);
+    return this.http.get<Utilisateur>(
+      `${this.baseUrl}/utilisateurs/lister/${id}`,
+    );
+  }
+
+  modifier(
+    id: number,
+    utilisateur: Partial<Utilisateur>,
+  ): Observable<Utilisateur> {
+    return this.http.put<Utilisateur>(
+      `${this.baseUrl}/utilisateurs/modifier/${id}`,
+      utilisateur,
+    );
+  }
+
+  modifierPhoto(id: number, photoUrl: string): Observable<Utilisateur> {
+    return this.http.patch<Utilisateur>(
+      `${this.baseUrl}/utilisateurs/${id}/photo`,
+      {
+        photoUrl,
+      },
+    );
   }
 }

@@ -4,7 +4,35 @@ import { LoginComponent } from './features/login/login.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./features/forgot-password/forgot-password.component').then(
+        (m) => m.ForgotPasswordComponent,
+      ),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./features/reset-password/reset-password.component').then(
+        (m) => m.ResetPasswordComponent,
+      ),
+  },
+  {
+    path: 'change-password',
+    loadComponent: () =>
+      import('./features/change-password/change-password.component').then(
+        (m) => m.ChangePasswordComponent,
+      ),
+  },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
+  {
+    path: 'salle-display/:token',
+    loadComponent: () =>
+      import('./features/salle-display/salle-display.component').then(
+        (m) => m.SalleDisplayComponent,
+      ),
+  },
   { path: 'dashboard', component: DashboardComponent },
   {
     path: 'profile',
