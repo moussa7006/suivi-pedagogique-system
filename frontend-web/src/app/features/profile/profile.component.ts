@@ -75,7 +75,7 @@ interface ProfileEditForm {
               (change)="onProfilePhotoSelected($event)"
             />
 
-            <button class="photo-btn" type="button" (click)="photoInput.click()">
+            <button class="photo-btn" type="button" (click)="openPhotoPicker($event, photoInput)">
               <i class="pi pi-camera"></i>
               Changer la photo
             </button>
@@ -309,6 +309,18 @@ interface ProfileEditForm {
             (ngSubmit)="submitPasswordChange()"
           >
             <div class="form-group">
+              <label for="currentPassword">Ancien mot de passe</label>
+              <input
+                id="currentPassword"
+                name="currentPassword"
+                type="password"
+                [(ngModel)]="currentPassword"
+                placeholder="Saisir l'ancien mot de passe"
+                required
+              />
+            </div>
+
+            <div class="form-group">
               <label for="newPassword">Nouveau mot de passe</label>
               <input
                 id="newPassword"
@@ -316,7 +328,7 @@ interface ProfileEditForm {
                 type="password"
                 [(ngModel)]="newPassword"
                 placeholder="Saisir le nouveau mot de passe"
-                minlength="6"
+                minlength="14"
                 required
               />
             </div>
@@ -329,7 +341,7 @@ interface ProfileEditForm {
                 type="password"
                 [(ngModel)]="confirmPassword"
                 placeholder="Confirmer le nouveau mot de passe"
-                minlength="6"
+                minlength="14"
                 required
               />
             </div>
@@ -933,6 +945,7 @@ export class ProfileComponent implements OnInit {
 
   isPasswordFormOpen = false;
   isChangingPassword = false;
+  currentPassword = '';
   newPassword = '';
   confirmPassword = '';
   passwordSuccessMessage = '';
@@ -1005,6 +1018,12 @@ export class ProfileComponent implements OnInit {
     this.syncProfileForm();
   }
 
+  openPhotoPicker(event: Event, input: HTMLInputElement): void {
+    event.preventDefault();
+    event.stopPropagation();
+    input.click();
+  }
+
   onProfilePhotoSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -1030,14 +1049,7 @@ export class ProfileComponent implements OnInit {
 
     reader.onload = () => {
       const photoUrl = String(reader.result || '');
-      this.updateStoredProfilePhoto(photoUrl);
-      this.profile = {
-        ...this.profile,
-        photoUrl,
-      };
-      this.profileSuccessMessage = 'Photo de profil mise à jour.';
-      this.profileErrorMessage = '';
-      input.value = '';
+      this.saveProfilePhoto(photoUrl, input);
     };
 
     reader.onerror = () => {
@@ -1049,19 +1061,14 @@ export class ProfileComponent implements OnInit {
   }
 
   removeProfilePhoto(): void {
-    this.updateStoredProfilePhoto('');
-    this.profile = {
-      ...this.profile,
-      photoUrl: '',
-    };
-    this.profileSuccessMessage = 'Photo de profil retirée.';
-    this.profileErrorMessage = '';
+    this.saveProfilePhoto('');
   }
 
   togglePasswordForm(): void {
     this.isPasswordFormOpen = !this.isPasswordFormOpen;
     this.passwordSuccessMessage = '';
     this.passwordErrorMessage = '';
+    this.currentPassword = '';
     this.newPassword = '';
     this.confirmPassword = '';
     this.isEditFormOpen = false;
@@ -1090,7 +1097,7 @@ export class ProfileComponent implements OnInit {
     this.http
       .put<any>(`${environment.apiUrl}/utilisateurs/modifier/${this.profile.id}`, {
         ...this.profileForm,
-        role: this.profileForm.role || 'ADMIN',
+        role: this.profileForm.role || 'ADMINISTRATEUR',
       })
       .subscribe({
         next: (updatedUser) => {
@@ -1121,8 +1128,9 @@ export class ProfileComponent implements OnInit {
     this.passwordSuccessMessage = '';
     this.passwordErrorMessage = '';
 
-    if (!this.newPassword || !this.confirmPassword) {
-      this.passwordErrorMessage = 'Veuillez renseigner et confirmer le nouveau mot de passe.';
+    if (!this.currentPassword || !this.newPassword || !this.confirmPassword) {
+      this.passwordErrorMessage =
+        'Veuillez renseigner l’ancien mot de passe et confirmer le nouveau.';
       return;
     }
 
@@ -1131,9 +1139,9 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{14,}$/.test(this.newPassword)) {
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{14,}$/.test(this.newPassword)) {
       this.passwordErrorMessage =
-        'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre.';
+        'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un symbole.';
       return;
     }
 
@@ -1144,10 +1152,11 @@ export class ProfileComponent implements OnInit {
 
     this.isChangingPassword = true;
 
-    this.authService.changePassword(this.newPassword).subscribe({
+    this.authService.changePassword(this.currentPassword, this.newPassword).subscribe({
       next: () => {
         this.isChangingPassword = false;
         this.passwordSuccessMessage = 'Mot de passe modifié avec succès.';
+        this.currentPassword = '';
         this.newPassword = '';
         this.confirmPassword = '';
 
@@ -1166,9 +1175,10 @@ export class ProfileComponent implements OnInit {
           }
         }
       },
-      error: () => {
+      error: (err) => {
         this.isChangingPassword = false;
-        this.passwordErrorMessage = 'Impossible de modifier le mot de passe. Veuillez réessayer.';
+        this.passwordErrorMessage =
+          err?.error?.error || 'Impossible de modifier le mot de passe. Veuillez réessayer.';
       },
     });
   }
@@ -1181,7 +1191,7 @@ export class ProfileComponent implements OnInit {
       email: this.profile.email,
       telephone: this.profile.telephone,
       adresse: this.profile.adresse,
-      role: this.profile.role === 'Administrateur' ? 'ADMIN' : this.profile.role,
+      role: this.profile.role === 'Administrateur' ? 'ADMINISTRATEUR' : this.profile.role,
     };
   }
 
@@ -1209,18 +1219,51 @@ export class ProfileComponent implements OnInit {
     this.syncProfileForm();
   }
 
-  private updateStoredProfilePhoto(photoUrl: string): void {
-    const savedUser = localStorage.getItem('user');
-    const user = savedUser ? JSON.parse(savedUser) : {};
+  private saveProfilePhoto(photoUrl: string, input?: HTMLInputElement): void {
+    this.profileSuccessMessage = '';
+    this.profileErrorMessage = '';
 
-    if (photoUrl) {
-      user.photoUrl = photoUrl;
-    } else {
-      delete user.photoUrl;
+    if (!this.profile.id) {
+      this.profileErrorMessage = 'Impossible de retrouver l’identifiant du compte connecté.';
+      if (input) input.value = '';
+      return;
     }
 
-    localStorage.setItem('user', JSON.stringify(user));
-    window.dispatchEvent(new Event('profile-updated'));
+    this.http
+      .patch<any>(`${environment.apiUrl}/utilisateurs/${this.profile.id}/photo`, { photoUrl })
+      .subscribe({
+        next: (updatedUser) => {
+          const savedUser = localStorage.getItem('user');
+          const currentUser = savedUser ? JSON.parse(savedUser) : {};
+          const nextUser = {
+            ...currentUser,
+            ...updatedUser,
+            id: this.profile.id,
+            photoUrl,
+          };
+
+          if (!photoUrl) {
+            delete nextUser.photoUrl;
+          }
+
+          this.authService.updateCurrentUser(nextUser);
+          this.profile = {
+            ...this.profile,
+            photoUrl,
+          };
+          this.profileSuccessMessage = photoUrl
+            ? 'Photo de profil mise à jour.'
+            : 'Photo de profil retirée.';
+          window.dispatchEvent(new Event('profile-updated'));
+          if (input) input.value = '';
+        },
+        error: () => {
+          this.profileErrorMessage = photoUrl
+            ? 'Impossible d’enregistrer cette photo. Veuillez réessayer.'
+            : 'Impossible de retirer la photo. Veuillez réessayer.';
+          if (input) input.value = '';
+        },
+      });
   }
 
   private getNameFromEmail(email: string): string {
@@ -1252,7 +1295,7 @@ export class ProfileComponent implements OnInit {
   private formatRole(role: string): string {
     const normalizedRole = role.toUpperCase();
 
-    if (normalizedRole === 'ADMIN') {
+    if (normalizedRole === 'ADMIN' || normalizedRole === 'ADMINISTRATEUR') {
       return 'Administrateur';
     }
 

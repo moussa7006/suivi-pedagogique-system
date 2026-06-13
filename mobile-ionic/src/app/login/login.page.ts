@@ -15,7 +15,6 @@ import {
   IonButton,
   IonIcon,
   IonSpinner,
-  ToastController,
 } from "@ionic/angular/standalone";
 import { addIcons } from "ionicons";
 import {
@@ -28,6 +27,7 @@ import {
   alertCircleOutline,
   arrowForwardOutline,
   playOutline,
+  helpCircleOutline,
 } from "ionicons/icons";
 import { AuthService } from "../core/services/auth.service";
 import { ApiErrorService } from "../core/services/api-error.service";
@@ -41,6 +41,7 @@ import { finalize } from "rxjs";
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    RouterLink,
     IonContent,
     IonItem,
     IonInput,
@@ -70,18 +71,12 @@ export class LoginPage {
       alertCircleOutline,
       arrowForwardOutline,
       playOutline,
+      helpCircleOutline,
     });
 
     this.loginForm = this.fb.group({
       email: ["", [Validators.required, Validators.email]],
-      password: [
-        "",
-        [
-          Validators.required,
-          Validators.minLength(14),
-          Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{14,}$/),
-        ],
-      ],
+      password: ["", [Validators.required]],
     });
   }
 
@@ -114,7 +109,13 @@ export class LoginPage {
       .login(credentials)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
-        next: () => {
+        next: (user) => {
+          if (user?.forcePasswordChange) {
+            this.router.navigate(["/change-password"], {
+              state: { forced: true },
+            });
+            return;
+          }
           this.router.navigate(["/tabs"]);
         },
         error: (err) => {

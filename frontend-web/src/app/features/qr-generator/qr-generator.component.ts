@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { Seance } from '../../core/models/schedule.model';
+import { NotificationService } from '../../shared/notification/notification.service';
 
 @Component({
   selector: 'app-qr-generator',
@@ -47,43 +48,42 @@ import { Seance } from '../../core/models/schedule.model';
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="teacher"><i class="pi pi-qrcode"></i> Token QR</label>
-            <input id="teacher" type="text" disabled [value]="qrData || 'N/A'" />
-          </div>
-
           <div class="session-status" [ngClass]="{ active: isRunning }">
             <div class="status-dot"></div>
-            <span>{{ isRunning ? 'Session prête pour le scan' : 'En attente de session...' }}</span>
+            <span>{{
+              isRunning
+                ? 'QR Code disponible pour le scan'
+                : 'Aucun QR Code disponible pour cette séance'
+            }}</span>
           </div>
 
-          <button
-            class="btn"
-            [ngClass]="isRunning ? 'btn-danger' : 'btn-primary'"
-            (click)="toggleSession()"
-          >
-            <i class="pi" [ngClass]="isRunning ? 'pi-stop-circle' : 'pi-play-circle'"></i>
-            {{ isRunning ? 'Arrêter la session' : 'Démarrer la session' }}
-          </button>
+          <p class="auto-note">
+            <i class="pi pi-info-circle"></i>
+            La génération du QR Code est automatique. L’administrateur ne peut pas la démarrer ni
+            l’arrêter depuis cet écran.
+          </p>
         </div>
 
         <!-- Section QR Code -->
         <div class="card qr-display-card">
           <div class="qr-wrapper" [class.blurred]="!isRunning">
-            @if (isRunning) {
+            @if (isRunning && qrData) {
               <div class="qrcode-box">
-                <qrcode [qrdata]="qrData" [width]="320" [errorCorrectionLevel]="'M'"></qrcode>
+                <qrcode [qrdata]="qrData" [width]="qrWidth" [errorCorrectionLevel]="'M'"></qrcode>
               </div>
               <p class="qr-payload" style="text-align: center; margin-top: 15px;">
-                <i class="pi pi-check-circle" style="color: #10b981;"></i> QR Code actif pour toute la durée du cours
+                <i class="pi pi-check-circle" style="color: #10b981;"></i> QR Code actif pour toute
+                la durée du cours
               </p>
             } @else {
               <div class="placeholder">
                 <div class="placeholder-icon">
                   <i class="pi pi-shield"></i>
                 </div>
-                <p class="placeholder-text">Sélectionnez et démarrez l'affichage pour le QR Code</p>
-                <p class="placeholder-sub">Le code QR correspond à la séance sélectionnée</p>
+                <p class="placeholder-text">Aucun QR Code actif à afficher</p>
+                <p class="placeholder-sub">
+                  Le QR Code apparaîtra ici lorsqu’il sera généré automatiquement par le système
+                </p>
               </div>
             }
           </div>
@@ -385,17 +385,18 @@ import { Seance } from '../../core/models/schedule.model';
         align-items: center;
         justify-content: center;
         position: relative;
-        min-height: 480px;
+        min-height: clamp(340px, 52vw, 480px);
+        overflow: hidden;
       }
 
       .qr-wrapper {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 32px;
+        gap: clamp(16px, 4vw, 32px);
         transition: all 0.4s ease;
         width: 100%;
-        max-width: 380px;
+        max-width: min(380px, 100%);
 
         &.blurred {
           filter: grayscale(0.7) opacity(0.5);
@@ -403,13 +404,15 @@ import { Seance } from '../../core/models/schedule.model';
       }
 
       .qrcode-box {
-        padding: 20px;
+        width: min(100%, 380px);
+        padding: clamp(10px, 3vw, 20px);
         border-radius: 14px;
         border: 2px dashed rgba(226, 232, 240, 0.9);
         background: #f8fafc;
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
         transition: all 0.3s ease;
 
         .session-active & {
@@ -630,8 +633,28 @@ import { Seance } from '../../core/models/schedule.model';
           grid-template-columns: 1fr;
         }
 
+        .settings-card .settings-header {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 10px;
+        }
+
         .qr-display-card {
-          min-height: 400px;
+          min-height: 380px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .card {
+          padding: 14px;
+        }
+
+        .qr-display-card {
+          min-height: 330px;
+        }
+
+        .placeholder {
+          padding: 32px 12px;
         }
       }
     `,
@@ -644,19 +667,29 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   seances: Seance[] = [];
   selectedSeanceId: string | number = '';
   selectedSeance: Seance | null = null;
+  qrWidth = 320;
   pollingTimer: any;
   todayLogs: any[] = [
     { id: 1, type: 'success' },
     { id: 2, type: 'warning' },
   ];
 
-  constructor(private scheduleService: ScheduleService) {}
+  constructor(
+    private scheduleService: ScheduleService,
+    private notificationService: NotificationService,
+  ) {}
 
   ngOnInit() {
+    this.updateQrWidth();
     this.loadSeances();
     this.pollingTimer = setInterval(() => {
       this.loadSeances();
     }, 60000); // Polling every 60s
+  }
+
+  @HostListener('window:resize')
+  onWindowResize() {
+    this.updateQrWidth();
   }
 
   loadSeances() {
@@ -667,122 +700,146 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   }
 
   autoSelectSession() {
-    // Ne pas écraser si une session est déjà en cours et non terminée
-    if (this.isRunning && this.selectedSeance) {
-      const now = new Date();
-      const endTime = this.getTimeFromString(this.selectedSeance.heureFinReelle);
-      if (endTime && now < endTime) {
-        return; // Session toujours valide, on ne fait rien
-      }
-    }
-
-    const now = new Date();
-    // Chercher la séance la plus pertinente (commence dans <= 15 min, ou en cours)
     let bestSeance: Seance | null = null;
 
     for (const s of this.seances) {
-      const startTime = this.getTimeFromString(s.heureDebutReelle);
-      const endTime = this.getTimeFromString(s.heureFinReelle);
-      
-      if (!startTime || !endTime) continue;
-
-      const startMinus15 = new Date(startTime.getTime() - 15 * 60000);
-
-      // Si on est dans le créneau (de H-15min jusqu'à la fin)
-      if (now >= startMinus15 && now <= endTime) {
-        // On vérifie si le statut est PREVUE (si le prof scanne, ça passera à EN_COURS ou autre)
-        if (s.statut === 'PREVUE' || s.statut === 'EN_COURS') {
-           // On le garde actif même en cours tant qu'il n'est pas "TERMINEE"
-           // Mais si on veut le faire disparaître strictment au scan du prof, on peut faire s.statut === 'PREVUE'
-           bestSeance = s;
-           break;
-        }
+      if (this.canDisplayQrForSeance(s)) {
+        bestSeance = s;
+        break;
       }
     }
 
     if (bestSeance && bestSeance.id !== Number(this.selectedSeanceId)) {
       this.selectedSeanceId = bestSeance.id!;
       this.onSeanceChange();
-      this.startSession();
-    } else if (!bestSeance && this.isRunning) {
-      // S'il n'y a plus de séance valide, on arrête tout
-      this.stopSession();
+    } else if (bestSeance) {
+      this.selectedSeance = bestSeance;
+      this.updateQrDisplayFromSelectedSeance();
+    } else if (!bestSeance) {
+      this.clearQrDisplay();
       this.selectedSeanceId = '';
       this.selectedSeance = null;
     }
   }
 
-  getTimeFromString(timeStr: string | any): Date | null {
-    if (!timeStr) return null;
-    const now = new Date();
-    let hours = 0, minutes = 0;
-    
-    if (typeof timeStr === 'string') {
-      const parts = timeStr.split(':');
-      if (parts.length >= 2) {
-        hours = parseInt(parts[0], 10);
-        minutes = parseInt(parts[1], 10);
-      }
-    } else if (Array.isArray(timeStr) && timeStr.length >= 2) {
-      hours = timeStr[0];
-      minutes = timeStr[1];
-    }
-    
-    now.setHours(hours, minutes, 0, 0);
-    return now;
-  }
-
   onSeanceChange() {
-    this.stopSession();
     this.errorMessage = '';
 
     if (this.selectedSeanceId) {
       this.selectedSeance = this.seances.find((s) => s.id == this.selectedSeanceId) || null;
-      this.qrData = this.selectedSeance?.qrCodeToken || '';
+      this.updateQrDisplayFromSelectedSeance();
     } else {
       this.selectedSeance = null;
-      this.qrData = '';
+      this.clearQrDisplay();
     }
   }
 
   ngOnDestroy() {
-    this.stopSession();
+    this.clearQrDisplay();
     if (this.pollingTimer) {
       clearInterval(this.pollingTimer);
     }
   }
 
-  toggleSession() {
-    if (this.isRunning) {
-      this.stopSession();
-    } else {
-      if (this.selectedSeance) {
-        this.startSession();
-      } else {
-        alert("Veuillez d'abord sélectionner une séance.");
+  private updateQrWidth() {
+    const viewport = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    this.qrWidth = Math.max(220, Math.min(320, viewport - 96));
+  }
+
+  private updateQrDisplayFromSelectedSeance() {
+    if (!this.selectedSeance || !this.canDisplayQrForSeance(this.selectedSeance)) {
+      this.clearQrDisplay();
+      return;
+    }
+
+    this.qrData = this.selectedSeance.qrCodeToken || '';
+    this.isRunning = !!this.qrData;
+  }
+
+  private canDisplayQrForSeance(seance: Seance): boolean {
+    if (!seance.qrCodeToken || (seance.statut !== 'PREVUE' && seance.statut !== 'EN_COURS')) {
+      return false;
+    }
+
+    const startDateTime = this.getDateTimeFromSeance(seance.dateCours, seance.heureDebutReelle);
+    const endDateTime = this.getDateTimeFromSeance(seance.dateCours, seance.heureFinReelle);
+
+    if (!startDateTime || !endDateTime) {
+      return false;
+    }
+
+    const now = new Date();
+    const visibleFrom = new Date(startDateTime.getTime() - 15 * 60000);
+
+    return now >= visibleFrom && now <= endDateTime;
+  }
+
+  private getDateTimeFromSeance(dateValue: string | any, timeValue: string | any): Date | null {
+    const dateParts = this.extractDateParts(dateValue);
+    const timeParts = this.extractTimeParts(timeValue);
+
+    if (!dateParts || !timeParts) {
+      return null;
+    }
+
+    return new Date(
+      dateParts.year,
+      dateParts.month - 1,
+      dateParts.day,
+      timeParts.hours,
+      timeParts.minutes,
+      timeParts.seconds,
+      0,
+    );
+  }
+
+  private extractDateParts(
+    dateValue: string | any,
+  ): { year: number; month: number; day: number } | null {
+    if (!dateValue) {
+      return null;
+    }
+
+    if (typeof dateValue === 'string') {
+      const [year, month, day] = dateValue.split('-').map((part) => Number(part));
+      if (year && month && day) {
+        return { year, month, day };
       }
     }
+
+    if (Array.isArray(dateValue) && dateValue.length >= 3) {
+      return { year: Number(dateValue[0]), month: Number(dateValue[1]), day: Number(dateValue[2]) };
+    }
+
+    return null;
   }
 
-  startSession() {
-    if (!this.selectedSeance?.id) return;
+  private extractTimeParts(
+    timeValue: string | any,
+  ): { hours: number; minutes: number; seconds: number } | null {
+    if (!timeValue) {
+      return null;
+    }
 
-    this.errorMessage = '';
-    this.scheduleService.generateQrCode(this.selectedSeance.id).subscribe({
-      next: (updatedSeance) => {
-        this.selectedSeance = updatedSeance;
-        this.qrData = updatedSeance.qrCodeToken || '';
-        this.isRunning = !!this.qrData;
-      },
-      error: (error) => {
-        console.error('[QR] Erreur génération QR:', error);
-        this.errorMessage = error?.error?.error || 'Impossible de générer le QR code.';
-        // On ne fait pas d'alert en mode automatique pour ne pas bloquer l'écran
-      },
-    });
+    if (typeof timeValue === 'string') {
+      const [hours, minutes, seconds = 0] = timeValue.split(':').map((part) => Number(part));
+      if (Number.isFinite(hours) && Number.isFinite(minutes)) {
+        return { hours, minutes, seconds: Number(seconds) || 0 };
+      }
+    }
+
+    if (Array.isArray(timeValue) && timeValue.length >= 2) {
+      return {
+        hours: Number(timeValue[0]),
+        minutes: Number(timeValue[1]),
+        seconds: Number(timeValue[2]) || 0,
+      };
+    }
+
+    return null;
   }
 
-  stopSession() {
+  private clearQrDisplay() {
     this.isRunning = false;
     this.qrData = '';
   }

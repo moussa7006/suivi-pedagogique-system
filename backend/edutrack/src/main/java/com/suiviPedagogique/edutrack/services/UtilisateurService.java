@@ -1,6 +1,7 @@
 package com.suiviPedagogique.edutrack.services;
 
 import com.suiviPedagogique.edutrack.Dto.UtilisateurDto;
+import com.suiviPedagogique.edutrack.Entities.Enseignant;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
 import com.suiviPedagogique.edutrack.Entities.enums.Role;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
@@ -8,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,9 +19,6 @@ public class UtilisateurService {
 
     @Autowired
     private UtilisateurRepository utilisateurRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     private void verifyAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -36,7 +33,6 @@ public class UtilisateurService {
     public List<UtilisateurDto> getAllUtilisateurs() {
         verifyAdmin();
         return utilisateurRepository.findAll().stream()
-                .filter(u -> Boolean.TRUE.equals(u.getActif()))
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -59,14 +55,31 @@ public class UtilisateurService {
         if(dto.getTelephone() != null) u.setTelephone(dto.getTelephone());
         if(dto.getAdresse() != null) u.setAdresse(dto.getAdresse());
         if(dto.getMatricule() != null) u.setMatricule(dto.getMatricule());
-        if(dto.getRole() != null) u.setRole(normalizeRole(dto.getRole()));
         if(dto.getActif() != null) u.setActif(dto.getActif());
-        if(dto.getMotDePasse() != null && !dto.getMotDePasse().isBlank()) {
-            validatePassword(dto.getMotDePasse());
-            u.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
-            u.setForcePasswordChange(false);
+        if(dto.getPhotoUrl() != null) u.setPhotoUrl(dto.getPhotoUrl());
+
+        if (u instanceof Enseignant enseignant) {
+            if (dto.getSpecialite() != null) enseignant.setSpecialite(dto.getSpecialite());
+            if (dto.getDateEmbauche() != null) enseignant.setDateEmbauche(dto.getDateEmbauche());
+            if (dto.getGrade() != null) enseignant.setGrade(dto.getGrade());
         }
 
+        return convertToDto(utilisateurRepository.save(u));
+    }
+
+    public UtilisateurDto updatePhotoProfil(Integer id, String photoUrl) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+        Utilisateur currentUser = utilisateurRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new RuntimeException("Utilisateur actuel non trouvé"));
+
+        if (!currentUser.getId().equals(id) && currentUser.getRole() != Role.ADMINISTRATEUR) {
+            throw new AccessDeniedException("Vous ne pouvez modifier que votre propre photo de profil");
+        }
+
+        Utilisateur u = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        u.setPhotoUrl(photoUrl);
         return convertToDto(utilisateurRepository.save(u));
     }
 
@@ -74,30 +87,7 @@ public class UtilisateurService {
         verifyAdmin();
         Utilisateur u = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-        u.setActif(false);
-        utilisateurRepository.save(u);
-    }
-
-    private void validatePassword(String motDePasse) {
-        if (motDePasse.length() < 14) {
-            throw new IllegalArgumentException("Le mot de passe doit contenir au moins 14 caractères");
-        }
-        if (!motDePasse.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{14,}$")) {
-            throw new IllegalArgumentException("Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre");
-        }
-    }
-
-    private Role normalizeRole(String role) {
-        if (role == null) {
-            throw new IllegalArgumentException("Le rôle est obligatoire");
-        }
-
-        String normalizedRole = role.trim().toUpperCase();
-        if (normalizedRole.equals("ADMIN")) {
-            return Role.ADMINISTRATEUR;
-        }
-
-        return Role.valueOf(normalizedRole);
+        utilisateurRepository.delete(u);
     }
 
     private UtilisateurDto convertToDto(Utilisateur u) {
@@ -111,6 +101,14 @@ public class UtilisateurService {
         dto.setMatricule(u.getMatricule());
         dto.setRole(u.getRole().name());
         dto.setActif(u.getActif());
+        dto.setPhotoUrl(u.getPhotoUrl());
+
+        if (u instanceof Enseignant enseignant) {
+            dto.setSpecialite(enseignant.getSpecialite());
+            dto.setDateEmbauche(enseignant.getDateEmbauche());
+            dto.setGrade(enseignant.getGrade());
+        }
+
         return dto;
     }
 }

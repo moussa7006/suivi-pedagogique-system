@@ -24,9 +24,7 @@ import { Emargement } from '../../core/models/attendance.model';
             </a>
             <div class="header-left-titles">
               <h1>Suivi des Émargements</h1>
-              <p>
-                Historique des émargements enregistrés ({{ todayLogs.length }} entrées)
-              </p>
+              <p>Historique des émargements enregistrés ({{ todayLogs.length }} entrées)</p>
             </div>
           </div>
         </div>
@@ -126,7 +124,9 @@ import { Emargement } from '../../core/models/attendance.model';
                     <span class="time-cell">
                       <i class="pi pi-clock"></i>
                       {{
-                        log.dateHeureScan ? (log.dateHeureScan | date: 'dd/MM/yy HH:mm') : log.heureSeance
+                        log.dateHeureScan
+                          ? (log.dateHeureScan | date: 'dd/MM/yy HH:mm')
+                          : log.heureSeance
                       }}
                     </span>
                   </td>
@@ -659,6 +659,8 @@ export class AttendanceComponent implements OnInit {
 
   getStatutLabel(statut: string | undefined): string {
     switch (statut) {
+      case 'EN_ATTENTE_FICHE':
+        return 'Scan validé - fiche attendue';
       case 'VALIDE':
         return 'Validé';
       case 'HORS_PERIMETRE':
@@ -680,6 +682,8 @@ export class AttendanceComponent implements OnInit {
 
   getStatusClass(statut: string): string {
     switch (statut) {
+      case 'EN_ATTENTE_FICHE':
+        return 'pending';
       case 'VALIDE':
         return 'valide';
       case 'HORS_PERIMETRE':

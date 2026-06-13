@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiBaseUrl: "/api",
+  // À remplacer par l'URL publique/API de production avant publication mobile.
+  apiBaseUrl: "http://localhost:8099/api",
 };

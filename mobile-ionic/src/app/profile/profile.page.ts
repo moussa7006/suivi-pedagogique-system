@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, NgZone } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { Router, RouterLink } from "@angular/router";
+import { RouterLink } from "@angular/router";
 import {
   IonContent,
   IonButton,
@@ -38,15 +38,12 @@ import {
   eyeOutline,
   eyeOffOutline,
   trashOutline,
-  closeOutline,
 } from "ionicons/icons";
 
-import {
-  AlertController,
-  ActionSheetController,
-} from "@ionic/angular/standalone";
+import { ActionSheetController } from "@ionic/angular/standalone";
 import { AuthService } from "../core/services/auth.service";
 import { ScheduleService } from "../core/services/schedule.service";
+import { UtilisateurService } from "../core/services/utilisateur.service";
 import { finalize } from "rxjs";
 
 @Component({
@@ -68,10 +65,9 @@ import { finalize } from "rxjs";
 export class ProfilePage implements OnInit {
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
-  private alertController = inject(AlertController);
+  private utilisateurService = inject(UtilisateurService);
   private actionSheetController = inject(ActionSheetController);
   private toastController = inject(ToastController);
-  private router = inject(Router);
   private ngZone = inject(NgZone);
 
   isPasswordModalOpen = false;
@@ -92,7 +88,6 @@ export class ProfilePage implements OnInit {
     email: "",
     telephone: "",
     adresse: "",
-    role: "ENSEIGNANT",
     subjects: [] as string[],
     status: "Actif",
     avatar: "https://i.pravatar.cc/150?u=default",
@@ -129,7 +124,6 @@ export class ProfilePage implements OnInit {
       cameraOutline,
       imagesOutline,
       trashOutline,
-      closeOutline,
       globeOutline,
       chevronForwardOutline,
       keyOutline,
@@ -140,11 +134,11 @@ export class ProfilePage implements OnInit {
   }
 
   ngOnInit() {
-    this.loadUserProfile();
+    void this.loadUserProfile();
   }
 
-  private loadUserProfile() {
-    const user = this.authService.getUser();
+  private async loadUserProfile(): Promise<void> {
+    const user = await this.authService.getUser();
     if (user) {
       this.teacher = {
         ...this.teacher,
@@ -155,11 +149,10 @@ export class ProfilePage implements OnInit {
         email: user.email || "",
         telephone: user.telephone || "",
         adresse: user.adresse || "",
-        role: user.role || "ENSEIGNANT",
-        avatar: `https://i.pravatar.cc/150?u=${user.email || user.id || "default"}`,
+        avatar:
+          user.photoUrl ||
+          `https://i.pravatar.cc/150?u=${user.email || user.id || "default"}`,
       };
-      // Charger la photo sauvegardée si elle existe
-      this.loadPhotoFromStorage();
     }
 
     // Charger les statistiques depuis l'API des séances
@@ -181,24 +174,6 @@ export class ProfilePage implements OnInit {
     });
   }
 
-  get fullName(): string {
-    return (
-      `${this.teacher.firstName} ${this.teacher.lastName}`.trim() ||
-      "Enseignant"
-    );
-  }
-
-  get teacherInitials(): string {
-    const first = this.teacher.firstName?.charAt(0).toUpperCase() || "E";
-    const last = this.teacher.lastName?.charAt(0).toUpperCase() || "N";
-    return `${first}${last}`;
-  }
-
-  get roleLabel(): string {
-    const role = this.teacher.role?.toUpperCase();
-    return role === "ADMINISTRATEUR" ? "Administrateur" : "Enseignant";
-  }
-
   openPasswordModal() {
     this.oldPassword = "";
     this.newPassword = "";
@@ -207,6 +182,11 @@ export class ProfilePage implements OnInit {
   }
 
   updatePassword() {
+    if (!this.oldPassword) {
+      this.presentToast("Veuillez renseigner l'ancien mot de passe.", "danger");
+      return;
+    }
+
     if (!this.newPassword || this.newPassword.length < 14) {
       this.presentToast(
         "Le mot de passe doit contenir au moins 14 caractères.",
@@ -215,9 +195,13 @@ export class ProfilePage implements OnInit {
       return;
     }
 
-    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{14,}$/.test(this.newPassword)) {
+    if (
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{14,}$/.test(
+        this.newPassword,
+      )
+    ) {
       this.presentToast(
-        "Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre.",
+        "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un symbole.",
         "danger",
       );
       return;
@@ -231,10 +215,13 @@ export class ProfilePage implements OnInit {
     this.isChangingPassword = true;
 
     this.authService
-      .changePassword(this.newPassword)
+      .changePassword(this.oldPassword, this.newPassword)
       .pipe(finalize(() => (this.isChangingPassword = false)))
       .subscribe({
         next: async () => {
+          this.oldPassword = "";
+          this.newPassword = "";
+          this.confirmPassword = "";
           this.isPasswordModalOpen = false;
           const toast = await this.toastController.create({
             message: "Mot de passe modifié avec succès.",
@@ -244,9 +231,11 @@ export class ProfilePage implements OnInit {
           });
           await toast.present();
         },
-        error: async () => {
+        error: async (err) => {
           const toast = await this.toastController.create({
-            message: "Erreur lors de la modification du mot de passe.",
+            message:
+              err?.error?.error ||
+              "Erreur lors de la modification du mot de passe.",
             duration: 3000,
             color: "danger",
             position: "top",
@@ -258,13 +247,11 @@ export class ProfilePage implements OnInit {
 
   async changePhoto() {
     const actionSheet = await this.actionSheetController.create({
-      header: "Modifier la photo",
-      cssClass: "profile-photo-sheet",
+      header: "Changer la photo de profil",
       buttons: [
         {
-          text: "Prendre une nouvelle photo",
+          text: "Prendre une photo",
           icon: "camera-outline",
-          cssClass: "sheet-action-primary",
           handler: () => {
             this.takePhoto("camera");
           },
@@ -272,25 +259,21 @@ export class ProfilePage implements OnInit {
         {
           text: "Choisir depuis la galerie",
           icon: "images-outline",
-          cssClass: "sheet-action-primary",
           handler: () => {
             this.takePhoto("gallery");
           },
         },
         {
-          text: "Retirer la photo actuelle",
+          text: "Supprimer la photo",
           icon: "trash-outline",
-          cssClass: "sheet-action-danger",
           handler: () => {
-            this.teacher.avatar = `https://i.pravatar.cc/150?u=${this.teacher.email || this.teacher.id || "default"}`;
-            this.savePhotoToStorage("");
+            void this.saveProfilePhoto("");
           },
           role: "destructive",
         },
         {
           text: "Annuler",
           icon: "close-outline",
-          cssClass: "sheet-action-cancel",
           role: "cancel",
         },
       ],
@@ -315,8 +298,7 @@ export class ProfilePage implements OnInit {
 
       if (image.dataUrl) {
         this.ngZone.run(() => {
-          this.teacher.avatar = image.dataUrl!;
-          this.savePhotoToStorage(image.dataUrl!);
+          void this.saveProfilePhoto(image.dataUrl!);
         });
       }
     } catch (error: any) {
@@ -339,12 +321,49 @@ export class ProfilePage implements OnInit {
     }
   }
 
-  private savePhotoToStorage(dataUrl: string) {
-    try {
-      localStorage.setItem("profile_photo", dataUrl);
-    } catch (e) {
-      console.warn("Impossible de sauvegarder la photo dans le stockage local");
+  private async saveProfilePhoto(photoUrl: string): Promise<void> {
+    const user = await this.authService.getUser();
+
+    if (!user?.id) {
+      await this.presentToast(
+        "Impossible de retrouver l’identifiant du compte connecté.",
+        "danger",
+      );
+      return;
     }
+
+    this.utilisateurService.modifierPhoto(user.id, photoUrl).subscribe({
+      next: async (updatedUser) => {
+        const nextUser = {
+          ...user,
+          ...updatedUser,
+          photoUrl,
+        };
+
+        if (!photoUrl) {
+          delete nextUser.photoUrl;
+        }
+
+        await this.authService.setUser(nextUser);
+        this.teacher.avatar =
+          photoUrl ||
+          `https://i.pravatar.cc/150?u=${this.teacher.email || this.teacher.id || "default"}`;
+        await this.presentToast(
+          photoUrl
+            ? "Photo de profil mise à jour."
+            : "Photo de profil supprimée.",
+          "success",
+        );
+      },
+      error: async () => {
+        await this.presentToast(
+          photoUrl
+            ? "Impossible d’enregistrer cette photo."
+            : "Impossible de supprimer la photo.",
+          "danger",
+        );
+      },
+    });
   }
 
   private async presentToast(message: string, color: string = "danger") {
@@ -355,17 +374,6 @@ export class ProfilePage implements OnInit {
       position: "top",
     });
     await toast.present();
-  }
-
-  private loadPhotoFromStorage() {
-    try {
-      const saved = localStorage.getItem("profile_photo");
-      if (saved) {
-        this.teacher.avatar = saved;
-      }
-    } catch (e) {
-      // Ignorer
-    }
   }
 
   getProgressPercent() {
@@ -379,6 +387,6 @@ export class ProfilePage implements OnInit {
   }
 
   logout() {
-    this.authService.logout();
+    void this.authService.logout();
   }
 }

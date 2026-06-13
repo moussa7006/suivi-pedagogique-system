@@ -1,13 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../shared/notification/notification.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <div class="login-page">
       <!-- Left: Branding Panel -->
@@ -52,14 +53,14 @@ import { AuthService } from '../../core/services/auth.service';
 
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="portal-form">
             <div class="form-group">
-              <label for="username">Identifiant</label>
+              <label for="username">Email</label>
               <div class="input-wrapper">
                 <i class="pi pi-user icon-left"></i>
                 <input
                   id="username"
                   type="text"
                   formControlName="username"
-                  placeholder="Entrez votre identifiant"
+                  placeholder="Entrez votre email"
                   autocomplete="username"
                 />
               </div>
@@ -67,7 +68,7 @@ import { AuthService } from '../../core/services/auth.service';
                 class="error-msg"
                 *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
               >
-                <i class="pi pi-exclamation-circle"></i> Identifiant requis (min. 3 caractères)
+                <i class="pi pi-exclamation-circle"></i> Email valide requis
               </span>
             </div>
 
@@ -95,7 +96,7 @@ import { AuthService } from '../../core/services/auth.service';
                 class="error-msg"
                 *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
               >
-                <i class="pi pi-exclamation-circle"></i> Mot de passe requis (min. 4 caractères)
+                <i class="pi pi-exclamation-circle"></i> Mot de passe requis
               </span>
             </div>
 
@@ -109,6 +110,10 @@ import { AuthService } from '../../core/services/auth.service';
               >
             </button>
           </form>
+
+          <div class="auth-links">
+            <a routerLink="/forgot-password">Mot de passe oublié ?</a>
+          </div>
 
           <div class="security-footer">
             <i class="pi pi-shield"></i>
@@ -126,9 +131,10 @@ import { AuthService } from '../../core/services/auth.service';
 
       .login-page {
         display: flex;
-        height: 100vh;
         min-height: 100vh;
-        overflow: hidden;
+        min-height: 100dvh;
+        overflow-x: hidden;
+        overflow-y: auto;
         font-family:
           'Inter',
           -apple-system,
@@ -140,9 +146,13 @@ import { AuthService } from '../../core/services/auth.service';
 
       /* ========== LEFT: BRANDING ========== */
       .login-branding {
-        width: 50%;
+        width: min(50%, 720px);
+        min-height: 100vh;
+        min-height: 100dvh;
         background: linear-gradient(135deg, #0b3a82 0%, #1d4ed8 55%, #f59e0b 100%);
-        position: relative;
+        position: sticky;
+        top: 0;
+        align-self: flex-start;
         overflow: hidden;
       }
 
@@ -369,7 +379,7 @@ import { AuthService } from '../../core/services/auth.service';
       .auth-container {
         width: 100%;
         max-width: 480px;
-        padding: 0 40px;
+        padding: clamp(24px, 5vw, 48px) clamp(18px, 4vw, 40px);
         animation: slideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
         position: relative;
         z-index: 1;
@@ -377,7 +387,7 @@ import { AuthService } from '../../core/services/auth.service';
         flex-direction: column;
         justify-content: center;
         min-height: 100vh;
-        transform: translateY(56px);
+        min-height: 100dvh;
       }
 
       @keyframes slideIn {
@@ -655,8 +665,8 @@ import { AuthService } from '../../core/services/auth.service';
       /* Responsive - Tablet */
       @media (max-width: 900px) {
         .login-page {
-          height: auto;
           min-height: 100vh;
+          min-height: 100dvh;
         }
 
         .login-branding {
@@ -665,15 +675,16 @@ import { AuthService } from '../../core/services/auth.service';
 
         .login-auth {
           width: 100%;
-          height: 100vh;
+          min-height: 100vh;
+          min-height: 100dvh;
           padding: 0;
           align-items: center;
         }
 
         .auth-container {
-          padding: 0 24px;
+          padding: 24px;
           min-height: 100vh;
-          transform: translateY(36px);
+          min-height: 100dvh;
         }
 
         .auth-mobile-logo {
@@ -688,12 +699,13 @@ import { AuthService } from '../../core/services/auth.service';
       /* Responsive - Mobile */
       @media (max-width: 480px) {
         .login-page {
-          height: 100vh;
           min-height: 100vh;
+          min-height: 100dvh;
         }
 
         .login-auth {
           min-height: 100vh;
+          min-height: 100dvh;
           padding: 0;
           align-items: center;
           overflow-y: auto;
@@ -703,7 +715,7 @@ import { AuthService } from '../../core/services/auth.service';
           padding: 20px 16px;
           max-width: 100%;
           min-height: 100vh;
-          transform: translateY(24px);
+          min-height: 100dvh;
         }
 
         .auth-header {
@@ -755,6 +767,7 @@ import { AuthService } from '../../core/services/auth.service';
       @media (max-width: 360px), (max-height: 580px) {
         .login-auth {
           min-height: 100vh;
+          min-height: 100dvh;
           align-items: center;
           overflow-y: auto;
         }
@@ -798,6 +811,17 @@ import { AuthService } from '../../core/services/auth.service';
           border-radius: 10px;
         }
 
+        .auth-links {
+          margin: 14px 0 4px;
+          text-align: right;
+        }
+
+        .auth-links a {
+          color: #2563eb;
+          font-weight: 800;
+          text-decoration: none;
+        }
+
         .security-footer {
           margin-top: 12px;
         }
@@ -814,10 +838,11 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
+    private notificationService: NotificationService,
   ) {
     this.loginForm = this.fb.group({
-      username: ['', [Validators.required, Validators.minLength(3)]],
-      password: ['', [Validators.required, Validators.minLength(4)]],
+      username: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required]],
     });
   }
 
@@ -830,14 +855,23 @@ export class LoginComponent {
         motDePasse: formValue.password,
       };
       this.authService.login(payload).subscribe({
-        next: () => this.router.navigate(['/dashboard']),
+        next: (user) => {
+          if (user?.forcePasswordChange) {
+            this.router.navigate(['/change-password'], { state: { forced: true } });
+            return;
+          }
+          this.router.navigate(['/dashboard']);
+        },
         error: () => {
           this.isLoading = false;
-          alert('Échec de connexion. Vérifiez vos identifiants.');
+          this.notificationService.error('Échec de connexion. Vérifiez vos identifiants.');
         },
       });
     } else {
       this.loginForm.markAllAsTouched();
+      this.notificationService.error(
+        'Veuillez renseigner vos identifiants avant de vous connecter.',
+      );
     }
   }
 }

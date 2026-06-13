@@ -3,11 +3,19 @@ import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { SidebarComponent } from './layout/sidebar/sidebar.component';
 import { CommonModule } from '@angular/common';
+import { NotificationComponent } from './shared/notification/notification.component';
+import { ConfirmationDialogComponent } from './shared/confirmation/confirmation-dialog.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, CommonModule],
+  imports: [
+    RouterOutlet,
+    SidebarComponent,
+    CommonModule,
+    NotificationComponent,
+    ConfirmationDialogComponent,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -25,7 +33,13 @@ export class App {
   ) {}
 
   get isLoginPage(): boolean {
-    return this.router.url.startsWith('/login');
+    return [
+      '/login',
+      '/forgot-password',
+      '/reset-password',
+      '/change-password',
+      '/salle-display',
+    ].some((path) => this.router.url.startsWith(path));
   }
 
   @HostListener('document:click')
@@ -52,6 +66,11 @@ export class App {
   goToProfile(): void {
     this.isProfileMenuOpen = false;
     this.router.navigate(['/profile']);
+  }
+
+  goToChangePassword(): void {
+    this.isProfileMenuOpen = false;
+    this.router.navigate(['/change-password']);
   }
 
   get adminName(): string {

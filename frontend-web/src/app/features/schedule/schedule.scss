@@ -75,6 +75,29 @@
   }
 }
 
+.error-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(153, 27, 27, 0.08);
+
+  i {
+    margin-top: 2px;
+    color: #dc2626;
+  }
+}
+
 /* ── Form Card ── */
 .form-card {
   background: white;
@@ -179,6 +202,12 @@
     &::placeholder {
       color: #94a3b8;
     }
+  }
+
+  .field-hint {
+    color: #dc2626;
+    font-size: 0.78rem;
+    font-weight: 600;
   }
 }
 

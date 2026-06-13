@@ -11,6 +11,8 @@ import com.suiviPedagogique.edutrack.Entities.enums.JourSemaine;
 import com.suiviPedagogique.edutrack.repositories.EmploiDuTempsRepository;
 import com.suiviPedagogique.edutrack.repositories.SeanceRepository;
 import com.suiviPedagogique.edutrack.repositories.QRCodeRepository;
+import com.suiviPedagogique.edutrack.repositories.AnneeUniversitaireRepository;
+import com.suiviPedagogique.edutrack.Entities.AnneeUniversitaire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,9 @@ public class ScheduleJobService {
 
     @Autowired
     private QRCodeRepository qrCodeRepository;
+
+    @Autowired
+    private AnneeUniversitaireRepository anneeUniversitaireRepository;
 
     /**
      * S'exécute tous les jours à 00:01
@@ -79,6 +84,21 @@ public class ScheduleJobService {
         }
 
         if (shouldGenerate) {
+            if (seanceRepository.existsByEmploiDuTempsIdAndDateCours(emploi.getId(), today)) {
+                return;
+            }
+
+            if (!seanceRepository.findOverlappingSeancesForTeacher(
+                    emploi.getEnseignant().getId(),
+                    today,
+                    emploi.getHeureDebut(),
+                    emploi.getHeureFin(),
+                    null
+            ).isEmpty()) {
+                System.out.println("Séance non générée pour " + emploi.getTitre() + " : enseignant déjà occupé sur ce créneau.");
+                return;
+            }
+
             Seance seance = new Seance();
             seance.setDateCours(today);
             seance.setHeureDebutReelle(emploi.getHeureDebut());
@@ -93,6 +113,17 @@ public class ScheduleJobService {
             seanceRepository.save(seance);
             System.out.println("Séance générée pour: " + emploi.getTitre());
         }
+    }
+
+    private boolean hasActiveQrOverlapForTeacher(Seance seance) {
+        return !seanceRepository.findOverlappingSeancesWithActiveQrForTeacher(
+                seance.getEnseignant().getId(),
+                seance.getDateCours(),
+                seance.getHeureDebutReelle(),
+                seance.getHeureFinReelle(),
+                seance.getId(),
+                LocalDateTime.now()
+        ).isEmpty();
     }
 
     private JourSemaine mapDayOfWeek(DayOfWeek dayOfWeek) {
@@ -123,6 +154,11 @@ public class ScheduleJobService {
             if (seance.getHeureDebutReelle() != null) {
                 // Si l'heure actuelle est à moins de 15 minutes du début (ou déjà commencée mais pas de QR)
                 if (now.isAfter(seance.getHeureDebutReelle().minusMinutes(15))) {
+                    if (hasActiveQrOverlapForTeacher(seance)) {
+                        System.out.println("QR Code non généré pour la séance " + seance.getId() + " : enseignant déjà associé à un QR actif sur un cours simultané.");
+                        continue;
+                    }
+
                     QRCode qrCode = new QRCode();
                     qrCode.setCode(UUID.randomUUID().toString());
                     qrCode.setDateHeureCreation(LocalDateTime.now());
@@ -134,6 +170,25 @@ public class ScheduleJobService {
                     seanceRepository.save(seance);
                     System.out.println("QR Code généré pour la séance " + seance.getId());
                 }
+            }
+        }
+    }
+
+    /**
+     * S'exécute tous les jours à 00:05
+     * Met à jour le statut actif des années universitaires en fonction de la date du jour.
+     */
+    @Scheduled(cron = "0 5 0 * * ?")
+    @Transactional
+    public void updateAnneeUniversitaireStatus() {
+        List<AnneeUniversitaire> annees = anneeUniversitaireRepository.findAll();
+        LocalDate today = LocalDate.now();
+        for (AnneeUniversitaire annee : annees) {
+            boolean shouldBeActive = !today.isBefore(annee.getDateDebut()) && !today.isAfter(annee.getDateFin());
+            if (annee.getActive() == null || annee.getActive() != shouldBeActive) {
+                annee.setActive(shouldBeActive);
+                anneeUniversitaireRepository.save(annee);
+                System.out.println("Année universitaire '" + annee.getLibelle() + "' mise à jour: active = " + shouldBeActive);
             }
         }
     }

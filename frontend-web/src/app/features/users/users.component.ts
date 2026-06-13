@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../core/services/user.service';
 import { Teacher } from '../../core/models/teacher.model';
@@ -66,8 +67,7 @@ import { timeout } from 'rxjs/operators';
       <!-- ── Form Card ── -->
       <div class="form-card" *ngIf="displayForm">
         <div class="form-card-header">
-          <h3 *ngIf="editingId">Modifier l'utilisateur</h3>
-          <h3 *ngIf="!editingId">Nouvel utilisateur</h3>
+          <h3>{{ editingId ? 'Modifier l'utilisateur' : 'Nouvel utilisateur' }}</h3>
         </div>
         <div class="form-card-body">
           <div *ngIf="errorMessage" class="error-banner">
@@ -125,7 +125,7 @@ import { timeout } from 'rxjs/operators';
                 <label>Téléphone</label>
                 <input type="text" [(ngModel)]="currentTeacher.telephone" placeholder="+223..." />
               </div>
-              <div class="input-group">
+              <div class="input-group" *ngIf="!editingId">
                 <label>Adresse</label>
                 <input
                   type="text"
@@ -136,23 +136,19 @@ import { timeout } from 'rxjs/operators';
             </div>
           </div>
 
-          <div class="form-section">
+          <div class="form-section" *ngIf="!editingId">
             <div class="section-label">
               <i class="pi pi-lock"></i>
               <span>Sécurité</span>
             </div>
             <div class="section-grid">
               <div class="input-group">
-                <label>{{ editingId ? 'Nouveau mot de passe' : 'Mot de passe provisoire' }}</label>
+                <label>Mot de Passe (provisoire)</label>
                 <div class="password-wrapper">
                   <input
                     [type]="showPassword ? 'text' : 'password'"
                     [(ngModel)]="provisionalPassword"
-                    [placeholder]="
-                      editingId
-                        ? 'Laisser vide pour conserver le mot de passe actuel'
-                        : 'Minimum 14 caractères, majuscule, minuscule et chiffre'
-                    "
+                    placeholder="Minimum 8 caractères"
                     class="password-input"
                   />
                   <button
@@ -172,10 +168,31 @@ import { timeout } from 'rxjs/operators';
                   </button>
                 </div>
               </div>
-              <p class="field-help" *ngIf="editingId">
-                Remplis ce champ uniquement si tu veux réinitialiser le mot de passe de cet
-                utilisateur.
-              </p>
+            </div>
+          </div>
+
+          <div class="form-section" *ngIf="currentTeacher.role === 'ENSEIGNANT'">
+            <div class="section-label">
+              <i class="pi pi-briefcase"></i>
+              <span>Informations enseignant</span>
+            </div>
+            <div class="section-grid">
+              <div class="input-group">
+                <label>Spécialité</label>
+                <input
+                  type="text"
+                  [(ngModel)]="currentTeacher.specialite"
+                  placeholder="Ex: Mathématiques"
+                />
+              </div>
+              <div class="input-group">
+                <label>Grade</label>
+                <input type="text" [(ngModel)]="currentTeacher.grade" placeholder="Ex: Assistant" />
+              </div>
+              <div class="input-group">
+                <label>Date d'embauche</label>
+                <input type="date" [(ngModel)]="currentTeacher.dateEmbauche" />
+              </div>
             </div>
           </div>
 
@@ -258,16 +275,7 @@ import { timeout } from 'rxjs/operators';
 
       <!-- ── Cards Grid ── -->
       <div class="cards-grid" *ngIf="activeTab === 'ENSEIGNANT' && filteredEnseignants.length > 0">
-        <div
-          class="user-card enseignant clickable-card"
-          *ngFor="let teacher of filteredEnseignants"
-          role="button"
-          tabindex="0"
-          title="Cliquer pour modifier"
-          (click)="showEditForm(teacher)"
-          (keydown.enter)="showEditForm(teacher)"
-          (keydown.space)="$event.preventDefault(); showEditForm(teacher)"
-        >
+        <div class="user-card enseignant" *ngFor="let teacher of filteredEnseignants">
           <div class="card-accent"></div>
           <div class="card-body">
             <div class="card-avatar">
@@ -294,19 +302,27 @@ import { timeout } from 'rxjs/operators';
                 <i class="pi pi-map-marker"></i>
                 <span>{{ teacher.adresse }}</span>
               </div>
+              <div class="detail-item">
+                <i class="pi pi-book"></i>
+                <span>{{ teacher.specialite || 'Spécialité non renseignée' }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="pi pi-briefcase"></i>
+                <span>{{ teacher.grade || 'Grade non renseigné' }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="pi pi-calendar"></i>
+                <span>{{ teacher.dateEmbauche || 'Date non renseignée' }}</span>
+              </div>
             </div>
           </div>
           <div class="card-actions">
-            <button
-              class="btn-icon-sm edit"
-              (click)="$event.stopPropagation(); showEditForm(teacher)"
-              title="Modifier"
-            >
+            <button class="btn-icon-sm edit" (click)="showEditForm(teacher)" title="Modifier">
               <i class="pi pi-pencil"></i>
             </button>
             <button
               class="btn-icon-sm delete"
-              (click)="$event.stopPropagation(); deleteTeacher(teacher.id!)"
+              (click)="deleteTeacher(teacher.id!)"
               title="Supprimer"
             >
               <i class="pi pi-trash"></i>
@@ -316,16 +332,7 @@ import { timeout } from 'rxjs/operators';
       </div>
 
       <div class="cards-grid" *ngIf="activeTab === 'ADMINISTRATEUR' && filteredAdmins.length > 0">
-        <div
-          class="user-card admin clickable-card"
-          *ngFor="let teacher of filteredAdmins"
-          role="button"
-          tabindex="0"
-          title="Cliquer pour modifier"
-          (click)="showEditForm(teacher)"
-          (keydown.enter)="showEditForm(teacher)"
-          (keydown.space)="$event.preventDefault(); showEditForm(teacher)"
-        >
+        <div class="user-card admin" *ngFor="let teacher of filteredAdmins">
           <div class="card-accent admin-accent"></div>
           <div class="card-body">
             <div class="card-avatar admin-avatar">
@@ -355,16 +362,12 @@ import { timeout } from 'rxjs/operators';
             </div>
           </div>
           <div class="card-actions">
-            <button
-              class="btn-icon-sm edit"
-              (click)="$event.stopPropagation(); showEditForm(teacher)"
-              title="Modifier"
-            >
+            <button class="btn-icon-sm edit" (click)="showEditForm(teacher)" title="Modifier">
               <i class="pi pi-pencil"></i>
             </button>
             <button
               class="btn-icon-sm delete"
-              (click)="$event.stopPropagation(); deleteTeacher(teacher.id!)"
+              (click)="deleteTeacher(teacher.id!)"
               title="Supprimer"
             >
               <i class="pi pi-trash"></i>
@@ -512,21 +515,14 @@ export class TeachersComponent implements OnInit {
         (t.matricule || '').toLowerCase().includes(text) ||
         (t.email || '').toLowerCase().includes(text),
     );
-    this.filteredEnseignants = filtered.filter((t) => this.normalizeRole(t.role) === 'ENSEIGNANT');
-    this.filteredAdmins = filtered.filter((t) => this.normalizeRole(t.role) === 'ADMINISTRATEUR');
+    this.filteredEnseignants = filtered.filter((t) => t.role !== 'ADMINISTRATEUR');
+    this.filteredAdmins = filtered.filter((t) => t.role === 'ADMINISTRATEUR');
   }
 
   getInitials(prenom?: string, nom?: string): string {
     const p = (prenom || '').charAt(0).toUpperCase();
     const n = (nom || '').charAt(0).toUpperCase();
     return p + n || '??';
-  }
-
-  private normalizeRole(role?: string): 'ENSEIGNANT' | 'ADMINISTRATEUR' {
-    const normalizedRole = (role || '').trim().toUpperCase();
-    return normalizedRole === 'ADMIN' || normalizedRole === 'ADMINISTRATEUR'
-      ? 'ADMINISTRATEUR'
-      : 'ENSEIGNANT';
   }
 
   showAddForm() {
@@ -560,8 +556,18 @@ export class TeachersComponent implements OnInit {
       email: this.currentTeacher.email?.trim() ?? '',
       telephone: this.currentTeacher.telephone?.trim() ?? '',
       adresse: this.currentTeacher.adresse?.trim() ?? '',
-      role: this.normalizeRole(this.currentTeacher.role || 'ENSEIGNANT'),
+      role: this.currentTeacher.role || 'ENSEIGNANT',
       actif: true,
+      specialite:
+        this.currentTeacher.role === 'ENSEIGNANT'
+          ? this.currentTeacher.specialite?.trim()
+          : undefined,
+      dateEmbauche:
+        this.currentTeacher.role === 'ENSEIGNANT'
+          ? this.currentTeacher.dateEmbauche || undefined
+          : undefined,
+      grade:
+        this.currentTeacher.role === 'ENSEIGNANT' ? this.currentTeacher.grade?.trim() : undefined,
     };
 
     if (
@@ -582,29 +588,34 @@ export class TeachersComponent implements OnInit {
       return;
     }
 
-    if (this.provisionalPassword && this.provisionalPassword.length < 14) {
+    if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(teacherToSave.email)) {
+      this.errorMessage = "Le format de l'email est invalide.";
+      return;
+    }
+
+    if (!this.editingId && this.provisionalPassword && this.provisionalPassword.length < 14) {
       this.errorMessage = 'Le mot de passe doit contenir au moins 14 caractères.';
       return;
     }
 
     if (
+      !this.editingId &&
       this.provisionalPassword &&
-      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{14,}$/.test(this.provisionalPassword)
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{14,}$/.test(this.provisionalPassword)
     ) {
       this.errorMessage =
-        'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre.';
+        'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un symbole.';
       return;
     }
 
     this.isSaving = true;
 
-    const payload: Teacher = this.provisionalPassword
-      ? { ...teacherToSave, motDePasse: this.provisionalPassword }
-      : teacherToSave;
-
     const request$ = this.editingId
-      ? this.userService.update(this.editingId, payload)
-      : this.userService.create(payload);
+      ? this.userService.update(this.editingId, teacherToSave)
+      : this.userService.create({
+          ...(teacherToSave as any),
+          motDePasse: this.provisionalPassword,
+        });
 
     request$.pipe(timeout(12000)).subscribe({
       next: (savedTeacher: any) => {
@@ -619,8 +630,6 @@ export class TeachersComponent implements OnInit {
           );
         } else {
           this.teachers = [normalizedTeacher, ...this.teachers];
-          this.activeTab =
-            normalizedTeacher.role === 'ADMINISTRATEUR' ? 'ADMINISTRATEUR' : 'ENSEIGNANT';
         }
 
         this.filterTeachers();
@@ -685,34 +694,16 @@ export class TeachersComponent implements OnInit {
     this.cancelDelete();
 
     this.userService.delete(id).subscribe({
-      next: () => {
-        this.teachers = this.teachers.filter((teacher) => teacher.id !== id);
-        this.filterTeachers();
-        this.showResultDialog(
-          'Suppression effectuée',
-          "L'utilisateur a été supprimé de la liste.",
-          'success',
-        );
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Erreur lors de la suppression', err);
-        this.showResultDialog(
-          'Suppression impossible',
-          err?.error?.error ||
-            err?.error?.message ||
-            'Impossible de supprimer cet utilisateur. Vérifiez le backend puis réessayez.',
-          'error',
-        );
-      },
+      next: () => this.loadTeachers(),
+      error: (err) => console.error('Erreur lors de la suppression', err),
     });
   }
 
   downloadImportTemplate() {
     const csvContent = [
-      'nom,prenom,email,telephone,matricule',
-      'Keita,Moussa,moussa.keita@example.com,70000000,ENS-001',
-      'Diarra,Aminata,aminata.diarra@example.com,71000000,ENS-002',
+      'nom,prenom,email,telephone,matricule,adresse,specialite,grade,dateEmbauche',
+      'Keita,Moussa,moussa.keita@example.com,70000000,ENS-001,Bamako,Mathématiques,Assistant,2026-01-15',
+      'Diarra,Aminata,aminata.diarra@example.com,71000000,ENS-002,Bamako,Informatique,Maître assistant,15/01/2026',
     ].join('\n');
 
     const blob = new Blob(['\uFEFF' + csvContent], {
