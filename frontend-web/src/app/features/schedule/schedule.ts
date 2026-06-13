@@ -593,9 +593,24 @@ export class Schedule implements OnInit, OnDestroy {
 
     if (!confirmed) return;
 
-    this.scheduleService.deleteSchedule(id).subscribe(() => {
-      this.loadData();
-      this.cdr.detectChanges();
+    this.scheduleService.deleteSchedule(id).subscribe({
+      next: () => {
+        this.errorMessage = '';
+        this.notificationService.success('Planification supprimée avec succès.');
+        this.loadData();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        const message =
+          err.error?.message ||
+          err.error?.error ||
+          err.message ||
+          'Impossible de supprimer la planification.';
+        this.errorMessage = message;
+        this.notificationService.error(message);
+        console.error(err);
+        this.cdr.detectChanges();
+      },
     });
   }
 

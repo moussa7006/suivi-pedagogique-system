@@ -15,4 +15,6 @@ public interface EmploiDuTempsRepository extends JpaRepository<EmploiDuTemps, In
     List<EmploiDuTemps> findAllActive();
 
     List<EmploiDuTemps> findByEnseignantId(Integer enseignantId);
+
+    List<EmploiDuTemps> findBySalleId(Integer salleId);
 }

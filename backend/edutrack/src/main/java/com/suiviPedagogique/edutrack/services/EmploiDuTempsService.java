@@ -9,6 +9,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -41,6 +42,9 @@ public class EmploiDuTempsService {
 
     @Autowired
     private ScheduleJobService scheduleJobService;
+
+    @Autowired
+    private SeanceRepository seanceRepository;
 
     private Utilisateur getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -79,6 +83,7 @@ public class EmploiDuTempsService {
         return convertToDto(updated);
     }
 
+    @Transactional
     public void delete(Integer id) {
         Utilisateur currentUser = getCurrentUser();
         if (currentUser.getRole() != Role.ADMINISTRATEUR) {
@@ -87,6 +92,7 @@ public class EmploiDuTempsService {
 
         EmploiDuTemps emploi = emploiDuTempsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Emploi du temps non trouvé"));
+        seanceRepository.deleteAll(seanceRepository.findByEmploiDuTempsId(id));
         emploiDuTempsRepository.delete(emploi);
     }
 
@@ -123,6 +129,7 @@ public class EmploiDuTempsService {
         if (dto.getSalleId() != null) {
             Salle salle = salleRepository.findById(dto.getSalleId())
                     .orElseThrow(() -> new RuntimeException("Salle non trouvée"));
+            checkSalleAvailability(salle, dto, emploiId);
             emploi.setSalle(salle);
         }
 
@@ -210,6 +217,36 @@ public class EmploiDuTempsService {
             LocalDate conflictDate = findFirstConflictDate(existingSchedule, dto, start, end);
             if (conflictDate != null) {
                 throw new RuntimeException(buildTeacherConflictMessage(enseignant, existingSchedule, dto, conflictDate));
+            }
+        }
+    }
+
+    private void checkSalleAvailability(Salle salle, EmploiDuTempsDto dto, Integer excludeId) {
+        validateSchedulePayload(dto);
+
+        List<EmploiDuTemps> emplois = emploiDuTempsRepository.findBySalleId(salle.getId());
+        for (EmploiDuTemps existingSchedule : emplois) {
+            if (excludeId != null && existingSchedule.getId().equals(excludeId)) {
+                continue;
+            }
+
+            if (!timeRangesOverlap(
+                    existingSchedule.getHeureDebut(),
+                    existingSchedule.getHeureFin(),
+                    dto.getHeureDebut(),
+                    dto.getHeureFin())) {
+                continue;
+            }
+
+            LocalDate start = maxDate(getStartDate(existingSchedule), getStartDate(dto));
+            LocalDate end = minDate(getEndDate(existingSchedule), getEndDate(dto));
+            if (start == null || end == null || start.isAfter(end)) {
+                continue;
+            }
+
+            LocalDate conflictDate = findFirstConflictDate(existingSchedule, dto, start, end);
+            if (conflictDate != null) {
+                throw new RuntimeException(buildRoomConflictMessage(salle, existingSchedule, dto, conflictDate));
             }
         }
     }
@@ -349,5 +386,22 @@ public class EmploiDuTempsService {
                 + ". Le nouveau créneau " + newSchedule.getHeureDebut()
                 + " - " + newSchedule.getHeureFin()
                 + " chevauche ce cours.";
+    }
+
+    private String buildRoomConflictMessage(Salle salle, EmploiDuTemps existingSchedule,
+                                            EmploiDuTempsDto newSchedule, LocalDate conflictDate) {
+        String title = existingSchedule.getTitre() != null && !existingSchedule.getTitre().isBlank()
+                ? existingSchedule.getTitre()
+                : "un autre cours";
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        return "Planification impossible : la salle " + salle.getNom()
+                + " est déjà occupée par " + title
+                + " le " + conflictDate.format(dateFormatter)
+                + " de " + existingSchedule.getHeureDebut()
+                + " à " + existingSchedule.getHeureFin()
+                + ". Le nouveau créneau " + newSchedule.getHeureDebut()
+                + " - " + newSchedule.getHeureFin()
+                + " chevauche cette planification.";
     }
 }
