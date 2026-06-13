@@ -131,9 +131,10 @@ import { NotificationService } from '../../shared/notification/notification.serv
 
       .login-page {
         display: flex;
-        height: 100vh;
         min-height: 100vh;
-        overflow: hidden;
+        min-height: 100dvh;
+        overflow-x: hidden;
+        overflow-y: auto;
         font-family:
           'Inter',
           -apple-system,
@@ -145,9 +146,13 @@ import { NotificationService } from '../../shared/notification/notification.serv
 
       /* ========== LEFT: BRANDING ========== */
       .login-branding {
-        width: 50%;
+        width: min(50%, 720px);
+        min-height: 100vh;
+        min-height: 100dvh;
         background: linear-gradient(135deg, #0b3a82 0%, #1d4ed8 55%, #f59e0b 100%);
-        position: relative;
+        position: sticky;
+        top: 0;
+        align-self: flex-start;
         overflow: hidden;
       }
 
@@ -374,7 +379,7 @@ import { NotificationService } from '../../shared/notification/notification.serv
       .auth-container {
         width: 100%;
         max-width: 480px;
-        padding: 0 40px;
+        padding: clamp(24px, 5vw, 48px) clamp(18px, 4vw, 40px);
         animation: slideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
         position: relative;
         z-index: 1;
@@ -382,7 +387,7 @@ import { NotificationService } from '../../shared/notification/notification.serv
         flex-direction: column;
         justify-content: center;
         min-height: 100vh;
-        transform: translateY(56px);
+        min-height: 100dvh;
       }
 
       @keyframes slideIn {
@@ -660,8 +665,8 @@ import { NotificationService } from '../../shared/notification/notification.serv
       /* Responsive - Tablet */
       @media (max-width: 900px) {
         .login-page {
-          height: auto;
           min-height: 100vh;
+          min-height: 100dvh;
         }
 
         .login-branding {
@@ -670,15 +675,16 @@ import { NotificationService } from '../../shared/notification/notification.serv
 
         .login-auth {
           width: 100%;
-          height: 100vh;
+          min-height: 100vh;
+          min-height: 100dvh;
           padding: 0;
           align-items: center;
         }
 
         .auth-container {
-          padding: 0 24px;
+          padding: 24px;
           min-height: 100vh;
-          transform: translateY(36px);
+          min-height: 100dvh;
         }
 
         .auth-mobile-logo {
@@ -693,12 +699,13 @@ import { NotificationService } from '../../shared/notification/notification.serv
       /* Responsive - Mobile */
       @media (max-width: 480px) {
         .login-page {
-          height: 100vh;
           min-height: 100vh;
+          min-height: 100dvh;
         }
 
         .login-auth {
           min-height: 100vh;
+          min-height: 100dvh;
           padding: 0;
           align-items: center;
           overflow-y: auto;
@@ -708,7 +715,7 @@ import { NotificationService } from '../../shared/notification/notification.serv
           padding: 20px 16px;
           max-width: 100%;
           min-height: 100vh;
-          transform: translateY(24px);
+          min-height: 100dvh;
         }
 
         .auth-header {
@@ -760,6 +767,7 @@ import { NotificationService } from '../../shared/notification/notification.serv
       @media (max-width: 360px), (max-height: 580px) {
         .login-auth {
           min-height: 100vh;
+          min-height: 100dvh;
           align-items: center;
           overflow-y: auto;
         }

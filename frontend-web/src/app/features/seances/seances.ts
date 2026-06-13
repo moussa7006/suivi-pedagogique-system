@@ -81,12 +81,13 @@ import { NotificationService } from '../../shared/notification/notification.serv
                 </td>
                 <td>
                   <div class="status-group">
-                    <span class="status-pill" [ngClass]="s.statut.toLowerCase()">
+                    <span class="status-pill" [ngClass]="getSeanceStatusClass(s)">
                       <span class="status-dot"></span>
-                      {{ s.statut || 'N/A' }}
+                      {{ getSeanceStatusLabel(s) }}
                     </span>
-                    <span class="qr-status" *ngIf="s.qrCodeToken">
-                      <i class="pi pi-qrcode"></i> Code Généré
+                    <span class="qr-status" [ngClass]="getQrStatusClass(s)" *ngIf="hasQrCode(s)">
+                      <i [class]="s.emargementId ? 'pi pi-check-circle' : 'pi pi-qrcode'"></i>
+                      {{ getQrStatusLabel(s) }}
                     </span>
                   </div>
                 </td>
@@ -334,34 +335,51 @@ import { NotificationService } from '../../shared/notification/notification.serv
         }
 
         &.prevue {
-          background: rgba(219, 234, 254, 0.85);
-          color: #1d4ed8;
-          border-color: rgba(59, 130, 246, 0.4);
+          background: rgba(254, 243, 199, 0.95);
+          color: #92400e;
+          border-color: rgba(245, 158, 11, 0.45);
           .status-dot {
-            background: #3b82f6;
+            background: #f59e0b;
+          }
+        }
+
+        &.en-cours {
+          background: rgba(220, 252, 231, 0.95);
+          color: #166534;
+          border-color: rgba(34, 197, 94, 0.45);
+          .status-dot {
+            background: #22c55e;
           }
         }
 
         &.terminee {
-          background: rgba(220, 252, 231, 0.85);
-          color: #166534;
-          border-color: rgba(34, 197, 94, 0.4);
+          background: rgba(254, 226, 226, 0.95);
+          color: #991b1b;
+          border-color: rgba(239, 68, 68, 0.45);
           .status-dot {
-            background: #22c55e;
+            background: #ef4444;
           }
         }
       }
 
       .qr-status {
         font-size: 0.72rem;
-        color: #10b981;
         font-weight: 700;
         display: flex;
         align-items: center;
         gap: 4px;
-        background: rgba(16, 185, 129, 0.1);
         padding: 2px 8px;
         border-radius: 4px;
+
+        &.active {
+          color: #047857;
+          background: rgba(16, 185, 129, 0.12);
+        }
+
+        &.completed {
+          color: #b91c1c;
+          background: rgba(239, 68, 68, 0.1);
+        }
       }
     `,
   ],
@@ -454,5 +472,55 @@ export class SeancesComponent implements OnInit, OnDestroy {
       if (c) return c.libelle;
     }
     return `Classe #${s.classeId || '?'}`;
+  }
+
+  hasQrCode(s: Seance): boolean {
+    return !!s.qrCodeToken || !!s.qrCodeId;
+  }
+
+  getSeanceStatusClass(s: Seance): string {
+    if (this.isSeanceFinished(s)) {
+      return 'terminee';
+    }
+
+    if (this.hasQrCode(s)) {
+      return 'en-cours';
+    }
+
+    return 'prevue';
+  }
+
+  getSeanceStatusLabel(s: Seance): string {
+    if (this.isSeanceFinished(s)) {
+      return 'Terminée';
+    }
+
+    if (this.hasQrCode(s)) {
+      return 'En cours';
+    }
+
+    return 'Prévue';
+  }
+
+  getQrStatusClass(s: Seance): string {
+    return this.isSeanceFinished(s) ? 'completed' : 'active';
+  }
+
+  getQrStatusLabel(s: Seance): string {
+    if (this.isSeanceFinished(s)) {
+      return s.emargementId ? 'Terminée avec émargement' : 'Séance terminée';
+    }
+
+    return s.emargementId ? 'Émargement effectué' : 'Code généré';
+  }
+
+  private isSeanceFinished(s: Seance): boolean {
+    if (!s.dateCours || !s.heureFinReelle) {
+      return false;
+    }
+
+    const endDateTime = new Date(`${s.dateCours}T${s.heureFinReelle}`).getTime();
+
+    return Number.isFinite(endDateTime) && Date.now() >= endDateTime;
   }
 }

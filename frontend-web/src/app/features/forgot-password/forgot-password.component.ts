@@ -36,37 +36,64 @@ import { NotificationService } from '../../shared/notification/notification.serv
     `
       .auth-page {
         min-height: 100vh;
+        min-height: 100dvh;
         display: grid;
         place-items: center;
         background: #f8fafc;
-        padding: 24px;
+        padding: clamp(16px, 4vw, 32px);
+        overflow-y: auto;
       }
       .auth-card {
-        width: min(440px, 100%);
+        width: min(460px, 100%);
         background: #fff;
         border: 1px solid #e2e8f0;
-        border-radius: 18px;
-        padding: 28px;
+        border-radius: clamp(16px, 4vw, 22px);
+        padding: clamp(20px, 5vw, 32px);
         box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
         display: grid;
-        gap: 12px;
+        gap: 14px;
+      }
+      h2 {
+        margin: 0;
+        color: #0f172a;
+        font-size: clamp(1.35rem, 5vw, 1.9rem);
+      }
+      p {
+        margin: 0;
+        color: #64748b;
+        line-height: 1.6;
       }
       input {
+        width: 100%;
         border: 1px solid #cbd5e1;
         border-radius: 12px;
-        padding: 12px;
+        padding: 13px 14px;
+        font: inherit;
       }
       button {
+        width: 100%;
         border: 0;
         border-radius: 12px;
-        padding: 12px;
+        padding: 13px 14px;
         font-weight: 800;
         background: #2563eb;
         color: white;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.65;
+        cursor: wait;
       }
       a {
         color: #2563eb;
         font-weight: 700;
+        overflow-wrap: anywhere;
+      }
+
+      @media (max-width: 420px), (max-height: 560px) {
+        .auth-page {
+          place-items: start center;
+        }
       }
     `,
   ],

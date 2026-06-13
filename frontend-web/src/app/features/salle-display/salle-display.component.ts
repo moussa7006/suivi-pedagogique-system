@@ -16,6 +16,13 @@ interface QrSalleDisplay {
   classeLibelle?: string;
 }
 
+interface SalleDisplayInfo {
+  id: number;
+  nom?: string;
+  salleNom?: string;
+  batiment?: string;
+}
+
 @Component({
   selector: 'app-salle-display',
   standalone: true,
@@ -28,7 +35,7 @@ interface QrSalleDisplay {
         <div class="display-header">
           <div>
             <span class="eyebrow">EduTrack</span>
-            <h1>{{ qr?.salleNom || 'Écran de salle' }}</h1>
+            <h1>{{ displayTitle }}</h1>
           </div>
           <div class="live-badge" [class.active]="!!qr">
             <span></span>
@@ -365,6 +372,7 @@ interface QrSalleDisplay {
 })
 export class SalleDisplayComponent implements OnInit, OnDestroy {
   qr: QrSalleDisplay | null = null;
+  salleNom = '';
   lastError = '';
   qrWidth = 420;
   private subscription?: Subscription;
@@ -377,6 +385,7 @@ export class SalleDisplayComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.updateQrWidth();
     const token = this.route.snapshot.paramMap.get('token') || '';
+    this.loadSalleInfo(token);
 
     this.subscription = interval(5000)
       .pipe(
@@ -385,11 +394,19 @@ export class SalleDisplayComponent implements OnInit, OnDestroy {
       )
       .subscribe((qr) => {
         this.qr = qr;
+        if (qr?.salleNom) {
+          this.salleNom = qr.salleNom;
+        }
       });
   }
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+  }
+
+  get displayTitle(): string {
+    const nomSalle = this.qr?.salleNom || this.salleNom;
+    return nomSalle ? `Écran de salle - ${nomSalle}` : 'Écran de salle';
   }
 
   @HostListener('window:resize')
@@ -409,6 +426,40 @@ export class SalleDisplayComponent implements OnInit, OnDestroy {
     const availableByHeight = viewportHeight * (viewportHeight < 700 ? 0.38 : 0.48);
 
     this.qrWidth = Math.round(Math.max(230, Math.min(440, availableByWidth, availableByHeight)));
+  }
+
+  private loadSalleInfo(token: string): void {
+    if (!token) {
+      this.lastError = 'Token d’affichage manquant.';
+      return;
+    }
+
+    this.http
+      .get<SalleDisplayInfo>(
+        `${environment.apiUrl}/ecrans/salles/${encodeURIComponent(token)}/info`,
+      )
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 403 || error.status === 404 || error.status === 500) {
+            this.lastError = 'Écran de salle non autorisé ou token invalide.';
+          }
+          return of(null);
+        }),
+      )
+      .subscribe((salle) => {
+        const apiSalleNom = this.formatSalleNom(salle);
+        if (apiSalleNom) {
+          this.salleNom = apiSalleNom;
+        }
+      });
+  }
+
+  private formatSalleNom(salle: SalleDisplayInfo | null): string {
+    if (!salle) {
+      return '';
+    }
+
+    return salle.nom || salle.salleNom || '';
   }
 
   private loadActiveQrCode(token: string) {

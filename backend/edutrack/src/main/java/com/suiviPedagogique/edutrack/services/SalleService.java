@@ -33,6 +33,11 @@ public class SalleService {
                 .orElseThrow(() -> new RuntimeException("Salle non trouvée"))));
     }
 
+    public SalleDto getByTokenAffichage(String tokenAffichage) {
+        return toDto(ensureDisplayToken(salleRepository.findByTokenAffichage(tokenAffichage)
+                .orElseThrow(() -> new RuntimeException("Salle non trouvée"))));
+    }
+
     public SalleDto create(SalleDto dto) {
         Salle salle = new Salle();
         hydrate(salle, dto);

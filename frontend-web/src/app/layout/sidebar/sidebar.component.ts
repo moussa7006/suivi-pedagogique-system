@@ -140,6 +140,8 @@ import { AuthService } from '../../core/services/auth.service';
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1000;
         overflow-y: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
         position: fixed;
         left: 0;
         top: 0;
@@ -152,6 +154,11 @@ import { AuthService } from '../../core/services/auth.service';
             box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
           }
         }
+      }
+
+      .sidebar::-webkit-scrollbar {
+        width: 0;
+        height: 0;
       }
 
       .sidebar-logo {
