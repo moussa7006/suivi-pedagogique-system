@@ -1,0 +1,286 @@
+/* ============================================
+   SCANNER INFO CARD
+   ============================================ */
+.scanner-info-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-lg);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+
+  .scanner-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(67, 97, 238, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-md) auto;
+    font-size: 40px;
+    color: var(--ion-color-primary);
+  }
+
+  h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    margin: 0 0 var(--space-sm) 0;
+  }
+
+  p {
+    font-size: var(--font-size-sm);
+    color: var(--ion-color-medium);
+    margin: 0 0 var(--space-md) 0;
+    line-height: 1.5;
+  }
+
+  .scanner-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--ion-color-light);
+    border-radius: var(--radius-full);
+    width: fit-content;
+    margin: 0 auto var(--space-md) auto;
+    font-size: var(--font-size-sm);
+    color: var(--ion-color-medium);
+
+    ion-spinner {
+      width: 16px;
+      height: 16px;
+      --color: var(--ion-color-primary);
+    }
+  }
+
+  .scan-button {
+    --background: var(--ion-color-primary);
+    --background-hover: var(--ion-color-primary-shade);
+    --border-radius: var(--radius-md);
+    height: 48px;
+    font-weight: 600;
+    margin-top: var(--space-sm);
+    --box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+  }
+}
+
+/* ============================================
+   SESSION CARD
+   ============================================ */
+.session-card {
+  background: linear-gradient(
+    135deg,
+    var(--ion-color-primary) 0%,
+    var(--ion-color-secondary) 100%
+  );
+  color: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  box-shadow: var(--shadow-lg);
+
+  .session-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+
+    ion-icon {
+      font-size: 24px;
+      opacity: 0.9;
+    }
+
+    h3 {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      margin: 0 0 2px 0;
+    }
+
+    p {
+      font-size: var(--font-size-sm);
+      opacity: 0.9;
+      margin: 0;
+    }
+  }
+
+  .session-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-full);
+    width: fit-content;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: var(--radius-full);
+      background: #4cc9f0;
+      animation: pulse 2s infinite;
+    }
+
+    &.active {
+      .status-dot {
+        background: #4cc9f0;
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ============================================
+   QR CODE CONTAINER
+   ============================================ */
+.qr-container {
+  text-align: center;
+  margin-bottom: var(--space-lg);
+
+  .qr-wrapper {
+    background: #ffffff;
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-lg);
+    display: inline-block;
+    margin-bottom: var(--space-md);
+    position: relative;
+
+    .qr-code {
+      width: 200px;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed var(--ion-color-primary);
+      border-radius: var(--radius-lg);
+      margin: 0 auto;
+
+      .qr-placeholder {
+        font-size: 80px;
+        color: var(--ion-color-primary);
+        opacity: 0.5;
+      }
+    }
+
+    .qr-timer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+      font-size: var(--font-size-sm);
+      color: var(--ion-color-medium);
+
+      ion-spinner {
+        width: 16px;
+        height: 16px;
+        --color: var(--ion-color-primary);
+      }
+    }
+  }
+
+  .qr-instruction {
+    font-size: var(--font-size-sm);
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+/* ============================================
+   CONTROLS CARD
+   ============================================ */
+.controls-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  box-shadow: var(--shadow-md);
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    margin: 0 0 var(--space-md) 0;
+
+    ion-icon {
+      color: var(--ion-color-primary);
+      font-size: 20px;
+    }
+  }
+
+  .settings-item {
+    --background: transparent;
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: var(--space-sm);
+    --padding-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
+
+    ion-icon[slot="start"] {
+      color: var(--ion-color-medium);
+      font-size: 20px;
+      margin-right: var(--space-md);
+    }
+
+    ion-label {
+      font-size: var(--font-size-sm);
+      color: var(--ion-color-dark);
+      font-weight: 500;
+    }
+
+    ion-select,
+    ion-input {
+      --padding-start: var(--space-sm);
+      --padding-end: var(--space-sm);
+      --background: var(--ion-color-light);
+      --border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      min-width: 100px;
+      text-align: right;
+    }
+
+    ion-toggle {
+      --background: var(--ion-color-light);
+      --background-checked: var(--ion-color-primary);
+      --handle-background: #ffffff;
+      --handle-background-checked: #ffffff;
+    }
+  }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .qr-wrapper {
+    .qr-code {
+      width: 160px;
+      height: 160px;
+
+      .qr-placeholder {
+        font-size: 64px;
+      }
+    }
+  }
+}

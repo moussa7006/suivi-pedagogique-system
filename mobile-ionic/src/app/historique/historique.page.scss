@@ -1,0 +1,376 @@
+/* ============================================
+   HISTORIQUE PAGE - Suivi Pédagogique
+   Design Moderne & Vibrant (Zéro Noir)
+   ============================================ */
+
+:host {
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent-blue: #4361ee;
+  --accent-green: #4cc9f0;
+  --bg-light: #f8f9fa;
+}
+
+ion-content {
+  --background: var(--bg-light);
+}
+
+/* ============================================
+   HEADER SECTION & BACK BUTTON
+   ============================================ */
+.back-btn-header {
+  --color: var(--accent-blue);
+  --background: #ffffff;
+  --border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  height: 48px;
+  width: 48px;
+  margin: 0 0 var(--space-lg) 0;
+
+  ion-icon {
+    font-size: 24px;
+  }
+}
+
+.header-section {
+  margin-bottom: var(--space-xl);
+  .page-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: -0.04em;
+  }
+  .page-subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin: 4px 0 0 0;
+    font-weight: 500;
+  }
+}
+
+/* ============================================
+   FILTRES (GLASSMORPHISM STYLE)
+   ============================================ */
+.filters-section {
+  margin-bottom: var(--space-xl);
+
+  .custom-segment {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+
+    ion-segment-button {
+      --color: var(--text-secondary);
+      --color-checked: #ffffff;
+      --indicator-color: var(--accent-blue);
+      --indicator-box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+      --border-radius: 16px;
+      min-height: 44px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+  }
+}
+
+/* ============================================
+   SUMMARY CARDS (avec animations)
+   ============================================ */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+
+  .summary-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: var(--space-lg);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeSlideUp 0.4s ease-out both;
+
+    &:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.07);
+    }
+
+    .summary-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      transition: transform 0.3s ease;
+
+      &.blue {
+        background: rgba(67, 97, 238, 0.1);
+        color: var(--accent-blue);
+      }
+      &.green {
+        background: rgba(76, 201, 240, 0.1);
+        color: var(--accent-green);
+      }
+
+      .summary-card:hover & {
+        transform: scale(1.1) rotate(-5deg);
+      }
+    }
+
+    .summary-info {
+      .summary-value {
+        display: block;
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1;
+        margin-bottom: 4px;
+      }
+      .summary-label {
+        font-size: 11px;
+        color: var(--text-secondary);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+    }
+  }
+}
+
+/* ============================================
+   TIMELINE MODERNE
+   ============================================ */
+.timeline-section {
+  .section-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    ion-icon {
+      color: var(--accent-blue);
+    }
+  }
+}
+
+.timeline {
+  position: relative;
+  padding-left: 28px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    background: linear-gradient(
+      to bottom,
+      var(--accent-blue),
+      var(--accent-green)
+    );
+    border-radius: 3px;
+    opacity: 0.4;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: var(--space-xl);
+    animation: fadeSlideUp 0.5s ease-out both;
+
+    &:nth-child(1) {
+      animation-delay: 0.05s;
+    }
+    &:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+    &:nth-child(3) {
+      animation-delay: 0.15s;
+    }
+    &:nth-child(4) {
+      animation-delay: 0.2s;
+    }
+    &:nth-child(5) {
+      animation-delay: 0.25s;
+    }
+
+    .timeline-marker {
+      position: absolute;
+      left: -28px;
+      top: 20px;
+      width: 16px;
+      height: 16px;
+      background: #ffffff;
+      border: 3.5px solid var(--accent-blue);
+      border-radius: 50%;
+      z-index: 2;
+      box-shadow: 0 0 0 5px rgba(67, 97, 238, 0.12);
+      transition: all 0.3s ease;
+    }
+
+    &:hover .timeline-marker {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 8px rgba(67, 97, 238, 0.15);
+    }
+
+    .timeline-content {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: var(--space-lg);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+      border: 1px solid rgba(0, 0, 0, 0.01);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+        border-color: rgba(67, 97, 238, 0.08);
+      }
+
+      .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+
+        .timeline-date {
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--accent-blue);
+          text-transform: capitalize;
+        }
+
+        ion-badge {
+          --padding-start: 12px;
+          --padding-end: 12px;
+          --padding-top: 6px;
+          --padding-bottom: 6px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.02em;
+          transition: all 0.3s ease;
+
+          &.badge-success {
+            --background: rgba(76, 201, 240, 0.12);
+            color: #0096c7;
+            box-shadow: 0 2px 8px rgba(76, 201, 240, 0.15);
+          }
+          &.badge-warning {
+            --background: rgba(247, 127, 0, 0.12);
+            color: #e85d04;
+            box-shadow: 0 2px 8px rgba(247, 127, 0, 0.15);
+          }
+          &.badge-info {
+            --background: rgba(67, 97, 238, 0.12);
+            color: #4361ee;
+            box-shadow: 0 2px 8px rgba(67, 97, 238, 0.15);
+          }
+
+          &:hover {
+            transform: scale(1.05);
+          }
+        }
+      }
+
+      h4 {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 6px 0;
+      }
+
+      .timeline-time {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        font-weight: 600;
+        margin-bottom: 12px;
+
+        ion-icon {
+          font-size: 14px;
+          color: var(--accent-blue);
+        }
+      }
+
+      .timeline-content-text {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+
+      .timeline-stats {
+        display: flex;
+        gap: 20px;
+        padding-top: 14px;
+        border-top: 1px solid #f1f5f9;
+
+        .stat-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--text-primary);
+          transition: color 0.2s ease;
+
+          ion-icon {
+            color: var(--accent-blue);
+            transition: transform 0.2s ease;
+          }
+
+          &:hover {
+            color: var(--accent-blue);
+            ion-icon {
+              transform: scale(1.15);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   BOTTOM SPACER (pour tab bar flottante)
+   ============================================ */
+.bottom-spacer {
+  height: 80px;
+  width: 100%;
+}

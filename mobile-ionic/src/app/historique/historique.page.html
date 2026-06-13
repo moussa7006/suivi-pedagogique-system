@@ -1,0 +1,108 @@
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Bouton Retour -->
+  <ion-button fill="clear" class="back-btn-header" routerLink="/tabs/tabs/tab1">
+    <ion-icon name="arrow-back-outline"></ion-icon>
+  </ion-button>
+
+  <div class="header-section">
+    <h1 class="page-title">Historique</h1>
+    <p class="page-subtitle">Suivi de vos séances passées</p>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-section">
+    <ion-segment
+      [(ngModel)]="filterPeriod"
+      (ionChange)="filterByPeriod()"
+      class="custom-segment"
+    >
+      <ion-segment-button value="all">
+        <ion-label>Tout</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="week">
+        <ion-label>Semaine</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="month">
+        <ion-label>Mois</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <!-- Résumé statistique -->
+  <div class="summary-cards">
+    <div class="summary-card">
+      <div class="summary-icon blue">
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+      </div>
+      <div class="summary-info">
+        <span class="summary-value">{{ stats.seancesCompletees }}</span>
+        <span class="summary-label">Séances réalisées</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-icon green">
+        <ion-icon name="people-outline"></ion-icon>
+      </div>
+      <div class="summary-info">
+        <span class="summary-value">{{ stats.moyennePresence }}%</span>
+        <span class="summary-label">Taux de présence</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste chronologique -->
+  <div class="timeline-section">
+    <h3 class="section-title">
+      <ion-icon name="calendar-outline"></ion-icon>
+      Séances récentes
+    </h3>
+
+    <div class="timeline">
+      <div
+        *ngFor="let seance of filteredSeances; let i = index"
+        class="timeline-item"
+        [class.last]="i === filteredSeances.length - 1"
+      >
+        <div class="timeline-marker"></div>
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <div class="timeline-date">
+              {{ seance.date | date:'EEEE d MMMM y' }}
+            </div>
+            <ion-badge
+              [class]="seance.status === 'completed' ? 'badge-success' : seance.status === 'in_progress' ? 'badge-warning' : 'badge-info'"
+            >
+              {{ seance.status === 'completed' ? 'Terminée' : seance.status ===
+              'in_progress' ? 'En cours' : 'Prévue' }}
+            </ion-badge>
+          </div>
+          <div class="timeline-body">
+            <h4>{{ seance.matiere }}</h4>
+            <p class="timeline-time">
+              <ion-icon name="time-outline"></ion-icon>
+              {{ seance.heure }}
+            </p>
+            <p class="timeline-content-text">{{ seance.contenu }}</p>
+            <div class="timeline-stats">
+              <div class="stat-item">
+                <ion-icon name="people-outline"></ion-icon>
+                <span>{{ seance.presents }}/{{ seance.total }}</span>
+              </div>
+              <div class="stat-item">
+                <ion-icon name="document-text-outline"></ion-icon>
+                <span>{{ seance.duree }} min</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="filteredSeances.length === 0" class="empty-state">
+    <ion-icon name="calendar-outline" class="empty-icon"></ion-icon>
+    <h3>Aucune séance trouvée</h3>
+    <p>Il n'y a pas de séances pour cette période.</p>
+  </div>
+</ion-content>

@@ -1,0 +1,227 @@
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Header -->
+  <div class="header-section animate-fade-in">
+    <div class="header-top">
+      <div>
+        <h1 class="page-title">Fiche de Progression</h1>
+        <p class="page-subtitle">Gérez vos contenus pédagogiques</p>
+      </div>
+      <div class="header-volume">
+        <ion-icon name="time-outline"></ion-icon>
+        <span>{{ totalHeures }}h</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="quick-stats animate-slide-up">
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <ion-icon name="document-text-outline"></ion-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ seances.length }}</span>
+        <span class="stat-label">Séances</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ getValidatedCount }}</span>
+        <span class="stat-label">Validées</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange">
+        <ion-icon name="time-outline"></ion-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ getPendingCount }}</span>
+        <span class="stat-label">À finaliser</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Button -->
+  <div class="add-section">
+    <ion-button
+      expand="block"
+      (click)="showForm = !showForm"
+      class="toggle-form-btn"
+    >
+      <ion-icon
+        slot="start"
+        [name]="showForm ? 'close-outline' : 'add-outline'"
+      ></ion-icon>
+      {{ showForm ? 'Fermer' : 'Nouvelle séance' }}
+    </ion-button>
+  </div>
+
+  <!-- Formulaire -->
+  <div class="form-section animate-slide-up" *ngIf="showForm">
+    <div class="form-card">
+      <div class="form-header">
+        <div class="form-icon">
+          <ion-icon name="create-outline"></ion-icon>
+        </div>
+        <div>
+          <h2>Nouvelle séance</h2>
+          <p>
+            Remplissez les détails du cours pour valider automatiquement
+            l'émargement
+          </p>
+        </div>
+      </div>
+
+      <form [formGroup]="seanceForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label>Séance concernée</label>
+          <div class="input-field">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <ion-select
+              formControlName="seanceId"
+              placeholder="Sélectionnez une séance"
+            >
+              <ion-select-option
+                *ngFor="let seance of seancesDisponibles"
+                [value]="seance.id"
+              >
+                {{ formatSeanceLabel(seance) }}
+              </ion-select-option>
+            </ion-select>
+          </div>
+          <span
+            class="error-msg"
+            *ngIf="seanceForm.get('seanceId')?.invalid && seanceForm.get('seanceId')?.touched"
+          >
+            Veuillez sélectionner une séance réelle.
+          </span>
+          <span class="error-msg" *ngIf="seancesDisponibles.length === 0">
+            Aucune séance disponible sans fiche de progression.
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Objectifs de la séance</label>
+          <div class="input-field">
+            <ion-icon name="book-outline"></ion-icon>
+            <ion-input
+              formControlName="objectifs"
+              placeholder="Ex: Maîtriser les composants Ionic"
+            ></ion-input>
+          </div>
+          <span
+            class="error-msg"
+            *ngIf="seanceForm.get('objectifs')?.invalid && seanceForm.get('objectifs')?.touched"
+          >
+            Veuillez renseigner les objectifs.
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Contenu du cours</label>
+          <div class="input-field textarea-field">
+            <ion-textarea
+              formControlName="contenu"
+              placeholder="Décrivez les chapitres abordés..."
+              rows="3"
+            ></ion-textarea>
+          </div>
+          <span
+            class="error-msg"
+            *ngIf="seanceForm.get('contenu')?.invalid && seanceForm.get('contenu')?.touched"
+          >
+            Minimum 20 caractères requis
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Travaux / devoirs</label>
+          <div class="input-field textarea-field">
+            <ion-textarea
+              formControlName="travaux"
+              placeholder="Exercices ou consignes à réaliser..."
+              rows="2"
+            ></ion-textarea>
+          </div>
+        </div>
+
+        <ion-button
+          expand="block"
+          type="submit"
+          [disabled]="isSubmitting || seancesDisponibles.length === 0"
+          class="submit-btn"
+        >
+          <ion-spinner *ngIf="isSubmitting" name="crescent"></ion-spinner>
+          <ng-container *ngIf="!isSubmitting">
+            <span>Enregistrer et valider l'émargement</span>
+            <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+          </ng-container>
+        </ion-button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Liste des seances -->
+  <div class="seances-section" *ngIf="seances.length > 0">
+    <div class="section-title">
+      <ion-icon name="list-outline"></ion-icon>
+      <h3>Dernieres seances</h3>
+      <span class="count">{{ seances.length }}</span>
+    </div>
+
+    <div
+      *ngFor="let seance of seances; let i = index"
+      class="seance-card animate-slide-up"
+      [style.--delay]="(i * 80) + 'ms'"
+    >
+      <div class="seance-header">
+        <div
+          class="seance-badge"
+          [class.validated]="seance.status === 'Validé'"
+          [class.pending]="seance.status === 'En attente'"
+        >
+          <ion-icon
+            [name]="seance.status === 'Validé' ? 'checkmark-circle' : 'time-outline'"
+          ></ion-icon>
+        </div>
+        <div class="seance-info">
+          <h4>{{ seance.matiere }}</h4>
+          <div class="seance-meta">
+            <span>
+              <ion-icon name="calendar-outline"></ion-icon>
+              {{ seance.date }}
+            </span>
+            <span>
+              <ion-icon name="time-outline"></ion-icon>
+              {{ seance.heure }}
+            </span>
+          </div>
+        </div>
+        <ion-badge
+          [color]="seance.status === 'Validé' ? 'success' : 'warning'"
+          class="status-tag"
+        >
+          {{ seance.status }}
+        </ion-badge>
+      </div>
+      <div class="seance-body">
+        <p>{{ seance.contenu }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="seances.length === 0" class="empty-state animate-fade-in">
+    <div class="empty-illustration">
+      <ion-icon name="book-outline"></ion-icon>
+    </div>
+    <h3>Aucune seance</h3>
+    <p>Sélectionnez une séance réelle et remplissez sa fiche de progression.</p>
+  </div>
+
+  <!-- Bottom spacer -->
+  <div class="bottom-spacer"></div>
+</ion-content>

@@ -1,0 +1,465 @@
+/* ============================================
+   PLANNING PAGE - Design Premium
+   Suivi Pédagogique Mobile
+   ============================================ */
+
+:host {
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent-blue: #4361ee;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --bg-light: #f8f9fa;
+}
+
+ion-content {
+  --background: var(--bg-light);
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.header-section {
+  margin-bottom: 20px;
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .page-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: -0.04em;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+    color: var(--accent-blue);
+    margin: 4px 0 0 0;
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+
+  .icon-btn {
+    --color: var(--text-primary);
+    --background: #ffffff;
+    --border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    height: 44px;
+    width: 44px;
+    margin: 0;
+
+    ion-icon {
+      font-size: 22px;
+    }
+  }
+}
+
+/* ============================================
+   WEEK SELECTOR
+   ============================================ */
+.week-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .day-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 10px;
+    min-width: 52px;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.02);
+
+    .day-name {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .day-number {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    .day-indicator {
+      position: absolute;
+      bottom: 6px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+    }
+
+    &.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      box-shadow: 0 6px 16px rgba(67, 97, 238, 0.25);
+      transform: translateY(-2px);
+
+      .day-name,
+      .day-number {
+        color: #ffffff;
+      }
+    }
+
+    &:active:not(.active) {
+      transform: scale(0.92);
+      background: #f1f5f9;
+    }
+  }
+}
+
+/* ============================================
+   DAY SUMMARY
+   ============================================ */
+.day-summary {
+  margin-bottom: 20px;
+
+  .summary-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(67, 97, 238, 0.08);
+    padding: 8px 16px;
+    border-radius: 20px;
+    color: var(--accent-blue);
+    font-size: 13px;
+    font-weight: 700;
+
+    ion-icon {
+      font-size: 16px;
+    }
+  }
+}
+
+/* ============================================
+   TIMELINE
+   ============================================ */
+.timeline-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-bottom: 80px;
+}
+
+.course-card {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  padding-bottom: 20px;
+  animation: slideUp 0.5s ease-out;
+  animation-delay: var(--delay, 0ms);
+  animation-fill-mode: both;
+
+  &:last-child {
+    .timeline-connector {
+      display: none;
+    }
+    padding-bottom: 0;
+  }
+
+  /* Ligne de temps */
+  .timeline-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 36px;
+    flex-shrink: 0;
+
+    .timeline-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      background: #e8f0fe;
+      color: var(--accent-blue);
+      z-index: 2;
+      box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+      transition: all 0.3s ease;
+
+      ion-icon {
+        font-size: 16px;
+      }
+
+      &.completed {
+        background: #d1fae5;
+        color: var(--accent-success);
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+      }
+
+      &.in-progress {
+        background: #fef3c7;
+        color: var(--accent-warning);
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+        animation: pulse 2s infinite;
+      }
+    }
+
+    .timeline-connector {
+      flex: 1;
+      width: 2px;
+      background: linear-gradient(
+        to bottom,
+        var(--accent-blue) 0%,
+        rgba(67, 97, 238, 0.1) 100%
+      );
+      opacity: 0.2;
+      margin-top: -4px;
+      z-index: 1;
+      min-height: 20px;
+    }
+  }
+
+  /* Contenu du cours */
+  .course-content {
+    flex: 1;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+
+    &:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .course-time {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-blue);
+      margin-bottom: 10px;
+
+      ion-icon {
+        font-size: 14px;
+      }
+    }
+
+    .course-body {
+      .course-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+
+        h3 {
+          font-size: 17px;
+          font-weight: 800;
+          color: var(--text-primary);
+          margin: 0;
+          line-height: 1.2;
+        }
+
+        .status-badge {
+          font-size: 9px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          --padding-start: 8px;
+          --padding-end: 8px;
+          --padding-top: 4px;
+          --padding-bottom: 4px;
+          border-radius: 8px;
+        }
+      }
+
+      .course-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+
+        .meta-item {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--text-secondary);
+
+          ion-icon {
+            font-size: 14px;
+            color: var(--accent-blue);
+          }
+        }
+      }
+
+      .scan-action {
+        margin-top: 14px;
+        --border-radius: 12px;
+        font-weight: 800;
+      }
+    }
+  }
+
+  &.completed .course-content {
+    opacity: 0.75;
+  }
+
+  &.in-progress .course-content {
+    border-left: 3px solid var(--accent-warning);
+    border-radius: 20px;
+  }
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+
+  .empty-illustration {
+    width: 100px;
+    height: 100px;
+    background: rgba(67, 97, 238, 0.08);
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    transform: rotate(-6deg);
+
+    ion-icon {
+      font-size: 50px;
+      color: var(--accent-blue);
+    }
+  }
+
+  h3 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+  }
+
+  p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+}
+
+/* ============================================
+   LOADING SKELETON
+   ============================================ */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+
+  .skeleton-line {
+    height: 14px;
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    animation: shimmer 1.5s infinite;
+
+    &.skeleton-time {
+      width: 80px;
+      height: 12px;
+    }
+    &.skeleton-title {
+      width: 70%;
+      height: 18px;
+    }
+    &.skeleton-meta {
+      width: 50%;
+      height: 12px;
+    }
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out;
+  animation-delay: var(--delay, 0ms);
+  animation-fill-mode: both;
+}

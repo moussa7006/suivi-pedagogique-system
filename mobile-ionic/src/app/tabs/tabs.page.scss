@@ -1,0 +1,96 @@
+/* ============================================
+   MODERN TABS - Suivi Pédagogique
+   Barre flottante avec glassmorphism
+   ============================================ */
+
+.modern-tab-bar {
+  --background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: none;
+  height: 72px;
+  margin: 12px 16px;
+  border-radius: 24px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  padding: 0 8px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: auto;
+
+  .tab-button {
+    --color: #94a3b8;
+    --color-selected: #4361ee;
+    --padding-top: 6px;
+    --padding-bottom: 6px;
+    background: transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 18px;
+    margin: 4px;
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      background: transparent;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 0;
+    }
+
+    &.tab-selected {
+      &::before {
+        background: rgba(67, 97, 238, 0.1);
+      }
+
+      ion-icon {
+        transform: translateY(-2px) scale(1.1);
+        color: var(--color-selected);
+      }
+
+      ion-label {
+        color: var(--color-selected);
+        font-weight: 700;
+        opacity: 1;
+      }
+    }
+
+    &:active:not(.tab-selected) {
+      transform: scale(0.92);
+
+      ion-icon {
+        color: #4361ee;
+      }
+    }
+
+    ion-icon {
+      font-size: 24px;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 1;
+      position: relative;
+    }
+
+    ion-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: none;
+      letter-spacing: 0.02em;
+      margin-top: 2px;
+      opacity: 0.7;
+      transition: all 0.3s ease;
+      z-index: 1;
+      position: relative;
+    }
+  }
+}
+
+/* Supprimer le padding bottom par défaut */
+:host {
+  ion-tab-bar {
+    padding-bottom: 0;
+  }
+}
