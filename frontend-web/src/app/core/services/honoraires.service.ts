@@ -35,6 +35,11 @@ export class HonorairesService {
     return this.http.get<HonorairesCalcul[]>(`${this.apiUrl}/mes-honoraires`);
   }
 
+  getMesHonorairesParMois(annee: number, mois: number): Observable<HonorairesCalcul> {
+    const params = new HttpParams().set('annee', annee).set('mois', mois);
+    return this.http.get<HonorairesCalcul>(`${this.apiUrl}/mes-honoraires/mois`, { params });
+  }
+
   getById(id: number): Observable<HonorairesCalcul> {
     return this.http.get<HonorairesCalcul>(`${this.apiUrl}/${id}`);
   }

@@ -152,11 +152,25 @@ public class HonorairesService {
     }
 
     public List<HonorairesCalculDto> getMesHonoraires() {
-        Utilisateur currentUser = getCurrentUser();
-        if (currentUser.getRole() != Role.ENSEIGNANT) {
-            throw new AccessDeniedException("Seuls les enseignants peuvent consulter leurs propres honoraires via cet endpoint.");
-        }
+        Utilisateur currentUser = getCurrentTeacherUser();
         return getHonorairesEnseignant(currentUser.getId());
+    }
+
+    public HonorairesCalculDto getMesHonorairesParMois(Integer annee, Integer mois) {
+        Utilisateur currentUser = getCurrentTeacherUser();
+        Integer enseignantId = currentUser.getId();
+        LocalDate moisCalcul = normalizeMonth(annee, mois);
+
+        return honorairesCalculsRepository.findByEnseignantIdAndMois(enseignantId, moisCalcul)
+                .map(calcul -> toDto(calcul, true))
+                .orElseGet(() -> {
+                    Enseignant enseignant = getEnseignant(enseignantId);
+                    List<Seance> seancesPayables = getSeancesPayables(enseignantId, moisCalcul);
+                    if (seancesPayables.isEmpty()) {
+                        throw new RuntimeException("Aucune séance payable trouvée pour cet enseignant sur ce mois.");
+                    }
+                    return buildPreviewDto(enseignant, moisCalcul, seancesPayables);
+                });
     }
 
     private HonorairesCalculDto buildPreviewDto(Enseignant enseignant, LocalDate moisCalcul, List<Seance> seancesPayables) {
@@ -337,6 +351,14 @@ public class HonorairesService {
             return;
         }
         throw new AccessDeniedException("Vous n'avez pas les droits nécessaires pour consulter ces honoraires.");
+    }
+
+    private Utilisateur getCurrentTeacherUser() {
+        Utilisateur currentUser = getCurrentUser();
+        if (currentUser.getRole() != Role.ENSEIGNANT) {
+            throw new AccessDeniedException("Seuls les enseignants peuvent consulter leurs propres honoraires via cet endpoint.");
+        }
+        return currentUser;
     }
 
     private Utilisateur getCurrentUser() {

@@ -37,7 +37,7 @@ import { TeacherService } from '../../core/services/teacher.service';
             <option *ngFor="let m of moisOptions" [ngValue]="m.value">{{ m.label }}</option>
           </select>
         </div>
-        <div class="field teacher-field">
+        <div class="field teacher-field" *ngIf="isAdmin">
           <label>Enseignant pour le calcul</label>
           <select [(ngModel)]="selectedTeacherId">
             <option [ngValue]="null">Sélectionner un enseignant</option>
@@ -50,6 +50,7 @@ import { TeacherService } from '../../core/services/teacher.service';
           <i class="pi pi-refresh"></i> Actualiser
         </button>
         <button
+          *ngIf="isAdmin"
           class="btn btn-primary"
           (click)="calculer()"
           [disabled]="loading || !selectedTeacherId"
@@ -127,6 +128,7 @@ import { TeacherService } from '../../core/services/teacher.service';
                       ></i>
                     </button>
                     <button
+                      *ngIf="isAdmin"
                       class="icon-btn validate"
                       (click)="valider(item)"
                       [disabled]="item.statut !== 'BROUILLON'"
@@ -134,6 +136,7 @@ import { TeacherService } from '../../core/services/teacher.service';
                       <i class="pi pi-check"></i>
                     </button>
                     <button
+                      *ngIf="isAdmin"
                       class="icon-btn pay"
                       (click)="payer(item)"
                       [disabled]="item.statut !== 'VALIDE'"
@@ -456,6 +459,7 @@ export class HonorairesComponent implements OnInit {
   loading = false;
   errorMessage = '';
   successMessage = '';
+  currentRole = this.getCurrentUserRole();
 
   moisOptions = [
     { value: 1, label: 'Janvier' },
@@ -485,8 +489,14 @@ export class HonorairesComponent implements OnInit {
     return this.honoraires.reduce((sum, item) => sum + (item.montantBrut || 0), 0);
   }
 
+  get isAdmin(): boolean {
+    return this.currentRole === 'ADMINISTRATEUR';
+  }
+
   ngOnInit(): void {
-    this.loadTeachers();
+    if (this.isAdmin) {
+      this.loadTeachers();
+    }
     this.loadHonoraires();
   }
 
@@ -500,17 +510,39 @@ export class HonorairesComponent implements OnInit {
   loadHonoraires(): void {
     this.clearMessages();
     this.loading = true;
+    this.selected = null;
+
+    if (this.isAdmin) {
+      this.honorairesService
+        .getParMois(this.annee, this.mois)
+        .pipe(finalize(() => (this.loading = false)))
+        .subscribe({
+          next: (items) => (this.honoraires = this.sortHonoraires(items || [])),
+          error: (error) =>
+            (this.errorMessage = this.extractError(error, 'Impossible de charger les honoraires.')),
+        });
+      return;
+    }
+
     this.honorairesService
-      .getParMois(this.annee, this.mois)
+      .getMesHonorairesParMois(this.annee, this.mois)
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
-        next: (items) => (this.honoraires = this.sortHonoraires(items || [])),
-        error: (error) =>
-          (this.errorMessage = this.extractError(error, 'Impossible de charger les honoraires.')),
+        next: (item) => {
+          this.honoraires = item ? this.sortHonoraires([item]) : [];
+        },
+        error: (error) => {
+          this.honoraires = [];
+          this.errorMessage = this.extractError(error, 'Impossible de charger les honoraires.');
+        },
       });
   }
 
   calculer(): void {
+    if (!this.isAdmin) {
+      this.errorMessage = 'Seul l’administrateur peut calculer les honoraires.';
+      return;
+    }
     if (!this.selectedTeacherId) return;
     this.clearMessages();
     this.loading = true;
@@ -531,6 +563,10 @@ export class HonorairesComponent implements OnInit {
   }
 
   valider(item: HonorairesCalcul): void {
+    if (!this.isAdmin) {
+      this.errorMessage = 'Seul l’administrateur peut valider les honoraires.';
+      return;
+    }
     if (!item.id) return;
     this.honorairesService.valider(item.id).subscribe({
       next: () => {
@@ -542,6 +578,10 @@ export class HonorairesComponent implements OnInit {
   }
 
   payer(item: HonorairesCalcul): void {
+    if (!this.isAdmin) {
+      this.errorMessage = 'Seul l’administrateur peut marquer les honoraires comme payés.';
+      return;
+    }
     if (!item.id) return;
     this.honorairesService.payer(item.id).subscribe({
       next: () => {
@@ -620,5 +660,19 @@ export class HonorairesComponent implements OnInit {
 
   private extractError(error: any, fallback: string): string {
     return error?.error?.message || error?.error?.error || error?.message || fallback;
+  }
+
+  private getCurrentUserRole(): string {
+    try {
+      const savedUser = localStorage.getItem('user');
+      const user = savedUser ? JSON.parse(savedUser) : null;
+      const role = String(user?.role || '')
+        .replace(/^ROLE_/, '')
+        .toUpperCase();
+
+      return role === 'ADMIN' ? 'ADMINISTRATEUR' : role;
+    } catch {
+      return '';
+    }
   }
 }
