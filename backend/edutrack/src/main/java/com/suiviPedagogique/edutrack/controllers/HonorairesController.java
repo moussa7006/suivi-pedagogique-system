@@ -53,6 +53,14 @@ public class HonorairesController {
         return ResponseEntity.ok(honorairesService.getMesHonoraires());
     }
 
+    @GetMapping("/mes-honoraires/mois")
+    public ResponseEntity<HonorairesCalculDto> getMesHonorairesParMois(
+            @RequestParam Integer annee,
+            @RequestParam Integer mois
+    ) {
+        return ResponseEntity.ok(honorairesService.getMesHonorairesParMois(annee, mois));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<HonorairesCalculDto> getHonorairesById(@PathVariable Integer id) {
         return ResponseEntity.ok(honorairesService.getHonorairesById(id));
