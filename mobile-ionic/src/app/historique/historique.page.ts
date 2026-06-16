@@ -113,6 +113,10 @@ export class HistoriquePage implements OnInit {
     this.loadHistorique();
   }
 
+  ionViewWillEnter(): void {
+    this.loadHistorique();
+  }
+
   filterByPeriod(): void {
     // Filtrage géré par le getter filteredSeances.
   }

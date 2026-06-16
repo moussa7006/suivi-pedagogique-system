@@ -1,4 +1,4 @@
-export type StatutHonoraire = "BROUILLON" | "VALIDE" | "PAYE" | "ANNULE";
+export type StatutHonoraire = "BROUILLON" | "VALIDE" | "PAYE";
 
 export interface DetailHonoraire {
   id?: number;

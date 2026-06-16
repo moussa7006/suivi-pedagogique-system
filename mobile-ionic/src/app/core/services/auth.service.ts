@@ -94,6 +94,13 @@ export class AuthService {
       this.tokenStorage.clearToken(),
       Preferences.remove({ key: this.userKey }),
     ]);
+    // Recharger complètement l'application pour détruire toutes les instances
+    // de composants en cache (pages tabs notamment). Sans cela, les données de
+    // l'utilisateur précédent restent affichées après un nouveau login.
+    if (typeof window !== "undefined" && window.location) {
+      window.location.href = "/login";
+      return;
+    }
     void this.router.navigate(["/login"]);
   }
 }

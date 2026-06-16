@@ -41,19 +41,19 @@ import { AuthService } from '../../core/services/auth.service';
 
         <div class="nav-section">Gestion</div>
         <ul class="nav-list">
-          <li>
+          <li *ngIf="isAdmin">
             <a routerLink="/classes" routerLinkActive="active">
               <i class="pi pi-users"></i>
               <span>Classes</span>
             </a>
           </li>
-          <li>
+          <li *ngIf="isAdmin">
             <a routerLink="/teachers" routerLinkActive="active">
               <i class="pi pi-id-card"></i>
               <span>Utilisateurs</span>
             </a>
           </li>
-          <li>
+          <li *ngIf="isAdmin">
             <a routerLink="/matieres" routerLinkActive="active">
               <i class="pi pi-book"></i>
               <span>Matières</span>
@@ -71,7 +71,7 @@ import { AuthService } from '../../core/services/auth.service';
               <span>Séances (Sessions)</span>
             </a>
           </li>
-          <li>
+          <li *ngIf="isAdmin">
             <a routerLink="/honoraires" routerLinkActive="active">
               <i class="pi pi-money-bill"></i>
               <span>Honoraires</span>
@@ -79,8 +79,8 @@ import { AuthService } from '../../core/services/auth.service';
           </li>
         </ul>
 
-        <div class="nav-section">Référentiels</div>
-        <ul class="nav-list">
+        <div class="nav-section" *ngIf="isAdmin">Référentiels</div>
+        <ul class="nav-list" *ngIf="isAdmin">
           <li>
             <a routerLink="/departements" routerLinkActive="active">
               <i class="pi pi-folder"></i>
@@ -386,6 +386,10 @@ export class SidebarComponent implements OnInit {
   adminRole = 'Administrateur';
   adminInitials = 'AU';
   adminPhotoUrl = '';
+
+  get isAdmin(): boolean {
+    return this.adminRole === 'Administrateur' || this.adminRole === 'ADMINISTRATEUR';
+  }
 
   constructor(
     private router: Router,

@@ -8,10 +8,12 @@ import { Teacher } from '../../core/models/user.model';
 import { HonorairesService } from '../../core/services/honoraires.service';
 import { TeacherService } from '../../core/services/teacher.service';
 
+import { SelectModule } from 'primeng/select';
+
 @Component({
   selector: 'app-honoraires',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, SelectModule],
   template: `
     <div class="honoraires-page">
       <div class="page-header">
@@ -39,12 +41,77 @@ import { TeacherService } from '../../core/services/teacher.service';
         </div>
         <div class="field teacher-field" *ngIf="isAdmin">
           <label>Enseignant pour le calcul</label>
-          <select [(ngModel)]="selectedTeacherId">
-            <option [ngValue]="null">Sélectionner un enseignant</option>
-            <option *ngFor="let teacher of teachers" [ngValue]="teacher.id">
-              {{ teacher.prenom }} {{ teacher.nom }} - {{ teacher.matricule }}
-            </option>
-          </select>
+          <p-select
+            [options]="dropdownOptions"
+            [(ngModel)]="selectedTeacherId"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Sélectionner un enseignant"
+            [style]="{
+              width: '100%',
+              height: '42px',
+              'border-radius': '12px',
+              background: '#ffffff',
+              border: '1px solid #cbd5e1',
+            }"
+            [panelStyle]="{
+              'max-height': '300px',
+              background: '#ffffff',
+              'box-shadow': '0 10px 25px rgba(0,0,0,0.15)',
+              border: '1px solid #e2e8f0',
+              'border-radius': '8px',
+              'z-index': '1000',
+            }"
+          >
+            <ng-template pTemplate="selectedItem">
+              <div class="teacher-dropdown-item" *ngIf="selectedTeacherData">
+                <img
+                  *ngIf="selectedTeacherData.photoUrl"
+                  [src]="selectedTeacherData.photoUrl"
+                  class="teacher-dropdown-avatar"
+                />
+                <div
+                  *ngIf="
+                    !selectedTeacherData.photoUrl &&
+                    selectedTeacherData.id !== -1 &&
+                    selectedTeacherData.id !== null
+                  "
+                  class="teacher-dropdown-initials"
+                >
+                  {{ getInitials(selectedTeacherData.prenom + ' ' + selectedTeacherData.nom) }}
+                </div>
+                <div class="teacher-dropdown-info">
+                  <span>{{ selectedTeacherData.label }}</span>
+                  <small
+                    *ngIf="selectedTeacherData.matricule"
+                    style="color:#64748b; margin-left: 5px;"
+                    >- {{ selectedTeacherData.matricule }}</small
+                  >
+                </div>
+              </div>
+              <div *ngIf="!selectedTeacherData">Sélectionner un enseignant</div>
+            </ng-template>
+
+            <ng-template pTemplate="item" let-item>
+              <div class="teacher-dropdown-item">
+                <img *ngIf="item.photoUrl" [src]="item.photoUrl" class="teacher-dropdown-avatar" />
+                <div *ngIf="!item.photoUrl && item.value !== -1" class="teacher-dropdown-initials">
+                  {{ getInitials(item.prenom + ' ' + item.nom) }}
+                </div>
+                <div *ngIf="item.value === -1" class="teacher-dropdown-icon">
+                  <i class="pi pi-users"></i>
+                </div>
+                <div class="teacher-dropdown-info">
+                  <span>{{ item.label }}</span>
+                  <small
+                    *ngIf="item.matricule"
+                    style="display:block; color:#64748b; font-size: 0.8em;"
+                    >{{ item.matricule }}</small
+                  >
+                </div>
+              </div>
+            </ng-template>
+          </p-select>
         </div>
         <button class="btn btn-outline" (click)="loadHonoraires()" [disabled]="loading">
           <i class="pi pi-refresh"></i> Actualiser
@@ -248,6 +315,40 @@ import { TeacherService } from '../../core/services/teacher.service';
         flex-direction: column;
         gap: 7px;
       }
+      .teacher-dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 4px 8px; /* added padding for better spacing */
+      }
+      .teacher-dropdown-item:hover {
+        background-color: #f8fafc;
+        border-radius: 6px;
+      }
+      .teacher-dropdown-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .teacher-dropdown-initials,
+      .teacher-dropdown-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-color: #e2e8f0;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: bold;
+      }
+      .teacher-dropdown-info {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+      }
       label {
         color: #475569;
         font-size: 0.84rem;
@@ -406,10 +507,6 @@ import { TeacherService } from '../../core/services/teacher.service';
         background: #dcfce7;
         color: #166534;
       }
-      .status.ANNULE {
-        background: #fee2e2;
-        color: #991b1b;
-      }
       .actions {
         display: flex;
         gap: 8px;
@@ -460,6 +557,12 @@ export class HonorairesComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   currentRole = this.getCurrentUserRole();
+  dropdownOptions: any[] = [];
+
+  get selectedTeacherData(): any {
+    if (this.selectedTeacherId === null) return null;
+    return this.dropdownOptions.find((o) => o.value === this.selectedTeacherId);
+  }
 
   moisOptions = [
     { value: 1, label: 'Janvier' },
@@ -502,7 +605,21 @@ export class HonorairesComponent implements OnInit {
 
   loadTeachers(): void {
     this.teacherService.getTeachers().subscribe({
-      next: (teachers) => (this.teachers = this.sortTeachers(teachers || [])),
+      next: (data) => {
+        this.teachers = this.sortTeachers(data || []);
+        this.dropdownOptions = [
+          { label: '-- Tous les enseignants --', value: -1, id: -1 },
+          ...this.teachers.map((t) => ({
+            label: `${t.prenom} ${t.nom}`,
+            value: t.id,
+            id: t.id,
+            prenom: t.prenom,
+            nom: t.nom,
+            matricule: t.matricule,
+            photoUrl: t.photoUrl,
+          })),
+        ];
+      },
       error: () => (this.errorMessage = 'Impossible de charger la liste des enseignants.'),
     });
   }
@@ -517,7 +634,13 @@ export class HonorairesComponent implements OnInit {
         .getParMois(this.annee, this.mois)
         .pipe(finalize(() => (this.loading = false)))
         .subscribe({
-          next: (items) => (this.honoraires = this.sortHonoraires(items || [])),
+          next: (items) => {
+            let results = items || [];
+            if (this.selectedTeacherId && this.selectedTeacherId !== -1) {
+              results = results.filter((item) => item.enseignantId === this.selectedTeacherId);
+            }
+            this.honoraires = this.sortHonoraires(results);
+          },
           error: (error) =>
             (this.errorMessage = this.extractError(error, 'Impossible de charger les honoraires.')),
         });
@@ -533,9 +656,19 @@ export class HonorairesComponent implements OnInit {
         },
         error: (error) => {
           this.honoraires = [];
+          // Cas normal : aucune séance payable ce mois-ci. On affiche un
+          // état vide plutôt qu'une erreur intrusive.
+          if (this.isNoPayableSessionError(error)) {
+            return;
+          }
           this.errorMessage = this.extractError(error, 'Impossible de charger les honoraires.');
         },
       });
+  }
+
+  private isNoPayableSessionError(error: any): boolean {
+    const message = String(error?.error?.error || error?.error?.message || '');
+    return message.toLowerCase().includes('aucune séance payable');
   }
 
   calculer(): void {
@@ -543,23 +676,82 @@ export class HonorairesComponent implements OnInit {
       this.errorMessage = 'Seul l’administrateur peut calculer les honoraires.';
       return;
     }
-    if (!this.selectedTeacherId) return;
+    // "Tous les enseignants" option corresponds to selectedTeacherId === -1
+    if (this.selectedTeacherId === null) return;
+
     this.clearMessages();
     this.loading = true;
-    this.honorairesService
-      .calculer({ enseignantId: this.selectedTeacherId, annee: this.annee, mois: this.mois })
-      .pipe(finalize(() => (this.loading = false)))
-      .subscribe({
-        next: () => {
-          this.successMessage = 'Honoraires calculés avec succès.';
-          this.loadHonoraires();
-        },
-        error: (error) =>
-          (this.errorMessage = this.extractError(
-            error,
-            'Erreur pendant le calcul des honoraires.',
-          )),
+
+    if (this.selectedTeacherId === -1) {
+      // Calculate for all teachers
+      if (!this.teachers || this.teachers.length === 0) {
+        this.errorMessage = 'Aucun enseignant trouvé.';
+        this.loading = false;
+        return;
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+      let completedRequests = 0;
+
+      this.teachers.forEach((teacher) => {
+        this.honorairesService
+          .calculer({ enseignantId: teacher.id!, annee: this.annee, mois: this.mois })
+          .subscribe({
+            next: () => {
+              successCount++;
+              checkCompletion();
+            },
+            error: (err) => {
+              // Ignore "Aucune nouvelle séance payable" errors for batch processing
+              if (!this.isNoPayableSessionError(err)) {
+                errorCount++;
+              }
+              checkCompletion();
+            },
+          });
       });
+
+      const checkCompletion = () => {
+        completedRequests++;
+        if (completedRequests === this.teachers.length) {
+          this.loading = false;
+          if (successCount > 0) {
+            this.successMessage = `Honoraires calculés avec succès pour ${successCount} enseignant(s).`;
+            if (errorCount > 0) {
+              this.errorMessage = `Échec du calcul pour ${errorCount} enseignant(s).`;
+            }
+          } else if (errorCount > 0) {
+            this.errorMessage = `Erreur pendant le calcul des honoraires.`;
+          } else {
+            this.successMessage = `Aucune nouvelle séance payable n'a été trouvée pour les enseignants ce mois-ci.`;
+          }
+          this.loadHonoraires();
+        }
+      };
+    } else {
+      // Calculate for a single teacher
+      this.honorairesService
+        .calculer({ enseignantId: this.selectedTeacherId, annee: this.annee, mois: this.mois })
+        .pipe(finalize(() => (this.loading = false)))
+        .subscribe({
+          next: () => {
+            this.successMessage = 'Honoraires calculés avec succès.';
+            this.loadHonoraires();
+          },
+          error: (error) => {
+            if (this.isNoPayableSessionError(error)) {
+              this.errorMessage =
+                'Aucune nouvelle séance payable trouvée pour cet enseignant sur ce mois.';
+            } else {
+              this.errorMessage = this.extractError(
+                error,
+                'Erreur pendant le calcul des honoraires.',
+              );
+            }
+          },
+        });
+    }
   }
 
   valider(item: HonorairesCalcul): void {
@@ -607,10 +799,9 @@ export class HonorairesComponent implements OnInit {
 
   getStatutLabel(statut?: string): string {
     const labels: Record<string, string> = {
-      BROUILLON: 'Brouillon',
+      BROUILLON: 'En attente',
       VALIDE: 'Validé',
       PAYE: 'Payé',
-      ANNULE: 'Annulé',
     };
     return statut ? labels[statut] || statut : '-';
   }
@@ -659,6 +850,10 @@ export class HonorairesComponent implements OnInit {
   }
 
   private extractError(error: any, fallback: string): string {
+    if (typeof error?.error === 'string' && error.error.trim()) {
+      return error.error;
+    }
+
     return error?.error?.message || error?.error?.error || error?.message || fallback;
   }
 

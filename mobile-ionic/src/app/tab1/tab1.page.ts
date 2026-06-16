@@ -115,6 +115,14 @@ export class Tab1Page implements OnInit {
   }
 
   ngOnInit() {
+    this.refresh();
+  }
+
+  ionViewWillEnter(): void {
+    this.refresh();
+  }
+
+  private refresh(): void {
     void this.loadUser();
     this.loadRealData();
   }
