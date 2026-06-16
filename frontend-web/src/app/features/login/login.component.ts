@@ -856,6 +856,17 @@ export class LoginComponent {
       };
       this.authService.login(payload).subscribe({
         next: (user) => {
+          // Strict access control: Only Administrators can log in to the web interface
+          const role = user?.user?.role || user?.role;
+          if (role !== 'ADMINISTRATEUR' && role !== 'ADMIN') {
+            this.authService.logout();
+            this.isLoading = false;
+            this.notificationService.error(
+              "L'accès à cette interface web est strictement réservé aux administrateurs. Veuillez utiliser l'application mobile.",
+            );
+            return;
+          }
+
           if (user?.forcePasswordChange) {
             this.router.navigate(['/change-password'], { state: { forced: true } });
             return;

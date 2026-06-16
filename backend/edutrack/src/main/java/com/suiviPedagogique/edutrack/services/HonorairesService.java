@@ -6,6 +6,7 @@ import com.suiviPedagogique.edutrack.Entities.*;
 import com.suiviPedagogique.edutrack.Entities.enums.Role;
 import com.suiviPedagogique.edutrack.Entities.enums.StatutEmargement;
 import com.suiviPedagogique.edutrack.Entities.enums.StatutHonoraire;
+import com.suiviPedagogique.edutrack.exceptions.HonorairesBusinessException;
 import com.suiviPedagogique.edutrack.repositories.DetailHonoraireRepository;
 import com.suiviPedagogique.edutrack.repositories.EnseignantRepository;
 import com.suiviPedagogique.edutrack.repositories.HonorairesCalculsRepository;
@@ -13,6 +14,7 @@ import com.suiviPedagogique.edutrack.repositories.SeanceRepository;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +48,7 @@ public class HonorairesService {
         this.utilisateurRepository = utilisateurRepository;
     }
 
+    @Transactional(readOnly = true)
     public HonorairesCalculDto previewHonoraires(Integer enseignantId, Integer annee, Integer mois) {
         verifyAdmin();
         Enseignant enseignant = getEnseignant(enseignantId);
@@ -61,53 +64,58 @@ public class HonorairesService {
         Enseignant enseignant = getEnseignant(enseignantId);
         LocalDate moisCalcul = normalizeMonth(annee, mois);
 
-        honorairesCalculsRepository.findByEnseignantIdAndMois(enseignantId, moisCalcul)
-                .ifPresent(existing -> {
-                    throw new RuntimeException("Les honoraires de cet enseignant ont déjà été calculés pour ce mois.");
+        HonorairesCalculs calcul = honorairesCalculsRepository.findByEnseignantIdAndMois(enseignantId, moisCalcul)
+                .orElseGet(() -> {
+                    HonorairesCalculs c = new HonorairesCalculs();
+                    c.setMois(moisCalcul);
+                    c.setEnseignant(enseignant);
+                    c.setStatut(StatutHonoraire.BROUILLON);
+                    c.setDateCalcul(LocalDateTime.now());
+                    c.setTotalHeures(0F);
+                    c.setMontantBrut(0F);
+                    return honorairesCalculsRepository.save(c);
                 });
+
+        if (calcul.getStatut() == StatutHonoraire.PAYE) {
+            throw new HonorairesBusinessException("Les honoraires de ce mois ont déjà été payés. Impossible d'ajouter de nouvelles séances.");
+        }
 
         List<Seance> seancesPayables = getSeancesPayables(enseignantId, moisCalcul);
         if (seancesPayables.isEmpty()) {
-            throw new RuntimeException("Aucune séance payable trouvée pour cet enseignant sur ce mois.");
+            throw new HonorairesBusinessException("Aucune nouvelle séance payable trouvée pour cet enseignant sur ce mois.");
         }
 
-        HonorairesCalculs calcul = new HonorairesCalculs();
-        calcul.setMois(moisCalcul);
-        calcul.setEnseignant(enseignant);
-        calcul.setStatut(StatutHonoraire.BROUILLON);
-        calcul.setDateCalcul(LocalDateTime.now());
-        calcul.setTotalHeures(0F);
-        calcul.setMontantBrut(0F);
+        float totalHeures = calcul.getTotalHeures() == null ? 0F : calcul.getTotalHeures();
+        float montantBrut = calcul.getMontantBrut() == null ? 0F : calcul.getMontantBrut();
 
-        HonorairesCalculs savedCalcul = honorairesCalculsRepository.save(calcul);
-
-        float totalHeures = 0F;
-        float montantBrut = 0F;
-        List<DetailHonoraire> details = new ArrayList<>();
+        List<DetailHonoraire> nouveauxDetails = new ArrayList<>();
 
         for (Seance seance : seancesPayables) {
-            DetailHonoraire detail = buildDetail(savedCalcul, seance);
+            DetailHonoraire detail = buildDetail(calcul, seance);
             totalHeures += detail.getNombreHeures();
             montantBrut += detail.getMontant();
-            details.add(detail);
+            nouveauxDetails.add(detail);
         }
 
-        detailHonoraireRepository.saveAll(details);
-        savedCalcul.setTotalHeures(totalHeures);
-        savedCalcul.setMontantBrut(montantBrut);
-        savedCalcul.setDetailsHonoraires(details);
+        detailHonoraireRepository.saveAll(nouveauxDetails);
 
-        return toDto(honorairesCalculsRepository.save(savedCalcul), true);
+        calcul.setTotalHeures(totalHeures);
+        calcul.setMontantBrut(montantBrut);
+        calcul.setStatut(StatutHonoraire.BROUILLON);
+        calcul.setDateCalcul(LocalDateTime.now());
+
+        HonorairesCalculs savedCalcul = honorairesCalculsRepository.save(calcul);
+        return toDto(honorairesCalculsRepository.findById(savedCalcul.getId()).get(), true);
     }
 
     @Transactional
     public HonorairesCalculDto validerHonoraires(Integer calculId) {
         verifyAdmin();
         HonorairesCalculs calcul = honorairesCalculsRepository.findById(calculId)
-                .orElseThrow(() -> new RuntimeException("Calcul d'honoraires introuvable."));
+                .orElseThrow(() -> new HonorairesBusinessException("Calcul d'honoraires introuvable."));
 
         if (calcul.getStatut() == StatutHonoraire.PAYE) {
-            throw new RuntimeException("Impossible de modifier un calcul déjà payé.");
+            throw new HonorairesBusinessException("Impossible de modifier un calcul déjà payé.");
         }
 
         calcul.setStatut(StatutHonoraire.VALIDE);
@@ -119,43 +127,48 @@ public class HonorairesService {
     public HonorairesCalculDto marquerCommePaye(Integer calculId) {
         verifyAdmin();
         HonorairesCalculs calcul = honorairesCalculsRepository.findById(calculId)
-                .orElseThrow(() -> new RuntimeException("Calcul d'honoraires introuvable."));
+                .orElseThrow(() -> new HonorairesBusinessException("Calcul d'honoraires introuvable."));
 
         if (calcul.getStatut() != StatutHonoraire.VALIDE) {
-            throw new RuntimeException("Seuls les honoraires validés peuvent être marqués comme payés.");
+            throw new HonorairesBusinessException("Seuls les honoraires validés peuvent être marqués comme payés.");
         }
 
         calcul.setStatut(StatutHonoraire.PAYE);
         return toDto(honorairesCalculsRepository.save(calcul), true);
     }
 
+    @Transactional(readOnly = true)
     public HonorairesCalculDto getHonorairesById(Integer id) {
         HonorairesCalculs calcul = honorairesCalculsRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Calcul d'honoraires introuvable."));
+                .orElseThrow(() -> new HonorairesBusinessException("Calcul d'honoraires introuvable."));
         verifyCanRead(calcul.getEnseignant().getId());
         return toDto(calcul, true);
     }
 
+    @Transactional(readOnly = true)
     public List<HonorairesCalculDto> getHonorairesParMois(Integer annee, Integer mois) {
         verifyAdmin();
         LocalDate moisCalcul = normalizeMonth(annee, mois);
         return honorairesCalculsRepository.findByMois(moisCalcul).stream()
-                .map(calcul -> toDto(calcul, false))
+                .map(calcul -> toDto(calcul, true))
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<HonorairesCalculDto> getHonorairesEnseignant(Integer enseignantId) {
         verifyCanRead(enseignantId);
         return honorairesCalculsRepository.findByEnseignantIdOrderByMoisDesc(enseignantId).stream()
-                .map(calcul -> toDto(calcul, false))
+                .map(calcul -> toDto(calcul, true))
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<HonorairesCalculDto> getMesHonoraires() {
         Utilisateur currentUser = getCurrentTeacherUser();
         return getHonorairesEnseignant(currentUser.getId());
     }
 
+    @Transactional(readOnly = true)
     public HonorairesCalculDto getMesHonorairesParMois(Integer annee, Integer mois) {
         Utilisateur currentUser = getCurrentTeacherUser();
         Integer enseignantId = currentUser.getId();
@@ -167,7 +180,7 @@ public class HonorairesService {
                     Enseignant enseignant = getEnseignant(enseignantId);
                     List<Seance> seancesPayables = getSeancesPayables(enseignantId, moisCalcul);
                     if (seancesPayables.isEmpty()) {
-                        throw new RuntimeException("Aucune séance payable trouvée pour cet enseignant sur ce mois.");
+                        throw new HonorairesBusinessException("Aucune séance payable trouvée pour cet enseignant sur ce mois.");
                     }
                     return buildPreviewDto(enseignant, moisCalcul, seancesPayables);
                 });
@@ -215,30 +228,15 @@ public class HonorairesService {
         LocalDate endDate = moisCalcul.withDayOfMonth(moisCalcul.lengthOfMonth());
 
         return seanceRepository.findByEnseignantIdAndDateCoursBetween(enseignantId, startDate, endDate).stream()
-                .filter(this::isSeancePayable)
+                .filter(Seance::isPayable)
                 .filter(seance -> !detailHonoraireRepository.existsBySeanceId(seance.getId()))
                 .collect(Collectors.toList());
-    }
-
-    private boolean isSeancePayable(Seance seance) {
-        Emargement emargement = seance.getEmargement();
-        FicheProgression fiche = seance.getFicheProgression();
-
-        return emargement != null
-                && emargement.getStatut() == StatutEmargement.VALIDE
-                && fiche != null
-                && Boolean.TRUE.equals(fiche.getEstValideAdmin())
-                && seance.getHeureDebutReelle() != null
-                && seance.getHeureFinReelle() != null
-                && seance.getClasse() != null
-                && seance.getClasse().getNiveauEnseignement() != null
-                && seance.getClasse().getNiveauEnseignement().getPrixHoraire() != null;
     }
 
     private float calculateNombreHeures(Seance seance) {
         long minutes = Duration.between(seance.getHeureDebutReelle(), seance.getHeureFinReelle()).toMinutes();
         if (minutes <= 0) {
-            throw new RuntimeException("Durée de séance invalide pour la séance " + seance.getId());
+            throw new HonorairesBusinessException("Durée de séance invalide pour la séance " + seance.getId());
         }
         return minutes / 60F;
     }
@@ -336,9 +334,17 @@ public class HonorairesService {
     }
 
     private void verifyAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean hasAdminAuthority = authentication != null
+                && authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(authority -> authority.equals("ROLE_ADMINISTRATEUR") || authority.equals("ADMINISTRATEUR"));
+
         Utilisateur currentUser = getCurrentUser();
-        if (currentUser.getRole() != Role.ADMINISTRATEUR) {
-            throw new AccessDeniedException("Seul l'administrateur peut effectuer cette action.");
+        if (!hasAdminAuthority || currentUser.getRole() != Role.ADMINISTRATEUR) {
+            String email = currentUser.getEmail() != null ? currentUser.getEmail() : "inconnu";
+            String role = currentUser.getRole() != null ? currentUser.getRole().name() : "inconnu";
+            throw new AccessDeniedException("Seul l'administrateur peut effectuer cette action. Utilisateur reconnu: " + email + " (" + role + ").");
         }
     }
 

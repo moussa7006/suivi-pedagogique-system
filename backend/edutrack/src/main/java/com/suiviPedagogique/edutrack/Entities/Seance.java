@@ -3,14 +3,16 @@ package com.suiviPedagogique.edutrack.Entities;
 import com.suiviPedagogique.edutrack.Entities.enums.StatutSeance;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Seance {
@@ -61,4 +63,16 @@ public class Seance {
 
     @OneToOne(mappedBy = "seance")
     private DetailHonoraire detailHonoraire;
+
+    public boolean isPayable() {
+        return this.emargement != null
+                && this.emargement.getStatut() == com.suiviPedagogique.edutrack.Entities.enums.StatutEmargement.VALIDE
+                && this.ficheProgression != null
+                && Boolean.TRUE.equals(this.ficheProgression.getEstValideAdmin())
+                && this.heureDebutReelle != null
+                && this.heureFinReelle != null
+                && this.classe != null
+                && this.classe.getNiveauEnseignement() != null
+                && this.classe.getNiveauEnseignement().getPrixHoraire() != null;
+    }
 }

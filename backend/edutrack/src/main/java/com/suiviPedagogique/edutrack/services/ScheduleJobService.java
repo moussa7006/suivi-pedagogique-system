@@ -14,6 +14,8 @@ import com.suiviPedagogique.edutrack.repositories.QRCodeRepository;
 import com.suiviPedagogique.edutrack.repositories.AnneeUniversitaireRepository;
 import com.suiviPedagogique.edutrack.Entities.AnneeUniversitaire;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +52,23 @@ public class ScheduleJobService {
         List<EmploiDuTemps> activeSchedules = emploiDuTempsRepository.findAllActive();
         for (EmploiDuTemps emploi : activeSchedules) {
             checkAndGenerateSeanceForToday(emploi);
+        }
+    }
+
+    /**
+     * Rattrapage au démarrage de l'application.
+     * Si le backend n'était pas en cours d'exécution à 00:01, les séances du jour
+     * n'ont pas été générées. Cette méthode comble ce trou de façon idempotente
+     * (existsByEmploiDuTempsIdAndDateCours empêche les doublons).
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    public void runDailyGenerationAtStartup() {
+        try {
+            System.out.println("[Startup] Rattrapage de la génération des séances du jour...");
+            generateDailySeances();
+            updateAnneeUniversitaireStatus();
+        } catch (Exception e) {
+            System.err.println("[Startup] Echec du rattrapage : " + e.getMessage());
         }
     }
 
