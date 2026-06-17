@@ -4,12 +4,14 @@ import com.suiviPedagogique.edutrack.Dto.EmargementRequest;
 import com.suiviPedagogique.edutrack.Entities.Emargement;
 import com.suiviPedagogique.edutrack.Entities.Seance;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
+import com.suiviPedagogique.edutrack.Entities.enums.Role;
 import com.suiviPedagogique.edutrack.Entities.enums.StatutEmargement;
 import com.suiviPedagogique.edutrack.repositories.EmargementRepository;
 import com.suiviPedagogique.edutrack.repositories.SeanceRepository;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -123,7 +125,20 @@ public class EmargementService {
     }
 
     public List<EmargementDto> getAllEmargements() {
-        return emargementRepository.findAll().stream().map(e -> {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Utilisateur currentUser = utilisateurRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Utilisateur non authentifié."));
+
+        List<Emargement> emargements;
+        if (currentUser.getRole() == Role.ADMINISTRATEUR) {
+            emargements = emargementRepository.findAll();
+        } else if (currentUser.getRole() == Role.ENSEIGNANT) {
+            emargements = emargementRepository.findByEnseignantId(currentUser.getId());
+        } else {
+            throw new AccessDeniedException("Rôle non autorisé.");
+        }
+
+        return emargements.stream().map(e -> {
             EmargementDto dto = new EmargementDto();
             dto.setId(e.getId());
             dto.setDateHeureScan(e.getDateHeureScan());

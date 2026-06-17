@@ -26,6 +26,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return "OPTIONS".equalsIgnoreCase(request.getMethod())
+                || uri.startsWith("/api/auth/login")
+                || uri.startsWith("/api/auth/forgot-password")
+                || uri.startsWith("/api/auth/reset-password")
+                || uri.startsWith("/v3/api-docs")
+                || uri.startsWith("/swagger-ui")
+                || uri.equals("/swagger-ui.html");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
@@ -37,7 +49,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 email = jwtUtil.extractClaims(token).getSubject();
             } catch (Exception e) {
-                // Token invalide, continuer sans authentification
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"error\":\"Token JWT invalide ou expiré. Veuillez vous reconnecter.\"}");
+                return;
             }
         }
 
@@ -48,6 +63,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"error\":\"Token JWT expiré ou ne correspondant pas à l'utilisateur. Veuillez vous reconnecter.\"}");
+                return;
             }
         }
 

@@ -6,12 +6,14 @@ import com.suiviPedagogique.edutrack.Entities.FicheProgression;
 import com.suiviPedagogique.edutrack.Entities.Emargement;
 import com.suiviPedagogique.edutrack.Entities.Seance;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
+import com.suiviPedagogique.edutrack.Entities.enums.Role;
 import com.suiviPedagogique.edutrack.Entities.enums.StatutEmargement;
 import com.suiviPedagogique.edutrack.repositories.FicheProgressionRepository;
 import com.suiviPedagogique.edutrack.repositories.EmargementRepository;
 import com.suiviPedagogique.edutrack.repositories.SeanceRepository;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -81,7 +83,20 @@ public class FicheProgressionService {
     }
 
     public List<FicheProgressionDto> getAllFicheProgressions() {
-        return ficheProgressionRepository.findAll().stream().map(f -> {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Utilisateur currentUser = utilisateurRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Utilisateur non authentifié."));
+
+        List<FicheProgression> fiches;
+        if (currentUser.getRole() == Role.ADMINISTRATEUR) {
+            fiches = ficheProgressionRepository.findAll();
+        } else if (currentUser.getRole() == Role.ENSEIGNANT) {
+            fiches = ficheProgressionRepository.findByEnseignantId(currentUser.getId());
+        } else {
+            throw new AccessDeniedException("Rôle non autorisé.");
+        }
+
+        return fiches.stream().map(f -> {
             FicheProgressionDto dto = new FicheProgressionDto();
             dto.setId(f.getId());
             dto.setDateSaisie(f.getDateSaisie());
