@@ -19,6 +19,7 @@ import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
 import com.suiviPedagogique.edutrack.repositories.SalleRepository;
 import com.suiviPedagogique.edutrack.repositories.AnneeUniversitaireRepository;
 import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -98,24 +99,19 @@ public class ExcelImportService {
         Set<String> emailsInFile = new HashSet<>();
         Set<String> matriculesInFile = new HashSet<>();
         Set<String> telephonesInFile = new HashSet<>();
-        Set<String> existingEmails = new HashSet<>();
-        Set<String> existingMatricules = new HashSet<>();
-        Set<String> existingTelephones = new HashSet<>();
 
-        for (Utilisateur utilisateur : utilisateurRepository.findAll()) {
-            if (!isBlank(utilisateur.getEmail())) {
-                existingEmails.add(normalizeKey(utilisateur.getEmail()));
-            }
-            if (!isBlank(utilisateur.getMatricule())) {
-                existingMatricules.add(normalizeKey(utilisateur.getMatricule()));
-            }
-            if (!isBlank(utilisateur.getTelephone())) {
-                existingTelephones.add(normalizeKey(utilisateur.getTelephone()));
-            }
+        // Map pour stocker les enseignants existants par email pour une mise à jour facile
+        Map<String, Enseignant> existingEnseignantsByEmail = new HashMap<>();
+        for (Enseignant ens : enseignantRepository.findAll()) {
+            existingEnseignantsByEmail.put(normalizeKey(ens.getEmail()), ens);
         }
 
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
+            if (sheet.getPhysicalNumberOfRows() <= 1) {
+                throw new IllegalArgumentException("Le fichier Excel est vide ou ne contient que les en-têtes.");
+            }
+
             Map<String, Integer> columns = resolveHeaderColumns(sheet.getRow(0), formatter);
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
@@ -152,37 +148,17 @@ public class ExcelImportService {
                 String normalizedMatricule = normalizeKey(matricule);
                 String normalizedTelephone = normalizeKey(telephone);
 
-                if (isBlank(nom)) {
-                    rowErrors.add("nom obligatoire");
-                }
-                if (isBlank(prenom)) {
-                    rowErrors.add("prénom obligatoire");
-                }
-                if (isBlank(telephone)) {
-                    rowErrors.add("téléphone obligatoire");
-                }
+                if (isBlank(nom)) rowErrors.add("nom obligatoire");
+                if (isBlank(prenom)) rowErrors.add("prénom obligatoire");
                 if (isBlank(email)) {
                     rowErrors.add("email obligatoire");
                 } else if (!isValidEmail(email)) {
                     rowErrors.add("email invalide");
-                } else if (existingEmails.contains(normalizedEmail) || utilisateurRepository.findByEmail(email).isPresent()) {
-                    rowErrors.add("email déjà utilisé");
-                } else if (!emailsInFile.add(normalizedEmail)) {
-                    rowErrors.add("email dupliqué dans le fichier");
                 }
 
-                if (existingMatricules.contains(normalizedMatricule)) {
-                    rowErrors.add("matricule déjà utilisé");
-                } else if (!matriculesInFile.add(normalizedMatricule)) {
-                    rowErrors.add("matricule dupliqué dans le fichier");
-                }
-
-                if (!isBlank(telephone)) {
-                    if (existingTelephones.contains(normalizedTelephone)) {
-                        rowErrors.add("téléphone déjà utilisé");
-                    } else if (!telephonesInFile.add(normalizedTelephone)) {
-                        rowErrors.add("téléphone dupliqué dans le fichier");
-                    }
+                if (!rowErrors.isEmpty()) {
+                    errors.add("Ligne " + numeroLigne + " ignorée : " + String.join(", ", rowErrors) + ".");
+                    continue;
                 }
 
                 LocalDate dateEmbauche = defaultDateEmbauche;
@@ -190,32 +166,68 @@ public class ExcelImportService {
                     try {
                         dateEmbauche = parseDate(dateEmbaucheValue);
                     } catch (IllegalArgumentException e) {
-                        rowErrors.add("date d'embauche invalide, utilisez yyyy-MM-dd ou dd/MM/yyyy");
+                        errors.add("Ligne " + numeroLigne + " : date d'embauche invalide, la date du jour sera utilisée.");
                     }
                 }
 
-                if (!rowErrors.isEmpty()) {
-                    errors.add("Ligne " + numeroLigne + " : " + String.join(", ", rowErrors) + ".");
-                    continue;
+                // Vérifier si l'enseignant existe déjà (Mise à jour) ou s'il est nouveau
+                Enseignant ens = existingEnseignantsByEmail.get(normalizedEmail);
+
+                if (ens != null) {
+                    // C'est une mise à jour
+                    boolean isUpdated = false;
+
+                    if (!isBlank(telephone) && !telephone.equals(ens.getTelephone())) {
+                        ens.setTelephone(telephone);
+                        isUpdated = true;
+                    }
+                    if (!isBlank(matricule) && !matricule.equals(ens.getMatricule()) && ens.getMatricule().startsWith("ENS-")) {
+                        // On met à jour le matricule si l'actuel était un matricule généré par défaut
+                        ens.setMatricule(matricule);
+                        isUpdated = true;
+                    }
+                    if (!isBlank(adresse) && (isBlank(ens.getAdresse()) || ens.getAdresse().equals(DEFAULT_ADDRESS) || ens.getAdresse().equalsIgnoreCase("Non renseignée") || ens.getAdresse().equalsIgnoreCase("Non renseigné"))) {
+                        ens.setAdresse(adresse);
+                        isUpdated = true;
+                    }
+                    if (!isBlank(specialite) && (isBlank(ens.getSpecialite()) || ens.getSpecialite().equals(DEFAULT_TEACHER_VALUE) || ens.getSpecialite().equalsIgnoreCase("Non renseigné") || ens.getSpecialite().equalsIgnoreCase("Non renseignée"))) {
+                        ens.setSpecialite(specialite);
+                        isUpdated = true;
+                    }
+                    if (!isBlank(grade) && (isBlank(ens.getGrade()) || ens.getGrade().equals(DEFAULT_TEACHER_VALUE) || ens.getGrade().equalsIgnoreCase("Non renseigné") || ens.getGrade().equalsIgnoreCase("Non renseignée"))) {
+                        ens.setGrade(grade);
+                        isUpdated = true;
+                    }
+
+                    if (isUpdated) {
+                        enseignantsToSave.add(ens);
+                    }
+                } else {
+                    // C'est un nouvel enseignant
+                    if (!emailsInFile.add(normalizedEmail)) {
+                        errors.add("Ligne " + numeroLigne + " : email dupliqué dans le fichier.");
+                        continue;
+                    }
+
+                    ens = new Enseignant();
+                    ens.setNom(nom);
+                    ens.setPrenom(prenom);
+                    ens.setEmail(email);
+                    ens.setTelephone(isBlank(telephone) ? "00000000" : telephone);
+                    ens.setMatricule(matricule);
+                    ens.setAdresse(isBlank(adresse) ? DEFAULT_ADDRESS : adresse);
+                    ens.setRole(Role.ENSEIGNANT);
+                    ens.setMotDePasse(defaultPasswordHash);
+                    ens.setForcePasswordChange(true);
+                    ens.setActif(true);
+
+                    ens.setSpecialite(isBlank(specialite) ? DEFAULT_TEACHER_VALUE : specialite);
+                    ens.setDateEmbauche(dateEmbauche);
+                    ens.setGrade(isBlank(grade) ? DEFAULT_TEACHER_VALUE : grade);
+
+                    enseignantsToSave.add(ens);
+                    existingEnseignantsByEmail.put(normalizedEmail, ens);
                 }
-
-                Enseignant ens = new Enseignant();
-                ens.setNom(nom);
-                ens.setPrenom(prenom);
-                ens.setEmail(email);
-                ens.setTelephone(telephone);
-                ens.setMatricule(matricule);
-                ens.setAdresse(isBlank(adresse) ? DEFAULT_ADDRESS : adresse);
-                ens.setRole(Role.ENSEIGNANT);
-                ens.setMotDePasse(defaultPasswordHash);
-                ens.setForcePasswordChange(true);
-                ens.setActif(true);
-
-                ens.setSpecialite(isBlank(specialite) ? DEFAULT_TEACHER_VALUE : specialite);
-                ens.setDateEmbauche(dateEmbauche);
-                ens.setGrade(isBlank(grade) ? DEFAULT_TEACHER_VALUE : grade);
-
-                enseignantsToSave.add(ens);
             }
         }
 
@@ -305,6 +317,39 @@ public class ExcelImportService {
         throw new IllegalArgumentException("Date invalide");
     }
 
+    private String getCellValue(Row row, Map<String, Integer> headerMap, String... possibleHeaders) {
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+        for (String header : possibleHeaders) {
+            String searchKey = header.toLowerCase().trim();
+            for (Map.Entry<String, Integer> entry : headerMap.entrySet()) {
+                if (entry.getKey().contains(searchKey)) {
+                    Cell cell = row.getCell(entry.getValue());
+                    if (cell != null) {
+                        return switch (cell.getCellType()) {
+                            case STRING -> cell.getStringCellValue().trim();
+                            case NUMERIC -> {
+                                if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
+                                    // If it's a date or time, format it back to expected strings
+                                    java.time.LocalDateTime dt = cell.getLocalDateTimeCellValue();
+                                    // If it looks like just a time
+                                    if (dt.getYear() <= 1900 && dt.getMonthValue() == 1 && dt.getDayOfMonth() <= 1) {
+                                        yield dt.toLocalTime().format(timeFormatter);
+                                    }
+                                    // otherwise assume it's a full date string yyyy-MM-dd
+                                    yield dt.toLocalDate().toString();
+                                }
+                                // If it's a plain number (e.g., "15" for day of month)
+                                yield String.valueOf((int) cell.getNumericCellValue());
+                            }
+                            default -> cell.toString().trim();
+                        };
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public int importSchedules(MultipartFile file) throws Exception {
         List<EmploiDuTemps> schedulesToSave = new ArrayList<>();
@@ -313,24 +358,45 @@ public class ExcelImportService {
 
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
+            if (sheet.getPhysicalNumberOfRows() <= 1) {
+                throw new RuntimeException("Le fichier Excel est vide ou ne contient que les en-têtes.");
+            }
+
+            // --- 1. Lecture dynamique des en-têtes ---
+            Row headerRow = sheet.getRow(0);
+            Map<String, Integer> headerMap = new java.util.HashMap<>();
+            for (Cell cell : headerRow) {
+                if (cell != null && cell.getCellType() == org.apache.poi.ss.usermodel.CellType.STRING) {
+                    headerMap.put(cell.getStringCellValue().toLowerCase().trim(), cell.getColumnIndex());
+                }
+            }
+
+            // --- 2. Lecture des lignes de données ---
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (row == null || row.getCell(0) == null) continue;
+                if (row == null) continue;
 
                 final int numeroLigne = i + 1;
 
-                String titre = row.getCell(0).getStringCellValue();
-                String typeRecurrenceStr = row.getCell(1).getStringCellValue();
-                TypeRecurrence type = TypeRecurrence.valueOf(typeRecurrenceStr.toUpperCase());
+                // Extraction dynamique par nom de colonne
+                String titre = getCellValue(row, headerMap, "titre");
+                String typeRecurrenceStr = getCellValue(row, headerMap, "type", "récurrence", "recurrence");
+                String jourOuDate = getCellValue(row, headerMap, "jour", "date");
+                String heureDebutStr = getCellValue(row, headerMap, "heure de début", "début", "debut");
+                String heureFinStr = getCellValue(row, headerMap, "heure de fin", "fin");
+                String nomSalle = getCellValue(row, headerMap, "salle");
+                String emailEnseignant = getCellValue(row, headerMap, "email", "enseignant");
+                String nomMatiere = getCellValue(row, headerMap, "matière", "matiere");
+                String nomClasse = getCellValue(row, headerMap, "classe");
+                String libelleAnnee = getCellValue(row, headerMap, "année", "annee");
 
-                String jourOuDate = row.getCell(2).getStringCellValue();
-                String heureDebutStr = row.getCell(3).getStringCellValue();
-                String heureFinStr = row.getCell(4).getStringCellValue();
-                String nomSalle = row.getCell(5).getStringCellValue();
-                String emailEnseignant = row.getCell(6).getStringCellValue();
-                String nomMatiere = row.getCell(7).getStringCellValue();
-                String nomClasse = row.getCell(8).getStringCellValue();
-                String libelleAnnee = row.getCell(9) != null ? row.getCell(9).getStringCellValue() : null;
+                if (titre == null || typeRecurrenceStr == null || emailEnseignant == null) {
+                    // Si la ligne est globalement vide, on la saute, sinon on lève une erreur de données manquantes
+                    if (titre == null && typeRecurrenceStr == null && emailEnseignant == null) continue;
+                    throw new RuntimeException("Données obligatoires manquantes à la ligne " + numeroLigne + " (Titre, Type ou Email).");
+                }
+
+                TypeRecurrence type = TypeRecurrence.valueOf(typeRecurrenceStr.toUpperCase());
 
                 Enseignant ens = enseignantRepository.findByEmail(emailEnseignant)
                         .orElseThrow(() -> new RuntimeException("Enseignant introuvable (Email: " + emailEnseignant + ") à la ligne " + numeroLigne));
