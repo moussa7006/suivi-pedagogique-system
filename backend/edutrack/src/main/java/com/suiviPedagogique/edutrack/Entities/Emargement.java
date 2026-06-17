@@ -3,13 +3,15 @@ package com.suiviPedagogique.edutrack.Entities;
 import com.suiviPedagogique.edutrack.Entities.enums.StatutEmargement;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Emargement {

@@ -101,6 +101,10 @@ export class CahierTextesPage implements OnInit {
     this.loadData();
   }
 
+  ionViewWillEnter(): void {
+    this.loadData();
+  }
+
   get getValidatedCount(): number {
     return this.fichesProgression.filter((f) => f.estValideAdmin).length;
   }

@@ -137,6 +137,10 @@ export class ProfilePage implements OnInit {
     void this.loadUserProfile();
   }
 
+  ionViewWillEnter(): void {
+    void this.loadUserProfile();
+  }
+
   private async loadUserProfile(): Promise<void> {
     const user = await this.authService.getUser();
     if (user) {

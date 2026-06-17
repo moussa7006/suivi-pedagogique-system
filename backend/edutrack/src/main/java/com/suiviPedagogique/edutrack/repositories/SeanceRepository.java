@@ -29,6 +29,8 @@ public interface SeanceRepository extends JpaRepository<Seance, Integer> {
 
     boolean existsByEmploiDuTempsIdAndDateCours(Integer emploiDuTempsId, LocalDate dateCours);
 
+    List<Seance> findByEmploiDuTempsId(Integer emploiDuTempsId);
+
     @Query("""
             SELECT s FROM Seance s
             WHERE s.enseignant.id = :enseignantId
@@ -39,6 +41,22 @@ public interface SeanceRepository extends JpaRepository<Seance, Integer> {
             """)
     List<Seance> findOverlappingSeancesForTeacher(
             @Param("enseignantId") Integer enseignantId,
+            @Param("dateCours") LocalDate dateCours,
+            @Param("heureDebut") LocalTime heureDebut,
+            @Param("heureFin") LocalTime heureFin,
+            @Param("excludeId") Integer excludeId
+    );
+
+    @Query("""
+            SELECT s FROM Seance s
+            WHERE s.salle.id = :salleId
+              AND s.dateCours = :dateCours
+              AND (:excludeId IS NULL OR s.id <> :excludeId)
+              AND s.heureDebutReelle < :heureFin
+              AND s.heureFinReelle > :heureDebut
+            """)
+    List<Seance> findOverlappingSeancesForSalle(
+            @Param("salleId") Integer salleId,
             @Param("dateCours") LocalDate dateCours,
             @Param("heureDebut") LocalTime heureDebut,
             @Param("heureFin") LocalTime heureFin,

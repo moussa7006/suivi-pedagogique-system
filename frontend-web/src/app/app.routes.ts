@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { LoginComponent } from './features/login/login.component';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -33,65 +34,82 @@ export const routes: Routes = [
         (m) => m.SalleDisplayComponent,
       ),
   },
-  { path: 'dashboard', component: DashboardComponent },
+  {
+    path: 'dashboard',
+    component: DashboardComponent,
+    canActivate: [adminGuard],
+  },
   {
     path: 'profile',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./features/profile/profile.component').then((m) => m.ProfileComponent),
   },
   {
     path: 'classes',
+    canActivate: [adminGuard],
     loadComponent: () => import('./features/classes/classes').then((m) => m.Classes),
   },
   {
     path: 'matieres',
+    canActivate: [adminGuard],
     loadComponent: () => import('./features/matieres/matieres').then((m) => m.Matieres),
   },
   {
     path: 'schedule',
+    canActivate: [adminGuard],
     loadComponent: () => import('./features/schedule/schedule').then((m) => m.Schedule),
   },
   {
     path: 'seances',
+    canActivate: [adminGuard],
     loadComponent: () => import('./features/seances/seances').then((m) => m.SeancesComponent),
   },
   {
     path: 'teachers',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./features/teachers/teachers.component').then((m) => m.TeachersComponent),
   },
   {
     path: 'qr-generator',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./features/qr-generator/qr-generator.component').then((m) => m.QrGeneratorComponent),
   },
   {
     path: 'attendance',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./features/attendance/attendance.component').then((m) => m.AttendanceComponent),
   },
   {
     path: 'pedagogy',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./features/pedagogy/pedagogy.component').then((m) => m.PedagogyComponent),
   },
   {
     path: 'honoraires',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./features/honoraires/honoraires.component').then((m) => m.HonorairesComponent),
   },
   {
     path: 'departements',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./features/departements/departements.component').then((m) => m.DepartementsComponent),
   },
   {
     path: 'filieres',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./features/filieres/filieres.component').then((m) => m.FilieresComponent),
   },
   {
     path: 'niveaux-enseignement',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./features/niveaux-enseignement/niveaux-enseignement.component').then(
         (m) => m.NiveauxEnseignementComponent,
@@ -99,11 +117,13 @@ export const routes: Routes = [
   },
   {
     path: 'salles',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./features/salles/salles.component').then((m) => m.SallesComponent),
   },
   {
     path: 'annees-universitaires',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./features/annees-universitaires/annees-universitaires.component').then(
         (m) => m.AnneesUniversitairesComponent,

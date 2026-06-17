@@ -1,5 +1,5 @@
 import { Injectable, inject } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { HonorairesCalcul } from "../models/honoraires.model";
@@ -10,7 +10,20 @@ export class HonorairesService {
   private readonly baseUrl = environment.apiBaseUrl;
 
   getMesHonoraires(): Observable<HonorairesCalcul[]> {
-    return this.http.get<HonorairesCalcul[]>(`${this.baseUrl}/honoraires/mes-honoraires`);
+    return this.http.get<HonorairesCalcul[]>(
+      `${this.baseUrl}/honoraires/mes-honoraires`,
+    );
+  }
+
+  getMesHonorairesParMois(
+    annee: number,
+    mois: number,
+  ): Observable<HonorairesCalcul> {
+    const params = new HttpParams().set("annee", annee).set("mois", mois);
+    return this.http.get<HonorairesCalcul>(
+      `${this.baseUrl}/honoraires/mes-honoraires/mois`,
+      { params },
+    );
   }
 
   getById(id: number): Observable<HonorairesCalcul> {

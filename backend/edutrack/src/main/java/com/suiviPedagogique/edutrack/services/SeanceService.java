@@ -93,6 +93,7 @@ public class SeanceService {
         if (dto.getSalleId() != null) {
             Salle salle = salleRepository.findById(dto.getSalleId())
                     .orElseThrow(() -> new RuntimeException("Salle non trouvée"));
+            checkSalleAvailability(salle, dto, seanceId);
             seance.setSalle(salle);
         }
 
@@ -128,6 +129,31 @@ public class SeanceService {
             FicheProgression ficheProgression = ficheProgressionRepository.findById(dto.getFicheProgressionId())
                     .orElseThrow(() -> new RuntimeException("Fiche de progression non trouvée"));
             seance.setFicheProgression(ficheProgression);
+        }
+    }
+
+    private void checkSalleAvailability(Salle salle, SeanceDto dto, Integer excludeId) {
+        if (dto.getDateCours() == null || dto.getHeureDebutReelle() == null || dto.getHeureFinReelle() == null) {
+            return;
+        }
+        if (!dto.getHeureDebutReelle().isBefore(dto.getHeureFinReelle())) {
+            throw new RuntimeException("L'heure de début doit être antérieure à l'heure de fin.");
+        }
+
+        List<Seance> conflicts = seanceRepository.findOverlappingSeancesForSalle(
+                salle.getId(),
+                dto.getDateCours(),
+                dto.getHeureDebutReelle(),
+                dto.getHeureFinReelle(),
+                excludeId
+        );
+
+        if (!conflicts.isEmpty()) {
+            Seance conflict = conflicts.get(0);
+            throw new RuntimeException("Planification impossible : la salle " + salle.getNom()
+                    + " est déjà occupée le " + conflict.getDateCours()
+                    + " de " + conflict.getHeureDebutReelle()
+                    + " à " + conflict.getHeureFinReelle() + ".");
         }
     }
 

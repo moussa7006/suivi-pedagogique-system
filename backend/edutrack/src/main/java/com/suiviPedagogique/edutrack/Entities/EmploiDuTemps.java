@@ -4,15 +4,17 @@ import com.suiviPedagogique.edutrack.Entities.enums.JourSemaine;
 import com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmploiDuTemps {

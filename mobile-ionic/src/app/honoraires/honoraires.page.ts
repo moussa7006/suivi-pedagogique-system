@@ -74,6 +74,10 @@ export class HonorairesPage implements OnInit {
     this.loadHonoraires();
   }
 
+  ionViewWillEnter(): void {
+    this.loadHonoraires();
+  }
+
   loadHonoraires(event?: CustomEvent): void {
     this.loading = !event;
     this.errorMessage = "";
@@ -108,7 +112,6 @@ export class HonorairesPage implements OnInit {
       BROUILLON: "Brouillon",
       VALIDE: "Validé",
       PAYE: "Payé",
-      ANNULE: "Annulé",
     };
     return statut ? labels[statut] || statut : "-";
   }

@@ -25,12 +25,11 @@ import { forkJoin, finalize } from "rxjs";
 import { ScheduleService } from "../core/services/schedule.service";
 import { SalleService } from "../core/services/salle.service";
 import { MatiereService } from "../core/services/matiere.service";
-import { UtilisateurService } from "../core/services/utilisateur.service";
+import { AuthService } from "../core/services/auth.service";
 import { EmploiDuTemps } from "../core/models/schedule.model";
 import { Seance } from "../core/models/seance.model";
 import { Salle } from "../core/models/salle.model";
 import { Matiere } from "../core/models/matiere.model";
-import { Utilisateur } from "../core/models/user.model";
 
 interface PlanningCourse {
   matiere: string;
@@ -55,7 +54,7 @@ export class PlanningPage implements OnInit {
   private readonly scheduleService = inject(ScheduleService);
   private readonly salleService = inject(SalleService);
   private readonly matiereService = inject(MatiereService);
-  private readonly utilisateurService = inject(UtilisateurService);
+  private readonly authService = inject(AuthService);
 
   today = new Date();
   selectedDayIndex = 0;
@@ -68,7 +67,8 @@ export class PlanningPage implements OnInit {
   private allSeances: Seance[] = [];
   private salles: Salle[] = [];
   private matieres: Matiere[] = [];
-  private utilisateurs: Utilisateur[] = [];
+  private currentUserId: number | null = null;
+  private currentUserLabel = "";
 
   constructor() {
     addIcons({
@@ -88,7 +88,21 @@ export class PlanningPage implements OnInit {
   }
 
   ngOnInit(): void {
+    void this.loadCurrentUser();
     this.loadEmploisDuTemps();
+  }
+
+  ionViewWillEnter(): void {
+    void this.loadCurrentUser();
+    this.loadEmploisDuTemps();
+  }
+
+  private async loadCurrentUser(): Promise<void> {
+    const user = await this.authService.getUser();
+    if (user) {
+      this.currentUserId = user.id ?? null;
+      this.currentUserLabel = `${user.prenom || ""} ${user.nom || ""}`.trim();
+    }
   }
 
   selectDay(index: number): void {
@@ -127,16 +141,14 @@ export class PlanningPage implements OnInit {
       seances: this.scheduleService.getSeances(),
       salles: this.salleService.getAll(),
       matieres: this.matiereService.getAll(),
-      utilisateurs: this.utilisateurService.listerTous(),
     })
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
-        next: ({ schedules, seances, salles, matieres, utilisateurs }) => {
+        next: ({ schedules, seances, salles, matieres }) => {
           this.allSchedules = schedules || [];
           this.allSeances = seances || [];
           this.salles = salles || [];
           this.matieres = matieres || [];
-          this.utilisateurs = utilisateurs || [];
           this.buildPlanningForSelectedDay();
         },
         error: () => {
@@ -288,12 +300,10 @@ export class PlanningPage implements OnInit {
   }
 
   private getEnseignantLabel(enseignantId: number): string {
-    const enseignant = this.utilisateurs.find(
-      (item) => item.id === enseignantId,
-    );
-    return enseignant
-      ? `${enseignant.prenom} ${enseignant.nom}`.trim()
-      : `Enseignant #${enseignantId}`;
+    if (this.currentUserId != null && enseignantId === this.currentUserId) {
+      return this.currentUserLabel || "Vous";
+    }
+    return `Enseignant #${enseignantId}`;
   }
 
   private getStatusLabel(status: PlanningCourse["status"]): string {
