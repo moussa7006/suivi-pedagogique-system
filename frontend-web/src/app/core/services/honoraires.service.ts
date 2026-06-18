@@ -51,4 +51,18 @@ export class HonorairesService {
   payer(id: number): Observable<HonorairesCalcul> {
     return this.http.patch<HonorairesCalcul>(`${this.apiUrl}/${id}/payer`, {});
   }
+
+  exportHonorairesExcel(annee: number, mois: number): Observable<Blob> {
+    const params = new HttpParams().set('annee', annee).set('mois', mois);
+    return this.http.get(`${environment.apiUrl}/export/honoraires/excel`, {
+      params,
+      responseType: 'blob',
+    });
+  }
+
+  exportFichePaiePdf(id: number): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/export/honoraires/${id}/pdf`, {
+      responseType: 'blob',
+    });
+  }
 }

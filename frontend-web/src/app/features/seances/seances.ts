@@ -11,10 +11,12 @@ import { Teacher } from '../../core/models/user.model';
 import { Salle } from '../../core/models/salle.model';
 import { NotificationService } from '../../shared/notification/notification.service';
 
+import { FormsModule } from '@angular/forms';
+
 @Component({
   selector: 'app-seances',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   template: `
     <div class="page-container">
       <div class="page-header">
@@ -30,9 +32,42 @@ import { NotificationService } from '../../shared/notification/notification.serv
             </a>
             <div class="header-left-titles">
               <h1>Séances (Sessions réelles)</h1>
-              <p>Aperçu des séances générées par le système ({{ seances.length }} au total)</p>
+              <p>
+                Aperçu des séances ({{ filteredSeances.length }} affichées / {{ seances.length }} au
+                total)
+              </p>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="filters-card">
+        <div class="field">
+          <label>Date</label>
+          <input type="date" [(ngModel)]="filterDate" (change)="applyFilters()" />
+        </div>
+        <div class="field">
+          <label>Statut</label>
+          <select [(ngModel)]="filterStatus" (change)="applyFilters()">
+            <option value="">Tous les statuts</option>
+            <option value="A_VENIR">À venir</option>
+            <option value="EN_COURS">En cours</option>
+            <option value="TERMINEE">Terminée</option>
+          </select>
+        </div>
+        <div class="field search-field">
+          <label>Rechercher</label>
+          <input
+            type="text"
+            [(ngModel)]="searchText"
+            (keyup)="applyFilters()"
+            placeholder="Enseignant, Salle, Classe..."
+          />
+        </div>
+        <div class="field actions">
+          <button class="btn btn-outline" (click)="resetFilters()">
+            <i class="pi pi-refresh"></i> Rénitialiser
+          </button>
         </div>
       </div>
 
@@ -49,12 +84,12 @@ import { NotificationService } from '../../shared/notification/notification.serv
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="seances.length === 0">
+              <tr *ngIf="filteredSeances.length === 0">
                 <td colspan="5" class="text-center empty-state-cell">
-                  Aucune séance générée pour le moment.
+                  Aucune séance trouvée pour les filtres actuels.
                 </td>
               </tr>
-              <tr *ngFor="let s of seances">
+              <tr *ngFor="let s of filteredSeances">
                 <td>
                   <strong>{{ s.dateCours }}</strong
                   ><br />
@@ -145,26 +180,93 @@ import { NotificationService } from '../../shared/notification/notification.serv
                 border-color: #cbd5e1;
                 transform: translateX(-2px);
               }
+            }
 
-              i {
-                font-size: 1rem;
+            .header-left-titles {
+              h1 {
+                margin: 0 0 6px 0;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #0f172a;
+                letter-spacing: -0.02em;
+              }
+
+              p {
+                margin: 0;
+                color: #64748b;
+                font-size: 0.95rem;
               }
             }
           }
+        }
+      }
 
-          h1 {
-            margin: 0 0 4px;
-            font-size: clamp(1.1rem, 3vw, 1.75rem);
-            font-weight: 800;
-            color: #0f172a;
-            letter-spacing: -0.02em;
+      .filters-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: flex-end;
+
+        .field {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+
+          label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
           }
 
-          p {
-            color: #64748b;
-            margin: 6px 0 0;
-            font-size: clamp(0.8rem, 1.5vw, 0.95rem);
-            font-weight: 500;
+          input,
+          select {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #1e293b;
+            min-width: 150px;
+            outline: none;
+            transition: border-color 0.2s;
+
+            &:focus {
+              border-color: #3b82f6;
+            }
+          }
+        }
+
+        .search-field {
+          flex: 1;
+          input {
+            width: 100%;
+          }
+        }
+
+        .actions {
+          margin-bottom: 2px;
+          .btn-outline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: #f8fafc;
+              border-color: #94a3b8;
+              color: #1e293b;
+            }
           }
         }
       }
@@ -386,10 +488,15 @@ import { NotificationService } from '../../shared/notification/notification.serv
 })
 export class SeancesComponent implements OnInit, OnDestroy {
   seances: Seance[] = [];
+  filteredSeances: Seance[] = [];
   teachers: Teacher[] = [];
   salles: Salle[] = [];
   classes: Classe[] = [];
   pollingTimer: any;
+
+  filterDate: string = new Date().toISOString().split('T')[0];
+  filterStatus: string = '';
+  searchText: string = '';
 
   constructor(
     private scheduleService: ScheduleService,
@@ -427,6 +534,7 @@ export class SeancesComponent implements OnInit, OnDestroy {
         console.log('Séances reçues:', data);
         if (!data || !Array.isArray(data)) {
           this.seances = [];
+          this.filteredSeances = [];
           return;
         }
         // Trier par date/heure la plus récente
@@ -440,6 +548,8 @@ export class SeancesComponent implements OnInit, OnDestroy {
           const dateB = new Date(dtB + 'T' + hrB).getTime();
           return dateB - dateA;
         });
+
+        this.applyFilters();
       },
       error: (err) => {
         console.error('Erreur lors du chargement des séances:', err);
@@ -522,5 +632,47 @@ export class SeancesComponent implements OnInit, OnDestroy {
     const endDateTime = new Date(`${s.dateCours}T${s.heureFinReelle}`).getTime();
 
     return Number.isFinite(endDateTime) && Date.now() >= endDateTime;
+  }
+
+  applyFilters() {
+    const searchLower = this.searchText.toLowerCase().trim();
+    this.filteredSeances = this.seances.filter((s) => {
+      // 1. Filtre par date
+      if (this.filterDate && s.dateCours !== this.filterDate) {
+        return false;
+      }
+
+      // 2. Filtre par statut
+      if (this.filterStatus) {
+        const isFinished = this.isSeanceFinished(s);
+        const inProgress = this.hasQrCode(s) && !isFinished;
+        if (this.filterStatus === 'TERMINEE' && !isFinished) return false;
+        if (this.filterStatus === 'EN_COURS' && !inProgress) return false;
+        if (this.filterStatus === 'A_VENIR' && (isFinished || inProgress)) return false;
+      }
+
+      // 3. Filtre de recherche par texte libre (Enseignant, Salle, Classe)
+      if (searchLower) {
+        const ens = this.getEnseignantNom(s).toLowerCase();
+        const salle = this.getSalleNom(s).toLowerCase();
+        const classe = this.getClasseLibelle(s).toLowerCase();
+        if (
+          !ens.includes(searchLower) &&
+          !salle.includes(searchLower) &&
+          !classe.includes(searchLower)
+        ) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }
+
+  resetFilters() {
+    this.filterDate = new Date().toISOString().split('T')[0];
+    this.filterStatus = '';
+    this.searchText = '';
+    this.applyFilters();
   }
 }
