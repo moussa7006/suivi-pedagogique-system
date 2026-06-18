@@ -59,6 +59,11 @@ public class AnneeUniversitaireService {
             throw new IllegalArgumentException("La date de début doit être antérieure à la date de fin");
         }
 
+        // Vérification de chevauchement
+        if (anneeUniversitaireRepository.existsOverlapping(annee.getDateDebut(), annee.getDateFin(), annee.getId())) {
+            throw new IllegalArgumentException("L'intervalle de cette année universitaire chevauche une autre année déjà enregistrée.");
+        }
+
         annee.setActive(isActive(annee.getDateDebut(), annee.getDateFin()));
     }
 

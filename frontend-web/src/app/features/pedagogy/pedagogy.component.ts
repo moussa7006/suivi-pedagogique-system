@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 import { PedagogyService } from '../../core/services/pedagogy.service';
 import { FicheProgression } from '../../core/models/lesson-log.model';
 
@@ -29,7 +30,10 @@ import { FicheProgression } from '../../core/models/lesson-log.model';
         </div>
         <div class="header-actions">
           <button class="btn btn-outline"><i class="pi pi-filter"></i> Filtres</button>
-          <button class="btn btn-outline"><i class="pi pi-download"></i> Exporter</button>
+          <button class="btn btn-outline" (click)="exportExcel()" [disabled]="exportingExcel">
+            <i class="pi" [ngClass]="exportingExcel ? 'pi-spin pi-spinner' : 'pi-download'"></i>
+            {{ exportingExcel ? 'Export...' : 'Exporter' }}
+          </button>
         </div>
       </div>
 
@@ -619,6 +623,7 @@ import { FicheProgression } from '../../core/models/lesson-log.model';
 })
 export class PedagogyComponent implements OnInit {
   lessonLogs: FicheProgression[] = [];
+  exportingExcel = false;
 
   constructor(private pedagogyService: PedagogyService) {}
 
@@ -628,6 +633,55 @@ export class PedagogyComponent implements OnInit {
 
   private loadLogs() {
     this.pedagogyService.getLessonLogs().subscribe((data) => (this.lessonLogs = data));
+  }
+
+  async exportExcel(): Promise<void> {
+    this.exportingExcel = true;
+    this.pedagogyService
+      .exportSeancesExcel()
+      .pipe(finalize(() => (this.exportingExcel = false)))
+      .subscribe({
+        next: async (blob) => {
+          await this.saveFile(blob, 'suivi_pedagogique_seances.xlsx', 'xlsx');
+        },
+        error: (error) => console.error("Échec de l'export Excel.", error),
+      });
+  }
+
+  private async saveFile(blob: Blob, defaultFileName: string, extension: string) {
+    if ('showSaveFilePicker' in window) {
+      try {
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: defaultFileName,
+          types: [
+            {
+              description: 'Fichier Excel',
+              accept: {
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [
+                  `.${extension}`,
+                ],
+              },
+            },
+          ],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return;
+      } catch (err: any) {
+        if (err.name === 'AbortError') return;
+        console.error('Erreur saveFile:', err);
+      }
+    }
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = defaultFileName;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   }
 
   getPendingCount(): number {
