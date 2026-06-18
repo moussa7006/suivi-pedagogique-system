@@ -66,4 +66,10 @@ export class ScheduleService {
   deleteSeance(id: number): Observable<void> {
     return this.http.delete<void>(`${this.seanceUrl}/${id}`);
   }
+
+  exportSeancesExcel(): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/export/seances/excel`, {
+      responseType: 'blob',
+    });
+  }
 }

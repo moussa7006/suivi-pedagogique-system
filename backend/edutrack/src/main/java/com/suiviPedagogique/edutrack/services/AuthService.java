@@ -52,10 +52,6 @@ public class AuthService {
             throw new RuntimeException("Erreur : Cet email est déjà utilisé !");
         }
 
-        if (utilisateurRepository.findByMatricule(requestdto.getMatricule()).isPresent()) {
-            throw new RuntimeException("Erreur : Ce matricule est déjà utilisé !");
-        }
-
         if (requestdto.getTelephone() != null && !requestdto.getTelephone().trim().isEmpty()
                 && utilisateurRepository.findByTelephone(requestdto.getTelephone().trim()).isPresent()) {
             throw new RuntimeException("Erreur : Ce numéro de téléphone est déjà utilisé !");
@@ -67,6 +63,7 @@ public class AuthService {
 
         if (roleDemande.equals("ADMIN") || roleDemande.equals("ADMINISTRATEUR")) {
             Utilisateur admin = new Utilisateur();
+            requestdto.setMatricule(genererMatricule(Role.ADMINISTRATEUR));
             remplirDonneesDeBase(admin, requestdto, motDePasseCrypte);
             admin.setRole(Role.ADMINISTRATEUR);
             admin.setForcePasswordChange(false);
@@ -74,6 +71,7 @@ public class AuthService {
 
         } else if (roleDemande.equals("ENSEIGNANT")) {
             Enseignant enseignant = new Enseignant();
+            requestdto.setMatricule(genererMatricule(Role.ENSEIGNANT));
             remplirDonneesDeBase(enseignant, requestdto, motDePasseCrypte);
             enseignant.setRole(Role.ENSEIGNANT);
             enseignant.setForcePasswordChange(true);
@@ -85,6 +83,16 @@ public class AuthService {
         } else {
             throw new IllegalArgumentException("Erreur : Rôle non valide. Utilisez ADMIN ou ENSEIGNANT.");
         }
+    }
+
+    public String genererMatricule(Role role) {
+        String prefix = role == Role.ADMINISTRATEUR ? "INTEC-ADM-" : "INTEC-ENS-";
+        String matricule;
+        do {
+            int randomDigits = 1000 + secureRandom.nextInt(9000); // 1000 to 9999
+            matricule = prefix + randomDigits;
+        } while (utilisateurRepository.findByMatricule(matricule).isPresent());
+        return matricule;
     }
 
     private void remplirDonneesDeBase(Utilisateur utilisateur, RegistrationRequest request, String mdpCrypte) {

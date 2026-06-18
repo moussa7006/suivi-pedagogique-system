@@ -27,4 +27,10 @@ export class PedagogyService {
   getLessonLogs(): Observable<FicheProgression[]> {
     return this.getFicheProgressions();
   }
+
+  exportSeancesExcel(): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/export/seances/excel`, {
+      responseType: 'blob',
+    });
+  }
 }

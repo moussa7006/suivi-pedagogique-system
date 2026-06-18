@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 import { Emargement, EmargementRequest } from '../models/attendance.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AttendanceService {
   private apiUrl = `${environment.apiUrl}/emargements`;
@@ -18,5 +18,11 @@ export class AttendanceService {
 
   scanQRCode(request: EmargementRequest): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/scan`, request);
+  }
+
+  exportEmargementsExcel(): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/export/emargements/excel`, {
+      responseType: 'blob',
+    });
   }
 }

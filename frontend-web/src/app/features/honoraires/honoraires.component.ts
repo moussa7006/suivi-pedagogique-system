@@ -124,6 +124,14 @@ import { SelectModule } from 'primeng/select';
         >
           <i class="pi pi-calculator"></i> Calculer
         </button>
+        <button
+          *ngIf="isAdmin && honoraires.length > 0"
+          class="btn btn-secondary"
+          (click)="exportExcel()"
+          [disabled]="exportingExcel"
+        >
+          <i class="pi pi-file-excel"></i> Export Excel
+        </button>
       </div>
 
       <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
@@ -207,8 +215,20 @@ import { SelectModule } from 'primeng/select';
                       class="icon-btn pay"
                       (click)="payer(item)"
                       [disabled]="item.statut !== 'VALIDE'"
+                      title="Marquer comme payé"
                     >
                       <i class="pi pi-money-bill"></i>
+                    </button>
+                    <button
+                      class="icon-btn"
+                      (click)="exportPdf(item)"
+                      title="Télécharger Fiche de Paie"
+                      [disabled]="exportingPdf === item.id"
+                    >
+                      <i
+                        class="pi"
+                        [ngClass]="exportingPdf === item.id ? 'pi-spin pi-spinner' : 'pi-file-pdf'"
+                      ></i>
                     </button>
                   </div>
                 </td>
@@ -554,6 +574,8 @@ export class HonorairesComponent implements OnInit {
   annee = new Date().getFullYear();
   mois = new Date().getMonth() + 1;
   loading = false;
+  exportingExcel = false;
+  exportingPdf: number | null = null;
   errorMessage = '';
   successMessage = '';
   currentRole = this.getCurrentUserRole();
@@ -788,6 +810,94 @@ export class HonorairesComponent implements OnInit {
     this.selected = this.selected?.id === item.id ? null : item;
   }
 
+  async exportExcel(): Promise<void> {
+    this.exportingExcel = true;
+    this.errorMessage = '';
+
+    // Fallback fileName si on ne trouve pas de prof précis
+    let fileName = `honoraires_${this.annee}_${this.mois}.xlsx`;
+
+    this.honorairesService
+      .exportHonorairesExcel(this.annee, this.mois)
+      .pipe(finalize(() => (this.exportingExcel = false)))
+      .subscribe({
+        next: async (blob) => {
+          await this.saveFile(blob, fileName, 'xlsx');
+        },
+        error: (error) =>
+          (this.errorMessage = this.extractError(error, "Échec de l'export Excel.")),
+      });
+  }
+
+  async exportPdf(item: HonorairesCalcul): Promise<void> {
+    if (!item.id) return;
+    this.exportingPdf = item.id;
+    this.errorMessage = '';
+
+    // Format attendu: fiche_paie_Nom_Matricule.pdf
+    const teacherName = item.enseignantNomPrenom
+      ? item.enseignantNomPrenom.replace(/\s+/g, '_')
+      : 'Enseignant';
+    // On cherche le matricule dans this.dropdownOptions
+    const teacherData = this.dropdownOptions.find((t) => t.value === item.enseignantId);
+    const matricule = teacherData?.matricule ? teacherData.matricule : 'Inconnu';
+
+    const fileName = `fiche_paie_${teacherName}_${matricule}.pdf`;
+
+    this.honorairesService
+      .exportFichePaiePdf(item.id)
+      .pipe(finalize(() => (this.exportingPdf = null)))
+      .subscribe({
+        next: async (blob) => {
+          await this.saveFile(blob, fileName, 'pdf');
+        },
+        error: (error) =>
+          (this.errorMessage = this.extractError(error, 'Échec de la génération du PDF.')),
+      });
+  }
+
+  private async saveFile(blob: Blob, defaultFileName: string, extension: string) {
+    // Si l'API File System Access est disponible (Chrome, Edge, etc.)
+    if ('showSaveFilePicker' in window) {
+      try {
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: defaultFileName,
+          types: [
+            {
+              description: extension === 'pdf' ? 'Fichier PDF' : 'Fichier Excel',
+              accept: {
+                [extension === 'pdf'
+                  ? 'application/pdf'
+                  : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']: [
+                  `.${extension}`,
+                ],
+              },
+            },
+          ],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return; // Fichier enregistré avec succès par l'utilisateur
+      } catch (err: any) {
+        // L'utilisateur a annulé le prompt (AbortError), on ne fait rien
+        if (err.name === 'AbortError') return;
+        console.error('Erreur avec showSaveFilePicker:', err);
+        // On fallback sur l'ancienne méthode si erreur inattendue
+      }
+    }
+
+    // Fallback pour les anciens navigateurs / Safari / Firefox
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = defaultFileName;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+
   getInitials(name?: string): string {
     return (name || 'EN')
       .split(' ')
@@ -799,9 +909,9 @@ export class HonorairesComponent implements OnInit {
 
   getStatutLabel(statut?: string): string {
     const labels: Record<string, string> = {
-      BROUILLON: 'En attente',
-      VALIDE: 'Validé',
-      PAYE: 'Payé',
+      BROUILLON: 'EN ATTENTE',
+      VALIDE: 'VALIDÉ',
+      PAYE: 'PAYÉ',
     };
     return statut ? labels[statut] || statut : '-';
   }
