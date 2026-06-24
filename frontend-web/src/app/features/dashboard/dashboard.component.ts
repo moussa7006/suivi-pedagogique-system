@@ -397,9 +397,21 @@ interface HubTile {
 
       /* STATS OVERVIEW */
       .stats-overview {
+        position: sticky;
+        top: 96px;
+        z-index: 30;
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 12px;
+        padding: 2px 0 10px;
+        background: linear-gradient(
+          180deg,
+          #f8fafc 0%,
+          rgba(248, 250, 252, 0.94) 78%,
+          rgba(248, 250, 252, 0)
+        );
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
       }
 
       .stat-card {
@@ -766,7 +778,12 @@ interface HubTile {
         }
 
         .stats-overview {
+          position: static;
           grid-template-columns: repeat(2, minmax(0, 1fr));
+          padding: 0;
+          background: transparent;
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
         }
 
         .hub-grid {

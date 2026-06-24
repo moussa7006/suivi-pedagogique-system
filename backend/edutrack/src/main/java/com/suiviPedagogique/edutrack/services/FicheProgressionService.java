@@ -40,7 +40,7 @@ public class FicheProgressionService {
     private UtilisateurRepository utilisateurRepository;
 
     @Transactional
-    public String remplirFicheProgression(Integer seanceId, FicheProgressionRequest request) {
+    public FicheProgressionDto remplirFicheProgression(Integer seanceId, FicheProgressionRequest request) {
         Seance seance = seanceRepository.findById(seanceId)
                 .orElseThrow(() -> new RuntimeException("Séance introuvable."));
 
@@ -79,7 +79,7 @@ public class FicheProgressionService {
         emargement.setStatut(StatutEmargement.VALIDE);
         emargementRepository.save(emargement);
 
-        return "Fiche de progression enregistrée et émargement validé automatiquement.";
+        return toDto(fiche);
     }
 
     public List<FicheProgressionDto> getAllFicheProgressions() {
@@ -96,34 +96,36 @@ public class FicheProgressionService {
             throw new AccessDeniedException("Rôle non autorisé.");
         }
 
-        return fiches.stream().map(f -> {
-            FicheProgressionDto dto = new FicheProgressionDto();
-            dto.setId(f.getId());
-            dto.setDateSaisie(f.getDateSaisie());
-            dto.setContenuDetaille(f.getContenuDetaille());
-            dto.setObjectifs(f.getObjectifs());
-            dto.setTravaux(f.getTravaux());
-            dto.setEstValideAdmin(f.getEstValideAdmin());
-            dto.setDateValidation(f.getDateValidation());
+        return fiches.stream().map(this::toDto).collect(Collectors.toList());
+    }
 
-            Seance seance = f.getSeance();
-            if (seance != null) {
-                dto.setSeanceId(seance.getId());
-                if (seance.getEnseignant() != null) {
-                    dto.setEnseignantNomPrenom(seance.getEnseignant().getPrenom() + " " + seance.getEnseignant().getNom());
-                }
-                if (seance.getEmploiDuTemps() != null && seance.getEmploiDuTemps().getMatiere() != null) {
-                    dto.setMatiereLibelle(seance.getEmploiDuTemps().getMatiere().getLibelle());
-                }
-                if (seance.getDateCours() != null) {
-                    dto.setDateSeance(seance.getDateCours().toString());
-                }
-                if (seance.getHeureDebutReelle() != null && seance.getHeureFinReelle() != null) {
-                    dto.setHeureSeance(seance.getHeureDebutReelle() + " - " + seance.getHeureFinReelle());
-                }
+    private FicheProgressionDto toDto(FicheProgression fiche) {
+        FicheProgressionDto dto = new FicheProgressionDto();
+        dto.setId(fiche.getId());
+        dto.setDateSaisie(fiche.getDateSaisie());
+        dto.setContenuDetaille(fiche.getContenuDetaille());
+        dto.setObjectifs(fiche.getObjectifs());
+        dto.setTravaux(fiche.getTravaux());
+        dto.setEstValideAdmin(fiche.getEstValideAdmin());
+        dto.setDateValidation(fiche.getDateValidation());
+
+        Seance seance = fiche.getSeance();
+        if (seance != null) {
+            dto.setSeanceId(seance.getId());
+            if (seance.getEnseignant() != null) {
+                dto.setEnseignantNomPrenom(seance.getEnseignant().getPrenom() + " " + seance.getEnseignant().getNom());
             }
-            return dto;
-        }).collect(Collectors.toList());
+            if (seance.getEmploiDuTemps() != null && seance.getEmploiDuTemps().getMatiere() != null) {
+                dto.setMatiereLibelle(seance.getEmploiDuTemps().getMatiere().getLibelle());
+            }
+            if (seance.getDateCours() != null) {
+                dto.setDateSeance(seance.getDateCours().toString());
+            }
+            if (seance.getHeureDebutReelle() != null && seance.getHeureFinReelle() != null) {
+                dto.setHeureSeance(seance.getHeureDebutReelle() + " - " + seance.getHeureFinReelle());
+            }
+        }
+        return dto;
     }
 
 }

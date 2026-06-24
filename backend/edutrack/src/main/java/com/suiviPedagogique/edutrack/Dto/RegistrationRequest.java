@@ -21,7 +21,6 @@ public class RegistrationRequest {
     @NotBlank(message = "Le mot de passe est obligatoire")
     @Pattern(regexp = PasswordPolicy.REGEX, message = PasswordPolicy.MESSAGE)
     private String motDePasse;
-    @NotBlank(message = "Le matricule est obligatoire")
     private String matricule;
     @NotBlank(message = "Le téléphone est obligatoire")
     private String telephone;

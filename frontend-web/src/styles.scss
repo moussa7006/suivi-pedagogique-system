@@ -301,6 +301,77 @@ a {
   }
 }
 
+body .page-container > .form-card {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  z-index: 5000 !important;
+  width: min(900px, calc(100vw - 32px)) !important;
+  max-height: min(86vh, 780px) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: translate(-50%, -50%) !important;
+  overflow: hidden !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(226, 232, 240, 0.95) !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 0 0 9999px rgba(15, 23, 42, 0.58),
+    0 28px 90px rgba(15, 23, 42, 0.28) !important;
+  animation: floatingFormIn 0.22s ease-out !important;
+}
+
+body .page-container > .form-card:hover {
+  box-shadow:
+    0 0 0 9999px rgba(15, 23, 42, 0.58),
+    0 28px 90px rgba(15, 23, 42, 0.28) !important;
+}
+
+body .page-container > .form-card .form-card-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2 !important;
+}
+
+body .page-container > .form-card .form-card-body {
+  max-height: calc(min(86vh, 780px) - 64px) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+}
+
+body .page-container > .form-card .form-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 2 !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), #ffffff 42%) !important;
+  padding-top: 14px !important;
+}
+
+@keyframes floatingFormIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -46%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@media (max-width: 640px) {
+  body .page-container > .form-card {
+    width: calc(100vw - 20px) !important;
+    max-height: 90vh !important;
+    border-radius: 20px !important;
+  }
+
+  body .page-container > .form-card .form-card-body {
+    max-height: calc(90vh - 60px) !important;
+  }
+}
+
 .page-container {
   display: flex;
   flex-direction: column;
@@ -1045,25 +1116,71 @@ textarea {
   max-width: 100%;
 }
 
-:where(.page-container, .attendance-page, .pedagogy-container, .qr-container, .profile-page, .dashboard) {
+:where(
+  .page-container,
+  .attendance-page,
+  .pedagogy-container,
+  .qr-container,
+  .profile-page,
+  .dashboard
+) {
   width: 100%;
   max-width: 100%;
   min-width: 0;
 }
 
-:where(.card, .form-card, .table-card, .ref-card, .class-card, .schedule-card, .user-card, .log-card, .summary-card, .stat-card, .hub-tile) {
+:where(
+  .card,
+  .form-card,
+  .table-card,
+  .ref-card,
+  .class-card,
+  .schedule-card,
+  .user-card,
+  .log-card,
+  .summary-card,
+  .stat-card,
+  .hub-tile
+) {
   min-width: 0;
 }
 
-:where(.page-header, .header-left, .header-left-top, .header-left-titles, .header-actions, .form-actions, .card-actions, .confirm-actions) {
+:where(
+  .page-header,
+  .header-left,
+  .header-left-top,
+  .header-left-titles,
+  .header-actions,
+  .form-actions,
+  .card-actions,
+  .confirm-actions
+) {
   min-width: 0;
 }
 
-:where(.page-header h1, .page-header p, .card-title, .card-name, .detail-item span, .log-card, .content-text, .field-value) {
+:where(
+  .page-header h1,
+  .page-header p,
+  .card-title,
+  .card-name,
+  .detail-item span,
+  .log-card,
+  .content-text,
+  .field-value
+) {
   overflow-wrap: anywhere;
 }
 
-:where(.section-grid, .form-grid, .cards-grid, .stats-grid, .stats-summary, .stats-row, .hub-grid, .content-grid) {
+:where(
+  .section-grid,
+  .form-grid,
+  .cards-grid,
+  .stats-grid,
+  .stats-summary,
+  .stats-row,
+  .hub-grid,
+  .content-grid
+) {
   min-width: 0;
 }
 
@@ -1077,11 +1194,31 @@ textarea {
   max-width: 100%;
 }
 
-:where(.form-row, .filter-row, .filters-row, .toolbar, .table-header, .custom-table-header, .table-header-top, .stats-row, .header-actions, .form-actions, .card-actions) {
+:where(
+  .form-row,
+  .filter-row,
+  .filters-row,
+  .toolbar,
+  .table-header,
+  .custom-table-header,
+  .table-header-top,
+  .stats-row,
+  .header-actions,
+  .form-actions,
+  .card-actions
+) {
   min-width: 0;
 }
 
-:where(.form-row, .filter-row, .filters-row, .toolbar, .table-header, .custom-table-header, .table-header-top) {
+:where(
+  .form-row,
+  .filter-row,
+  .filters-row,
+  .toolbar,
+  .table-header,
+  .custom-table-header,
+  .table-header-top
+) {
   flex-wrap: wrap;
 }
 
@@ -1097,7 +1234,17 @@ textarea {
   min-width: 680px;
 }
 
-:where(.card-title, .card-subtitle, .detail-item, .dropdown-header, .user-meta, .name, .role, td, th) {
+:where(
+  .card-title,
+  .card-subtitle,
+  .detail-item,
+  .dropdown-header,
+  .user-meta,
+  .name,
+  .role,
+  td,
+  th
+) {
   overflow-wrap: anywhere;
 }
 
@@ -1158,7 +1305,13 @@ textarea {
     justify-content: stretch !important;
   }
 
-  :where(.header-actions .btn, .form-actions .btn, .confirm-actions .btn, .card-actions .btn, .card-actions button) {
+  :where(
+    .header-actions .btn,
+    .form-actions .btn,
+    .confirm-actions .btn,
+    .card-actions .btn,
+    .card-actions button
+  ) {
     flex: 1 1 100%;
     width: 100%;
     min-width: 0 !important;
@@ -1208,7 +1361,14 @@ textarea {
     max-width: 100% !important;
   }
 
-  :where(.table-header, .custom-table-header, .table-header-top, .toolbar, .filter-row, .filters-row) {
+  :where(
+    .table-header,
+    .custom-table-header,
+    .table-header-top,
+    .toolbar,
+    .filter-row,
+    .filters-row
+  ) {
     flex-direction: column !important;
     align-items: stretch !important;
   }
@@ -1237,7 +1397,17 @@ textarea {
 }
 
 @media (max-width: 520px) {
-  :where(.form-card, .table-card, .ref-card, .class-card, .schedule-card, .user-card, .log-card, .summary-card, .stat-card) {
+  :where(
+    .form-card,
+    .table-card,
+    .ref-card,
+    .class-card,
+    .schedule-card,
+    .user-card,
+    .log-card,
+    .summary-card,
+    .stat-card
+  ) {
     padding-inline: clamp(14px, 4vw, 18px) !important;
   }
 
@@ -1255,7 +1425,16 @@ textarea {
     padding-inline: 10px !important;
   }
 
-  :where(.card, .form-card, .table-card, .ref-card, .class-card, .schedule-card, .user-card, .log-card) {
+  :where(
+    .card,
+    .form-card,
+    .table-card,
+    .ref-card,
+    .class-card,
+    .schedule-card,
+    .user-card,
+    .log-card
+  ) {
     border-radius: 14px !important;
   }
 

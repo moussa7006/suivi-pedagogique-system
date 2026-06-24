@@ -52,18 +52,29 @@ public class AuthService {
             throw new RuntimeException("Erreur : Cet email est déjà utilisé !");
         }
 
-        if (requestdto.getTelephone() != null && !requestdto.getTelephone().trim().isEmpty()
-                && utilisateurRepository.findByTelephone(requestdto.getTelephone().trim()).isPresent()) {
+        String telephone = requestdto.getTelephone() == null ? null : requestdto.getTelephone().trim();
+        requestdto.setTelephone(telephone);
+        if (telephone != null && !telephone.isEmpty()
+                && utilisateurRepository.findByTelephone(telephone).isPresent()) {
             throw new RuntimeException("Erreur : Ce numéro de téléphone est déjà utilisé !");
+        }
+
+        String matricule = requestdto.getMatricule() == null ? null : requestdto.getMatricule().trim();
+        requestdto.setMatricule(matricule);
+        if (matricule != null && !matricule.isEmpty()
+                && utilisateurRepository.findByMatricule(matricule).isPresent()) {
+            throw new RuntimeException("Erreur : Ce matricule est déjà utilisé !");
         }
 
         validatePassword(requestdto.getMotDePasse());
         String motDePasseCrypte = passwordEncoder.encode(requestdto.getMotDePasse());
-        String roleDemande = requestdto.getRole().toUpperCase();
+        String roleDemande = requestdto.getRole().trim().toUpperCase();
 
         if (roleDemande.equals("ADMIN") || roleDemande.equals("ADMINISTRATEUR")) {
             Utilisateur admin = new Utilisateur();
-            requestdto.setMatricule(genererMatricule(Role.ADMINISTRATEUR));
+            if (requestdto.getMatricule() == null || requestdto.getMatricule().isBlank()) {
+                requestdto.setMatricule(genererMatricule(Role.ADMINISTRATEUR));
+            }
             remplirDonneesDeBase(admin, requestdto, motDePasseCrypte);
             admin.setRole(Role.ADMINISTRATEUR);
             admin.setForcePasswordChange(false);
@@ -71,7 +82,9 @@ public class AuthService {
 
         } else if (roleDemande.equals("ENSEIGNANT")) {
             Enseignant enseignant = new Enseignant();
-            requestdto.setMatricule(genererMatricule(Role.ENSEIGNANT));
+            if (requestdto.getMatricule() == null || requestdto.getMatricule().isBlank()) {
+                requestdto.setMatricule(genererMatricule(Role.ENSEIGNANT));
+            }
             remplirDonneesDeBase(enseignant, requestdto, motDePasseCrypte);
             enseignant.setRole(Role.ENSEIGNANT);
             enseignant.setForcePasswordChange(true);
@@ -96,12 +109,12 @@ public class AuthService {
     }
 
     private void remplirDonneesDeBase(Utilisateur utilisateur, RegistrationRequest request, String mdpCrypte) {
-        utilisateur.setNom(request.getNom());
-        utilisateur.setPrenom(request.getPrenom());
+        utilisateur.setNom(request.getNom() == null ? null : request.getNom().trim());
+        utilisateur.setPrenom(request.getPrenom() == null ? null : request.getPrenom().trim());
         utilisateur.setEmail(request.getEmail());
         utilisateur.setMatricule(request.getMatricule());
         utilisateur.setTelephone(request.getTelephone());
-        utilisateur.setAdresse(request.getAdresse());
+        utilisateur.setAdresse(request.getAdresse() == null ? null : request.getAdresse().trim());
         utilisateur.setMotDePasse(mdpCrypte);
         utilisateur.setActif(true);
         utilisateur.setForcePasswordChange(false);
@@ -110,6 +123,9 @@ public class AuthService {
     public Utilisateur authentifier(LoginRequest loginRequest) {
         Utilisateur utilisateur = utilisateurRepository.findByEmail(normalizeEmail(loginRequest.getEmail()))
                 .orElseThrow(() -> new RuntimeException("Identifiants invalides"));
+        if (!Boolean.TRUE.equals(utilisateur.getActif())) {
+            throw new RuntimeException("Compte désactivé. Veuillez contacter l'administration.");
+        }
         boolean match = passwordEncoder.matches(loginRequest.getMotDePasse(), utilisateur.getMotDePasse());
         if (!match) {
             throw new RuntimeException("Identifiants invalides");
