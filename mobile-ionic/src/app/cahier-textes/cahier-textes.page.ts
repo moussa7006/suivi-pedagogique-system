@@ -191,7 +191,8 @@ export class CahierTextesPage implements OnInit {
           const message =
             typeof error?.error === "string"
               ? error.error
-              : error?.error?.message ||
+              : error?.error?.error ||
+                error?.error?.message ||
                 "Impossible d'enregistrer la fiche de progression.";
           this.presentToast(message, "danger");
         },

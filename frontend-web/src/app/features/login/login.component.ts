@@ -112,7 +112,11 @@ import { NotificationService } from '../../shared/notification/notification.serv
           </form>
 
           <div class="auth-links">
-            <a routerLink="/forgot-password">Mot de passe oublié ?</a>
+            <span>Impossible de vous connecter ?</span>
+            <a routerLink="/forgot-password" class="forgot-link">
+              <i class="pi pi-key"></i>
+              Réinitialiser mon mot de passe
+            </a>
           </div>
 
           <div class="security-footer">
@@ -642,6 +646,37 @@ import { NotificationService } from '../../shared/notification/notification.serv
         }
       }
 
+      .auth-links {
+        margin: 18px 0 0;
+        padding: 14px;
+        border: 1px solid #dbeafe;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(239, 246, 255, 0.92), rgba(255, 251, 235, 0.74));
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        color: #64748b;
+        font-size: 0.82rem;
+        font-weight: 650;
+      }
+
+      .forgot-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #1d4ed8;
+        font-weight: 850;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+
+      .forgot-link:hover {
+        color: #f59e0b;
+        transform: translateX(2px);
+      }
+
       /* Security Footer */
       .security-footer {
         margin-top: 24px;
@@ -813,13 +848,12 @@ import { NotificationService } from '../../shared/notification/notification.serv
 
         .auth-links {
           margin: 14px 0 4px;
-          text-align: right;
+          padding: 12px;
+          align-items: flex-start;
         }
 
-        .auth-links a {
-          color: #2563eb;
-          font-weight: 800;
-          text-decoration: none;
+        .forgot-link {
+          font-size: 0.82rem;
         }
 
         .security-footer {

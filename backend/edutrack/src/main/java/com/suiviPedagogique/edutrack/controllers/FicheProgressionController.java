@@ -29,10 +29,10 @@ public class FicheProgressionController {
             @PathVariable Integer seanceId,
             @RequestBody FicheProgressionRequest request) {
         try {
-            String resultat = ficheProgressionService.remplirFicheProgression(seanceId, request);
+            FicheProgressionDto resultat = ficheProgressionService.remplirFicheProgression(seanceId, request);
             return ResponseEntity.ok(resultat);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 

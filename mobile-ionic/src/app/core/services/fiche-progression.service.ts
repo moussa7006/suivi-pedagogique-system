@@ -15,13 +15,10 @@ export class FicheProgressionService {
   createFicheProgression(
     seanceId: number,
     payload: FicheProgressionRequest,
-  ): Observable<string> {
-    return this.http.post(
+  ): Observable<FicheProgression> {
+    return this.http.post<FicheProgression>(
       `${this.baseUrl}/fiche-progression/${seanceId}`,
       payload,
-      {
-        responseType: "text",
-      },
     );
   }
 

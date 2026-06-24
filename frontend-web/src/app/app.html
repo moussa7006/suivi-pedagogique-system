@@ -15,11 +15,7 @@
   </app-sidebar>
 
   <!-- Backdrop Mobile pour fermer le menu -->
-  <div 
-    class="mobile-backdrop" 
-    *ngIf="isMobileMenuOpen" 
-    (click)="isMobileMenuOpen = false"
-  ></div>
+  <div class="mobile-backdrop" *ngIf="isMobileMenuOpen" (click)="isMobileMenuOpen = false"></div>
 
   <main class="layout-main">
     <!-- Topbar : Uniquement si connecté -->
@@ -107,25 +103,5 @@
     <div class="layout-content">
       <router-outlet></router-outlet>
     </div>
-
-    <!-- Mobile Bottom Navigation Bar (Visible only on mobile) -->
-    <nav class="mobile-bottom-nav" *ngIf="authService.isLoggedIn()">
-      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
-        <i class="pi pi-home"></i>
-        <span>Accueil</span>
-      </a>
-      <a routerLink="/attendance" routerLinkActive="active" class="nav-item">
-        <i class="pi pi-check-square"></i>
-        <span>Émargements</span>
-      </a>
-      <a routerLink="/qr-generator" routerLinkActive="active" class="nav-item">
-        <i class="pi pi-qrcode"></i>
-        <span>QR Code</span>
-      </a>
-      <button class="nav-item menu-trigger" (click)="isMobileMenuOpen = true">
-        <i class="pi pi-bars"></i>
-        <span>Menu</span>
-      </button>
-    </nav>
   </main>
 </div>

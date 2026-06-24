@@ -13,15 +13,21 @@ public class EmailService {
     @Value("${spring.mail.username:}")
     private String fromAddress;
 
+    @Value("${spring.mail.password:}")
+    private String mailPassword;
+
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
 
     public void sendPasswordResetCode(String to, String code) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        if (fromAddress != null && !fromAddress.isBlank()) {
-            message.setFrom(fromAddress);
+        if (fromAddress == null || fromAddress.isBlank() || mailPassword == null || mailPassword.isBlank()) {
+            System.out.println("[DEV] SMTP non configuré. Code de réinitialisation EduTrack pour " + to + " : " + code);
+            return;
         }
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromAddress);
         message.setTo(to);
         message.setSubject("Code de réinitialisation EduTrack");
         message.setText("Bonjour,\n\n"

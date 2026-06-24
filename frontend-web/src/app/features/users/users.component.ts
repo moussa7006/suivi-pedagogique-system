@@ -67,7 +67,8 @@ import { timeout } from 'rxjs/operators';
       <!-- ── Form Card ── -->
       <div class="form-card" *ngIf="displayForm">
         <div class="form-card-header">
-          <h3>{{ editingId ? 'Modifier l'utilisateur' : 'Nouvel utilisateur' }}</h3>
+          <h3 *ngIf="editingId">Modifier l'utilisateur</h3>
+          <h3 *ngIf="!editingId">Nouvel utilisateur</h3>
         </div>
         <div class="form-card-body">
           <div *ngIf="errorMessage" class="error-banner">
