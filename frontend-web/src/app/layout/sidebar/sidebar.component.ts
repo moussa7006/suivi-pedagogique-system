@@ -11,7 +11,7 @@ import { AuthService } from '../../core/services/auth.service';
     <nav class="sidebar" [class.mobile-active]="isMobileMenuOpen">
       <!-- Logo Section -->
       <div class="sidebar-logo">
-        <img src="assets/images/login.jpeg" alt="Logo Suivi Pédagogique" class="logo-img" />
+        <img src="/login.jpeg" alt="Logo Suivi Pédagogique" class="logo-img" />
         <span>EduTrack</span>
       </div>
 

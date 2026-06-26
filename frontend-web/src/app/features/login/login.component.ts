@@ -22,7 +22,7 @@ import { NotificationService } from '../../shared/notification/notification.serv
         </div>
         <div class="branding-content">
           <div class="brand-icon">
-            <img src="assets/images/login.jpeg" alt="Logo Suivi Pédagogique" />
+            <img src="/login.jpeg" alt="Logo Suivi Pédagogique" />
           </div>
           <h1>INTEC - Suivi Pédagogique</h1>
           <p>Plateforme officielle de gestion académique intelligente et sécurisée</p>
@@ -45,7 +45,7 @@ import { NotificationService } from '../../shared/notification/notification.serv
         <div class="auth-container">
           <div class="auth-header">
             <div class="auth-mobile-logo">
-              <img src="assets/images/login.jpeg" alt="Logo Suivi Pédagogique" />
+              <img src="/login.jpeg" alt="Logo Suivi Pédagogique" />
             </div>
             <h2>Bienvenue</h2>
             <p>Connectez-vous à votre espace</p>
