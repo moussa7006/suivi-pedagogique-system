@@ -419,15 +419,19 @@ ion-content {
 }
 
 .logout-btn-container {
-  padding: 4px 16px 28px;
+  padding: 0 18px 24px;
 }
 
 .modern-logout-btn {
   --border-color: #ef4444;
   --color: #ef4444;
-  --border-radius: 16px;
-  font-weight: 900;
-  height: 50px;
+  --border-radius: 14px;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  font-size: 13px;
+  font-weight: 800;
+  height: 42px;
+  min-height: 42px;
 }
 
 @media (max-width: 380px) {
