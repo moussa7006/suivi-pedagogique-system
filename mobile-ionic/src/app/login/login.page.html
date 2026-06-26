@@ -70,8 +70,25 @@
     </div>
 
     <!-- Minimal Footer -->
-    <div class="university-footer animate-fade-in">
+    <div
+      class="university-footer animate-fade-in"
+      style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      "
+    >
       <p>© 2026 Université du Mali</p>
+      <ion-button
+        fill="clear"
+        size="small"
+        (click)="changeServerIp()"
+        color="medium"
+      >
+        <ion-icon name="settings-outline" slot="start"></ion-icon>
+        Configurer l'IP du serveur
+      </ion-button>
     </div>
   </div>
 </ion-content>
