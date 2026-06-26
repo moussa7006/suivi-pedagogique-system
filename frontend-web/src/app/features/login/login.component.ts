@@ -22,7 +22,7 @@ import { NotificationService } from '../../shared/notification/notification.serv
         </div>
         <div class="branding-content">
           <div class="brand-icon">
-            <img src="assets/images/intec.png" alt="Logo INTEC" />
+            <img src="assets/images/login.jpeg" alt="Logo Suivi Pédagogique" />
           </div>
           <h1>INTEC - Suivi Pédagogique</h1>
           <p>Plateforme officielle de gestion académique intelligente et sécurisée</p>
@@ -45,7 +45,7 @@ import { NotificationService } from '../../shared/notification/notification.serv
         <div class="auth-container">
           <div class="auth-header">
             <div class="auth-mobile-logo">
-              <img src="assets/images/intec1.png" alt="Logo INTEC" />
+              <img src="assets/images/login.jpeg" alt="Logo Suivi Pédagogique" />
             </div>
             <h2>Bienvenue</h2>
             <p>Connectez-vous à votre espace</p>
@@ -293,10 +293,11 @@ import { NotificationService } from '../../shared/notification/notification.serv
         }
 
         img {
-          width: 80%;
-          height: 80%;
-          object-fit: contain;
-          border-radius: 14px;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: inherit;
+          display: block;
         }
       }
 
@@ -420,10 +421,9 @@ import { NotificationService } from '../../shared/notification/notification.serv
         img {
           width: 64px;
           height: 64px;
-          object-fit: contain;
-          border-radius: 14px;
+          object-fit: cover;
+          border-radius: 16px;
           background: #fff;
-          padding: 6px;
           border: 1px solid rgba(226, 232, 240, 0.9);
           box-shadow: 0 6px 14px rgba(2, 6, 23, 0.08);
         }

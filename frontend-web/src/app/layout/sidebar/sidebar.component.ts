@@ -11,7 +11,7 @@ import { AuthService } from '../../core/services/auth.service';
     <nav class="sidebar" [class.mobile-active]="isMobileMenuOpen">
       <!-- Logo Section -->
       <div class="sidebar-logo">
-        <img src="assets/images/intec1.png" alt="Logo INTEC" class="logo-img" />
+        <img src="assets/images/login.jpeg" alt="Logo Suivi Pédagogique" class="logo-img" />
         <span>EduTrack</span>
       </div>
 
@@ -174,10 +174,12 @@ import { AuthService } from '../../core/services/auth.service';
         gap: 16px;
 
         .logo-img {
-          width: 40px;
-          height: 40px;
-          object-fit: contain;
-          border-radius: 10px;
+          width: 46px;
+          height: 46px;
+          object-fit: cover;
+          border-radius: 14px;
+          background: #ffffff;
+          box-shadow: 0 10px 24px rgba(59, 130, 246, 0.22);
         }
 
         span {
