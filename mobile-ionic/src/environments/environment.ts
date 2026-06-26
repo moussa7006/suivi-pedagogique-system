@@ -3,5 +3,5 @@
 // Sur téléphone réel, remplacez par l'IP locale du PC backend, ex: http://192.168.1.15:8099/api.
 export const environment = {
   production: false,
-  apiBaseUrl: "http://localhost:8099/api",
+  apiBaseUrl: 'http://192.168.1.7:8099/api',
 };
