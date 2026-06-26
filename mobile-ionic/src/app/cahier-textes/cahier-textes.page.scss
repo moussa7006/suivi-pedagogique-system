@@ -78,6 +78,7 @@
    ============================================ */
 ion-content {
   --background: var(--bg-page);
+  --padding-bottom: calc(96px + var(--ion-safe-area-bottom));
   font-family: var(--font-family);
 }
 
@@ -682,8 +683,23 @@ ion-content {
    RESPONSIVE
    ============================================ */
 @media (max-width: 360px) {
-  .header-section .page-title {
-    font-size: 26px;
+  .header-section {
+    .header-top {
+      align-items: flex-start;
+    }
+
+    .page-title {
+      font-size: 24px;
+    }
+
+    .page-subtitle {
+      font-size: 13px;
+    }
+
+    .header-volume {
+      padding: 7px 10px;
+      font-size: 12px;
+    }
   }
 
   .quick-stats {
@@ -704,9 +720,62 @@ ion-content {
     }
   }
 
+  .form-card {
+    padding: 20px 16px 18px;
+
+    .form-header {
+      align-items: flex-start;
+
+      .form-icon {
+        width: 44px;
+        height: 44px;
+      }
+
+      h2 {
+        font-size: 18px;
+      }
+    }
+  }
+
+  .submit-btn {
+    font-size: 14px;
+
+    span {
+      white-space: normal;
+      line-height: 1.2;
+    }
+  }
+
+  .seances-section .seance-card .seance-header {
+    gap: 10px;
+    padding: 16px 14px 12px;
+
+    .status-tag {
+      padding-inline: 8px;
+    }
+  }
+
   .form-row {
     grid-template-columns: 1fr;
     gap: 0;
+  }
+}
+
+@media (max-width: 330px) {
+  .quick-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .header-section .header-top {
+    flex-direction: column;
+  }
+
+  .seances-section .seance-card .seance-header {
+    flex-wrap: wrap;
+
+    .status-tag {
+      margin-left: 54px;
+    }
   }
 }
 
