@@ -1,13 +1,13 @@
-import { Component, inject, OnInit } from "@angular/core";
-import { Router } from "@angular/router";
-import { forkJoin } from "rxjs";
+import { Component, inject, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import {
   IonContent,
   IonButton,
   IonIcon,
   IonBadge,
-} from "@ionic/angular/standalone";
-import { addIcons } from "ionicons";
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
 import {
   notificationsOutline,
   qrCodeOutline,
@@ -20,7 +20,6 @@ import {
   statsChartOutline,
   listOutline,
   settingsOutline,
-  peopleOutline,
   alertCircleOutline,
   gridOutline,
   personOutline,
@@ -29,27 +28,27 @@ import {
   trendingUpOutline,
   closeOutline,
   sparklesOutline,
-} from "ionicons/icons";
-import { AuthService } from "../core/services/auth.service";
-import { ScheduleService } from "../core/services/schedule.service";
-import { FicheProgressionService } from "../core/services/fiche-progression.service";
-import { FicheProgression } from "../core/models/fiche-progression.model";
-import { Seance } from "../core/models/seance.model";
-import { CommonModule } from "@angular/common";
+} from 'ionicons/icons';
+import { AuthService } from '../core/services/auth.service';
+import { ScheduleService } from '../core/services/schedule.service';
+import { FicheProgressionService } from '../core/services/fiche-progression.service';
+import { FicheProgression } from '../core/models/fiche-progression.model';
+import { Seance } from '../core/models/seance.model';
+import { CommonModule } from '@angular/common';
 
 interface NotificationItem {
   title: string;
   message: string;
   icon: string;
-  type: "warning" | "info" | "success";
+  type: 'warning' | 'info' | 'success';
   actionLabel?: string;
   actionRoute?: string;
 }
 
 @Component({
-  selector: "app-tab1",
-  templateUrl: "tab1.page.html",
-  styleUrls: ["tab1.page.scss"],
+  selector: 'app-tab1',
+  templateUrl: 'tab1.page.html',
+  styleUrls: ['tab1.page.scss'],
   imports: [CommonModule, IonContent, IonButton, IonIcon, IonBadge],
 })
 export class Tab1Page implements OnInit {
@@ -61,17 +60,18 @@ export class Tab1Page implements OnInit {
   isCahierFait = false;
 
   teacher = {
-    firstName: "Enseignant",
-    lastName: "",
+    firstName: 'Enseignant',
+    lastName: '',
   };
 
-  teacherInitials = "EN";
+  teacherInitials = 'EN';
 
-  // Stats data
+  // Stats data calculées depuis les vraies séances/fiches du backend
   totalSeances = 0;
   completedSeances = 0;
+  pendingSeances = 0;
   totalHeures = 0;
-  studentCount = 0; // Not returned directly by backend, could be calculated later
+  scheduledHeures = 0;
   completionRate = 0;
 
   // Notifications
@@ -102,7 +102,6 @@ export class Tab1Page implements OnInit {
       statsChartOutline,
       listOutline,
       settingsOutline,
-      peopleOutline,
       alertCircleOutline,
       gridOutline,
       personOutline,
@@ -131,12 +130,12 @@ export class Tab1Page implements OnInit {
     const user = await this.authService.getUser();
     if (user) {
       this.teacher = {
-        firstName: user.prenom || "Enseignant",
-        lastName: user.nom || "",
+        firstName: user.prenom || 'Enseignant',
+        lastName: user.nom || '',
       };
       this.teacherInitials = this.getInitials(
-        user.prenom || "Enseignant",
-        user.nom || "",
+        user.prenom || 'Enseignant',
+        user.nom || '',
       );
     }
   }
@@ -147,33 +146,48 @@ export class Tab1Page implements OnInit {
       fiches: this.ficheProgressionService.getFichesProgression(),
     }).subscribe({
       next: ({ seances, fiches }) => {
-        this.totalSeances = seances.length;
-        this.completedSeances = seances.filter(
-          (s: Seance) => s.statut === "TERMINEE",
-        ).length;
-        this.completionRate =
-          this.totalSeances > 0
-            ? Math.round((this.completedSeances / this.totalSeances) * 100)
-            : 0;
-        this.isCahierFait = this.hasCurrentSeanceCahier(seances, fiches);
+        const safeSeances = seances || [];
+        const safeFiches = fiches || [];
+        const ficheSeanceIds = new Set(
+          safeFiches
+            .map((fiche) => fiche.seanceId)
+            .filter((id): id is number => Number.isFinite(id)),
+        );
 
-        let totalMins = 0;
-        seances.forEach((s: Seance) => {
-          if (s.heureDebutReelle && s.heureFinReelle) {
-            const debutParts = s.heureDebutReelle.split(":");
-            const finParts = s.heureFinReelle.split(":");
-            const debutMins =
-              parseInt(debutParts[0], 10) * 60 + parseInt(debutParts[1], 10);
-            const finMins =
-              parseInt(finParts[0], 10) * 60 + parseInt(finParts[1], 10);
-            totalMins += finMins - debutMins;
-          }
-        });
-        this.totalHeures = Math.round(totalMins / 60);
+        this.totalSeances = safeSeances.length;
+        this.completedSeances = safeSeances.filter((seance) =>
+          this.isSeanceCompleted(seance, ficheSeanceIds),
+        ).length;
+        this.pendingSeances = Math.max(
+          this.totalSeances - this.completedSeances,
+          0,
+        );
+        this.completionRate = this.totalSeances
+          ? Math.round((this.completedSeances / this.totalSeances) * 100)
+          : 0;
+        this.isCahierFait = this.hasCurrentSeanceCahier(
+          safeSeances,
+          safeFiches,
+        );
+
+        this.scheduledHeures = this.roundHours(
+          safeSeances.reduce(
+            (total, seance) => total + this.getDurationMinutes(seance),
+            0,
+          ),
+        );
+        this.totalHeures = this.roundHours(
+          safeSeances
+            .filter((seance) => this.isSeanceCompleted(seance, ficheSeanceIds))
+            .reduce(
+              (total, seance) => total + this.getDurationMinutes(seance),
+              0,
+            ),
+        );
         this.updateNotifications();
       },
       error: (err: any) => {
-        console.error("Erreur lors du chargement des séances", err);
+        console.error('Erreur lors du chargement des séances', err);
       },
     });
   }
@@ -196,7 +210,7 @@ export class Tab1Page implements OnInit {
         return start && end && now >= start && now <= end;
       }) ||
       seances.find(
-        (seance) => seance.statut === "PREVUE" || seance.statut === "EN_COURS",
+        (seance) => seance.statut === 'PREVUE' || seance.statut === 'EN_COURS',
       );
 
     if (!currentOrNextSeance?.id) {
@@ -209,28 +223,61 @@ export class Tab1Page implements OnInit {
     );
   }
 
+  private isSeanceCompleted(
+    seance: Seance,
+    ficheSeanceIds: Set<number>,
+  ): boolean {
+    return (
+      seance.statut === 'TERMINEE' ||
+      !!seance.ficheProgressionId ||
+      (!!seance.id && ficheSeanceIds.has(seance.id))
+    );
+  }
+
+  private getDurationMinutes(seance: Seance): number {
+    const start = this.toMinutes(seance.heureDebutReelle);
+    const end = this.toMinutes(seance.heureFinReelle);
+    return start !== null && end !== null && end > start ? end - start : 0;
+  }
+
+  private toMinutes(timeValue?: string): number | null {
+    if (!timeValue) {
+      return null;
+    }
+
+    const [hours, minutes] = timeValue.split(':').map(Number);
+    return Number.isFinite(hours) && Number.isFinite(minutes)
+      ? hours * 60 + minutes
+      : null;
+  }
+
+  private roundHours(minutes: number): number {
+    return Math.round((minutes / 60) * 10) / 10;
+  }
+
   private combineDateAndTime(
     dateValue?: string,
     timeValue?: string,
   ): Date | null {
     if (!dateValue || !timeValue) return null;
-    const [year, month, day] = dateValue.split("-").map(Number);
-    const [hours, minutes] = timeValue.split(":").map(Number);
-    if (
-      !year ||
-      !month ||
-      !day ||
-      !Number.isFinite(hours) ||
-      !Number.isFinite(minutes)
-    )
-      return null;
-    return new Date(year, month - 1, day, hours, minutes, 0, 0);
+    const [year, month, day] = dateValue.split('-').map(Number);
+    const minutesOfDay = this.toMinutes(timeValue);
+    if (!year || !month || !day || minutesOfDay === null) return null;
+    return new Date(
+      year,
+      month - 1,
+      day,
+      Math.floor(minutesOfDay / 60),
+      minutesOfDay % 60,
+      0,
+      0,
+    );
   }
 
   private getInitials(firstName: string, lastName: string): string {
-    const first = firstName ? firstName.charAt(0).toUpperCase() : "";
-    const last = lastName ? lastName.charAt(0).toUpperCase() : "";
-    return first + last || "EN";
+    const first = firstName ? firstName.charAt(0).toUpperCase() : '';
+    const last = lastName ? lastName.charAt(0).toUpperCase() : '';
+    return first + last || 'EN';
   }
 
   private updateNotifications() {
@@ -240,27 +287,27 @@ export class Tab1Page implements OnInit {
     if (!this.isCahierFait) {
       count++;
       notifications.push({
-        title: "Fiche de progression à remplir",
+        title: 'Fiche de progression à remplir',
         message:
           "Scannez le QR Code de la séance puis complétez la fiche pour valider l'émargement.",
-        icon: "document-text-outline",
-        type: "warning",
-        actionLabel: "Remplir",
-        actionRoute: "/tabs/tabs/tab3",
+        icon: 'document-text-outline',
+        type: 'warning',
+        actionLabel: 'Remplir',
+        actionRoute: '/tabs/tabs/tab3',
       });
     }
 
-    const uncompleted = this.totalSeances - this.completedSeances;
+    const uncompleted = this.pendingSeances;
     if (uncompleted > 0) {
       count += uncompleted;
       notifications.push({
         title: `${uncompleted} séance(s) à finaliser`,
         message:
-          "Consultez votre planning pour suivre les séances prévues ou en cours.",
-        icon: "calendar-outline",
-        type: "info",
-        actionLabel: "Voir planning",
-        actionRoute: "/tabs/tabs/tab2",
+          'Consultez votre planning pour suivre les séances prévues ou en cours.',
+        icon: 'calendar-outline',
+        type: 'info',
+        actionLabel: 'Voir planning',
+        actionRoute: '/tabs/tabs/tab2',
       });
     }
 
@@ -284,7 +331,7 @@ export class Tab1Page implements OnInit {
   }
 
   navigateTo(path: string) {
-    if (path.startsWith("/")) {
+    if (path.startsWith('/')) {
       this.router.navigateByUrl(path);
     } else {
       this.router.navigate([path]);

@@ -5,46 +5,70 @@
   </ion-button>
 
   <!-- Header Dynamique -->
-  <div class="profile-header-container">
-    <div class="avatar-container">
-      <div class="avatar-edit-wrapper">
-        <ion-avatar>
-          <img [src]="teacher.avatar" [alt]="teacher.firstName" />
-        </ion-avatar>
-        <button class="edit-photo-btn" (click)="changePhoto()">
-          <ion-icon name="camera-outline"></ion-icon>
-        </button>
-      </div>
-      <div class="online-indicator"></div>
+  <div class="profile-hero">
+    <div class="avatar-shell">
+      <ion-avatar>
+        <img [src]="teacher.avatar" [alt]="teacher.firstName" />
+      </ion-avatar>
+      <button
+        class="edit-photo-btn"
+        type="button"
+        (click)="changePhoto()"
+        aria-label="Changer la photo de profil"
+      >
+        <ion-icon name="camera-outline"></ion-icon>
+      </button>
+      <div class="online-dot"></div>
     </div>
-    <h2>{{ teacher.firstName }} {{ teacher.lastName }}</h2>
-    <div class="matricule-badge">ID: {{ teacher.matricule }}</div>
+
+    <div class="hero-text">
+      <p class="eyebrow">Profil enseignant</p>
+      <h1>{{ teacher.firstName }} {{ teacher.lastName }}</h1>
+      <div class="hero-badges">
+        <span *ngIf="teacher.matricule">ID: {{ teacher.matricule }}</span>
+        <span>{{ teacher.status }}</span>
+      </div>
+    </div>
   </div>
 
   <div class="profile-section">
+    <div class="summary-card">
+      <div class="summary-avatar">
+        {{ (teacher.firstName || 'E').charAt(0) }}{{ (teacher.lastName ||
+        '').charAt(0) }}
+      </div>
+      <div>
+        <p class="summary-label">Compte connecté</p>
+        <h2>{{ teacher.email || 'Email non renseigné' }}</h2>
+      </div>
+    </div>
+
     <!-- Profil Enseignant (Détails) -->
     <div class="modern-card">
       <div class="card-header">
         <ion-icon name="person-circle-outline"></ion-icon>
-        <h3>Profil Enseignant</h3>
+        <div>
+          <h3>Informations personnelles</h3>
+          <p>Vos informations de compte enseignant.</p>
+        </div>
       </div>
-      <div class="info-grid">
-        <div class="info-item">
+      <div class="info-list">
+        <div class="info-row">
           <div class="icon-box">
             <ion-icon name="person-outline"></ion-icon>
           </div>
           <div class="item-content">
-            <label>Nom Complet</label>
+            <label>Nom complet</label>
             <p>{{ teacher.firstName }} {{ teacher.lastName }}</p>
           </div>
         </div>
-        <div class="info-item">
+        <div class="info-row">
           <div class="icon-box">
             <ion-icon name="mail-outline"></ion-icon>
           </div>
           <div class="item-content">
             <label>Email</label>
-            <p>{{ teacher.email }}</p>
+            <p class="breakable">{{ teacher.email || 'Non renseigné' }}</p>
           </div>
         </div>
       </div>
@@ -54,27 +78,28 @@
     <div class="modern-card">
       <div class="card-header">
         <ion-icon name="shield-checkmark-outline"></ion-icon>
-        <h3>Sécurité & Appli</h3>
+        <div>
+          <h3>Sécurité & appli</h3>
+          <p>Gérez votre mot de passe et vos préférences.</p>
+        </div>
       </div>
-      <div class="info-grid">
-        <div class="info-item">
+      <div class="info-list">
+        <button
+          class="security-action"
+          type="button"
+          (click)="openPasswordModal()"
+        >
           <div class="icon-box">
             <ion-icon name="lock-closed-outline"></ion-icon>
           </div>
           <div class="item-content">
-            <div class="label-with-icon">
-              <label>Mot de passe</label>
-              <ion-icon
-                name="create-outline"
-                class="edit-icon-direct"
-                (click)="openPasswordModal()"
-              ></ion-icon>
-            </div>
+            <label>Mot de passe</label>
             <p>••••••••••••</p>
           </div>
-        </div>
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
 
-        <div class="info-item">
+        <div class="info-row">
           <div class="icon-box">
             <ion-icon name="notifications-outline"></ion-icon>
           </div>
