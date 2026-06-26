@@ -17,6 +17,8 @@ import {
   keyOutline,
   lockClosedOutline,
   arrowBackOutline,
+  eyeOutline,
+  eyeOffOutline,
 } from "ionicons/icons";
 import { finalize } from "rxjs";
 import { AuthService } from "../core/services/auth.service";
@@ -46,6 +48,9 @@ export class ChangePasswordPage {
   currentPassword = "";
   newPassword = "";
   confirmPassword = "";
+  showCurrentPassword = false;
+  showNewPassword = false;
+  showConfirmPassword = false;
   isLoading = false;
   forced = history.state?.forced === true;
   private readonly passwordRegex =
@@ -57,6 +62,8 @@ export class ChangePasswordPage {
       keyOutline,
       lockClosedOutline,
       arrowBackOutline,
+      eyeOutline,
+      eyeOffOutline,
     });
   }
 
