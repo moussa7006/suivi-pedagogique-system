@@ -120,7 +120,7 @@
     </div>
     <div class="stat-chip stat-chip--accent">
       <ion-icon name="time-outline"></ion-icon>
-      <span>{{ totalHeures }}h</span>
+      <span>{{ totalHeures }}h faites</span>
     </div>
     <div class="stat-chip stat-chip--success">
       <ion-icon name="checkmark-circle-outline"></ion-icon>
@@ -178,7 +178,7 @@
     </div>
 
     <!-- TILE 4 - Profil -->
-    <div class="action-card" (click)="navigateTo('/tabs/tabs/tab4')">
+    <div class="action-card" (click)="navigateTo('/tabs/tabs/tab5')">
       <div class="action-card__bg action-card__bg--green"></div>
       <div class="action-card__icon action-card__icon--green">
         <ion-icon name="person-outline"></ion-icon>
@@ -278,9 +278,15 @@
             <span class="stat-row__label">Total séances</span>
             <span class="stat-row__value">{{ totalSeances }}</span>
           </div>
-          <div class="stat-row__trend stat-row__trend--up">
+          <div
+            class="stat-row__trend"
+            [class.stat-row__trend--up]="completionRate === 100"
+          >
             <ion-icon name="trending-up-outline"></ion-icon>
-            <span>+12%</span>
+            <span
+              >{{ pendingSeances }} reste{{ pendingSeances > 1 ? 'nt' : ''
+              }}</span
+            >
           </div>
         </div>
         <div class="stat-divider"></div>
@@ -299,18 +305,10 @@
             <ion-icon name="time-outline"></ion-icon>
           </div>
           <div class="stat-row__info">
-            <span class="stat-row__label">Volume horaire</span>
-            <span class="stat-row__value">{{ totalHeures }}h</span>
-          </div>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-row">
-          <div class="stat-row__icon stat-row__icon--purple">
-            <ion-icon name="people-outline"></ion-icon>
-          </div>
-          <div class="stat-row__info">
-            <span class="stat-row__label">Étudiants suivis</span>
-            <span class="stat-row__value">{{ studentCount }}</span>
+            <span class="stat-row__label">Volume effectué / prévu</span>
+            <span class="stat-row__value"
+              >{{ totalHeures }}h / {{ scheduledHeures }}h</span
+            >
           </div>
         </div>
       </div>
