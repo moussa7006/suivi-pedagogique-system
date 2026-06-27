@@ -29,6 +29,11 @@
         <span>{{ teacher.status }}</span>
       </div>
     </div>
+
+    <ion-button fill="solid" (click)="logout()" class="hero-logout-btn">
+      <ion-icon slot="start" name="log-out-outline"></ion-icon>
+      <span>Déconnexion</span>
+    </ion-button>
   </div>
 
   <div class="profile-section">
@@ -189,17 +194,4 @@
       </div>
     </ng-template>
   </ion-modal>
-
-  <!-- Bouton Déconnexion -->
-  <div class="logout-btn-container">
-    <ion-button
-      expand="block"
-      fill="outline"
-      (click)="logout()"
-      class="modern-logout-btn"
-    >
-      <ion-icon slot="start" name="log-out-outline"></ion-icon>
-      Déconnexion de l'Espace
-    </ion-button>
-  </div>
 </ion-content>
