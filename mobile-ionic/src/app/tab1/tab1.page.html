@@ -14,7 +14,14 @@
     <div class="header-left">
       <div class="avatar-wrapper">
         <div class="avatar">
-          <span>{{ teacherInitials }}</span>
+          <img
+            *ngIf="teacher.avatar; else initialsAvatar"
+            [src]="teacher.avatar"
+            [alt]="teacher.firstName + ' ' + teacher.lastName"
+          />
+          <ng-template #initialsAvatar>
+            <span>{{ teacherInitials }}</span>
+          </ng-template>
         </div>
         <div class="status-dot"></div>
       </div>
@@ -141,7 +148,7 @@
   <!-- ========================================= -->
   <div class="action-grid animate-slide-up" style="--delay: 200ms">
     <!-- TILE 1 - Fiche de Progression -->
-    <div class="action-card" (click)="navigateTo('/tabs/tabs/tab3')">
+    <div class="action-card action-card--progression" (click)="navigateTo('/tabs/tabs/tab3')">
       <div class="action-card__bg action-card__bg--blue"></div>
       <div class="action-card__icon action-card__icon--blue">
         <ion-icon name="book-outline"></ion-icon>
@@ -158,7 +165,7 @@
     </div>
 
     <!-- TILE 2 - Scan QR -->
-    <div class="action-card" (click)="navigateTo('/scan-qr')">
+    <div class="action-card action-card--scan" (click)="navigateTo('/scan-qr')">
       <div class="action-card__bg action-card__bg--purple"></div>
       <div class="action-card__icon action-card__icon--purple">
         <ion-icon name="qr-code-outline"></ion-icon>
@@ -168,7 +175,7 @@
     </div>
 
     <!-- TILE 3 - Planning -->
-    <div class="action-card" (click)="navigateTo('/tabs/tabs/tab2')">
+    <div class="action-card action-card--planning" (click)="navigateTo('/tabs/tabs/tab2')">
       <div class="action-card__bg action-card__bg--coral"></div>
       <div class="action-card__icon action-card__icon--coral">
         <ion-icon name="calendar-outline"></ion-icon>
@@ -177,14 +184,14 @@
       <span class="action-card__desc">Voir mon emploi du temps</span>
     </div>
 
-    <!-- TILE 4 - Profil -->
-    <div class="action-card" (click)="navigateTo('/tabs/tabs/tab5')">
+    <!-- TILE 4 - Honoraires -->
+    <div class="action-card action-card--honoraires" (click)="navigateTo('/tabs/tabs/tab4')">
       <div class="action-card__bg action-card__bg--green"></div>
       <div class="action-card__icon action-card__icon--green">
-        <ion-icon name="person-outline"></ion-icon>
+        <ion-icon name="cash-outline"></ion-icon>
       </div>
-      <span class="action-card__label">Profil</span>
-      <span class="action-card__desc">Mon compte</span>
+      <span class="action-card__label">Honoraires</span>
+      <span class="action-card__desc">Voir mes paiements</span>
     </div>
   </div>
 
