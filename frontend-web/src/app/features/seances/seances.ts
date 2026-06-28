@@ -539,13 +539,8 @@ export class SeancesComponent implements OnInit, OnDestroy {
         }
         // Trier par date/heure la plus récente
         this.seances = data.sort((a, b) => {
-          const dtA = a.dateCours ? a.dateCours.toString() : '1970-01-01';
-          const hrA = a.heureDebutReelle ? a.heureDebutReelle.toString() : '00:00:00';
-          const dtB = b.dateCours ? b.dateCours.toString() : '1970-01-01';
-          const hrB = b.heureDebutReelle ? b.heureDebutReelle.toString() : '00:00:00';
-
-          const dateA = new Date(dtA + 'T' + hrA).getTime();
-          const dateB = new Date(dtB + 'T' + hrB).getTime();
+          const dateA = this.getDateTimeFromSeance(a.dateCours, a.heureDebutReelle)?.getTime() || 0;
+          const dateB = this.getDateTimeFromSeance(b.dateCours, b.heureDebutReelle)?.getTime() || 0;
           return dateB - dateA;
         });
 
@@ -589,11 +584,13 @@ export class SeancesComponent implements OnInit, OnDestroy {
   }
 
   getSeanceStatusClass(s: Seance): string {
-    if (this.isSeanceFinished(s)) {
+    const status = this.getComputedStatus(s);
+
+    if (status === 'TERMINEE') {
       return 'terminee';
     }
 
-    if (this.hasQrCode(s)) {
+    if (status === 'EN_COURS') {
       return 'en-cours';
     }
 
@@ -601,11 +598,13 @@ export class SeancesComponent implements OnInit, OnDestroy {
   }
 
   getSeanceStatusLabel(s: Seance): string {
-    if (this.isSeanceFinished(s)) {
+    const status = this.getComputedStatus(s);
+
+    if (status === 'TERMINEE') {
       return 'Terminée';
     }
 
-    if (this.hasQrCode(s)) {
+    if (status === 'EN_COURS') {
       return 'En cours';
     }
 
@@ -624,31 +623,126 @@ export class SeancesComponent implements OnInit, OnDestroy {
     return s.emargementId ? 'Émargement effectué' : 'Code généré';
   }
 
-  private isSeanceFinished(s: Seance): boolean {
-    if (!s.dateCours || !s.heureFinReelle) {
-      return false;
+  private getComputedStatus(s: Seance): 'A_VENIR' | 'EN_COURS' | 'TERMINEE' {
+    const startDateTime = this.getDateTimeFromSeance(s.dateCours, s.heureDebutReelle);
+    const endDateTime = this.getDateTimeFromSeance(s.dateCours, s.heureFinReelle);
+
+    if (!startDateTime || !endDateTime) {
+      return s.statut === 'TERMINEE'
+        ? 'TERMINEE'
+        : s.statut === 'EN_COURS'
+          ? 'EN_COURS'
+          : 'A_VENIR';
     }
 
-    const endDateTime = new Date(`${s.dateCours}T${s.heureFinReelle}`).getTime();
+    const now = Date.now();
 
-    return Number.isFinite(endDateTime) && Date.now() >= endDateTime;
+    if (now < startDateTime.getTime()) {
+      return 'A_VENIR';
+    }
+
+    if (now <= endDateTime.getTime()) {
+      return 'EN_COURS';
+    }
+
+    return 'TERMINEE';
+  }
+
+  private isSeanceFinished(s: Seance): boolean {
+    return this.getComputedStatus(s) === 'TERMINEE';
+  }
+
+  private getDateTimeFromSeance(dateValue: unknown, timeValue: unknown): Date | null {
+    const dateParts = this.extractDateParts(dateValue);
+    const timeParts = this.extractTimeParts(timeValue);
+
+    if (!dateParts || !timeParts) {
+      return null;
+    }
+
+    return new Date(
+      dateParts.year,
+      dateParts.month - 1,
+      dateParts.day,
+      timeParts.hours,
+      timeParts.minutes,
+      timeParts.seconds,
+      0,
+    );
+  }
+
+  private toDateKey(dateValue: unknown): string {
+    const dateParts = this.extractDateParts(dateValue);
+
+    if (!dateParts) {
+      return '';
+    }
+
+    const month = String(dateParts.month).padStart(2, '0');
+    const day = String(dateParts.day).padStart(2, '0');
+    return `${dateParts.year}-${month}-${day}`;
+  }
+
+  private extractDateParts(
+    dateValue: unknown,
+  ): { year: number; month: number; day: number } | null {
+    if (!dateValue) {
+      return null;
+    }
+
+    if (typeof dateValue === 'string') {
+      const [year, month, day] = dateValue
+        .slice(0, 10)
+        .split('-')
+        .map((part) => Number(part));
+      if (year && month && day) {
+        return { year, month, day };
+      }
+    }
+
+    if (Array.isArray(dateValue) && dateValue.length >= 3) {
+      return { year: Number(dateValue[0]), month: Number(dateValue[1]), day: Number(dateValue[2]) };
+    }
+
+    return null;
+  }
+
+  private extractTimeParts(
+    timeValue: unknown,
+  ): { hours: number; minutes: number; seconds: number } | null {
+    if (!timeValue) {
+      return null;
+    }
+
+    if (typeof timeValue === 'string') {
+      const [hours, minutes, seconds = 0] = timeValue.split(':').map((part) => Number(part));
+      if (Number.isFinite(hours) && Number.isFinite(minutes)) {
+        return { hours, minutes, seconds: Number(seconds) || 0 };
+      }
+    }
+
+    if (Array.isArray(timeValue) && timeValue.length >= 2) {
+      return {
+        hours: Number(timeValue[0]),
+        minutes: Number(timeValue[1]),
+        seconds: Number(timeValue[2]) || 0,
+      };
+    }
+
+    return null;
   }
 
   applyFilters() {
     const searchLower = this.searchText.toLowerCase().trim();
     this.filteredSeances = this.seances.filter((s) => {
       // 1. Filtre par date
-      if (this.filterDate && s.dateCours !== this.filterDate) {
+      if (this.filterDate && this.toDateKey(s.dateCours) !== this.filterDate) {
         return false;
       }
 
       // 2. Filtre par statut
-      if (this.filterStatus) {
-        const isFinished = this.isSeanceFinished(s);
-        const inProgress = this.hasQrCode(s) && !isFinished;
-        if (this.filterStatus === 'TERMINEE' && !isFinished) return false;
-        if (this.filterStatus === 'EN_COURS' && !inProgress) return false;
-        if (this.filterStatus === 'A_VENIR' && (isFinished || inProgress)) return false;
+      if (this.filterStatus && this.getComputedStatus(s) !== this.filterStatus) {
+        return false;
       }
 
       // 3. Filtre de recherche par texte libre (Enseignant, Salle, Classe)

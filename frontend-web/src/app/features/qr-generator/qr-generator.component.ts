@@ -694,7 +694,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
 
   loadSeances() {
     this.scheduleService.getAllSeances().subscribe((data) => {
-      this.seances = data;
+      this.seances = (data || []).filter((seance) => this.isTodaySeance(seance));
       this.autoSelectSession();
     });
   }
@@ -772,6 +772,18 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
     const visibleFrom = new Date(startDateTime.getTime() - 15 * 60000);
 
     return now >= visibleFrom && now <= endDateTime;
+  }
+
+  private isTodaySeance(seance: Seance): boolean {
+    const seanceDate = this.getDateTimeFromSeance(seance.dateCours, seance.heureDebutReelle);
+    const now = new Date();
+
+    return (
+      !!seanceDate &&
+      seanceDate.getFullYear() === now.getFullYear() &&
+      seanceDate.getMonth() === now.getMonth() &&
+      seanceDate.getDate() === now.getDate()
+    );
   }
 
   private getDateTimeFromSeance(dateValue: string | any, timeValue: string | any): Date | null {

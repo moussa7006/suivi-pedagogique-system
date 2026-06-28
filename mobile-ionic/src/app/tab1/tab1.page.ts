@@ -159,12 +159,11 @@ export class Tab1Page implements OnInit {
 
         this.totalSeances = safeSeances.length;
         this.completedSeances = safeSeances.filter((seance) =>
-          this.isSeanceCompleted(seance, ficheSeanceIds),
+          this.hasFicheProgression(seance, ficheSeanceIds),
         ).length;
-        this.pendingSeances = Math.max(
-          this.totalSeances - this.completedSeances,
-          0,
-        );
+        this.pendingSeances = safeSeances.filter((seance) =>
+          this.isAwaitingFicheProgression(seance, ficheSeanceIds),
+        ).length;
         this.completionRate = this.totalSeances
           ? Math.round((this.completedSeances / this.totalSeances) * 100)
           : 0;
@@ -181,7 +180,9 @@ export class Tab1Page implements OnInit {
         );
         this.totalHeures = this.roundHours(
           safeSeances
-            .filter((seance) => this.isSeanceCompleted(seance, ficheSeanceIds))
+            .filter((seance) =>
+              this.hasFicheProgression(seance, ficheSeanceIds),
+            )
             .reduce(
               (total, seance) => total + this.getDurationMinutes(seance),
               0,
@@ -226,14 +227,22 @@ export class Tab1Page implements OnInit {
     );
   }
 
-  private isSeanceCompleted(
+  private hasFicheProgression(
     seance: Seance,
     ficheSeanceIds: Set<number>,
   ): boolean {
     return (
-      seance.statut === 'TERMINEE' ||
       !!seance.ficheProgressionId ||
       (!!seance.id && ficheSeanceIds.has(seance.id))
+    );
+  }
+
+  private isAwaitingFicheProgression(
+    seance: Seance,
+    ficheSeanceIds: Set<number>,
+  ): boolean {
+    return (
+      !!seance.emargementId && !this.hasFicheProgression(seance, ficheSeanceIds)
     );
   }
 
@@ -306,7 +315,7 @@ export class Tab1Page implements OnInit {
       notifications.push({
         title: `${uncompleted} séance(s) à finaliser`,
         message:
-          'Consultez votre planning pour suivre les séances prévues ou en cours.',
+          'Complétez la fiche des séances dont l’émargement a déjà été effectué.',
         icon: 'calendar-outline',
         type: 'info',
         actionLabel: 'Voir planning',
