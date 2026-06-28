@@ -29,7 +29,7 @@ ion-content {
 
 .profile-hero {
   position: relative;
-  padding: 54px 18px 28px;
+  padding: 68px 18px 28px;
   border-radius: 0 0 34px 34px;
   color: #ffffff;
   background:
@@ -43,6 +43,70 @@ ion-content {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.hero-logout-btn {
+  position: absolute;
+  top: calc(12px + var(--ion-safe-area-top));
+  right: 12px;
+  z-index: 20;
+  --background: linear-gradient(135deg, #ef4444 0%, #dc2626 55%, #991b1b 100%);
+  --background-hover: linear-gradient(135deg, #f87171 0%, #ef4444 55%, #b91c1c 100%);
+  --background-activated: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  --color: #ffffff;
+  --border-radius: 999px;
+  --box-shadow: 0 14px 34px rgba(220, 38, 38, 0.38);
+  --padding-start: 14px;
+  --padding-end: 16px;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  min-height: 42px;
+  height: 42px;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  transform: scale(1);
+  transition:
+    transform 0.22s ease,
+    filter 0.22s ease,
+    box-shadow 0.22s ease;
+  animation: logoutPulse 2.4s ease-in-out infinite;
+
+  ion-icon {
+    font-size: 18px;
+    margin-right: 5px;
+  }
+
+  span {
+    line-height: 1;
+  }
+
+  &:hover {
+    transform: scale(1.06);
+    filter: brightness(1.06);
+  }
+
+  &:active {
+    transform: scale(0.94);
+    filter: brightness(0.94);
+  }
+
+  &::part(native) {
+    border: 1px solid rgba(254, 202, 202, 0.45);
+  }
+}
+
+@keyframes logoutPulse {
+  0%,
+  100% {
+    box-shadow: 0 14px 34px rgba(220, 38, 38, 0.34);
+  }
+
+  50% {
+    box-shadow: 0 18px 44px rgba(239, 68, 68, 0.56);
+  }
 }
 
 .avatar-shell {
@@ -418,23 +482,26 @@ ion-content {
   margin-top: 6px;
 }
 
-.logout-btn-container {
-  padding: 4px 16px 28px;
-}
 
-.modern-logout-btn {
-  --border-color: #ef4444;
-  --color: #ef4444;
-  --border-radius: 16px;
-  font-weight: 900;
-  height: 50px;
-}
 
 @media (max-width: 380px) {
   .profile-hero {
     flex-direction: column;
     text-align: center;
-    padding-inline: 14px;
+    padding: 70px 14px 28px;
+  }
+
+  .hero-logout-btn {
+    --padding-start: 11px;
+    --padding-end: 12px;
+    font-size: 0.72rem;
+    min-height: 38px;
+    height: 38px;
+
+    ion-icon {
+      font-size: 16px;
+      margin-right: 3px;
+    }
   }
 
   .hero-badges {
@@ -448,10 +515,6 @@ ion-content {
 
   .stats-row {
     grid-template-columns: 1fr;
-  }
-
-  .logout-btn-container {
-    padding-inline: 16px;
   }
 }
 
