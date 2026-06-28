@@ -1,4 +1,5 @@
-const apiHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
+const apiHost =
+  typeof window !== 'undefined' ? window.location.hostname : 'localhost';
 
 // En dev navigateur :
 // - http://localhost:8100 utilise http://localhost:8099/api
@@ -6,5 +7,5 @@ const apiHost = typeof window !== "undefined" ? window.location.hostname : "loca
 // Cela évite l'erreur mobile où `localhost` pointe vers le téléphone au lieu du PC backend.
 export const environment = {
   production: false,
-  apiBaseUrl: `http://${apiHost || "localhost"}:8099/api`,
+  apiBaseUrl: `http://${apiHost || 'localhost'}:8099/api`,
 };
