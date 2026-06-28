@@ -2,12 +2,14 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { from, switchMap } from 'rxjs';
 import { TokenStorageService } from '../services/token-storage.service';
+import { ApiConfigService } from '../services/api-config.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const tokenStorage = inject(TokenStorageService);
+  const apiConfig = inject(ApiConfigService);
 
-  // Remplacement dynamique de l'IP du serveur
-  const customApiUrl = localStorage.getItem('custom_api_url');
+  // Fallback pour les URLs encore construites depuis environment.apiBaseUrl.
+  const customApiUrl = apiConfig.getCustomApiBaseUrl();
   let finalReq = req;
 
   // On importe l'environnement dynamiquement pour éviter un conflit circulaire, ou on peut utiliser une regex simple

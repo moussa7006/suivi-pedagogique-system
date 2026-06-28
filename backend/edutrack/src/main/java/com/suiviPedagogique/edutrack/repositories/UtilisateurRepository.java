@@ -17,4 +17,6 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Intege
 
     // Recherche par téléphone
     Optional<Utilisateur> findByTelephone(String telephone);
+
+    long countByRole(com.suiviPedagogique.edutrack.Entities.enums.Role role);
 }

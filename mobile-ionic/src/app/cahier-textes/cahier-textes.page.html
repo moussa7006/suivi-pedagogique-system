@@ -98,8 +98,38 @@
           >
             Veuillez sélectionner une séance réelle.
           </span>
+          <div
+            class="selected-seance-details"
+            *ngIf="selectedSeanceDetails as details"
+          >
+            <div class="details-header">
+              <ion-icon name="information-circle-outline"></ion-icon>
+              <span>Détails de la séance</span>
+              <strong [class]="'status-pill ' + details.statutClass">
+                {{ details.statut }}
+              </strong>
+            </div>
+            <div class="details-grid">
+              <div class="detail-item">
+                <ion-icon name="school-outline"></ion-icon>
+                <div>
+                  <span>Matière</span>
+                  <strong>{{ details.matiere }}</strong>
+                </div>
+              </div>
+              <div class="detail-item">
+                <ion-icon name="people-outline"></ion-icon>
+                <div>
+                  <span>Classe</span>
+                  <strong>{{ details.classe }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <span class="error-msg" *ngIf="seancesDisponibles.length === 0">
-            Aucune séance disponible sans fiche de progression.
+            Aucune séance du jour ou passée avec émargement effectué n'est en
+            attente de fiche.
           </span>
         </div>
 
@@ -173,7 +203,7 @@
     </div>
 
     <div
-      *ngFor="let seance of seances; let i = index"
+      *ngFor="let seance of seances; let i = index; trackBy: trackBySeanceId"
       class="seance-card animate-slide-up"
       [style.--delay]="(i * 80) + 'ms'"
     >

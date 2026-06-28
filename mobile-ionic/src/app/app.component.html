@@ -1,3 +1,7 @@
 <ion-app>
   <ion-router-outlet></ion-router-outlet>
+  <div
+    class="status-bar-blur"
+    [class.status-bar-blur--visible]="hasScrolled"
+  ></div>
 </ion-app>

@@ -4,10 +4,10 @@ import {
   OnDestroy,
   ViewChild,
   inject,
-} from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { FormsModule } from "@angular/forms";
-import { ActivatedRoute, Router, RouterLink } from "@angular/router";
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   IonContent,
   IonButton,
@@ -17,8 +17,8 @@ import {
   IonSelectOption,
   ToastController,
   AlertController,
-} from "@ionic/angular/standalone";
-import { addIcons } from "ionicons";
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
 import {
   scanOutline,
   cameraOutline,
@@ -28,20 +28,20 @@ import {
   arrowBackOutline,
   stopCircleOutline,
   calendarOutline,
-} from "ionicons/icons";
-import { Geolocation } from "@capacitor/geolocation";
-import jsQR from "jsqr";
-import { forkJoin } from "rxjs";
-import { EmargementService } from "../core/services/emargement.service";
-import { FicheProgressionService } from "../core/services/fiche-progression.service";
-import { ScheduleService } from "../core/services/schedule.service";
-import { FicheProgression } from "../core/models/fiche-progression.model";
-import { Seance } from "../core/models/seance.model";
+} from 'ionicons/icons';
+import { Geolocation } from '@capacitor/geolocation';
+import jsQR from 'jsqr';
+import { forkJoin } from 'rxjs';
+import { EmargementService } from '../core/services/emargement.service';
+import { FicheProgressionService } from '../core/services/fiche-progression.service';
+import { ScheduleService } from '../core/services/schedule.service';
+import { FicheProgression } from '../core/models/fiche-progression.model';
+import { Seance } from '../core/models/seance.model';
 
 @Component({
-  selector: "app-scan-qr",
-  templateUrl: "scan-qr.page.html",
-  styleUrls: ["scan-qr.page.scss"],
+  selector: 'app-scan-qr',
+  templateUrl: 'scan-qr.page.html',
+  styleUrls: ['scan-qr.page.scss'],
   standalone: true,
   imports: [
     CommonModule,
@@ -56,7 +56,7 @@ import { Seance } from "../core/models/seance.model";
   ],
 })
 export class ScanQRPage implements OnDestroy {
-  @ViewChild("previewVideo") previewVideo?: ElementRef<HTMLVideoElement>;
+  @ViewChild('previewVideo') previewVideo?: ElementRef<HTMLVideoElement>;
 
   private readonly emargementService = inject(EmargementService);
   private readonly ficheProgressionService = inject(FicheProgressionService);
@@ -69,7 +69,7 @@ export class ScanQRPage implements OnDestroy {
   isScanning = false;
   isCameraOpen = false;
   isLoading = false;
-  manualToken = "";
+  manualToken = '';
   selectedSeanceId: number | null = null;
   seances: Seance[] = [];
   fichesProgression: FicheProgression[] = [];
@@ -117,7 +117,9 @@ export class ScanQRPage implements OnDestroy {
       fiches: this.ficheProgressionService.getFichesProgression(),
     }).subscribe({
       next: ({ seances, fiches }) => {
-        this.seances = seances || [];
+        this.seances = (seances || []).filter((seance) =>
+          this.isTodaySeance(seance),
+        );
         this.fichesProgression = fiches || [];
         this.selectedSeanceId = this.resolveInitialSeanceId(this.seances);
         this.isLoading = false;
@@ -125,8 +127,8 @@ export class ScanQRPage implements OnDestroy {
       error: async () => {
         this.isLoading = false;
         await this.presentAlert(
-          "Chargement impossible",
-          "Impossible de charger les séances.",
+          'Chargement impossible',
+          'Impossible de charger les séances.',
         );
       },
     });
@@ -134,7 +136,7 @@ export class ScanQRPage implements OnDestroy {
 
   private resolveInitialSeanceId(seances: Seance[]): number | null {
     const seanceIdFromRoute = Number(
-      this.route.snapshot.queryParamMap.get("seanceId"),
+      this.route.snapshot.queryParamMap.get('seanceId'),
     );
 
     if (seanceIdFromRoute && seances.some((s) => s.id === seanceIdFromRoute)) {
@@ -145,10 +147,7 @@ export class ScanQRPage implements OnDestroy {
       return this.selectedSeanceId;
     }
 
-    const today = this.toDateKey(new Date());
-    const todaysSeanceWithQr = seances.find(
-      (seance) => seance.dateCours === today && !!seance.qrCodeId,
-    );
+    const todaysSeanceWithQr = seances.find((seance) => !!seance.qrCodeId);
     if (todaysSeanceWithQr?.id) {
       return todaysSeanceWithQr.id;
     }
@@ -164,7 +163,7 @@ export class ScanQRPage implements OnDestroy {
     if (!navigator.mediaDevices?.getUserMedia) {
       this.cameraSupported = false;
       await this.presentAlert(
-        "Caméra non supportée",
+        'Caméra non supportée',
         "La caméra n'est pas disponible dans cet environnement. Utilisez temporairement le champ de secours.",
       );
       return;
@@ -175,7 +174,7 @@ export class ScanQRPage implements OnDestroy {
       this.isCameraOpen = true;
       this.isScanning = true;
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
+        video: { facingMode: 'environment' },
         audio: false,
       });
 
@@ -193,7 +192,7 @@ export class ScanQRPage implements OnDestroy {
       this.isScanning = false;
       this.isCameraOpen = false;
       await this.presentAlert(
-        "Caméra indisponible",
+        'Caméra indisponible',
         error?.message ||
           "Impossible d'ouvrir la caméra. Vérifiez les permissions.",
       );
@@ -225,8 +224,8 @@ export class ScanQRPage implements OnDestroy {
     const tokenQRCode = this.manualToken.trim();
     if (!tokenQRCode) {
       await this.presentAlert(
-        "QR Code manquant",
-        "Veuillez renseigner le token QR de secours.",
+        'QR Code manquant',
+        'Veuillez renseigner le token QR de secours.',
       );
       return;
     }
@@ -252,8 +251,8 @@ export class ScanQRPage implements OnDestroy {
   }
 
   private startQrDetection(video: HTMLVideoElement): void {
-    this.scanCanvas = document.createElement("canvas");
-    this.scanContext = this.scanCanvas.getContext("2d", {
+    this.scanCanvas = document.createElement('canvas');
+    this.scanContext = this.scanCanvas.getContext('2d', {
       willReadFrequently: true,
     });
 
@@ -279,7 +278,7 @@ export class ScanQRPage implements OnDestroy {
 
       const imageData = this.scanContext.getImageData(0, 0, width, height);
       const qrCode = jsQR(imageData.data, imageData.width, imageData.height, {
-        inversionAttempts: "attemptBoth",
+        inversionAttempts: 'attemptBoth',
       });
 
       const token = qrCode?.data?.trim();
@@ -293,8 +292,8 @@ export class ScanQRPage implements OnDestroy {
   private async ensureSelectedSeanceIsReady(): Promise<boolean> {
     if (!this.selectedSeance) {
       await this.presentAlert(
-        "Séance requise",
-        "Veuillez sélectionner la séance concernée.",
+        'Séance requise',
+        'Veuillez sélectionner la séance concernée.',
       );
       return false;
     }
@@ -317,16 +316,16 @@ export class ScanQRPage implements OnDestroy {
         .subscribe({
           next: async (response) => {
             this.isScanning = false;
-            this.manualToken = "";
+            this.manualToken = '';
             const toast = await this.toastController.create({
               message:
-                "Scan validé ✅ Remplissez maintenant la fiche de progression.",
+                'Scan validé ✅ Remplissez maintenant la fiche de progression.',
               duration: 2500,
-              color: "success",
-              position: "top",
+              color: 'success',
+              position: 'top',
             });
             await toast.present();
-            await this.router.navigate(["/tabs/tabs/tab3"], {
+            await this.router.navigate(['/tabs/tabs/tab3'], {
               queryParams: {
                 seanceId: response.seanceId || this.selectedSeanceId,
                 fromScan: true,
@@ -344,24 +343,24 @@ export class ScanQRPage implements OnDestroy {
     } catch (error: any) {
       this.isScanning = false;
       await this.presentAlert(
-        "Position GPS indisponible",
-        error?.message || "Impossible de récupérer votre position.",
+        'Position GPS indisponible',
+        error?.message || 'Impossible de récupérer votre position.',
       );
     }
   }
 
   private getScanErrorMessage(error: any): string {
-    if (typeof error?.error === "string") {
+    if (typeof error?.error === 'string') {
       return error.error;
     }
 
     if (error.status === 400) {
       return (
-        error?.error?.error || "QR Code invalide, expiré ou séance non trouvée."
+        error?.error?.error || 'QR Code invalide, expiré ou séance non trouvée.'
       );
     }
     if (error.status === 409) {
-      return "Vous avez déjà émargé pour cette séance.";
+      return 'Vous avez déjà émargé pour cette séance.';
     }
     if (error.status === 403) {
       return "Hors périmètre autorisé pour l'émargement.";
@@ -381,10 +380,10 @@ export class ScanQRPage implements OnDestroy {
   }> {
     try {
       const permissions = await Geolocation.checkPermissions();
-      if (permissions.location !== "granted") {
+      if (permissions.location !== 'granted') {
         const requestedPermissions = await Geolocation.requestPermissions();
-        if (requestedPermissions.location !== "granted") {
-          throw new Error("Autorisation GPS refusée.");
+        if (requestedPermissions.location !== 'granted') {
+          throw new Error('Autorisation GPS refusée.');
         }
       }
 
@@ -397,7 +396,7 @@ export class ScanQRPage implements OnDestroy {
       return {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
-        adresseApproximative: "Position GPS du mobile",
+        adresseApproximative: 'Position GPS du mobile',
       };
     } catch (error: any) {
       throw new Error(
@@ -408,13 +407,38 @@ export class ScanQRPage implements OnDestroy {
   }
 
   private formatTime(value?: string): string {
-    return value ? value.substring(0, 5) : "--:--";
+    return value ? value.substring(0, 5) : '--:--';
+  }
+
+  private isTodaySeance(seance: Seance): boolean {
+    return (
+      this.toDateKeyFromValue(seance.dateCours) === this.toDateKey(new Date())
+    );
+  }
+
+  private toDateKeyFromValue(value: unknown): string {
+    if (!value) {
+      return '';
+    }
+
+    if (typeof value === 'string') {
+      return value.slice(0, 10);
+    }
+
+    if (Array.isArray(value) && value.length >= 3) {
+      const year = Number(value[0]);
+      const month = String(Number(value[1])).padStart(2, '0');
+      const day = String(Number(value[2])).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    return '';
   }
 
   private toDateKey(date: Date): string {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
 
@@ -422,7 +446,7 @@ export class ScanQRPage implements OnDestroy {
     const alert = await this.alertController.create({
       header,
       message,
-      buttons: ["OK"],
+      buttons: ['OK'],
     });
     await alert.present();
   }
