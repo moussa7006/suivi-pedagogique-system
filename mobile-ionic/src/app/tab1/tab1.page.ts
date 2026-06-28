@@ -28,6 +28,7 @@ import {
   trendingUpOutline,
   closeOutline,
   sparklesOutline,
+  cashOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../core/services/auth.service';
 import { ScheduleService } from '../core/services/schedule.service';
@@ -62,6 +63,7 @@ export class Tab1Page implements OnInit {
   teacher = {
     firstName: 'Enseignant',
     lastName: '',
+    avatar: '',
   };
 
   teacherInitials = 'EN';
@@ -110,6 +112,7 @@ export class Tab1Page implements OnInit {
       trendingUpOutline,
       closeOutline,
       sparklesOutline,
+      cashOutline,
     });
   }
 
@@ -129,14 +132,14 @@ export class Tab1Page implements OnInit {
   private async loadUser(): Promise<void> {
     const user = await this.authService.getUser();
     if (user) {
+      const firstName = user.prenom || 'Enseignant';
+      const lastName = user.nom || '';
       this.teacher = {
-        firstName: user.prenom || 'Enseignant',
-        lastName: user.nom || '',
+        firstName,
+        lastName,
+        avatar: user.photoUrl || '',
       };
-      this.teacherInitials = this.getInitials(
-        user.prenom || 'Enseignant',
-        user.nom || '',
-      );
+      this.teacherInitials = this.getInitials(firstName, lastName);
     }
   }
 
