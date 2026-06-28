@@ -111,6 +111,19 @@ ion-content {
   position: relative;
   overflow: hidden;
 
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: relative;
+    z-index: 1;
+  }
+
+  span {
+    position: relative;
+    z-index: 1;
+  }
+
   &::after {
     content: "";
     position: absolute;
@@ -121,6 +134,8 @@ ion-content {
       transparent 60%
     );
     border-radius: inherit;
+    z-index: 2;
+    pointer-events: none;
   }
 }
 
@@ -237,8 +252,16 @@ ion-content {
   overflow: hidden;
   border-radius: 30px;
   background:
-    radial-gradient(circle at top left, rgba(67, 97, 238, 0.12), transparent 34%),
-    radial-gradient(circle at top right, rgba(124, 58, 237, 0.11), transparent 32%),
+    radial-gradient(
+      circle at top left,
+      rgba(67, 97, 238, 0.12),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(124, 58, 237, 0.11),
+      transparent 32%
+    ),
     rgba(255, 255, 255, 0.97);
   box-shadow: var(--shadow-notif);
   border: 1px solid rgba(255, 255, 255, 0.88);
@@ -546,8 +569,12 @@ ion-content {
    ============================================ */
 .action-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "progression scan"
+    "planning honoraires";
+  column-gap: 16px;
+  row-gap: 22px;
   margin-bottom: 32px;
   position: relative;
   z-index: 1;
@@ -576,6 +603,22 @@ ion-content {
   &:hover {
     box-shadow: var(--shadow-lg);
   }
+}
+
+.action-card--progression {
+  grid-area: progression;
+}
+
+.action-card--scan {
+  grid-area: scan;
+}
+
+.action-card--planning {
+  grid-area: planning;
+}
+
+.action-card--honoraires {
+  grid-area: honoraires;
 }
 
 .action-card__bg {
@@ -846,23 +889,30 @@ ion-content {
 .stat-row__info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .stat-row__label {
-  display: block;
+  display: inline-block;
   font-size: 12px;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .stat-row__value {
-  display: block;
+  display: inline-block;
   font-size: 16px;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.02em;
   line-height: 1.3;
+  white-space: nowrap;
+  text-align: right;
 }
 
 .stat-row__trend {
