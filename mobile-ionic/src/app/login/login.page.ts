@@ -98,7 +98,12 @@ export class LoginPage {
     this.showPassword = !this.showPassword;
   }
 
-  onSubmit() {
+  async onSubmit() {
+    if (!this.apiConfig.hasConfiguredBaseUrl()) {
+      await this.presentServerConfigurationRequired();
+      return;
+    }
+
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -136,12 +141,12 @@ export class LoginPage {
     const alert = await this.alertController.create({
       header: 'Configuration Serveur',
       message:
-        "Entrez l'adresse IP locale de votre ordinateur (ex: 192.168.1.15).",
+        "Entrez l'adresse du backend sur le même Wi-Fi. Exemple : 192.168.1.15 ou 192.168.1.15:8099/api.",
       inputs: [
         {
           name: 'ipAddress',
           type: 'text',
-          placeholder: 'Ex: 192.168.1.7',
+          placeholder: 'Ex: 192.168.1.15:8099/api',
           value: simpleIp,
         },
       ],
@@ -153,13 +158,33 @@ export class LoginPage {
         {
           text: 'Enregistrer',
           handler: (data) => {
-            if (data.ipAddress) {
-              this.apiConfig.setServerIp(data.ipAddress);
+            if (!data.ipAddress) {
+              return false;
             }
+
+            return this.apiConfig.setServerIp(data.ipAddress);
           },
         },
       ],
     });
+    await alert.present();
+  }
+
+  private async presentServerConfigurationRequired(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Serveur non configuré',
+      message:
+        "Configurez d'abord l'IP de l'ordinateur qui exécute le backend. Le téléphone et l'ordinateur doivent être sur le même Wi-Fi.",
+      buttons: [
+        {
+          text: "Configurer l'IP",
+          handler: () => {
+            void this.changeServerIp();
+          },
+        },
+      ],
+    });
+
     await alert.present();
   }
 }
