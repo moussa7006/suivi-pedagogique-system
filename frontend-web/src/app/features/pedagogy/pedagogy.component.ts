@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 import { PedagogyService } from '../../core/services/pedagogy.service';
+import { ScheduleService } from '../../core/services/schedule.service';
 import { FicheProgression } from '../../core/models/lesson-log.model';
+import { Seance } from '../../core/models/seance.model';
 
 @Component({
   selector: 'app-pedagogy',
@@ -623,16 +625,26 @@ import { FicheProgression } from '../../core/models/lesson-log.model';
 })
 export class PedagogyComponent implements OnInit {
   lessonLogs: FicheProgression[] = [];
+  seances: Seance[] = [];
   exportingExcel = false;
 
-  constructor(private pedagogyService: PedagogyService) {}
+  constructor(
+    private pedagogyService: PedagogyService,
+    private scheduleService: ScheduleService,
+  ) {}
 
   ngOnInit() {
     this.loadLogs();
   }
 
   private loadLogs() {
-    this.pedagogyService.getLessonLogs().subscribe((data) => (this.lessonLogs = data));
+    forkJoin({
+      logs: this.pedagogyService.getLessonLogs(),
+      seances: this.scheduleService.getAllSeances(),
+    }).subscribe(({ logs, seances }) => {
+      this.lessonLogs = logs || [];
+      this.seances = seances || [];
+    });
   }
 
   async exportExcel(): Promise<void> {
@@ -685,8 +697,15 @@ export class PedagogyComponent implements OnInit {
   }
 
   getPendingCount(): number {
-    return this.lessonLogs.filter(
-      (log) => log.estValideAdmin == null || log.estValideAdmin === false,
+    const ficheSeanceIds = new Set(
+      this.lessonLogs.map((log) => log.seanceId).filter((id): id is number => Number.isFinite(id)),
+    );
+
+    return this.seances.filter(
+      (seance) =>
+        !!seance.emargementId &&
+        !seance.ficheProgressionId &&
+        (!seance.id || !ficheSeanceIds.has(seance.id)),
     ).length;
   }
 

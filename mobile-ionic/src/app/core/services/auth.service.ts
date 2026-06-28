@@ -1,23 +1,23 @@
-import { Injectable, inject } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { Router } from "@angular/router";
-import { Preferences } from "@capacitor/preferences";
-import { Observable, from, map, switchMap } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { LoginRequest, LoginResponse } from "../models/auth.models";
-import { TokenStorageService } from "./token-storage.service";
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Preferences } from '@capacitor/preferences';
+import { Observable, from, map, switchMap } from 'rxjs';
+import { ApiConfigService } from './api-config.service';
+import { LoginRequest, LoginResponse } from '../models/auth.models';
+import { TokenStorageService } from './token-storage.service';
 
-@Injectable({ providedIn: "root" })
+@Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly tokenStorage = inject(TokenStorageService);
-  private readonly authApiUrl = `${environment.apiBaseUrl}/auth`;
-  private readonly userKey = "auth_user";
+  private readonly apiConfig = inject(ApiConfigService);
+  private readonly userKey = 'auth_user';
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http
-      .post<LoginResponse>(`${this.authApiUrl}/login`, credentials)
+      .post<LoginResponse>(this.apiConfig.buildUrl('auth/login'), credentials)
       .pipe(
         switchMap((response) =>
           from(
@@ -34,14 +34,16 @@ export class AuthService {
     currentPassword: string,
     newPassword: string,
   ): Observable<any> {
-    return this.http.post(`${this.authApiUrl}/change-password`, {
+    return this.http.post(this.apiConfig.buildUrl('auth/change-password'), {
       currentPassword,
       newPassword,
     });
   }
 
   forgotPassword(email: string): Observable<any> {
-    return this.http.post(`${this.authApiUrl}/forgot-password`, { email });
+    return this.http.post(this.apiConfig.buildUrl('auth/forgot-password'), {
+      email,
+    });
   }
 
   resetPassword(
@@ -49,7 +51,7 @@ export class AuthService {
     code: string,
     newPassword: string,
   ): Observable<any> {
-    return this.http.post(`${this.authApiUrl}/reset-password`, {
+    return this.http.post(this.apiConfig.buildUrl('auth/reset-password'), {
       email,
       code,
       newPassword,
@@ -97,10 +99,10 @@ export class AuthService {
     // Recharger complètement l'application pour détruire toutes les instances
     // de composants en cache (pages tabs notamment). Sans cela, les données de
     // l'utilisateur précédent restent affichées après un nouveau login.
-    if (typeof window !== "undefined" && window.location) {
-      window.location.href = "/login";
+    if (typeof window !== 'undefined' && window.location) {
+      window.location.href = '/login';
       return;
     }
-    void this.router.navigate(["/login"]);
+    void this.router.navigate(['/login']);
   }
 }

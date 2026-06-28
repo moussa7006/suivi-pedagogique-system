@@ -33,6 +33,7 @@ import {
 } from 'ionicons/icons';
 import { AuthService } from '../core/services/auth.service';
 import { ApiErrorService } from '../core/services/api-error.service';
+import { ApiConfigService } from '../core/services/api-config.service';
 import { finalize } from 'rxjs';
 
 @Component({
@@ -57,6 +58,7 @@ export class LoginPage {
   private router = inject(Router);
   private authService = inject(AuthService);
   private apiError = inject(ApiErrorService);
+  private apiConfig = inject(ApiConfigService);
   private alertController = inject(AlertController);
 
   loginForm: FormGroup;
@@ -129,9 +131,7 @@ export class LoginPage {
   }
 
   async changeServerIp() {
-    let currentIp =
-      localStorage.getItem('custom_api_url') || 'http://192.168.1.7:8099/api';
-    let simpleIp = currentIp.replace('http://', '').replace(':8099/api', '');
+    const simpleIp = this.apiConfig.getConfiguredServerIp();
 
     const alert = await this.alertController.create({
       header: 'Configuration Serveur',
@@ -154,8 +154,7 @@ export class LoginPage {
           text: 'Enregistrer',
           handler: (data) => {
             if (data.ipAddress) {
-              const fullUrl = `http://${data.ipAddress.trim()}:8099/api`;
-              localStorage.setItem('custom_api_url', fullUrl);
+              this.apiConfig.setServerIp(data.ipAddress);
             }
           },
         },

@@ -128,8 +128,36 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.status-bar-blur {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: max(24px, env(safe-area-inset-top));
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  background: rgba(248, 249, 250, 0.08);
+  backdrop-filter: blur(0) saturate(100%);
+  -webkit-backdrop-filter: blur(0) saturate(100%);
+  transition:
+    opacity 180ms ease,
+    backdrop-filter 180ms ease,
+    -webkit-backdrop-filter 180ms ease;
+}
+
+.status-bar-blur--visible {
+  opacity: 1;
+  backdrop-filter: blur(10px) saturate(125%);
+  -webkit-backdrop-filter: blur(10px) saturate(125%);
+}
+
 ion-content {
   --background: var(--ion-color-light);
+}
+
+ion-content.ion-padding {
+  --padding-top: calc(16px + var(--ion-safe-area-top));
 }
 
 /* ============================================

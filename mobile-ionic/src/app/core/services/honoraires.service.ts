@@ -1,17 +1,17 @@
-import { Injectable, inject } from "@angular/core";
-import { HttpClient, HttpParams } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { HonorairesCalcul } from "../models/honoraires.model";
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { ApiConfigService } from './api-config.service';
+import { HonorairesCalcul } from '../models/honoraires.model';
 
-@Injectable({ providedIn: "root" })
+@Injectable({ providedIn: 'root' })
 export class HonorairesService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = environment.apiBaseUrl;
+  private readonly apiConfig = inject(ApiConfigService);
 
   getMesHonoraires(): Observable<HonorairesCalcul[]> {
     return this.http.get<HonorairesCalcul[]>(
-      `${this.baseUrl}/honoraires/mes-honoraires`,
+      this.apiConfig.buildUrl('honoraires/mes-honoraires'),
     );
   }
 
@@ -19,14 +19,16 @@ export class HonorairesService {
     annee: number,
     mois: number,
   ): Observable<HonorairesCalcul> {
-    const params = new HttpParams().set("annee", annee).set("mois", mois);
+    const params = new HttpParams().set('annee', annee).set('mois', mois);
     return this.http.get<HonorairesCalcul>(
-      `${this.baseUrl}/honoraires/mes-honoraires/mois`,
+      this.apiConfig.buildUrl('honoraires/mes-honoraires/mois'),
       { params },
     );
   }
 
   getById(id: number): Observable<HonorairesCalcul> {
-    return this.http.get<HonorairesCalcul>(`${this.baseUrl}/honoraires/${id}`);
+    return this.http.get<HonorairesCalcul>(
+      this.apiConfig.buildUrl(`honoraires/${id}`),
+    );
   }
 }

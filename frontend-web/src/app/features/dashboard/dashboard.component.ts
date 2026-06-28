@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { forkJoin, of, Subscription, interval } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { ChartModule } from 'primeng/chart';
 import { TeacherService } from '../../core/services/teacher.service';
 import { ClasseService } from '../../core/services/classe.service';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { AttendanceService } from '../../core/services/attendance.service';
 import { MatiereService } from '../../core/services/matiere.service';
+import { DashboardService } from '../../core/services/dashboard.service';
 
 interface StatCard {
   label: string;
@@ -41,7 +43,7 @@ interface HubTile {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ChartModule],
   template: `
     <div class="dashboard-container">
       <!-- HEADER AVEC ACTIONS RAPIDES -->
@@ -116,6 +118,27 @@ interface HubTile {
           </a>
         </div>
       </section>
+
+      <!-- GRAPHIQUES (CHARTS) -->
+      <div class="charts-row">
+        <div class="data-card chart-card">
+          <div class="panel-header">
+            <h3>Émargements (7 derniers jours)</h3>
+          </div>
+          <div class="chart-container">
+            <p-chart type="bar" [data]="attendanceChartData" [options]="attendanceChartOptions"></p-chart>
+          </div>
+        </div>
+
+        <div class="data-card chart-card">
+          <div class="panel-header">
+            <h3>Statut des Séances (Aujourd'hui)</h3>
+          </div>
+          <div class="chart-container doughnut-container">
+            <p-chart type="doughnut" [data]="statusChartData" [options]="statusChartOptions"></p-chart>
+          </div>
+        </div>
+      </div>
 
       <!-- GRILLE DE CONTENU (GRAPHIQUES & ACTIVITÉS) -->
       <div class="content-row">
@@ -647,6 +670,28 @@ interface HubTile {
         }
       }
 
+      /* CHARTS ROW */
+      .charts-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+      
+      .chart-card {
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
       /* CONTENT ROW - hidden to keep the first viewport focused on stats and the 6 main modules */
       .content-row {
         display: none;
@@ -902,13 +947,56 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   activities: Activity[] = [];
 
+  attendanceChartData: any;
+  attendanceChartOptions: any;
+  statusChartData: any;
+  statusChartOptions: any;
+
   constructor(
     private teacherService: TeacherService,
     private classeService: ClasseService,
     private matiereService: MatiereService,
     private scheduleService: ScheduleService,
     private attendanceService: AttendanceService,
-  ) {}
+    private dashboardService: DashboardService
+  ) {
+    this.initChartOptions();
+  }
+
+  initChartOptions() {
+    const documentStyle = getComputedStyle(document.documentElement);
+    const textColor = documentStyle.getPropertyValue('--text-color') || '#495057';
+    const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary') || '#6c757d';
+    const surfaceBorder = documentStyle.getPropertyValue('--surface-border') || '#dfe7ef';
+
+    this.attendanceChartOptions = {
+      maintainAspectRatio: false,
+      aspectRatio: 0.8,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          ticks: { color: textColorSecondary },
+          grid: { color: surfaceBorder, drawBorder: false }
+        },
+        y: {
+          ticks: { color: textColorSecondary, precision: 0 },
+          grid: { color: surfaceBorder, drawBorder: false }
+        }
+      }
+    };
+
+    this.statusChartOptions = {
+      maintainAspectRatio: false,
+      aspectRatio: 1.5,
+      plugins: {
+        legend: {
+          labels: { color: textColor }
+        }
+      }
+    };
+  }
 
   ngOnInit() {
     this.loadAdminProfile();
@@ -940,6 +1028,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private loadDashboardStats(): void {
     forkJoin({
+      dashboardStats: this.dashboardService.getDashboardData().pipe(
+        catchError((error) => {
+          console.error('[Dashboard] Erreur API Dashboard:', error);
+          return of(null);
+        })
+      ),
       teachers: this.teacherService.getTeachers().pipe(
         catchError((error) => {
           console.error('[Dashboard] Erreur chargement enseignants:', error);
@@ -981,7 +1075,45 @@ export class DashboardComponent implements OnInit, OnDestroy {
           return of([]);
         }),
       ),
-    }).subscribe(({ teachers, classes, matieres, schedules, seances, attendances }) => {
+    }).subscribe(({ dashboardStats, teachers, classes, matieres, schedules, seances, attendances }) => {
+      if (dashboardStats) {
+        this.stats[0].value = dashboardStats.totalTeachers;
+        this.stats[1].value = dashboardStats.totalClasses;
+        this.stats[3].value = dashboardStats.sessionsToday;
+
+        this.hubTiles[2].indicator = `${dashboardStats.totalTeachers} enseignant(s)`;
+        this.hubTiles[0].indicator = `${dashboardStats.totalClasses} classe(s)`;
+        this.hubTiles[3].indicator = `${dashboardStats.sessionsToday} séance(s) aujourd'hui`;
+        
+        // Prepare Charts Data
+        if (dashboardStats.emargementsParJour) {
+          this.attendanceChartData = {
+            labels: Object.keys(dashboardStats.emargementsParJour),
+            datasets: [
+              {
+                label: 'Émargements',
+                backgroundColor: '#3b82f6',
+                data: Object.values(dashboardStats.emargementsParJour),
+                borderRadius: 4
+              }
+            ]
+          };
+        }
+
+        if (dashboardStats.seancesParStatut) {
+          this.statusChartData = {
+            labels: Object.keys(dashboardStats.seancesParStatut),
+            datasets: [
+              {
+                data: Object.values(dashboardStats.seancesParStatut),
+                backgroundColor: ['#94a3b8', '#f59e0b', '#10b981', '#ef4444'],
+                hoverBackgroundColor: ['#cbd5e1', '#fbbf24', '#34d399', '#f87171']
+              }
+            ]
+          };
+        }
+      }
+
       const teacherCount = teachers.length;
       const classCount = classes.length;
       const matiereCount = matieres.length;

@@ -148,7 +148,10 @@
   <!-- ========================================= -->
   <div class="action-grid animate-slide-up" style="--delay: 200ms">
     <!-- TILE 1 - Fiche de Progression -->
-    <div class="action-card action-card--progression" (click)="navigateTo('/tabs/tabs/tab3')">
+    <div
+      class="action-card action-card--progression"
+      (click)="navigateTo('/tabs/tabs/tab3')"
+    >
       <div class="action-card__bg action-card__bg--blue"></div>
       <div class="action-card__icon action-card__icon--blue">
         <ion-icon name="book-outline"></ion-icon>
@@ -175,7 +178,10 @@
     </div>
 
     <!-- TILE 3 - Planning -->
-    <div class="action-card action-card--planning" (click)="navigateTo('/tabs/tabs/tab2')">
+    <div
+      class="action-card action-card--planning"
+      (click)="navigateTo('/tabs/tabs/tab2')"
+    >
       <div class="action-card__bg action-card__bg--coral"></div>
       <div class="action-card__icon action-card__icon--coral">
         <ion-icon name="calendar-outline"></ion-icon>
@@ -185,7 +191,10 @@
     </div>
 
     <!-- TILE 4 - Honoraires -->
-    <div class="action-card action-card--honoraires" (click)="navigateTo('/tabs/tabs/tab4')">
+    <div
+      class="action-card action-card--honoraires"
+      (click)="navigateTo('/tabs/tabs/tab4')"
+    >
       <div class="action-card__bg action-card__bg--green"></div>
       <div class="action-card__icon action-card__icon--green">
         <ion-icon name="cash-outline"></ion-icon>
@@ -284,16 +293,13 @@
           <div class="stat-row__info">
             <span class="stat-row__label">Total séances</span>
             <span class="stat-row__value">{{ totalSeances }}</span>
-          </div>
-          <div
-            class="stat-row__trend"
-            [class.stat-row__trend--up]="completionRate === 100"
-          >
-            <ion-icon name="trending-up-outline"></ion-icon>
             <span
-              >{{ pendingSeances }} reste{{ pendingSeances > 1 ? 'nt' : ''
-              }}</span
+              class="stat-row__trend"
+              [class.stat-row__trend--up]="completionRate === 100"
             >
+              <ion-icon name="trending-up-outline"></ion-icon>
+              {{ pendingSeances }} reste{{ pendingSeances > 1 ? 'nt' : '' }}
+            </span>
           </div>
         </div>
         <div class="stat-divider"></div>

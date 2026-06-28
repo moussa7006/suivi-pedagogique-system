@@ -1,15 +1,15 @@
-import { Injectable, inject } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { Matiere } from "../models/matiere.model";
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { ApiConfigService } from './api-config.service';
+import { Matiere } from '../models/matiere.model';
 
-@Injectable({ providedIn: "root" })
+@Injectable({ providedIn: 'root' })
 export class MatiereService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = environment.apiBaseUrl;
+  private readonly apiConfig = inject(ApiConfigService);
 
   getAll(): Observable<Matiere[]> {
-    return this.http.get<Matiere[]>(`${this.baseUrl}/matieres`);
+    return this.http.get<Matiere[]>(this.apiConfig.buildUrl('matieres'));
   }
 }

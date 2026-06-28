@@ -9,4 +9,8 @@ import java.util.List;
 @Repository
 public interface EmargementRepository extends JpaRepository<Emargement, Integer> {
     List<Emargement> findByEnseignantId(Integer enseignantId);
+
+    long countByStatut(com.suiviPedagogique.edutrack.Entities.enums.StatutEmargement statut);
+
+    List<Emargement> findByDateHeureScanAfter(java.time.LocalDateTime date);
 }
