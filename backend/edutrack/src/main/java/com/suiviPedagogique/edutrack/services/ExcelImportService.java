@@ -382,8 +382,10 @@ public class ExcelImportService {
                 String titre = getCellValue(row, headerMap, "titre");
                 String typeRecurrenceStr = getCellValue(row, headerMap, "type", "récurrence", "recurrence");
                 String jourOuDate = getCellValue(row, headerMap, "jour", "date");
-                String heureDebutStr = getCellValue(row, headerMap, "heure de début", "début", "debut");
-                String heureFinStr = getCellValue(row, headerMap, "heure de fin", "fin");
+                String heureDebutStr = getCellValue(row, headerMap, "heure de début", "heure debut");
+                String heureFinStr = getCellValue(row, headerMap, "heure de fin", "heure fin");
+                String dateDebutStr = getCellValue(row, headerMap, "date de début", "date debut");
+                String dateFinStr = getCellValue(row, headerMap, "date de fin", "date fin");
                 String nomSalle = getCellValue(row, headerMap, "salle");
                 String emailEnseignant = getCellValue(row, headerMap, "email", "enseignant");
                 String nomMatiere = getCellValue(row, headerMap, "matière", "matiere");
@@ -439,8 +441,18 @@ public class ExcelImportService {
                 edt.setMatiere(mat);
                 edt.setClasse(cls);
                 edt.setAnneeUniversitaire(annee);
-                edt.setDateDebutValidite(LocalDate.now()); // Par défaut
-                edt.setDateFinValidite(annee.getDateFin());
+
+                if (dateDebutStr != null && !dateDebutStr.isEmpty()) {
+                    edt.setDateDebutValidite(LocalDate.parse(dateDebutStr, dateFormatter));
+                } else {
+                    edt.setDateDebutValidite(LocalDate.now()); // Fallback au cas où la case est vide
+                }
+
+                if (dateFinStr != null && !dateFinStr.isEmpty()) {
+                    edt.setDateFinValidite(LocalDate.parse(dateFinStr, dateFormatter));
+                } else {
+                    edt.setDateFinValidite(annee.getDateFin()); // Fallback au cas où la case est vide
+                }
 
                 if (type == TypeRecurrence.HEBDOMADAIRE) {
                     edt.setJourSemaine(JourSemaine.valueOf(jourOuDate.toUpperCase()));
