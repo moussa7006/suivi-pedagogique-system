@@ -24,21 +24,20 @@
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "allowedCommonJsDependencies": [
-              "qrcode"
-            ],
-            "polyfills": [
-              "zone.js"
-            ],
+            "allowedCommonJsDependencies": ["qrcode"],
+            "polyfills": ["zone.js"],
             "assets": [
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "login.jpeg",
+                "input": ".",
+                "output": "."
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ]
+            "styles": ["src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -74,13 +73,10 @@
               "buildTarget": "frontend-admin:build:development"
             }
           },
-            "options": {
-              "allowedHosts": [
-                "snowshoe-manger-pull.ngrok-free.dev",
-                ".ngrok-free.dev" 
-              ]
-            },
-            "defaultConfiguration": "development"
+          "options": {
+            "allowedHosts": ["snowshoe-manger-pull.ngrok-free.dev", ".ngrok-free.dev"]
+          },
+          "defaultConfiguration": "development"
         },
         "test": {
           "builder": "@angular/build:unit-test"
