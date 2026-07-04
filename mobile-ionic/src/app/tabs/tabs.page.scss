@@ -24,6 +24,7 @@
   .tab-button {
     --color: #94a3b8;
     --color-selected: #4361ee;
+    --icon-color: #4361ee;
     --padding-top: 6px;
     --padding-bottom: 6px;
     background: transparent;
@@ -33,6 +34,29 @@
     position: relative;
     min-width: 0;
     pointer-events: auto;
+
+    /* Couleur par onglet (icône toujours colorée, comme un logo d'appli) */
+    &.tab-accueil {
+      --icon-color: #4361ee;
+      --color-selected: #4361ee;
+    }
+    &.tab-historique {
+      --icon-color: #78716c;
+      --color-selected: #78716c;
+    }
+    &.tab-profil {
+      --icon-color: #7c3aed;
+      --color-selected: #7c3aed;
+    }
+    &.tab-accueil {
+      --color-selected: #4361ee;
+    }
+    &.tab-historique {
+      --color-selected: #78716c;
+    }
+    &.tab-profil {
+      --color-selected: #7c3aed;
+    }
 
     &::before {
       content: "";
@@ -45,6 +69,16 @@
     }
 
     &.tab-selected {
+      &.tab-accueil::before {
+        background: rgba(67, 97, 238, 0.1);
+      }
+      &.tab-historique::before {
+        background: rgba(120, 113, 108, 0.12);
+      }
+      &.tab-profil::before {
+        background: rgba(124, 58, 237, 0.1);
+      }
+
       &::before {
         background: rgba(67, 97, 238, 0.1);
       }
@@ -65,7 +99,7 @@
       transform: scale(0.92);
 
       ion-icon {
-        color: #4361ee;
+        color: var(--color-selected);
       }
     }
 
@@ -74,6 +108,8 @@
       transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       z-index: 1;
       position: relative;
+      /* Toujours colorée (logo d'appli), meme non selectionnee */
+      color: var(--icon-color);
     }
 
     ion-label {

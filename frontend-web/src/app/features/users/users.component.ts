@@ -279,8 +279,16 @@ import { timeout } from 'rxjs/operators';
         <div class="user-card enseignant" *ngFor="let teacher of filteredEnseignants">
           <div class="card-accent"></div>
           <div class="card-body">
-            <div class="card-avatar">
-              {{ getInitials(teacher.prenom, teacher.nom) }}
+            <div class="card-avatar-wrapper">
+              <img
+                *ngIf="teacher.photoUrl"
+                [src]="teacher.photoUrl"
+                [alt]="teacher.prenom + ' ' + teacher.nom"
+                class="card-avatar-img"
+              />
+              <div *ngIf="!teacher.photoUrl" class="card-avatar">
+                {{ getInitials(teacher.prenom, teacher.nom) }}
+              </div>
             </div>
             <div class="card-identity">
               <div class="card-name">{{ teacher.prenom }} {{ teacher.nom }}</div>
@@ -336,8 +344,16 @@ import { timeout } from 'rxjs/operators';
         <div class="user-card admin" *ngFor="let teacher of filteredAdmins">
           <div class="card-accent admin-accent"></div>
           <div class="card-body">
-            <div class="card-avatar admin-avatar">
-              {{ getInitials(teacher.prenom, teacher.nom) }}
+            <div class="card-avatar-wrapper">
+              <img
+                *ngIf="teacher.photoUrl"
+                [src]="teacher.photoUrl"
+                [alt]="teacher.prenom + ' ' + teacher.nom"
+                class="card-avatar-img admin-avatar-img"
+              />
+              <div *ngIf="!teacher.photoUrl" class="card-avatar admin-avatar">
+                {{ getInitials(teacher.prenom, teacher.nom) }}
+              </div>
             </div>
             <div class="card-identity">
               <div class="card-name">{{ teacher.prenom }} {{ teacher.nom }}</div>

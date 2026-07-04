@@ -572,7 +572,8 @@ ion-content {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-areas:
     "progression scan"
-    "planning honoraires";
+    "planning honoraires"
+    "historique historique";
   column-gap: 16px;
   row-gap: 22px;
   margin-bottom: 32px;
@@ -619,6 +620,10 @@ ion-content {
 
 .action-card--honoraires {
   grid-area: honoraires;
+}
+
+.action-card--historique {
+  grid-area: historique;
 }
 
 .action-card__bg {

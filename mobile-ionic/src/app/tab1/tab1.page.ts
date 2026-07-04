@@ -33,6 +33,7 @@ import {
 import { AuthService } from '../core/services/auth.service';
 import { ScheduleService } from '../core/services/schedule.service';
 import { FicheProgressionService } from '../core/services/fiche-progression.service';
+import { UtilisateurService } from '../core/services/utilisateur.service';
 import { FicheProgression } from '../core/models/fiche-progression.model';
 import { Seance } from '../core/models/seance.model';
 import { CommonModule } from '@angular/common';
@@ -57,6 +58,7 @@ export class Tab1Page implements OnInit {
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
   private ficheProgressionService = inject(FicheProgressionService);
+  private utilisateurService = inject(UtilisateurService);
 
   isCahierFait = false;
 
@@ -140,6 +142,19 @@ export class Tab1Page implements OnInit {
         avatar: user.photoUrl || '',
       };
       this.teacherInitials = this.getInitials(firstName, lastName);
+
+      // Recharger la photo depuis le backend (non persistee dans le storage
+      // pour eviter QuotaExceededError sur les data URLs base64).
+      this.authService.getMe().subscribe({
+        next: (fullUser) => {
+          if (fullUser?.photoUrl) {
+            this.teacher.avatar = fullUser.photoUrl;
+          }
+        },
+        error: () => {
+          // Garder l'avatar par defaut.
+        },
+      });
     }
   }
 
@@ -319,7 +334,7 @@ export class Tab1Page implements OnInit {
         icon: 'calendar-outline',
         type: 'info',
         actionLabel: 'Voir planning',
-        actionRoute: '/tabs/tabs/tab2',
+        actionRoute: '/planning',
       });
     }
 
