@@ -30,7 +30,6 @@ import { Emargement } from '../../core/models/attendance.model';
           </div>
         </div>
         <div class="header-actions">
-          <button class="btn btn-outline"><i class="pi pi-filter"></i> Filtres</button>
           <button class="btn btn-outline" (click)="exportExcel()" [disabled]="exportingExcel">
             <i class="pi" [ngClass]="exportingExcel ? 'pi-spin pi-spinner' : 'pi-download'"></i>
             {{ exportingExcel ? 'Export...' : 'Exporter' }}
@@ -69,23 +68,57 @@ import { Emargement } from '../../core/models/attendance.model';
       </div>
 
       <div class="table-card">
-        <div class="table-header custom-table-header">
-          <div class="table-header-top">
+        <div class="table-header">
+          <div class="table-header-top" style="margin-bottom: 16px;">
             <h3>Émargements</h3>
             <span class="record-count">{{ filteredLogs.length }} / {{ todayLogs.length }}</span>
           </div>
 
-          <!-- Centered Search Bar -->
-          <div class="search-container centered-search">
-            <div class="search-input-wrapper">
-              <i class="pi pi-search"></i>
-              <input
-                type="text"
-                placeholder="Rechercher enseignant, lieu, statut..."
-                [(ngModel)]="searchText"
-                (input)="filterLogs()"
-              />
+          <div
+            class="header-filters"
+            style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;"
+          >
+            <input
+              type="date"
+              [(ngModel)]="filterDate"
+              (change)="filterLogs()"
+              style="padding: 10px 14px; border: 1px solid var(--border-color, #e2e8f0); border-radius: 10px; font-size: 0.88rem; background: #f8fafc; color: #475569; outline: none;"
+            />
+
+            <select
+              [(ngModel)]="filterStatus"
+              (change)="filterLogs()"
+              style="padding: 10px 14px; border: 1px solid var(--border-color, #e2e8f0); border-radius: 10px; font-size: 0.88rem; background: #f8fafc; color: #475569; min-width: 150px; outline: none;"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="VALIDE">Validé</option>
+              <option value="HORS_PERIMETRE">Hors périmètre</option>
+              <option value="JUSTIFIE">Justifié</option>
+            </select>
+
+            <!-- Centered Search Bar -->
+            <div
+              class="search-container centered-search"
+              style="flex: 1; min-width: 200px; max-width: 380px;"
+            >
+              <div class="search-input-wrapper">
+                <i class="pi pi-search"></i>
+                <input
+                  type="text"
+                  placeholder="Rechercher enseignant, lieu, statut..."
+                  [(ngModel)]="searchText"
+                  (input)="filterLogs()"
+                />
+              </div>
             </div>
+
+            <button
+              class="btn btn-outline"
+              (click)="resetFilters()"
+              style="padding: 9px 14px; margin: 0;"
+            >
+              <i class="pi pi-refresh"></i> Réinitialiser
+            </button>
           </div>
         </div>
         <div class="table-scrollless">
@@ -633,6 +666,8 @@ export class AttendanceComponent implements OnInit {
   todayLogs: Emargement[] = [];
   filteredLogs: Emargement[] = [];
   searchText: string = '';
+  filterDate: string = '';
+  filterStatus: string = '';
   exportingExcel = false;
 
   constructor(private attendanceService: AttendanceService) {}
@@ -646,13 +681,41 @@ export class AttendanceComponent implements OnInit {
 
   filterLogs() {
     const text = this.searchText.toLowerCase();
-    this.filteredLogs = this.todayLogs.filter(
-      (log) =>
+    this.filteredLogs = this.todayLogs.filter((log) => {
+      // Filtre par date
+      let matchDate = true;
+      if (this.filterDate) {
+        const logDateStr = log.dateHeureScan || log.heureSeance;
+        if (logDateStr) {
+          const logDate = new Date(logDateStr).toISOString().split('T')[0];
+          matchDate = logDate === this.filterDate;
+        } else {
+          matchDate = false;
+        }
+      }
+
+      // Filtre par statut (dropdown)
+      let matchStatus = true;
+      if (this.filterStatus) {
+        matchStatus = log.statut === this.filterStatus;
+      }
+
+      // Recherche texte libre
+      const matchText =
         (log.enseignantNomPrenom || '').toLowerCase().includes(text) ||
         (log.lieu || '').toLowerCase().includes(text) ||
         (log.adresseApproximative || '').toLowerCase().includes(text) ||
-        (log.statut || '').toLowerCase().includes(text),
-    );
+        (log.statut || '').toLowerCase().includes(text);
+
+      return matchDate && matchStatus && matchText;
+    });
+  }
+
+  resetFilters() {
+    this.filterDate = '';
+    this.filterStatus = '';
+    this.searchText = '';
+    this.filterLogs();
   }
 
   getStats() {

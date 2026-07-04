@@ -1,0 +1,102 @@
+<mxfile host="app.diagrams.net" modified="2026-07-03T00:00:00.000Z" agent="Zed" version="24.7.17" type="device">
+  <diagram name="Architecture EduTrack" id="architecture-edutrack">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Architecture globale du système EduTrack" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=26;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+          <mxGeometry x="310" y="20" width="780" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="zone-users" value="Acteurs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#9CA3AF;fontStyle=1;fontSize=16;align=center;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="230" height="670" as="geometry" />
+        </mxCell>
+        <mxCell id="zone-clients" value="Applications clientes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#60A5FA;fontStyle=1;fontSize=16;align=center;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="320" y="100" width="270" height="670" as="geometry" />
+        </mxCell>
+        <mxCell id="zone-backend" value="Backend / API métier" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#34D399;fontStyle=1;fontSize=16;align=center;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="650" y="100" width="360" height="670" as="geometry" />
+        </mxCell>
+        <mxCell id="zone-data" value="Données et documentation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#FB923C;fontStyle=1;fontSize=16;align=center;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="100" width="300" height="670" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin" value="Administrateur&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Gestion académique, planning, QR Code, honoraires&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4B5563;fontSize=14;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="190" width="170" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="teacher" value="Enseignant&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Planning, scan QR, fiche de progression, honoraires&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4B5563;fontSize=14;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="390" width="170" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="web" value="Frontend Web Angular&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Interface d'administration&lt;br&gt;PrimeNG + services HTTP&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontSize=14;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="180" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="mobile" value="Application mobile Ionic&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Espace enseignant&lt;br&gt;Capacitor + scan QR&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontSize=14;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="390" width="190" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="api" value="API REST Spring Boot&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Contrôleurs REST&lt;br&gt;DTO / validation / Swagger&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1FAE5;strokeColor=#059669;fontSize=15;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="725" y="155" width="210" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="security" value="Sécurité JWT&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Authentification&lt;br&gt;Autorisation par rôles&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontSize=14;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="295" width="130" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="services" value="Services métier&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Planning&lt;br&gt;Émargement QR&lt;br&gt;Fiche de progression&lt;br&gt;Calcul des honoraires&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontSize=14;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="285" width="130" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="repositories" value="Repositories JPA&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Accès aux entités&lt;br&gt;et requêtes métier&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontSize=14;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="775" y="480" width="150" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="db" value="Base de données PostgreSQL&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Utilisateurs, classes, matières&lt;br&gt;séances, émargements, fiches&lt;br&gt;honoraires calculés&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontSize=14;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="220" width="200" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="swagger" value="Documentation API&lt;br&gt;Swagger / OpenAPI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontSize=14;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="430" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="exports" value="États et exports&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Consultation des honoraires&lt;br&gt;et données de suivi&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontSize=14;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="585" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend" value="Architecture en couches : Acteurs → Interfaces clientes → API Spring Boot → Services métier → Persistance PostgreSQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9FAFB;strokeColor=#D1D5DB;fontSize=13;fontStyle=2;align=center;" vertex="1" parent="1">
+          <mxGeometry x="310" y="805" width="780" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-admin-web" value="utilise" style="endArrow=block;html=1;rounded=0;strokeColor=#374151;fontSize=11;" edge="1" parent="1" source="admin" target="web">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-teacher-mobile" value="utilise" style="endArrow=block;html=1;rounded=0;strokeColor=#374151;fontSize=11;" edge="1" parent="1" source="teacher" target="mobile">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-web-api" value="requêtes HTTPS / JSON" style="endArrow=block;html=1;rounded=0;strokeColor=#2563EB;fontSize=11;" edge="1" parent="1" source="web" target="api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-mobile-api" value="requêtes HTTPS / JSON" style="endArrow=block;html=1;rounded=0;strokeColor=#2563EB;fontSize=11;" edge="1" parent="1" source="mobile" target="api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-api-security" value="contrôle accès" style="endArrow=block;html=1;rounded=0;strokeColor=#059669;fontSize=11;" edge="1" parent="1" source="api" target="security">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-api-services" value="appelle" style="endArrow=block;html=1;rounded=0;strokeColor=#059669;fontSize=11;" edge="1" parent="1" source="api" target="services">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-services-repo" value="persistance" style="endArrow=block;html=1;rounded=0;strokeColor=#059669;fontSize=11;" edge="1" parent="1" source="services" target="repositories">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-security-repo" value="utilisateurs / rôles" style="endArrow=block;html=1;rounded=0;strokeColor=#059669;fontSize=11;" edge="1" parent="1" source="security" target="repositories">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-repo-db" value="JPA / SQL" style="endArrow=block;html=1;rounded=0;strokeColor=#EA580C;fontSize=11;" edge="1" parent="1" source="repositories" target="db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-api-swagger" value="expose" style="endArrow=block;html=1;rounded=0;strokeColor=#EA580C;fontSize=11;" edge="1" parent="1" source="api" target="swagger">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-services-exports" value="génère / consulte" style="endArrow=block;html=1;rounded=0;strokeColor=#EA580C;fontSize=11;" edge="1" parent="1" source="services" target="exports">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
