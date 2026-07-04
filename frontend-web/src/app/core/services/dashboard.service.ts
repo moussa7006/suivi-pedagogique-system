@@ -8,12 +8,50 @@ export interface DashboardData {
   totalClasses: number;
   sessionsToday: number;
   pendingEmargements: number;
+  totalMatieres: number;
+  totalSeances: number;
+  emargementsValides: number;
+  tauxValidationGlobal: number;
   emargementsParJour: { [key: string]: number };
   seancesParStatut: { [key: string]: number };
+  topEnseignants: TopEnseignantRow[];
+  matieresVolumetrie: MatiereVolumetrieRow[];
+  classesEmargement: ClasseEmargementRow[];
+}
+
+export interface TopEnseignantRow {
+  id: number;
+  nom: string;
+  matricule: string;
+  specialite: string;
+  seancesPlanifiees: number;
+  emargementsValides: number;
+  tauxValidation: number;
+  statut: 'EXCELLENT' | 'MOYEN' | 'FAIBLE';
+}
+
+export interface MatiereVolumetrieRow {
+  code: string;
+  libelle: string;
+  departement: string;
+  volumeHoraireTotal: number;
+  seancesPlanifiees: number;
+  emargementsValides: number;
+  tauxValidation: number;
+}
+
+export interface ClasseEmargementRow {
+  libelle: string;
+  filiere: string;
+  niveau: string;
+  seancesPlanifiees: number;
+  emargementsValides: number;
+  tauxValidation: number;
+  statut: 'EXCELLENT' | 'MOYEN' | 'FAIBLE';
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DashboardService {
   private apiUrl = `${environment.apiUrl}/dashboard`;

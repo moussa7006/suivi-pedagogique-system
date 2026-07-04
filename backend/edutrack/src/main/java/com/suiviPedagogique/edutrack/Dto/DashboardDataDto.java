@@ -8,9 +8,18 @@ public class DashboardDataDto {
     private long totalClasses;
     private long sessionsToday;
     private long pendingEmargements;
-    
+    private long totalMatieres;
+    private long totalSeances;
+    private long emargementsValides;
+    private double tauxValidationGlobal;
+
     private Map<String, Long> emargementsParJour;
     private Map<String, Long> seancesParStatut;
+
+    // Vues analytiques pour les tableaux de bord.
+    private List<Map<String, Object>> topEnseignants;
+    private List<Map<String, Object>> matieresVolumetrie;
+    private List<Map<String, Object>> classesEmargement;
 
     public DashboardDataDto() {}
 
@@ -46,6 +55,38 @@ public class DashboardDataDto {
         this.pendingEmargements = pendingEmargements;
     }
 
+    public long getTotalMatieres() {
+        return totalMatieres;
+    }
+
+    public void setTotalMatieres(long totalMatieres) {
+        this.totalMatieres = totalMatieres;
+    }
+
+    public long getTotalSeances() {
+        return totalSeances;
+    }
+
+    public void setTotalSeances(long totalSeances) {
+        this.totalSeances = totalSeances;
+    }
+
+    public long getEmargementsValides() {
+        return emargementsValides;
+    }
+
+    public void setEmargementsValides(long emargementsValides) {
+        this.emargementsValides = emargementsValides;
+    }
+
+    public double getTauxValidationGlobal() {
+        return tauxValidationGlobal;
+    }
+
+    public void setTauxValidationGlobal(double tauxValidationGlobal) {
+        this.tauxValidationGlobal = tauxValidationGlobal;
+    }
+
     public Map<String, Long> getEmargementsParJour() {
         return emargementsParJour;
     }
@@ -60,5 +101,29 @@ public class DashboardDataDto {
 
     public void setSeancesParStatut(Map<String, Long> seancesParStatut) {
         this.seancesParStatut = seancesParStatut;
+    }
+
+    public List<Map<String, Object>> getTopEnseignants() {
+        return topEnseignants;
+    }
+
+    public void setTopEnseignants(List<Map<String, Object>> topEnseignants) {
+        this.topEnseignants = topEnseignants;
+    }
+
+    public List<Map<String, Object>> getMatieresVolumetrie() {
+        return matieresVolumetrie;
+    }
+
+    public void setMatieresVolumetrie(List<Map<String, Object>> matieresVolumetrie) {
+        this.matieresVolumetrie = matieresVolumetrie;
+    }
+
+    public List<Map<String, Object>> getClassesEmargement() {
+        return classesEmargement;
+    }
+
+    public void setClassesEmargement(List<Map<String, Object>> classesEmargement) {
+        this.classesEmargement = classesEmargement;
     }
 }
