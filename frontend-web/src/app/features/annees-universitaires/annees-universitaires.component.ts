@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { timeout } from 'rxjs/operators';
 import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model';
 import { AnneeUniversitaireService } from '../../core/services/annee-universitaire.service';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
   selector: 'app-annees-universitaires',
@@ -173,7 +174,7 @@ export class AnneesUniversitairesComponent implements OnInit {
   loadAnnees(): void {
     this.anneeService.getAll().subscribe({
       next: (data) => {
-        this.annees = data;
+        this.annees = sortByAlpha(data, (annee) => annee.libelle, 'desc');
         this.filterAnnees();
         this.cdr.detectChanges();
       },
@@ -186,7 +187,11 @@ export class AnneesUniversitairesComponent implements OnInit {
 
   filterAnnees(): void {
     const text = this.searchText.toLowerCase();
-    this.filteredAnnees = this.annees.filter((a) => (a.libelle || '').toLowerCase().includes(text));
+    this.filteredAnnees = sortByAlpha(
+      this.annees.filter((a) => (a.libelle || '').toLowerCase().includes(text)),
+      (annee) => annee.libelle,
+      'desc',
+    );
   }
 
   showAddForm(): void {

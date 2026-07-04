@@ -31,7 +31,11 @@
 
   <!-- Filtre par periode -->
   <div class="filters-section">
-    <ion-segment [(ngModel)]="filterPeriod" class="custom-segment">
+    <ion-segment
+      [(ngModel)]="filterPeriod"
+      (ionChange)="onFilterPeriodChange()"
+      class="custom-segment"
+    >
       <ion-segment-button value="all">
         <ion-label>Tous</ion-label>
       </ion-segment-button>
@@ -42,6 +46,26 @@
         <ion-label>Mois précédents</ion-label>
       </ion-segment-button>
     </ion-segment>
+
+    <div class="date-filter" *ngIf="filterPeriod === 'all'">
+      <label for="honoraires-month">Filtrer par mois et année</label>
+      <div class="date-input-row">
+        <input
+          id="honoraires-month"
+          type="month"
+          [(ngModel)]="selectedMonth"
+          aria-label="Filtrer les honoraires par mois et année"
+        />
+        <ion-button
+          *ngIf="selectedMonth"
+          fill="clear"
+          size="small"
+          (click)="clearSelectedMonth()"
+        >
+          Effacer
+        </ion-button>
+      </div>
+    </div>
   </div>
 
   <div *ngIf="loading" class="loading-state">
@@ -152,10 +176,10 @@
       <ion-icon name="cash-outline"></ion-icon>
       <h3>Aucun honoraire</h3>
       <p>
-        {{ filterPeriod === 'current' ? 'Aucun honoraire pour le mois en cours.'
-        : filterPeriod === 'previous' ? 'Aucun honoraire pour les mois
-        précédents.' : 'Vos honoraires apparaitront ici apres calcul par
-        l’administration.' }}
+        {{ selectedMonth ? 'Aucun honoraire pour ce mois.' : filterPeriod ===
+        'current' ? 'Aucun honoraire pour le mois en cours.' : filterPeriod ===
+        'previous' ? 'Aucun honoraire pour les mois précédents.' : 'Vos
+        honoraires apparaitront ici apres calcul par l’administration.' }}
       </p>
     </div>
   </div>

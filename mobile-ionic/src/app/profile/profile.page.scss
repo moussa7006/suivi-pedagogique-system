@@ -1,5 +1,6 @@
 :host {
   --profile-bg: #f6f8ff;
+  --profile-hero-height: 220px;
   --card-bg: #ffffff;
   --text-primary: #0f172a;
   --text-secondary: #64748b;
@@ -14,7 +15,7 @@ ion-content {
 }
 
 .back-btn {
-  position: absolute;
+  position: fixed;
   top: calc(12px + var(--ion-safe-area-top));
   left: 12px;
   z-index: 20;
@@ -28,7 +29,12 @@ ion-content {
 }
 
 .profile-hero {
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: var(--profile-hero-height);
+  z-index: 10;
   padding: 68px 18px 28px;
   border-radius: 0 0 34px 34px;
   color: #ffffff;
@@ -120,12 +126,15 @@ ion-content {
   position: relative;
   flex: 0 0 auto;
 
-  ion-avatar {
+  .profile-avatar {
     width: 86px;
     height: 86px;
+    border-radius: 999px;
     border: 4px solid rgba(255, 255, 255, 0.5);
     box-shadow: 0 12px 24px rgba(15, 23, 42, 0.22);
-    background: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.2);
+    background-size: cover;
+    background-position: center;
   }
 }
 
@@ -195,7 +204,48 @@ ion-content {
 }
 
 .profile-section {
-  padding: 18px 16px 0;
+  position: relative;
+  z-index: 2;
+  margin-top: calc(var(--profile-hero-height) - 12px);
+  padding: 22px 16px 0;
+  border-radius: 28px 28px 0 0;
+  background: var(--profile-bg);
+  min-height: calc(100vh - var(--profile-hero-height));
+}
+
+.section-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+
+  button {
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    padding: 10px 6px;
+    min-height: 68px;
+    background: #ffffff;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.68rem;
+    font-weight: 900;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+
+    ion-icon {
+      font-size: 1.2rem;
+    }
+
+    &.active {
+      color: #ffffff;
+      border-color: transparent;
+      background: linear-gradient(135deg, #4361ee, #7c3aed);
+      box-shadow: 0 12px 26px rgba(67, 97, 238, 0.28);
+    }
+  }
 }
 
 .summary-card,
@@ -275,6 +325,60 @@ ion-content {
     color: var(--text-secondary);
     font-size: 0.82rem;
     line-height: 1.3;
+  }
+}
+
+.card-header-button {
+  width: 100%;
+  border: none;
+  padding: 0;
+  text-align: left;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+
+  .header-chevron {
+    margin-left: auto;
+    color: #94a3b8;
+    font-size: 1.25rem;
+  }
+}
+
+.progress-card {
+  padding: 14px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+
+  .progress-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 900;
+    margin-bottom: 10px;
+  }
+
+  .progress-track {
+    height: 10px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #4361ee, #4cc9f0);
+    transition: width 0.3s ease;
+  }
+
+  p {
+    margin: 10px 0 0;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 800;
   }
 }
 
@@ -490,6 +594,10 @@ ion-content {
 }
 
 @media (max-width: 380px) {
+  :host {
+    --profile-hero-height: 285px;
+  }
+
   .profile-hero {
     flex-direction: column;
     text-align: center;
@@ -523,6 +631,10 @@ ion-content {
 
   .stats-row {
     grid-template-columns: 1fr;
+  }
+
+  .section-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

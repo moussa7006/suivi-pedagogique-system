@@ -42,6 +42,30 @@ export class App {
     ].some((path) => this.router.url.startsWith(path));
   }
 
+  get currentPageTitle(): string {
+    const path = this.router.url.split('?')[0].split('#')[0];
+    const pageTitles: Array<{ path: string; title: string }> = [
+      { path: '/annees-universitaires', title: 'Années universitaires' },
+      { path: '/attendance', title: 'Émargements' },
+      { path: '/classes', title: 'Classes' },
+      { path: '/departements', title: 'Départements' },
+      { path: '/filieres', title: 'Filières' },
+      { path: '/honoraires', title: 'Honoraires' },
+      { path: '/matieres', title: 'Matières' },
+      { path: '/niveaux-enseignement', title: 'Niveaux d’enseignement' },
+      { path: '/pedagogy', title: 'Suivi & Rapports' },
+      { path: '/profile', title: 'Profil' },
+      { path: '/qr-generator', title: 'QR Code' },
+      { path: '/salles', title: 'Salles' },
+      { path: '/schedule', title: 'Emplois du temps' },
+      { path: '/seances', title: 'Séances' },
+      { path: '/teachers', title: 'Utilisateurs' },
+      { path: '/dashboard', title: 'Tableau de bord' },
+    ];
+
+    return pageTitles.find((item) => path.startsWith(item.path))?.title ?? 'Tableau de bord';
+  }
+
   @HostListener('document:click')
   closeProfileMenu(): void {
     this.isProfileMenuOpen = false;

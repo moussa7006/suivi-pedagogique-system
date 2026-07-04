@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { AttendanceService } from '../../core/services/attendance.service';
 import { Emargement } from '../../core/models/attendance.model';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
   selector: 'app-attendance',
@@ -639,19 +640,22 @@ export class AttendanceComponent implements OnInit {
 
   ngOnInit() {
     this.attendanceService.getAllAttendances().subscribe((data) => {
-      this.todayLogs = data;
+      this.todayLogs = sortByAlpha(data, (log) => log.enseignantNomPrenom);
       this.filterLogs();
     });
   }
 
   filterLogs() {
     const text = this.searchText.toLowerCase();
-    this.filteredLogs = this.todayLogs.filter(
-      (log) =>
-        (log.enseignantNomPrenom || '').toLowerCase().includes(text) ||
-        (log.lieu || '').toLowerCase().includes(text) ||
-        (log.adresseApproximative || '').toLowerCase().includes(text) ||
-        (log.statut || '').toLowerCase().includes(text),
+    this.filteredLogs = sortByAlpha(
+      this.todayLogs.filter(
+        (log) =>
+          (log.enseignantNomPrenom || '').toLowerCase().includes(text) ||
+          (log.lieu || '').toLowerCase().includes(text) ||
+          (log.adresseApproximative || '').toLowerCase().includes(text) ||
+          (log.statut || '').toLowerCase().includes(text),
+      ),
+      (log) => log.enseignantNomPrenom,
     );
   }
 

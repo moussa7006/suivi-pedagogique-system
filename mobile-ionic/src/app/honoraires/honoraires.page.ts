@@ -58,6 +58,7 @@ export class HonorairesPage implements OnInit {
 
   // Filtre par periode : 'all' | 'current' | 'previous'
   filterPeriod: 'all' | 'current' | 'previous' = 'all';
+  selectedMonth = '';
 
   constructor() {
     addIcons({
@@ -93,18 +94,20 @@ export class HonorairesPage implements OnInit {
    */
   get filteredHonoraires(): HonorairesCalcul[] {
     if (this.filterPeriod === 'all') {
-      return this.honoraires;
+      return this.selectedMonth
+        ? this.filterHonorairesByMonth(this.honoraires, this.selectedMonth)
+        : this.honoraires;
     }
     const currentMonth = this.currentMonthKey();
-    if (this.filterPeriod === 'current') {
-      return this.honoraires.filter(
-        (item) => this.normalizeMonthKey(item.mois) === currentMonth,
-      );
-    }
-    // previous
-    return this.honoraires.filter(
-      (item) => this.normalizeMonthKey(item.mois) < currentMonth,
-    );
+    const result =
+      this.filterPeriod === 'current'
+        ? this.honoraires.filter(
+            (item) => this.normalizeMonthKey(item.mois) === currentMonth,
+          )
+        : this.honoraires.filter(
+            (item) => this.normalizeMonthKey(item.mois) < currentMonth,
+          );
+    return result;
   }
 
   private currentMonthKey(): string {
@@ -129,6 +132,16 @@ export class HonorairesPage implements OnInit {
 
   ionViewWillEnter(): void {
     this.loadHonoraires();
+  }
+
+  onFilterPeriodChange(): void {
+    if (this.filterPeriod !== 'all') {
+      this.selectedMonth = '';
+    }
+  }
+
+  clearSelectedMonth(): void {
+    this.selectedMonth = '';
   }
 
   loadHonoraires(event?: CustomEvent): void {
@@ -188,25 +201,55 @@ export class HonorairesPage implements OnInit {
     return new Intl.DateTimeFormat('fr-FR').format(new Date(value));
   }
 
+  private filterHonorairesByMonth(
+    items: HonorairesCalcul[],
+    selectedMonth: string,
+  ): HonorairesCalcul[] {
+    return items
+      .map((item) => {
+        const details = (item.detailsHonoraires || []).filter(
+          (detail) =>
+            (detail.dateCours || '').substring(0, 7) === selectedMonth,
+        );
+        const totalHeures = details.reduce(
+          (sum, detail) => sum + (detail.nombreHeures || 0),
+          0,
+        );
+        const montantBrut = details.reduce(
+          (sum, detail) => sum + (detail.montant || 0),
+          0,
+        );
+        return {
+          ...item,
+          detailsHonoraires: details,
+          totalHeures,
+          montantBrut,
+        };
+      })
+      .filter((item) => (item.detailsHonoraires || []).length > 0);
+  }
+
   private sortHonoraires(items: HonorairesCalcul[]): HonorairesCalcul[] {
     return [...items]
       .map((item) => ({
         ...item,
         detailsHonoraires: [...(item.detailsHonoraires || [])].sort((a, b) => {
-          const aKey = `${a.dateCours || ''} ${a.matiereLibelle || ''} ${a.classeLibelle || ''} ${a.seanceId || ''}`;
-          const bKey = `${b.dateCours || ''} ${b.matiereLibelle || ''} ${b.classeLibelle || ''} ${b.seanceId || ''}`;
-          return this.compareAlphaNumeric(aKey, bKey);
+          const aKey = `${a.dateCours || ''} ${a.heureDebut || ''} ${a.matiereLibelle || ''} ${a.classeLibelle || ''} ${a.seanceId || ''}`;
+          const bKey = `${b.dateCours || ''} ${b.heureDebut || ''} ${b.matiereLibelle || ''} ${b.classeLibelle || ''} ${b.seanceId || ''}`;
+          return bKey.localeCompare(aKey, 'fr', {
+            numeric: true,
+            sensitivity: 'base',
+          });
         }),
       }))
       .sort((a, b) => {
-        const aKey = `${a.mois || ''} ${a.enseignantNomPrenom || ''} ${a.id || ''}`;
-        const bKey = `${b.mois || ''} ${b.enseignantNomPrenom || ''} ${b.id || ''}`;
-        return this.compareAlphaNumeric(aKey, bKey);
+        const aKey = `${this.normalizeMonthKey(a.mois)} ${a.id || ''}`;
+        const bKey = `${this.normalizeMonthKey(b.mois)} ${b.id || ''}`;
+        return bKey.localeCompare(aKey, 'fr', {
+          numeric: true,
+          sensitivity: 'base',
+        });
       });
-  }
-
-  private compareAlphaNumeric(a: string, b: string): number {
-    return a.localeCompare(b, 'fr', { numeric: true, sensitivity: 'base' });
   }
 
   formatTime(value?: string): string {

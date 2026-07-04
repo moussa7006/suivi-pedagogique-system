@@ -31,11 +31,17 @@ import { SelectModule } from 'primeng/select';
       <div class="filters-card">
         <div class="field">
           <label>Année</label>
-          <input type="number" [(ngModel)]="annee" min="2020" max="2100" />
+          <input
+            type="number"
+            [(ngModel)]="annee"
+            (ngModelChange)="onFilterChange()"
+            min="2020"
+            max="2100"
+          />
         </div>
         <div class="field">
           <label>Mois</label>
-          <select [(ngModel)]="mois">
+          <select [(ngModel)]="mois" (ngModelChange)="onFilterChange()">
             <option *ngFor="let m of moisOptions" [ngValue]="m.value">{{ m.label }}</option>
           </select>
         </div>
@@ -44,6 +50,7 @@ import { SelectModule } from 'primeng/select';
           <p-select
             [options]="dropdownOptions"
             [(ngModel)]="selectedTeacherId"
+            (ngModelChange)="onFilterChange()"
             optionLabel="label"
             optionValue="value"
             placeholder="Sélectionner un enseignant"
@@ -113,9 +120,6 @@ import { SelectModule } from 'primeng/select';
             </ng-template>
           </p-select>
         </div>
-        <button class="btn btn-outline" (click)="loadHonoraires()" [disabled]="loading">
-          <i class="pi pi-refresh"></i> Actualiser
-        </button>
         <button
           *ngIf="isAdmin"
           class="btn btn-primary"
@@ -326,7 +330,7 @@ import { SelectModule } from 'primeng/select';
       .filters-card {
         padding: 18px;
         display: grid;
-        grid-template-columns: 120px 180px minmax(240px, 1fr) auto auto;
+        grid-template-columns: 120px 180px minmax(240px, 1fr) auto;
         gap: 14px;
         align-items: end;
       }
@@ -580,6 +584,7 @@ export class HonorairesComponent implements OnInit {
   successMessage = '';
   currentRole = this.getCurrentUserRole();
   dropdownOptions: any[] = [];
+  private filterReloadTimer: ReturnType<typeof setTimeout> | null = null;
 
   get selectedTeacherData(): any {
     if (this.selectedTeacherId === null) return null;
@@ -625,6 +630,31 @@ export class HonorairesComponent implements OnInit {
     this.loadHonoraires();
   }
 
+  onFilterChange(): void {
+    if (this.filterReloadTimer) {
+      clearTimeout(this.filterReloadTimer);
+    }
+
+    this.filterReloadTimer = setTimeout(() => {
+      if (!this.isValidPeriod()) return;
+      this.loadHonoraires();
+    }, 250);
+  }
+
+  private isValidPeriod(): boolean {
+    const year = Number(this.annee);
+    const month = Number(this.mois);
+
+    return (
+      Number.isFinite(year) &&
+      year >= 2020 &&
+      year <= 2100 &&
+      Number.isFinite(month) &&
+      month >= 1 &&
+      month <= 12
+    );
+  }
+
   loadTeachers(): void {
     this.teacherService.getTeachers().subscribe({
       next: (data) => {
@@ -647,6 +677,8 @@ export class HonorairesComponent implements OnInit {
   }
 
   loadHonoraires(): void {
+    if (!this.isValidPeriod()) return;
+
     this.clearMessages();
     this.loading = true;
     this.selected = null;

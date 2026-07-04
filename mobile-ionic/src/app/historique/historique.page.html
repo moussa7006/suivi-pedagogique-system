@@ -26,6 +26,26 @@
         <ion-label>Mois</ion-label>
       </ion-segment-button>
     </ion-segment>
+
+    <div class="date-filter" *ngIf="filterPeriod === 'all'">
+      <label for="historique-month">Filtrer par mois et année</label>
+      <div class="date-input-row">
+        <input
+          id="historique-month"
+          type="month"
+          [(ngModel)]="selectedMonth"
+          aria-label="Filtrer les séances passées par mois et année"
+        />
+        <ion-button
+          *ngIf="selectedMonth"
+          fill="clear"
+          size="small"
+          (click)="clearSelectedMonth()"
+        >
+          Effacer
+        </ion-button>
+      </div>
+    </div>
   </div>
 
   <!-- Résumé statistique -->
@@ -39,13 +59,39 @@
         <span class="summary-label">Séances réalisées</span>
       </div>
     </div>
+
+    <div class="summary-card">
+      <div class="summary-icon green">
+        <ion-icon name="people-outline"></ion-icon>
+      </div>
+      <div class="summary-info">
+        <span class="summary-value">{{ stats.seancesEmargees }}</span>
+        <span class="summary-label">Émargements</span>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-icon blue">
+        <ion-icon name="time-outline"></ion-icon>
+      </div>
+      <div class="summary-info">
+        <span class="summary-value">{{ stats.dureeTotale }} min</span>
+        <span class="summary-label">Volume effectué</span>
+      </div>
+    </div>
   </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    Chargement de l'historique depuis la base de données...
+  </div>
+
+  <div *ngIf="errorMessage" class="error-state">{{ errorMessage }}</div>
 
   <!-- Liste chronologique -->
   <div class="timeline-section">
     <h3 class="section-title">
       <ion-icon name="calendar-outline"></ion-icon>
-      Séances récentes
+      Séances passées
     </h3>
 
     <div class="timeline">
@@ -91,7 +137,7 @@
   </div>
 
   <!-- Empty state -->
-  <div *ngIf="filteredSeances.length === 0" class="empty-state">
+  <div *ngIf="!isLoading && filteredSeances.length === 0" class="empty-state">
     <ion-icon name="calendar-outline" class="empty-icon"></ion-icon>
     <h3>Aucune séance trouvée</h3>
     <p>Il n'y a pas de séances pour cette période.</p>

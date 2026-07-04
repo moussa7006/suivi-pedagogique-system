@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { timeout } from 'rxjs/operators';
 import { Salle } from '../../core/models/salle.model';
 import { SalleService } from '../../core/services/salle.service';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
   selector: 'app-salles',
@@ -197,7 +198,7 @@ export class SallesComponent implements OnInit {
   loadSalles(): void {
     this.salleService.getAll().subscribe({
       next: (data) => {
-        this.salles = data;
+        this.salles = sortByAlpha(data, (salle) => `${salle.nom || ''} ${salle.batiment || ''}`);
         this.filterSalles();
         this.cdr.detectChanges();
       },
@@ -210,11 +211,14 @@ export class SallesComponent implements OnInit {
 
   filterSalles(): void {
     const text = this.searchText.toLowerCase();
-    this.filteredSalles = this.salles.filter(
-      (s) =>
-        (s.nom || '').toLowerCase().includes(text) ||
-        (s.batiment || '').toLowerCase().includes(text) ||
-        (s.adresseIp || '').toLowerCase().includes(text),
+    this.filteredSalles = sortByAlpha(
+      this.salles.filter(
+        (s) =>
+          (s.nom || '').toLowerCase().includes(text) ||
+          (s.batiment || '').toLowerCase().includes(text) ||
+          (s.adresseIp || '').toLowerCase().includes(text),
+      ),
+      (salle) => `${salle.nom || ''} ${salle.batiment || ''}`,
     );
   }
 

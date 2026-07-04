@@ -7,6 +7,7 @@ import { Filiere } from '../../core/models/filiere.model';
 import { Departement } from '../../core/models/departement.model';
 import { FiliereService } from '../../core/services/filiere.service';
 import { DepartementService } from '../../core/services/departement.service';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
   selector: 'app-filieres',
@@ -16,36 +17,57 @@ import { DepartementService } from '../../core/services/departement.service';
     <div class="page-container">
       <div class="page-header">
         <div class="header-left">
-          <a routerLink="/dashboard" class="btn-back-arrow" title="Retour"><i class="pi pi-arrow-left"></i></a>
+          <a routerLink="/dashboard" class="btn-back-arrow" title="Retour"
+            ><i class="pi pi-arrow-left"></i
+          ></a>
           <div>
             <h1>Gestion des Filières</h1>
             <p>Filières rattachées aux départements ({{ filieres.length }} enregistrées)</p>
           </div>
         </div>
-        <button class="btn btn-primary" (click)="showAddForm()"><i class="pi pi-plus"></i> Nouvelle Filière</button>
+        <button class="btn btn-primary" (click)="showAddForm()">
+          <i class="pi pi-plus"></i> Nouvelle Filière
+        </button>
       </div>
 
       <div class="form-card" *ngIf="displayForm">
-        <div class="form-card-header"><h3>{{ editingId ? 'Modifier la Filière' : 'Nouvelle Filière' }}</h3></div>
+        <div class="form-card-header">
+          <h3>{{ editingId ? 'Modifier la Filière' : 'Nouvelle Filière' }}</h3>
+        </div>
         <div class="form-card-body">
-          <div *ngIf="errorMessage" class="error-banner"><i class="pi pi-exclamation-triangle"></i>{{ errorMessage }}</div>
+          <div *ngIf="errorMessage" class="error-banner">
+            <i class="pi pi-exclamation-triangle"></i>{{ errorMessage }}
+          </div>
           <div class="section-grid">
             <div class="input-group">
               <label>Libellé</label>
-              <input type="text" [(ngModel)]="currentFiliere.libelle" placeholder="Ex: Informatique de Gestion" />
+              <input
+                type="text"
+                [(ngModel)]="currentFiliere.libelle"
+                placeholder="Ex: Informatique de Gestion"
+              />
             </div>
             <div class="input-group">
               <label>Département</label>
               <select [(ngModel)]="currentFiliere.departementId">
                 <option [ngValue]="undefined" disabled>Sélectionnez un département</option>
-                <option *ngFor="let departement of departements" [ngValue]="departement.id">{{ departement.libelle }}</option>
+                <option *ngFor="let departement of departements" [ngValue]="departement.id">
+                  {{ departement.libelle }}
+                </option>
               </select>
             </div>
           </div>
           <div class="form-actions">
-            <button class="btn btn-outline" (click)="displayForm = false" [disabled]="isSaving">Annuler</button>
+            <button class="btn btn-outline" (click)="displayForm = false" [disabled]="isSaving">
+              Annuler
+            </button>
             <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
-              <i class="pi" [class.pi-check]="!isSaving" [class.pi-spin]="isSaving" [class.pi-spinner]="isSaving"></i>
+              <i
+                class="pi"
+                [class.pi-check]="!isSaving"
+                [class.pi-spin]="isSaving"
+                [class.pi-spinner]="isSaving"
+              ></i>
               {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
             </button>
           </div>
@@ -55,7 +77,12 @@ import { DepartementService } from '../../core/services/departement.service';
       <div class="search-section">
         <div class="search-wrapper">
           <i class="pi pi-search"></i>
-          <input type="text" placeholder="Rechercher une filière ou un département..." [(ngModel)]="searchText" (input)="filterFilieres()" />
+          <input
+            type="text"
+            placeholder="Rechercher une filière ou un département..."
+            [(ngModel)]="searchText"
+            (input)="filterFilieres()"
+          />
         </div>
       </div>
 
@@ -70,11 +97,18 @@ import { DepartementService } from '../../core/services/departement.service';
           <div class="card-accent"></div>
           <div class="card-body">
             <div class="card-title">{{ filiere.libelle }}</div>
-            <div class="detail-item"><i class="pi pi-folder"></i><span>{{ getDepartementLibelle(filiere.departementId) }}</span></div>
+            <div class="detail-item">
+              <i class="pi pi-folder"></i
+              ><span>{{ getDepartementLibelle(filiere.departementId) }}</span>
+            </div>
           </div>
           <div class="card-actions">
-            <button class="btn-icon-sm edit" (click)="showEditForm(filiere)"><i class="pi pi-pencil"></i></button>
-            <button class="btn-icon-sm delete" (click)="delete(filiere.id!)"><i class="pi pi-trash"></i></button>
+            <button class="btn-icon-sm edit" (click)="showEditForm(filiere)">
+              <i class="pi pi-pencil"></i>
+            </button>
+            <button class="btn-icon-sm delete" (click)="delete(filiere.id!)">
+              <i class="pi pi-trash"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -110,7 +144,7 @@ export class FilieresComponent implements OnInit {
   constructor(
     private filiereService: FiliereService,
     private departementService: DepartementService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -121,7 +155,7 @@ export class FilieresComponent implements OnInit {
   loadDepartements(): void {
     this.departementService.getAll().subscribe({
       next: (data) => {
-        this.departements = data;
+        this.departements = sortByAlpha(data, (departement) => departement.libelle);
         this.cdr.detectChanges();
       },
       error: () => {
@@ -134,7 +168,7 @@ export class FilieresComponent implements OnInit {
   loadFilieres(): void {
     this.filiereService.getAll().subscribe({
       next: (data) => {
-        this.filieres = data;
+        this.filieres = sortByAlpha(data, (filiere) => filiere.libelle);
         this.filterFilieres();
         this.cdr.detectChanges();
       },
@@ -147,9 +181,13 @@ export class FilieresComponent implements OnInit {
 
   filterFilieres(): void {
     const text = this.searchText.toLowerCase();
-    this.filteredFilieres = this.filieres.filter((f) =>
-      (f.libelle || '').toLowerCase().includes(text) ||
-      this.getDepartementLibelle(f.departementId).toLowerCase().includes(text),
+    this.filteredFilieres = sortByAlpha(
+      this.filieres.filter(
+        (f) =>
+          (f.libelle || '').toLowerCase().includes(text) ||
+          this.getDepartementLibelle(f.departementId).toLowerCase().includes(text),
+      ),
+      (filiere) => filiere.libelle,
     );
   }
 
@@ -205,7 +243,8 @@ export class FilieresComponent implements OnInit {
 
   delete(id: number): void {
     this.confirmDeleteId = id;
-    this.confirmDeleteMessage = 'Voulez-vous vraiment supprimer cette filière ? Les classes liées peuvent empêcher la suppression.';
+    this.confirmDeleteMessage =
+      'Voulez-vous vraiment supprimer cette filière ? Les classes liées peuvent empêcher la suppression.';
   }
 
   cancelDelete(): void {
@@ -223,7 +262,8 @@ export class FilieresComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
-        this.errorMessage = 'Impossible de supprimer cette filière car elle est peut-être utilisée.';
+        this.errorMessage =
+          'Impossible de supprimer cette filière car elle est peut-être utilisée.';
         this.cdr.detectChanges();
       },
     });
@@ -231,8 +271,9 @@ export class FilieresComponent implements OnInit {
 
   private handleSaveError(error: any, fallback: string): void {
     this.isSaving = false;
-    this.errorMessage = error?.name === 'TimeoutError'
-      ? 'Le serveur met trop de temps à répondre.'
-      : error?.error?.error || error?.error?.message || fallback;
+    this.errorMessage =
+      error?.name === 'TimeoutError'
+        ? 'Le serveur met trop de temps à répondre.'
+        : error?.error?.error || error?.error?.message || fallback;
   }
 }

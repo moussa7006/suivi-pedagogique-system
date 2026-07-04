@@ -6,7 +6,6 @@ import {
   IonContent,
   IonButton,
   IonIcon,
-  IonAvatar,
   IonModal,
   IonInput,
   ToastController,
@@ -32,13 +31,13 @@ import {
   cameraOutline,
   imagesOutline,
   globeOutline,
-  chevronForwardOutline,
   closeOutline,
   keyOutline,
   createOutline,
   eyeOutline,
   eyeOffOutline,
   trashOutline,
+  schoolOutline,
 } from 'ionicons/icons';
 
 import { ActionSheetController } from '@ionic/angular/standalone';
@@ -46,7 +45,9 @@ import { AuthService } from '../core/services/auth.service';
 import { ScheduleService } from '../core/services/schedule.service';
 import { UtilisateurService } from '../core/services/utilisateur.service';
 import { FicheProgressionService } from '../core/services/fiche-progression.service';
-import { finalize } from 'rxjs';
+import { catchError, finalize, forkJoin, of, switchMap } from 'rxjs';
+import { Seance } from '../core/models/seance.model';
+import { FicheProgression } from '../core/models/fiche-progression.model';
 
 @Component({
   selector: 'app-profile',
@@ -59,7 +60,6 @@ import { finalize } from 'rxjs';
     IonContent,
     IonButton,
     IonIcon,
-    IonAvatar,
     IonModal,
     IonInput,
   ],
@@ -78,6 +78,7 @@ export class ProfilePage implements OnInit {
   showNewPassword = false;
   showConfirmPassword = false;
   isChangingPassword = false;
+  activeSection: 'personal' | 'academic' | 'stats' | 'security' = 'personal';
 
   oldPassword = '';
   newPassword = '';
@@ -92,6 +93,8 @@ export class ProfilePage implements OnInit {
     telephone: '',
     adresse: '',
     role: '' as string,
+    grade: '',
+    specialite: '',
     matieres: [] as string[],
     subjects: [] as string[],
     status: 'Actif',
@@ -130,12 +133,12 @@ export class ProfilePage implements OnInit {
       imagesOutline,
       trashOutline,
       globeOutline,
-      chevronForwardOutline,
       closeOutline,
       keyOutline,
       createOutline,
       eyeOutline,
       eyeOffOutline,
+      schoolOutline,
     });
   }
 
@@ -148,83 +151,160 @@ export class ProfilePage implements OnInit {
   }
 
   private async loadUserProfile(): Promise<void> {
-    const user = await this.authService.getUser();
-    if (user) {
-      this.teacher = {
-        ...this.teacher,
-        id: user.id || 1,
-        firstName: user.prenom || 'Enseignant',
-        lastName: user.nom || '',
-        matricule: user.matricule || '',
-        email: user.email || '',
-        telephone: user.telephone || '',
-        adresse: user.adresse || '',
-        role: user.role || '',
-        avatar:
-          user.photoUrl ||
-          `https://i.pravatar.cc/150?u=${user.email || user.id || 'default'}`,
-      };
-
-      // Recharger la photo depuis le backend (non persistee dans le storage
-      // pour eviter QuotaExceededError sur les data URLs base64).
-      this.authService.getMe().subscribe({
-        next: (fullUser) => {
-          // Ignorer les data URLs anormalement volumineuses qui peuvent faire
-          // planter l'affichage ou saturer le rechargement. On garde alors
-          // l'avatar par defaut plutot que de charger un blob trop gros.
-          const url = fullUser?.photoUrl as string | undefined;
-          if (url && url.startsWith('data:image/') && url.length > 500_000) {
-            return;
-          }
-          if (url) {
-            this.teacher.avatar = url;
-          }
-        },
-        error: () => {
-          // Garder l'avatar par defaut.
-        },
-      });
+    const storedUser = await this.authService.getUser();
+    if (storedUser) {
+      this.applyUserToTeacher(storedUser);
     }
 
-    // Charger les statistiques depuis l'API des séances
-    this.scheduleService.getSeances().subscribe({
-      next: (seances) => {
-        this.teacher.statistiques.totalSeances = seances.length;
-        this.teacher.volumeHoraire.effectue = seances.length * 2; // Approximation: 2h par séance
-        this.teacher.volumeHoraire.total = Math.max(
-          this.teacher.volumeHoraire.effectue,
-          120,
-        );
-        this.teacher.volumeHoraire.restant =
-          this.teacher.volumeHoraire.total -
-          this.teacher.volumeHoraire.effectue;
-      },
-      error: () => {
-        // Garder les valeurs par défaut
-      },
-    });
+    this.authService
+      .getMe()
+      .pipe(
+        catchError(() => of(storedUser)),
+        switchMap((user) => {
+          if (user) {
+            this.applyUserToTeacher(user);
+          }
 
-    // Charger les matieres enseignees via les fiches de progression
-    this.ficheProgressionService.getFichesProgression().subscribe({
-      next: (fiches) => {
-        const fullName =
-          `${this.teacher.firstName} ${this.teacher.lastName}`.trim();
-        const matieres = (fiches || [])
-          .filter(
-            (fiche) =>
-              fiche.matiereLibelle &&
-              (!fullName ||
-                fiche.enseignantNomPrenom === fullName ||
-                fiche.enseignantNomPrenom?.includes(this.teacher.lastName)),
-          )
-          .map((fiche) => fiche.matiereLibelle)
-          .filter((value, index, self) => self.indexOf(value) === index);
-        this.teacher.matieres = matieres;
-      },
-      error: () => {
-        this.teacher.matieres = [];
-      },
-    });
+          const userId = user?.id || storedUser?.id || this.teacher.id;
+          return forkJoin({
+            fullUser: userId
+              ? this.utilisateurService
+                  .listerParId(userId)
+                  .pipe(catchError(() => of(user)))
+              : of(user),
+            seances: this.scheduleService
+              .getSeances()
+              .pipe(catchError(() => of([] as Seance[]))),
+            fiches: this.ficheProgressionService
+              .getFichesProgression()
+              .pipe(catchError(() => of([] as FicheProgression[]))),
+          });
+        }),
+      )
+      .subscribe({
+        next: ({ fullUser, seances, fiches }) => {
+          if (fullUser) {
+            this.applyUserToTeacher(fullUser);
+          }
+          const teacherSeances = this.filterTeacherSeances(seances || []);
+          this.applySeanceStats(teacherSeances);
+          this.applyMatieres(fiches || [], teacherSeances);
+        },
+        error: () => {
+          // Garder les informations déjà disponibles localement.
+        },
+      });
+  }
+
+  private applyUserToTeacher(user: any): void {
+    const avatar = this.getSafeAvatar(user);
+    this.teacher = {
+      ...this.teacher,
+      id: user?.id || this.teacher.id,
+      firstName: user?.prenom || this.teacher.firstName || 'Enseignant',
+      lastName: user?.nom || this.teacher.lastName || '',
+      matricule: user?.matricule || this.teacher.matricule || '',
+      email: user?.email || this.teacher.email || '',
+      telephone: user?.telephone || this.teacher.telephone || '',
+      adresse: user?.adresse || this.teacher.adresse || '',
+      role: user?.role || this.teacher.role || '',
+      grade: user?.grade || this.teacher.grade || '',
+      specialite: user?.specialite || this.teacher.specialite || '',
+      status: user?.actif === false ? 'Inactif' : 'Actif',
+      avatar,
+    };
+  }
+
+  private getSafeAvatar(user: any): string {
+    const url = user?.photoUrl as string | undefined;
+    if (url && (!url.startsWith('data:image/') || url.length <= 500_000)) {
+      return url;
+    }
+    return `https://i.pravatar.cc/150?u=${user?.email || user?.id || this.teacher.email || this.teacher.id || 'default'}`;
+  }
+
+  private filterTeacherSeances(seances: Seance[]): Seance[] {
+    if (!this.teacher.id) return seances;
+    return seances.filter(
+      (seance) =>
+        !seance.enseignantId || seance.enseignantId === this.teacher.id,
+    );
+  }
+
+  private applySeanceStats(seances: Seance[]): void {
+    const effectueMinutes = seances.reduce(
+      (total, seance) =>
+        total +
+        this.calculerDureeMinutes(
+          seance.heureDebutReelle,
+          seance.heureFinReelle,
+        ),
+      0,
+    );
+    const effectueHeures = Math.round((effectueMinutes / 60) * 10) / 10;
+    const emargees = seances.filter((seance) => !!seance.emargementId).length;
+    const tauxPresence = seances.length
+      ? Math.round((emargees / seances.length) * 100)
+      : 0;
+    const totalHeures = Math.max(effectueHeures, 120);
+
+    this.teacher.statistiques = {
+      ...this.teacher.statistiques,
+      totalSeances: seances.length,
+      tauxPresence,
+    };
+    this.teacher.volumeHoraire = {
+      total: totalHeures,
+      effectue: effectueHeures,
+      restant: Math.max(totalHeures - effectueHeures, 0),
+    };
+  }
+
+  private applyMatieres(fiches: FicheProgression[], seances: Seance[]): void {
+    const fullName = `${this.teacher.firstName} ${this.teacher.lastName}`
+      .trim()
+      .toLowerCase();
+    const seanceIds = new Set(
+      seances.map((seance) => seance.id).filter(Boolean),
+    );
+    const matieres = fiches
+      .filter((fiche) => {
+        const name = (fiche.enseignantNomPrenom || '').toLowerCase();
+        return (
+          !!fiche.matiereLibelle &&
+          (seanceIds.has(fiche.seanceId) ||
+            !name ||
+            name.includes(fullName) ||
+            fullName.includes(name))
+        );
+      })
+      .map((fiche) => fiche.matiereLibelle)
+      .filter((value, index, self) => self.indexOf(value) === index)
+      .sort((a, b) => a.localeCompare(b, 'fr'));
+
+    this.teacher.matieres = matieres;
+    this.teacher.subjects = matieres;
+  }
+
+  setActiveSection(
+    section: 'personal' | 'academic' | 'stats' | 'security',
+  ): void {
+    this.activeSection =
+      this.activeSection === section ? this.activeSection : section;
+  }
+
+  private calculerDureeMinutes(debut?: string, fin?: string): number {
+    const start = this.toMinutes(debut);
+    const end = this.toMinutes(fin);
+    return start !== null && end !== null && end > start ? end - start : 0;
+  }
+
+  private toMinutes(value?: string): number | null {
+    if (!value) return null;
+    const [hours, minutes] = value.split(':').map(Number);
+    return Number.isFinite(hours) && Number.isFinite(minutes)
+      ? hours * 60 + minutes
+      : null;
   }
 
   openPasswordModal() {

@@ -18,6 +18,7 @@ import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model'
 import { Filiere } from '../../core/models/filiere.model';
 import { NotificationService } from '../../shared/notification/notification.service';
 import { ConfirmationService } from '../../shared/confirmation/confirmation.service';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
   selector: 'app-schedule',
@@ -372,7 +373,7 @@ export class Schedule implements OnInit, OnDestroy {
   loadData() {
     this.scheduleService.getAllSchedules().subscribe({
       next: (s) => {
-        this.schedules = s;
+        this.schedules = sortByAlpha(s, (schedule) => schedule.titre);
         this.filterSchedules();
         this.cdr.detectChanges();
       },
@@ -381,27 +382,27 @@ export class Schedule implements OnInit, OnDestroy {
       },
     });
     this.classeService.getAll().subscribe((c) => {
-      this.classes = c;
+      this.classes = sortByAlpha(c, (classe) => classe.libelle);
       this.cdr.detectChanges();
     });
     this.matiereService.getAll().subscribe((m) => {
-      this.matieres = m;
+      this.matieres = sortByAlpha(m, (matiere) => matiere.libelle);
       this.cdr.detectChanges();
     });
     this.filiereService.getAll().subscribe((f) => {
-      this.filieres = f;
+      this.filieres = sortByAlpha(f, (filiere) => filiere.libelle);
       this.cdr.detectChanges();
     });
     this.teacherService.getTeachers().subscribe((t) => {
-      this.teachers = t;
+      this.teachers = sortByAlpha(t, (teacher) => `${teacher.nom || ''} ${teacher.prenom || ''}`);
       this.cdr.detectChanges();
     });
     this.salleService.getAll().subscribe((s) => {
-      this.salles = s;
+      this.salles = sortByAlpha(s, (salle) => `${salle.nom || ''} ${salle.batiment || ''}`);
       this.cdr.detectChanges();
     });
     this.anneeUniversitaireService.getAll().subscribe((a) => {
-      this.anneesUniversitaires = a;
+      this.anneesUniversitaires = sortByAlpha(a, (annee) => annee.libelle, 'desc');
       this.cdr.detectChanges();
     });
   }
@@ -409,16 +410,22 @@ export class Schedule implements OnInit, OnDestroy {
   filterSchedules() {
     try {
       const text = (this.searchText || '').toLowerCase();
-      this.filteredSchedules = (this.schedules || []).filter((s) => {
-        if (!s) return false;
-        const titre = (s.titre || '').toLowerCase();
-        const salle = (this.getSalleNom(s.salleId) || '').toLowerCase();
-        const prof = (this.getEnseignantNom(s.enseignantId) || '').toLowerCase();
-        const mat = (this.getMatiereLibelle(s.matiereId) || '').toLowerCase();
-        return (
-          titre.includes(text) || salle.includes(text) || prof.includes(text) || mat.includes(text)
-        );
-      });
+      this.filteredSchedules = sortByAlpha(
+        (this.schedules || []).filter((s) => {
+          if (!s) return false;
+          const titre = (s.titre || '').toLowerCase();
+          const salle = (this.getSalleNom(s.salleId) || '').toLowerCase();
+          const prof = (this.getEnseignantNom(s.enseignantId) || '').toLowerCase();
+          const mat = (this.getMatiereLibelle(s.matiereId) || '').toLowerCase();
+          return (
+            titre.includes(text) ||
+            salle.includes(text) ||
+            prof.includes(text) ||
+            mat.includes(text)
+          );
+        }),
+        (schedule) => schedule.titre,
+      );
     } catch (e) {
       console.error('Filter error:', e);
       this.filteredSchedules = this.schedules || [];
@@ -459,7 +466,10 @@ export class Schedule implements OnInit, OnDestroy {
       return [];
     }
 
-    return this.matieres.filter((matiere) => matiere.departementId === departementId);
+    return sortByAlpha(
+      this.matieres.filter((matiere) => matiere.departementId === departementId),
+      (matiere) => matiere.libelle,
+    );
   }
 
   onClasseChange(): void {
