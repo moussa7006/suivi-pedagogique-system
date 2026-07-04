@@ -494,7 +494,7 @@ export class SeancesComponent implements OnInit, OnDestroy {
   classes: Classe[] = [];
   pollingTimer: any;
 
-  filterDate: string = new Date().toISOString().split('T')[0];
+  filterDate: string = '';
   filterStatus: string = '';
   searchText: string = '';
 
@@ -764,7 +764,7 @@ export class SeancesComponent implements OnInit, OnDestroy {
   }
 
   resetFilters() {
-    this.filterDate = new Date().toISOString().split('T')[0];
+    this.filterDate = '';
     this.filterStatus = '';
     this.searchText = '';
     this.applyFilters();
