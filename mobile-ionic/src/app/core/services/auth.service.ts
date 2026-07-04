@@ -19,14 +19,17 @@ export class AuthService {
     return this.http
       .post<LoginResponse>(this.apiConfig.buildUrl('auth/login'), credentials)
       .pipe(
-        switchMap((response) =>
-          from(
+        switchMap((response) => {
+          // Ne pas persister un eventuel photoUrl volumineux (data URL base64)
+          // dans Capacitor Preferences pour eviter QuotaExceededError.
+          const { photoUrl: _photoUrl, ...userToStore } = response as any;
+          return from(
             Promise.all([
               this.tokenStorage.setToken(response.token),
-              this.setUser(response),
+              this.setUser(userToStore),
             ]),
-          ).pipe(map(() => response)),
-        ),
+          ).pipe(map(() => response));
+        }),
       );
   }
 
@@ -56,6 +59,10 @@ export class AuthService {
       code,
       newPassword,
     });
+  }
+
+  getMe(): Observable<any> {
+    return this.http.get<any>(this.apiConfig.buildUrl('auth/me'));
   }
 
   async isAuthenticated(): Promise<boolean> {

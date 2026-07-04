@@ -3,13 +3,17 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { forkJoin, of, Subscription, interval } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ChartModule } from 'primeng/chart';
+import {
+  DashboardService,
+  DashboardData,
+  TopEnseignantRow,
+  MatiereVolumetrieRow,
+  ClasseEmargementRow,
+} from '../../core/services/dashboard.service';
 import { TeacherService } from '../../core/services/teacher.service';
 import { ClasseService } from '../../core/services/classe.service';
-import { ScheduleService } from '../../core/services/schedule.service';
-import { AttendanceService } from '../../core/services/attendance.service';
 import { MatiereService } from '../../core/services/matiere.service';
-import { DashboardService } from '../../core/services/dashboard.service';
+import { ScheduleService } from '../../core/services/schedule.service';
 
 interface StatCard {
   label: string;
@@ -19,15 +23,6 @@ interface StatCard {
   color: string;
   trend: string;
   trendClass: 'positive' | 'negative' | 'neutral';
-}
-
-interface Activity {
-  user: string;
-  initials: string;
-  action: string;
-  meta: string;
-  time: string;
-  color: string;
 }
 
 interface HubTile {
@@ -43,27 +38,10 @@ interface HubTile {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, ChartModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="dashboard-container">
-      <!-- HEADER AVEC ACTIONS RAPIDES -->
-      <header class="page-header">
-        <div class="hero-glow hero-glow-one"></div>
-        <div class="hero-glow hero-glow-two"></div>
-
-        <div class="header-actions">
-          <button class="btn-secondary" [routerLink]="['/attendance']">
-            <i class="pi pi-chart-bar"></i>
-            Voir les présences
-          </button>
-          <button class="btn-primary" [routerLink]="['/qr-generator']">
-            <i class="pi pi-qrcode"></i>
-            Générer un QR Code
-          </button>
-        </div>
-      </header>
-
-      <!-- STATISTIQUES RAPIDES -->
+      <!-- STATISTIQUES RAPIDES (collées au header/topbar) -->
       <section class="stats-overview">
         <div class="stat-card" *ngFor="let stat of stats" [style.--accent]="stat.color">
           <div class="stat-icon">
@@ -86,10 +64,20 @@ interface HubTile {
         </div>
       </section>
 
-      <!-- HUB DE NAVIGATION (LE CENTRE DE TRAVAIL) -->
+      <!-- TEXTES DE PRÉSENTATION (en bas des stats) -->
+      <header class="page-header">
+        <div class="header-actions">
+          <button class="btn-secondary" [routerLink]="['/attendance']">
+            <i class="pi pi-chart-bar"></i>
+            Voir les présences
+          </button>
+        </div>
+      </header>
+
+      <!-- HUB DE NAVIGATION (CARTES DES MODULES) -->
       <section class="workspace-hub">
         <div class="section-title">
-          <h2>Modules de Gestion</h2>
+          <h2>Modules de gestion</h2>
           <p>Accédez rapidement à vos outils quotidiens</p>
         </div>
 
@@ -118,75 +106,6 @@ interface HubTile {
           </a>
         </div>
       </section>
-
-      <!-- GRAPHIQUES (CHARTS) -->
-      <div class="charts-row">
-        <div class="data-card chart-card">
-          <div class="panel-header">
-            <h3>Émargements (7 derniers jours)</h3>
-          </div>
-          <div class="chart-container">
-            <p-chart type="bar" [data]="attendanceChartData" [options]="attendanceChartOptions"></p-chart>
-          </div>
-        </div>
-
-        <div class="data-card chart-card">
-          <div class="panel-header">
-            <h3>Statut des Séances (Aujourd'hui)</h3>
-          </div>
-          <div class="chart-container doughnut-container">
-            <p-chart type="doughnut" [data]="statusChartData" [options]="statusChartOptions"></p-chart>
-          </div>
-        </div>
-      </div>
-
-      <!-- GRILLE DE CONTENU (GRAPHIQUES & ACTIVITÉS) -->
-      <div class="content-row">
-        <!-- Activités Récentes -->
-        <div class="data-card activity-panel">
-          <div class="panel-header">
-            <h3>Flux d'activités récentes</h3>
-            <button class="btn-text">Voir tout</button>
-          </div>
-          <div class="activity-timeline">
-            <div class="timeline-item" *ngFor="let act of activities">
-              <div
-                class="user-avatar"
-                [style.background]="act.color + '20'"
-                [style.color]="act.color"
-              >
-                {{ act.initials }}
-              </div>
-              <div class="item-content">
-                <p>
-                  <strong>{{ act.user }}</strong> {{ act.action }}
-                </p>
-                <span class="item-meta">{{ act.meta }} • {{ act.time }}</span>
-              </div>
-              <div class="status-dot" [style.background]="act.color"></div>
-            </div>
-            <div class="empty-state" *ngIf="activities.length === 0">
-              <i class="pi pi-inbox"></i>
-              <p>Aucune activité récente</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Guide / Aide -->
-        <div class="data-card help-panel">
-          <div class="help-content">
-            <div class="help-illustration">
-              <i class="pi pi-question-circle"></i>
-            </div>
-            <h3>Besoin d'aide ?</h3>
-            <p>
-              Consultez notre centre d'aide ou contactez le support technique pour toute question
-              sur l'utilisation d'EduTrack.
-            </p>
-            <button class="btn-outline">Consulter la documentation</button>
-          </div>
-        </div>
-      </div>
     </div>
   `,
   styles: [
@@ -196,12 +115,12 @@ interface HubTile {
         margin: 0 auto;
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 0;
       }
 
       /* TYPOGRAPHIE & TITRES */
       h1 {
-        font-size: clamp(1.55rem, 2.4vw, 2rem);
+        font-size: clamp(1.1rem, 1.6vw, 1.45rem);
         font-weight: 800;
         color: #0f172a;
         margin: 6px 0;
@@ -229,7 +148,7 @@ interface HubTile {
         justify-content: space-between;
         align-items: center;
         gap: 18px;
-        padding: 0 0 4px;
+        padding: 22px 0 4px;
         border-radius: 0;
         overflow: visible;
         background: transparent;
@@ -265,8 +184,8 @@ interface HubTile {
           font-weight: 800;
           color: #1d4ed8;
           text-transform: uppercase;
-          font-size: 0.68rem;
-          letter-spacing: 0.1em;
+          font-size: 1.05rem;
+          letter-spacing: 0.08em;
         }
 
         .hero-badges {
@@ -421,12 +340,12 @@ interface HubTile {
       /* STATS OVERVIEW */
       .stats-overview {
         position: sticky;
-        top: 96px;
+        top: 80px;
         z-index: 30;
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 12px;
-        padding: 2px 0 10px;
+        padding: 0;
         background: linear-gradient(
           180deg,
           #f8fafc 0%,
@@ -447,8 +366,12 @@ interface HubTile {
         display: flex;
         align-items: center;
         gap: 14px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition:
+          transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+          box-shadow 0.35s ease,
+          border-color 0.35s ease;
         box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+        will-change: transform;
 
         &::before {
           content: '';
@@ -463,9 +386,9 @@ interface HubTile {
         }
 
         &:hover {
-          transform: translateY(-8px) scale(1.02);
+          transform: translateY(-6px) scale(1.07);
           border-color: var(--accent);
-          box-shadow: 0 20px 40px color-mix(in srgb, var(--accent) 15%, rgba(15, 23, 42, 0.1));
+          box-shadow: 0 26px 50px color-mix(in srgb, var(--accent) 28%, rgba(15, 23, 42, 0.18));
         }
 
         .stat-icon {
@@ -529,27 +452,31 @@ interface HubTile {
         }
       }
 
-      /* HUB NAVIGATION (CARDS) */
+      /* HUB DE NAVIGATION */
+      .workspace-hub {
+        margin-top: 14px;
+      }
+
       .hub-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
       }
 
       .hub-card {
         position: relative;
-        background: white;
-        border-radius: 22px;
-        padding: 20px;
-        min-height: 160px;
-        text-decoration: none;
-        border: 1px solid #e2e8f0;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        background: #ffffff;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        padding: 22px;
+        text-decoration: none;
+        color: inherit;
         overflow: hidden;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+        cursor: pointer;
 
         &::before {
           content: '';
@@ -562,38 +489,30 @@ interface HubTile {
         }
 
         &:hover {
-          transform: translateY(-10px);
+          transform: translateY(-6px);
           border-color: var(--tile-color);
-          box-shadow: 0 25px 50px color-mix(in srgb, var(--tile-color) 20%, rgba(15, 23, 42, 0.1));
+          box-shadow: 0 20px 40px color-mix(in srgb, var(--tile-color) 20%, rgba(15, 23, 42, 0.1));
 
           .card-glow {
             opacity: 1;
-            transform: scale(1.2);
           }
           .icon-wrapper {
-            background: var(--tile-color);
-            color: white;
-            transform: scale(1.1) rotate(5deg);
+            transform: scale(1.08);
           }
           .action-link {
             color: var(--tile-color);
-            font-weight: 800;
           }
         }
 
         .card-glow {
           position: absolute;
-          bottom: -20px;
-          right: -20px;
-          width: 120px;
-          height: 120px;
-          background: radial-gradient(
-            circle,
-            color-mix(in srgb, var(--tile-color) 20%, transparent),
-            transparent 70%
-          );
-          opacity: 0.4;
-          transition: all 0.5s ease;
+          top: -50%;
+          right: -30%;
+          width: 200px;
+          height: 200px;
+          background: radial-gradient(circle, var(--tile-color) 0%, transparent 70%);
+          opacity: 0.08;
+          transition: opacity 0.3s;
           pointer-events: none;
         }
 
@@ -601,100 +520,78 @@ interface HubTile {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
+          margin-bottom: 14px;
 
           .icon-wrapper {
-            width: 58px;
-            height: 58px;
-            background: color-mix(in srgb, var(--tile-color) 10%, #f8fafc);
-            color: var(--tile-color);
-            border-radius: 18px;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(
+              135deg,
+              var(--tile-color),
+              color-mix(in srgb, var(--tile-color), black 20%)
+            );
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.6rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid color-mix(in srgb, var(--tile-color) 20%, transparent);
+            font-size: 1.3rem;
+            box-shadow: 0 8px 16px color-mix(in srgb, var(--tile-color) 30%, transparent);
+            transition: transform 0.3s;
           }
 
           .tag {
-            font-size: 0.6rem;
-            font-weight: 800;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 999px;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #94a3b8;
+            letter-spacing: 0.04em;
           }
         }
 
         .card-body {
           h3 {
-            font-size: 0.98rem;
+            font-size: 1.1rem;
             font-weight: 800;
-            color: #1e293b;
+            color: #0f172a;
             margin: 0 0 6px;
           }
+
           p {
-            font-size: 0.76rem;
+            font-size: 0.88rem;
             color: #64748b;
-            margin: 0;
-            line-height: 1.3;
+            margin: 0 0 12px;
           }
 
           .module-indicator {
-            display: inline-flex;
-            width: fit-content;
-            margin-top: 10px;
-            padding: 5px 9px;
-            border-radius: 999px;
-            background: color-mix(in srgb, var(--tile-color) 10%, white);
-            border: 1px solid color-mix(in srgb, var(--tile-color) 18%, #e2e8f0);
+            display: inline-block;
+            font-size: 0.78rem;
+            font-weight: 700;
             color: var(--tile-color);
-            font-size: 0.7rem;
-            font-weight: 800;
+            background: color-mix(in srgb, var(--tile-color) 10%, transparent);
+            padding: 4px 10px;
+            border-radius: 8px;
           }
         }
 
         .card-footer {
-          margin-top: auto;
-          padding-top: 8px;
+          margin-top: 16px;
+          padding-top: 14px;
           border-top: 1px solid #f1f5f9;
 
           .action-link {
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: #94a3b8;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: all 0.3s;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #94a3b8;
+            transition: color 0.2s;
           }
         }
-      }
-
-      /* CHARTS ROW */
-      .charts-row {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 16px;
-        margin-bottom: 18px;
-      }
-      
-      .chart-card {
-        display: flex;
-        flex-direction: column;
-      }
-      
-      .chart-container {
-        position: relative;
-        height: 300px;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      /* CONTENT ROW - hidden to keep the first viewport focused on stats and the 6 main modules */
-      .content-row {
-        display: none;
       }
 
       .data-card {
@@ -705,114 +602,14 @@ interface HubTile {
         box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
       }
 
-      .panel-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-        h3 {
-          font-size: 1.1rem;
-          font-weight: 700;
-          color: #0f172a;
-          margin: 0;
-        }
-      }
-
-      .activity-timeline {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-
-        .timeline-item {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          padding: 12px;
-          border-radius: 16px;
-          transition: background 0.2s;
-          position: relative;
-
-          &:hover {
-            background: #f8fafc;
-          }
-
-          .user-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.9rem;
-          }
-
-          .item-content {
-            flex: 1;
-            p {
-              font-size: 0.9rem;
-              color: #334155;
-              margin: 0;
-            }
-            strong {
-              color: #0f172a;
-            }
-            .item-meta {
-              font-size: 0.75rem;
-              color: #94a3b8;
-              font-weight: 600;
-            }
-          }
-
-          .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-          }
-        }
-      }
-
-      .help-panel {
-        background:
-          radial-gradient(circle at top right, rgba(34, 211, 238, 0.22), transparent 34%),
-          linear-gradient(135deg, #0f172a, #312e81 54%, #581c87);
-        color: white;
-        text-align: center;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 22px 45px rgba(49, 46, 129, 0.2);
-
-        .help-illustration {
-          width: 64px;
-          height: 64px;
-          background: rgba(59, 130, 246, 0.2);
-          color: #3b82f6;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 20px;
-          font-size: 2rem;
-        }
-
-        h3 {
-          color: white;
-          margin-bottom: 12px;
-        }
-        p {
-          color: #94a3b8;
-          margin-bottom: 24px;
-          font-size: 0.9rem;
-        }
-      }
-
       @media (max-width: 1180px) {
         .hub-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: repeat(2, 1fr);
         }
+      }
 
-        .content-row {
+      @media (max-width: 720px) {
+        .hub-grid {
           grid-template-columns: 1fr;
         }
       }
@@ -830,14 +627,6 @@ interface HubTile {
           backdrop-filter: none;
           -webkit-backdrop-filter: none;
         }
-
-        .hub-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .hub-card {
-          padding: 18px;
-        }
       }
     `,
   ],
@@ -848,6 +637,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   adminInitials = 'AU';
 
   private refreshSubscription: Subscription | null = null;
+
+  topEnseignants: TopEnseignantRow[] = [];
+  matieresVolumetrie: MatiereVolumetrieRow[] = [];
+  classesEmargement: ClasseEmargementRow[] = [];
 
   hubTiles: HubTile[] = [
     {
@@ -935,7 +728,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       trendClass: 'neutral',
     },
     {
-      label: 'Séances',
+      label: "Séances aujourd'hui",
       value: 0,
       suffix: '',
       icon: 'pi pi-calendar-plus',
@@ -945,58 +738,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     },
   ];
 
-  activities: Activity[] = [];
-
-  attendanceChartData: any;
-  attendanceChartOptions: any;
-  statusChartData: any;
-  statusChartOptions: any;
-
   constructor(
+    private dashboardService: DashboardService,
     private teacherService: TeacherService,
     private classeService: ClasseService,
     private matiereService: MatiereService,
     private scheduleService: ScheduleService,
-    private attendanceService: AttendanceService,
-    private dashboardService: DashboardService
-  ) {
-    this.initChartOptions();
-  }
-
-  initChartOptions() {
-    const documentStyle = getComputedStyle(document.documentElement);
-    const textColor = documentStyle.getPropertyValue('--text-color') || '#495057';
-    const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary') || '#6c757d';
-    const surfaceBorder = documentStyle.getPropertyValue('--surface-border') || '#dfe7ef';
-
-    this.attendanceChartOptions = {
-      maintainAspectRatio: false,
-      aspectRatio: 0.8,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        x: {
-          ticks: { color: textColorSecondary },
-          grid: { color: surfaceBorder, drawBorder: false }
-        },
-        y: {
-          ticks: { color: textColorSecondary, precision: 0 },
-          grid: { color: surfaceBorder, drawBorder: false }
-        }
-      }
-    };
-
-    this.statusChartOptions = {
-      maintainAspectRatio: false,
-      aspectRatio: 1.5,
-      plugins: {
-        legend: {
-          labels: { color: textColor }
-        }
-      }
-    };
-  }
+  ) {}
 
   ngOnInit() {
     this.loadAdminProfile();
@@ -1032,127 +780,60 @@ export class DashboardComponent implements OnInit, OnDestroy {
         catchError((error) => {
           console.error('[Dashboard] Erreur API Dashboard:', error);
           return of(null);
-        })
+        }),
       ),
       teachers: this.teacherService.getTeachers().pipe(
         catchError((error) => {
           console.error('[Dashboard] Erreur chargement enseignants:', error);
-          this.hubTiles[2].indicator = 'Erreur API';
           return of([]);
         }),
       ),
       classes: this.classeService.getAll().pipe(
         catchError((error) => {
           console.error('[Dashboard] Erreur chargement classes:', error);
-          this.hubTiles[0].indicator = 'Erreur API';
           return of([]);
         }),
       ),
       matieres: this.matiereService.getAll().pipe(
         catchError((error) => {
           console.error('[Dashboard] Erreur chargement matières:', error);
-          this.hubTiles[1].indicator = 'Erreur API';
-          return of([]);
-        }),
-      ),
-      schedules: this.scheduleService.getAllSchedules().pipe(
-        catchError((error) => {
-          console.error('[Dashboard] Erreur chargement plannings:', error);
           return of([]);
         }),
       ),
       seances: this.scheduleService.getAllSeances().pipe(
         catchError((error) => {
           console.error('[Dashboard] Erreur chargement séances:', error);
-          this.hubTiles[3].indicator = 'Erreur API';
           return of([]);
         }),
       ),
-      attendances: this.attendanceService.getAllAttendances().pipe(
-        catchError((error) => {
-          console.error('[Dashboard] Erreur chargement émargements:', error);
-          this.hubTiles[5].indicator = 'Erreur API';
-          return of([]);
-        }),
-      ),
-    }).subscribe(({ dashboardStats, teachers, classes, matieres, schedules, seances, attendances }) => {
+    }).subscribe(({ dashboardStats, teachers, classes, matieres, seances }) => {
+      // KPI cards : toujours alimentés depuis les sources individuelles (fiability).
+      // On privilégie les données fraîches des services dédiés ; le endpoint
+      // dashboard sert de retombée si un service individuel échoue.
+      const today = new Date().toISOString().slice(0, 10);
+      const seancesTodayCount = seances.filter((s) => {
+        const d = s.dateCours ? new Date(s.dateCours).toISOString().slice(0, 10) : null;
+        return d === today;
+      }).length;
+
+      this.stats[0].value = teachers.length || dashboardStats?.totalTeachers || 0;
+      this.stats[1].value = classes.length || dashboardStats?.totalClasses || 0;
+      this.stats[2].value = matieres.length || dashboardStats?.totalMatieres || 0;
+      this.stats[3].value = seancesTodayCount || dashboardStats?.sessionsToday || 0;
+
+      // Indicateurs des tuiles du hub de navigation.
+      this.hubTiles[2].indicator = `${teachers.length} enseignant${teachers.length > 1 ? 's' : ''}`;
+      this.hubTiles[0].indicator = `${classes.length} classe${classes.length > 1 ? 's' : ''}`;
+      this.hubTiles[1].indicator = `${matieres.length} matière${matieres.length > 1 ? 's' : ''}`;
+      this.hubTiles[3].indicator = `${seances.length} séance${seances.length > 1 ? 's' : ''}`;
+      this.hubTiles[5].indicator = `${seances.length} émargement${seances.length > 1 ? 's' : ''}`;
+
+      // Tableaux analytiques : depuis le endpoint dashboard.
       if (dashboardStats) {
-        this.stats[0].value = dashboardStats.totalTeachers;
-        this.stats[1].value = dashboardStats.totalClasses;
-        this.stats[3].value = dashboardStats.sessionsToday;
-
-        this.hubTiles[2].indicator = `${dashboardStats.totalTeachers} enseignant(s)`;
-        this.hubTiles[0].indicator = `${dashboardStats.totalClasses} classe(s)`;
-        this.hubTiles[3].indicator = `${dashboardStats.sessionsToday} séance(s) aujourd'hui`;
-        
-        // Prepare Charts Data
-        if (dashboardStats.emargementsParJour) {
-          this.attendanceChartData = {
-            labels: Object.keys(dashboardStats.emargementsParJour),
-            datasets: [
-              {
-                label: 'Émargements',
-                backgroundColor: '#3b82f6',
-                data: Object.values(dashboardStats.emargementsParJour),
-                borderRadius: 4
-              }
-            ]
-          };
-        }
-
-        if (dashboardStats.seancesParStatut) {
-          this.statusChartData = {
-            labels: Object.keys(dashboardStats.seancesParStatut),
-            datasets: [
-              {
-                data: Object.values(dashboardStats.seancesParStatut),
-                backgroundColor: ['#94a3b8', '#f59e0b', '#10b981', '#ef4444'],
-                hoverBackgroundColor: ['#cbd5e1', '#fbbf24', '#34d399', '#f87171']
-              }
-            ]
-          };
-        }
+        this.topEnseignants = dashboardStats.topEnseignants || [];
+        this.matieresVolumetrie = dashboardStats.matieresVolumetrie || [];
+        this.classesEmargement = dashboardStats.classesEmargement || [];
       }
-
-      const teacherCount = teachers.length;
-      const classCount = classes.length;
-      const matiereCount = matieres.length;
-      const seanceCount = seances.length;
-      const scheduleCount = schedules.length;
-      const attendanceCount = attendances.length;
-
-      this.stats[0].value = teacherCount;
-      this.hubTiles[2].indicator = `${teacherCount} enseignant${teacherCount > 1 ? 's' : ''}`;
-
-      this.stats[1].value = classCount;
-      this.hubTiles[0].indicator = `${classCount} classe${classCount > 1 ? 's' : ''}`;
-
-      this.stats[2].value = matiereCount;
-      this.hubTiles[1].indicator = `${matiereCount} matière${matiereCount > 1 ? 's' : ''}`;
-
-      this.stats[3].value = seanceCount;
-      this.hubTiles[3].indicator = `${scheduleCount} planning${scheduleCount > 1 ? 's' : ''} / ${seanceCount} séance${seanceCount > 1 ? 's' : ''}`;
-
-      this.hubTiles[5].indicator = `${attendanceCount} émargement${attendanceCount > 1 ? 's' : ''}`;
-
-      const sorted = [...attendances].sort(
-        (a, b) => new Date(b.dateHeureScan!).getTime() - new Date(a.dateHeureScan!).getTime(),
-      );
-      this.activities = sorted.slice(0, 4).map((e) => ({
-        user: e.enseignantNomPrenom || 'Inconnu',
-        initials: e.enseignantNomPrenom
-          ? e.enseignantNomPrenom.substring(0, 2).toUpperCase()
-          : '??',
-        action: e.statut === 'VALIDE' ? 'a émargé avec succès.' : 'a tenté un émargement.',
-        meta: e.lieu || 'Séance',
-        time: e.dateHeureScan
-          ? new Date(e.dateHeureScan).toLocaleTimeString('fr-FR', {
-              hour: '2-digit',
-              minute: '2-digit',
-            })
-          : '--:--',
-        color: e.statut === 'VALIDE' ? '#10b981' : '#f59e0b',
-      }));
     });
   }
 

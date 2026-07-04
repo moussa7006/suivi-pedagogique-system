@@ -1,13 +1,13 @@
-import { Component, inject, OnInit } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { RouterLink } from "@angular/router";
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import {
   IonContent,
   IonButton,
   IonIcon,
   IonBadge,
-} from "@ionic/angular/standalone";
-import { addIcons } from "ionicons";
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
 import {
   calendarOutline,
   timeOutline,
@@ -20,23 +20,24 @@ import {
   playOutline,
   refreshOutline,
   scanOutline,
-} from "ionicons/icons";
-import { forkJoin, finalize } from "rxjs";
-import { ScheduleService } from "../core/services/schedule.service";
-import { SalleService } from "../core/services/salle.service";
-import { MatiereService } from "../core/services/matiere.service";
-import { AuthService } from "../core/services/auth.service";
-import { EmploiDuTemps } from "../core/models/schedule.model";
-import { Seance } from "../core/models/seance.model";
-import { Salle } from "../core/models/salle.model";
-import { Matiere } from "../core/models/matiere.model";
+  arrowBackOutline,
+} from 'ionicons/icons';
+import { forkJoin, finalize } from 'rxjs';
+import { ScheduleService } from '../core/services/schedule.service';
+import { SalleService } from '../core/services/salle.service';
+import { MatiereService } from '../core/services/matiere.service';
+import { AuthService } from '../core/services/auth.service';
+import { EmploiDuTemps } from '../core/models/schedule.model';
+import { Seance } from '../core/models/seance.model';
+import { Salle } from '../core/models/salle.model';
+import { Matiere } from '../core/models/matiere.model';
 
 interface PlanningCourse {
   matiere: string;
   salle: string;
   horaire: string;
   type: string;
-  status: "completed" | "in-progress" | "upcoming";
+  status: 'completed' | 'in-progress' | 'upcoming';
   statusLabel: string;
   enseignant: string;
   seanceId?: number;
@@ -44,9 +45,9 @@ interface PlanningCourse {
 }
 
 @Component({
-  selector: "app-planning",
-  templateUrl: "planning.page.html",
-  styleUrls: ["planning.page.scss"],
+  selector: 'app-planning',
+  templateUrl: 'planning.page.html',
+  styleUrls: ['planning.page.scss'],
   standalone: true,
   imports: [CommonModule, RouterLink, IonContent, IonButton, IonIcon, IonBadge],
 })
@@ -68,7 +69,7 @@ export class PlanningPage implements OnInit {
   private salles: Salle[] = [];
   private matieres: Matiere[] = [];
   private currentUserId: number | null = null;
-  private currentUserLabel = "";
+  private currentUserLabel = '';
 
   constructor() {
     addIcons({
@@ -83,6 +84,7 @@ export class PlanningPage implements OnInit {
       playOutline,
       refreshOutline,
       scanOutline,
+      arrowBackOutline,
     });
     this.generateWeekDays();
   }
@@ -101,7 +103,7 @@ export class PlanningPage implements OnInit {
     const user = await this.authService.getUser();
     if (user) {
       this.currentUserId = user.id ?? null;
-      this.currentUserLabel = `${user.prenom || ""} ${user.nom || ""}`.trim();
+      this.currentUserLabel = `${user.prenom || ''} ${user.nom || ''}`.trim();
     }
   }
 
@@ -115,7 +117,7 @@ export class PlanningPage implements OnInit {
   }
 
   private generateWeekDays(): void {
-    const dayNames = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+    const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
     const today = new Date();
     const currentDay = today.getDay();
 
@@ -193,10 +195,10 @@ export class PlanningPage implements OnInit {
     const status = this.getSeanceStatus(seance, selectedDate);
 
     return {
-      matiere: schedule ? this.getMatiereLabel(schedule) : "Séance programmée",
+      matiere: schedule ? this.getMatiereLabel(schedule) : 'Séance programmée',
       salle: this.getSalleLabel(seance.salleId),
       horaire: `${this.formatTime(seance.heureDebutReelle)} - ${this.formatTime(seance.heureFinReelle)}`,
-      type: seance.qrCodeId ? "QR Code disponible" : "Séance générée",
+      type: seance.qrCodeId ? 'QR Code disponible' : 'Séance générée',
       status,
       statusLabel: this.getStatusLabel(status),
       enseignant: this.getEnseignantLabel(seance.enseignantId),
@@ -231,18 +233,18 @@ export class PlanningPage implements OnInit {
     if (start && day < start) return false;
     if (end && day > end) return false;
 
-    if (schedule.typeRecurrence === "UNIQUE") {
+    if (schedule.typeRecurrence === 'UNIQUE') {
       const specificDate = this.parseDate(
         schedule.dateSpecifique || schedule.dateDebutValidite,
       );
       return !!specificDate && this.isSameDate(day, specificDate);
     }
 
-    if (schedule.typeRecurrence === "HEBDOMADAIRE") {
+    if (schedule.typeRecurrence === 'HEBDOMADAIRE') {
       return this.getJourSemaine(date) === schedule.jourSemaine;
     }
 
-    if (schedule.typeRecurrence === "MENSUEL") {
+    if (schedule.typeRecurrence === 'MENSUEL') {
       return date.getDate() === Number(schedule.jourDuMois);
     }
 
@@ -252,29 +254,29 @@ export class PlanningPage implements OnInit {
   private getCourseStatus(
     schedule: EmploiDuTemps,
     date: Date,
-  ): "completed" | "in-progress" | "upcoming" {
+  ): 'completed' | 'in-progress' | 'upcoming' {
     const now = new Date();
     const start = this.combineDateAndTime(date, schedule.heureDebut);
     const end = this.combineDateAndTime(date, schedule.heureFin);
 
-    if (!start || !end) return "upcoming";
-    if (now > end) return "completed";
-    if (now >= start && now <= end) return "in-progress";
-    return "upcoming";
+    if (!start || !end) return 'upcoming';
+    if (now > end) return 'completed';
+    if (now >= start && now <= end) return 'in-progress';
+    return 'upcoming';
   }
 
   private getSeanceStatus(
     seance: Seance,
     date: Date,
-  ): "completed" | "in-progress" | "upcoming" {
+  ): 'completed' | 'in-progress' | 'upcoming' {
     const now = new Date();
     const start = this.combineDateAndTime(date, seance.heureDebutReelle);
     const end = this.combineDateAndTime(date, seance.heureFinReelle);
 
-    if (!start || !end) return "upcoming";
-    if (now > end || seance.statut === "TERMINEE") return "completed";
-    if (now >= start && now <= end) return "in-progress";
-    return "upcoming";
+    if (!start || !end) return 'upcoming';
+    if (now > end || seance.statut === 'TERMINEE') return 'completed';
+    if (now >= start && now <= end) return 'in-progress';
+    return 'upcoming';
   }
 
   private findScheduleForSeance(seance: Seance): EmploiDuTemps | undefined {
@@ -295,56 +297,56 @@ export class PlanningPage implements OnInit {
   private getSalleLabel(salleId: number): string {
     const salle = this.salles.find((item) => item.id === salleId);
     return salle
-      ? `${salle.nom}${salle.batiment ? " • " + salle.batiment : ""}`
+      ? `${salle.nom}${salle.batiment ? ' • ' + salle.batiment : ''}`
       : `Salle #${salleId}`;
   }
 
   private getEnseignantLabel(enseignantId: number): string {
     if (this.currentUserId != null && enseignantId === this.currentUserId) {
-      return this.currentUserLabel || "Vous";
+      return this.currentUserLabel || 'Vous';
     }
     return `Enseignant #${enseignantId}`;
   }
 
-  private getStatusLabel(status: PlanningCourse["status"]): string {
+  private getStatusLabel(status: PlanningCourse['status']): string {
     return {
-      completed: "Terminé",
-      "in-progress": "En cours",
-      upcoming: "À venir",
+      completed: 'Terminé',
+      'in-progress': 'En cours',
+      upcoming: 'À venir',
     }[status];
   }
 
   private getTypeRecurrenceLabel(type: string): string {
     const labels: Record<string, string> = {
-      UNIQUE: "Cours unique",
-      HEBDOMADAIRE: "Hebdomadaire",
-      MENSUEL: "Mensuel",
+      UNIQUE: 'Cours unique',
+      HEBDOMADAIRE: 'Hebdomadaire',
+      MENSUEL: 'Mensuel',
     };
-    return labels[type] || type || "Cours";
+    return labels[type] || type || 'Cours';
   }
 
   private getJourSemaine(date: Date): string {
     const jours = [
-      "DIMANCHE",
-      "LUNDI",
-      "MARDI",
-      "MERCREDI",
-      "JEUDI",
-      "VENDREDI",
-      "SAMEDI",
+      'DIMANCHE',
+      'LUNDI',
+      'MARDI',
+      'MERCREDI',
+      'JEUDI',
+      'VENDREDI',
+      'SAMEDI',
     ];
     return jours[date.getDay()];
   }
 
   private parseDate(value?: string): Date | null {
     if (!value) return null;
-    const [year, month, day] = value.split("-").map(Number);
+    const [year, month, day] = value.split('-').map(Number);
     return year && month && day ? new Date(year, month - 1, day) : null;
   }
 
   private combineDateAndTime(date: Date, time?: string): Date | null {
     if (!time) return null;
-    const [hours, minutes] = time.split(":").map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
     if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
     const result = new Date(date);
     result.setHours(hours, minutes, 0, 0);
@@ -368,6 +370,6 @@ export class PlanningPage implements OnInit {
   }
 
   private formatTime(value?: string): string {
-    return value ? value.substring(0, 5) : "--:--";
+    return value ? value.substring(0, 5) : '--:--';
   }
 }

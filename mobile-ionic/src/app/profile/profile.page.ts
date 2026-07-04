@@ -45,6 +45,7 @@ import { ActionSheetController } from '@ionic/angular/standalone';
 import { AuthService } from '../core/services/auth.service';
 import { ScheduleService } from '../core/services/schedule.service';
 import { UtilisateurService } from '../core/services/utilisateur.service';
+import { FicheProgressionService } from '../core/services/fiche-progression.service';
 import { finalize } from 'rxjs';
 
 @Component({
@@ -67,6 +68,7 @@ export class ProfilePage implements OnInit {
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
   private utilisateurService = inject(UtilisateurService);
+  private ficheProgressionService = inject(FicheProgressionService);
   private actionSheetController = inject(ActionSheetController);
   private toastController = inject(ToastController);
   private ngZone = inject(NgZone);
@@ -89,6 +91,8 @@ export class ProfilePage implements OnInit {
     email: '',
     telephone: '',
     adresse: '',
+    role: '' as string,
+    matieres: [] as string[],
     subjects: [] as string[],
     status: 'Actif',
     avatar: 'https://i.pravatar.cc/150?u=default',
@@ -155,10 +159,31 @@ export class ProfilePage implements OnInit {
         email: user.email || '',
         telephone: user.telephone || '',
         adresse: user.adresse || '',
+        role: user.role || '',
         avatar:
           user.photoUrl ||
           `https://i.pravatar.cc/150?u=${user.email || user.id || 'default'}`,
       };
+
+      // Recharger la photo depuis le backend (non persistee dans le storage
+      // pour eviter QuotaExceededError sur les data URLs base64).
+      this.authService.getMe().subscribe({
+        next: (fullUser) => {
+          // Ignorer les data URLs anormalement volumineuses qui peuvent faire
+          // planter l'affichage ou saturer le rechargement. On garde alors
+          // l'avatar par defaut plutot que de charger un blob trop gros.
+          const url = fullUser?.photoUrl as string | undefined;
+          if (url && url.startsWith('data:image/') && url.length > 500_000) {
+            return;
+          }
+          if (url) {
+            this.teacher.avatar = url;
+          }
+        },
+        error: () => {
+          // Garder l'avatar par defaut.
+        },
+      });
     }
 
     // Charger les statistiques depuis l'API des séances
@@ -176,6 +201,28 @@ export class ProfilePage implements OnInit {
       },
       error: () => {
         // Garder les valeurs par défaut
+      },
+    });
+
+    // Charger les matieres enseignees via les fiches de progression
+    this.ficheProgressionService.getFichesProgression().subscribe({
+      next: (fiches) => {
+        const fullName =
+          `${this.teacher.firstName} ${this.teacher.lastName}`.trim();
+        const matieres = (fiches || [])
+          .filter(
+            (fiche) =>
+              fiche.matiereLibelle &&
+              (!fullName ||
+                fiche.enseignantNomPrenom === fullName ||
+                fiche.enseignantNomPrenom?.includes(this.teacher.lastName)),
+          )
+          .map((fiche) => fiche.matiereLibelle)
+          .filter((value, index, self) => self.indexOf(value) === index);
+        this.teacher.matieres = matieres;
+      },
+      error: () => {
+        this.teacher.matieres = [];
       },
     });
   }
@@ -303,8 +350,14 @@ export class ProfilePage implements OnInit {
       });
 
       if (image.dataUrl) {
+        // Compresser l'image via un canvas pour produire une data URL legerere
+        // (~30-80 Ko). Sans cela, une photo JPEG 512x512 quality 90 peut peser
+        // plusieurs Mo en base64, ce qui fait echouer ou ralentir fortement le
+        // rechargement depuis getMe() et donne l'impression que la photo
+        // disparait apres un changement de page.
+        const compressed = await this.compressDataUrl(image.dataUrl, 256, 0.7);
         this.ngZone.run(() => {
-          void this.saveProfilePhoto(image.dataUrl!);
+          void this.saveProfilePhoto(compressed);
         });
       }
     } catch (error: any) {
@@ -327,6 +380,49 @@ export class ProfilePage implements OnInit {
     }
   }
 
+  /**
+   * Reencode l'image (data URL) via un canvas a une taille cible et une
+   * qualite JPEG donnee, afin de produire une data URL compacte.
+   * Retourne l'URL d'origine si le canvas n'est pas disponible.
+   */
+  private async compressDataUrl(
+    dataUrl: string,
+    targetSize: number,
+    quality: number,
+  ): Promise<string> {
+    return new Promise((resolve) => {
+      if (typeof document === 'undefined') {
+        resolve(dataUrl);
+        return;
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          // Conserver le ratio, mais borner la dimension max a targetSize.
+          const ratio = Math.min(
+            1,
+            targetSize / Math.max(img.width, img.height),
+          );
+          canvas.width = Math.round(img.width * ratio);
+          canvas.height = Math.round(img.height * ratio);
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(dataUrl);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } catch {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
   private async saveProfilePhoto(photoUrl: string): Promise<void> {
     const user = await this.authService.getUser();
 
@@ -340,10 +436,13 @@ export class ProfilePage implements OnInit {
 
     this.utilisateurService.modifierPhoto(user.id, photoUrl).subscribe({
       next: async (updatedUser) => {
+        // La photo est un data URL base64 potentiellement volumineux ;
+        // on ne la persiste PAS dans le localStorage (quota Capacitor)
+        // pour eviter QuotaExceededError. On la garde uniquement en memoire.
+        const { photoUrl: _omitted, ...userWithoutPhoto } = updatedUser;
         const nextUser = {
           ...user,
-          ...updatedUser,
-          photoUrl,
+          ...userWithoutPhoto,
         };
 
         if (!photoUrl) {
@@ -394,5 +493,11 @@ export class ProfilePage implements OnInit {
 
   logout() {
     void this.authService.logout();
+  }
+
+  getMatieresLabel(): string {
+    return this.teacher.matieres.length > 0
+      ? this.teacher.matieres.join(', ')
+      : 'Non renseigné';
   }
 }
