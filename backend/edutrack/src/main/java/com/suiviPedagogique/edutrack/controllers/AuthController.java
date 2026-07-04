@@ -7,6 +7,7 @@ import com.suiviPedagogique.edutrack.Dto.RegistrationRequest;
 import com.suiviPedagogique.edutrack.Dto.ResetPasswordRequest;
 import com.suiviPedagogique.edutrack.Entities.Enseignant;
 import com.suiviPedagogique.edutrack.Entities.Utilisateur;
+import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
 import com.suiviPedagogique.edutrack.security.JwtUtil;
 import com.suiviPedagogique.edutrack.services.AuthService;
 import jakarta.validation.Valid;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +30,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private UtilisateurRepository utilisateurRepository;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -92,6 +97,37 @@ public class AuthController {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Identifiants invalides");
             return ResponseEntity.status(401).body(error);
+        }
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> currentUser(Authentication authentication) {
+        try {
+            Utilisateur utilisateur = utilisateurRepository.findByEmail(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", utilisateur.getId());
+            response.put("matricule", utilisateur.getMatricule());
+            response.put("nom", utilisateur.getNom());
+            response.put("prenom", utilisateur.getPrenom());
+            response.put("email", utilisateur.getEmail());
+            response.put("telephone", utilisateur.getTelephone());
+            response.put("adresse", utilisateur.getAdresse());
+            response.put("role", utilisateur.getRole());
+            response.put("photoUrl", utilisateur.getPhotoUrl());
+            response.put("forcePasswordChange", utilisateur.getForcePasswordChange() != null ? utilisateur.getForcePasswordChange() : false);
+
+            if (utilisateur instanceof Enseignant enseignant) {
+                response.put("specialite", enseignant.getSpecialite());
+                response.put("dateEmbauche", enseignant.getDateEmbauche());
+                response.put("grade", enseignant.getGrade());
+            }
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Utilisateur non trouvé");
+            return ResponseEntity.status(404).body(error);
         }
     }
 

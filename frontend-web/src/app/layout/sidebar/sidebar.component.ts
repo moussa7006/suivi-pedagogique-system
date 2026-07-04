@@ -186,9 +186,10 @@ import { AuthService } from '../../core/services/auth.service';
           font-size: 1.5rem;
           font-weight: 800;
           letter-spacing: -0.02em;
-          background: linear-gradient(to right, #ffffff, #94a3b8);
+          background: linear-gradient(to right, #ffffff, #93c5fd);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
+          text-shadow: 0 2px 12px rgba(59, 130, 246, 0.25);
         }
       }
 

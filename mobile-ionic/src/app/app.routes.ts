@@ -1,59 +1,79 @@
-import { Routes } from "@angular/router";
-import { authGuard } from "./core/guards/auth.guard";
+import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
-    path: "",
-    redirectTo: "login",
-    pathMatch: "full",
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full',
   },
   {
-    path: "login",
-    loadComponent: () => import("./login/login.page").then((m) => m.LoginPage),
+    path: 'login',
+    loadComponent: () => import('./login/login.page').then((m) => m.LoginPage),
   },
   {
-    path: "forgot-password",
+    path: 'forgot-password',
     loadComponent: () =>
-      import("./forgot-password/forgot-password.page").then(
+      import('./forgot-password/forgot-password.page').then(
         (m) => m.ForgotPasswordPage,
       ),
   },
   {
-    path: "reset-password",
+    path: 'reset-password',
     loadComponent: () =>
-      import("./reset-password/reset-password.page").then(
+      import('./reset-password/reset-password.page').then(
         (m) => m.ResetPasswordPage,
       ),
   },
   {
-    path: "change-password",
+    path: 'change-password',
     canActivate: [authGuard],
     loadComponent: () =>
-      import("./change-password/change-password.page").then(
+      import('./change-password/change-password.page').then(
         (m) => m.ChangePasswordPage,
       ),
   },
   {
-    path: "profile",
+    path: 'profile',
     canActivate: [authGuard],
     loadComponent: () =>
-      import("./profile/profile.page").then((m) => m.ProfilePage),
+      import('./profile/profile.page').then((m) => m.ProfilePage),
   },
   {
-    path: "tabs",
+    path: 'tabs',
     canActivate: [authGuard],
-    loadChildren: () => import("./tabs/tabs.routes").then((m) => m.routes),
+    loadChildren: () => import('./tabs/tabs.routes').then((m) => m.routes),
   },
   {
-    path: "planning",
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import("./planning/planning.page").then((m) => m.PlanningPage),
-  },
-  {
-    path: "scan-qr",
+    path: 'planning',
     canActivate: [authGuard],
     loadComponent: () =>
-      import("./scan-qr/scan-qr.page").then((m) => m.ScanQRPage),
+      import('./planning/planning.page').then((m) => m.PlanningPage),
+  },
+  {
+    path: 'scan-qr',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./scan-qr/scan-qr.page').then((m) => m.ScanQRPage),
+  },
+  {
+    path: 'historique',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./historique/historique.page').then((m) => m.HistoriquePage),
+  },
+  {
+    path: 'cahier-textes',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./cahier-textes/cahier-textes.page').then(
+        (m) => m.CahierTextesPage,
+      ),
+  },
+  {
+    path: 'honoraires',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./honoraires/honoraires.page').then((m) => m.HonorairesPage),
   },
 ];

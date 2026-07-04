@@ -16,6 +16,21 @@ ion-content {
   --background: var(--bg-light);
 }
 
+.back-btn {
+  position: absolute;
+  top: calc(12px + var(--ion-safe-area-top));
+  left: 12px;
+  z-index: 20;
+  --color: #1e293b;
+  --background: rgba(255, 255, 255, 0.85);
+  --border-radius: 14px;
+  backdrop-filter: blur(8px);
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
 /* ============================================
    HEADER
    ============================================ */

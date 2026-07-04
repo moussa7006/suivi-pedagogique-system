@@ -443,16 +443,24 @@
   gap: 16px;
 }
 
+.card-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
 .card-avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
   background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.1));
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 1.25rem;
   color: #4f46e5;
   border: 2px solid rgba(79, 70, 229, 0.12);
   flex-shrink: 0;
@@ -461,6 +469,20 @@
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
     color: #d97706;
     border-color: rgba(245, 158, 11, 0.12);
+  }
+}
+
+.card-avatar-img {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(79, 70, 229, 0.12);
+  flex-shrink: 0;
+  background: #f1f5f9;
+
+  &.admin-avatar-img {
+    border-color: rgba(245, 158, 11, 0.18);
   }
 }
 
