@@ -47,10 +47,16 @@ import { AuthService } from '../../core/services/auth.service';
               <span>Classes</span>
             </a>
           </li>
+          <li>
+            <a routerLink="/schedule" routerLinkActive="active">
+              <i class="pi pi-calendar"></i>
+              <span>Emplois du temps</span>
+            </a>
+          </li>
           <li *ngIf="isAdmin">
-            <a routerLink="/teachers" routerLinkActive="active">
-              <i class="pi pi-id-card"></i>
-              <span>Utilisateurs</span>
+            <a routerLink="/honoraires" routerLinkActive="active">
+              <i class="pi pi-money-bill"></i>
+              <span>Honoraires</span>
             </a>
           </li>
           <li *ngIf="isAdmin">
@@ -60,27 +66,27 @@ import { AuthService } from '../../core/services/auth.service';
             </a>
           </li>
           <li>
-            <a routerLink="/schedule" routerLinkActive="active">
-              <i class="pi pi-calendar"></i>
-              <span>Emplois du temps</span>
-            </a>
-          </li>
-          <li>
             <a routerLink="/seances" routerLinkActive="active">
               <i class="pi pi-calendar-times"></i>
               <span>Séances (Sessions)</span>
             </a>
           </li>
           <li *ngIf="isAdmin">
-            <a routerLink="/honoraires" routerLinkActive="active">
-              <i class="pi pi-money-bill"></i>
-              <span>Honoraires</span>
+            <a routerLink="/teachers" routerLinkActive="active">
+              <i class="pi pi-id-card"></i>
+              <span>Utilisateurs</span>
             </a>
           </li>
         </ul>
 
         <div class="nav-section" *ngIf="isAdmin">Référentiels</div>
         <ul class="nav-list" *ngIf="isAdmin">
+          <li>
+            <a routerLink="/annees-universitaires" routerLinkActive="active">
+              <i class="pi pi-calendar-plus"></i>
+              <span>Années universitaires</span>
+            </a>
+          </li>
           <li>
             <a routerLink="/departements" routerLinkActive="active">
               <i class="pi pi-folder"></i>
@@ -103,12 +109,6 @@ import { AuthService } from '../../core/services/auth.service';
             <a routerLink="/salles" routerLinkActive="active">
               <i class="pi pi-building"></i>
               <span>Salles</span>
-            </a>
-          </li>
-          <li>
-            <a routerLink="/annees-universitaires" routerLinkActive="active">
-              <i class="pi pi-calendar-plus"></i>
-              <span>Années universitaires</span>
             </a>
           </li>
         </ul>

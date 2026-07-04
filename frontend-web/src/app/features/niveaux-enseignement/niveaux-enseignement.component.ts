@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { timeout } from 'rxjs/operators';
 import { NiveauEnseignement } from '../../core/models/niveau-enseignement.model';
 import { NiveauEnseignementService } from '../../core/services/niveau-enseignement.service';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
   selector: 'app-niveaux-enseignement',
@@ -14,19 +15,32 @@ import { NiveauEnseignementService } from '../../core/services/niveau-enseigneme
     <div class="page-container">
       <div class="page-header">
         <div class="header-left">
-          <a routerLink="/dashboard" class="btn-back-arrow" title="Retour"><i class="pi pi-arrow-left"></i></a>
+          <a routerLink="/dashboard" class="btn-back-arrow" title="Retour"
+            ><i class="pi pi-arrow-left"></i
+          ></a>
           <div>
             <h1>Niveaux d'enseignement</h1>
-            <p>Niveaux utilisés par les classes et le calcul horaire ({{ niveaux.length }} enregistrés)</p>
+            <p>
+              Niveaux utilisés par les classes et le calcul horaire ({{
+                niveaux.length
+              }}
+              enregistrés)
+            </p>
           </div>
         </div>
-        <button class="btn btn-primary" (click)="showAddForm()"><i class="pi pi-plus"></i> Nouveau Niveau</button>
+        <button class="btn btn-primary" (click)="showAddForm()">
+          <i class="pi pi-plus"></i> Nouveau Niveau
+        </button>
       </div>
 
       <div class="form-card" *ngIf="displayForm">
-        <div class="form-card-header"><h3>{{ editingId ? 'Modifier le Niveau' : 'Nouveau Niveau' }}</h3></div>
+        <div class="form-card-header">
+          <h3>{{ editingId ? 'Modifier le Niveau' : 'Nouveau Niveau' }}</h3>
+        </div>
         <div class="form-card-body">
-          <div *ngIf="errorMessage" class="error-banner"><i class="pi pi-exclamation-triangle"></i>{{ errorMessage }}</div>
+          <div *ngIf="errorMessage" class="error-banner">
+            <i class="pi pi-exclamation-triangle"></i>{{ errorMessage }}
+          </div>
           <div class="section-grid">
             <div class="input-group">
               <label>Libellé</label>
@@ -38,9 +52,16 @@ import { NiveauEnseignementService } from '../../core/services/niveau-enseigneme
             </div>
           </div>
           <div class="form-actions">
-            <button class="btn btn-outline" (click)="displayForm = false" [disabled]="isSaving">Annuler</button>
+            <button class="btn btn-outline" (click)="displayForm = false" [disabled]="isSaving">
+              Annuler
+            </button>
             <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
-              <i class="pi" [class.pi-check]="!isSaving" [class.pi-spin]="isSaving" [class.pi-spinner]="isSaving"></i>
+              <i
+                class="pi"
+                [class.pi-check]="!isSaving"
+                [class.pi-spin]="isSaving"
+                [class.pi-spinner]="isSaving"
+              ></i>
               {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
             </button>
           </div>
@@ -50,7 +71,12 @@ import { NiveauEnseignementService } from '../../core/services/niveau-enseigneme
       <div class="search-section">
         <div class="search-wrapper">
           <i class="pi pi-search"></i>
-          <input type="text" placeholder="Rechercher un niveau..." [(ngModel)]="searchText" (input)="filterNiveaux()" />
+          <input
+            type="text"
+            placeholder="Rechercher un niveau..."
+            [(ngModel)]="searchText"
+            (input)="filterNiveaux()"
+          />
         </div>
       </div>
 
@@ -65,11 +91,20 @@ import { NiveauEnseignementService } from '../../core/services/niveau-enseigneme
           <div class="card-accent"></div>
           <div class="card-body">
             <div class="card-title">{{ niveau.libelle }}</div>
-            <div class="detail-item"><i class="pi pi-money-bill"></i><span>Prix horaire : <strong>{{ niveau.prixHoraire | number:'1.0-0' }}</strong></span></div>
+            <div class="detail-item">
+              <i class="pi pi-money-bill"></i
+              ><span
+                >Prix horaire : <strong>{{ niveau.prixHoraire | number: '1.0-0' }}</strong></span
+              >
+            </div>
           </div>
           <div class="card-actions">
-            <button class="btn-icon-sm edit" (click)="showEditForm(niveau)"><i class="pi pi-pencil"></i></button>
-            <button class="btn-icon-sm delete" (click)="delete(niveau.id!)"><i class="pi pi-trash"></i></button>
+            <button class="btn-icon-sm edit" (click)="showEditForm(niveau)">
+              <i class="pi pi-pencil"></i>
+            </button>
+            <button class="btn-icon-sm delete" (click)="delete(niveau.id!)">
+              <i class="pi pi-trash"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -101,7 +136,10 @@ export class NiveauxEnseignementComponent implements OnInit {
   confirmDeleteId: number | null = null;
   confirmDeleteMessage = '';
 
-  constructor(private niveauService: NiveauEnseignementService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private niveauService: NiveauEnseignementService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.loadNiveaux();
@@ -110,7 +148,7 @@ export class NiveauxEnseignementComponent implements OnInit {
   loadNiveaux(): void {
     this.niveauService.getAll().subscribe({
       next: (data) => {
-        this.niveaux = data;
+        this.niveaux = sortByAlpha(data, (niveau) => niveau.libelle);
         this.filterNiveaux();
         this.cdr.detectChanges();
       },
@@ -123,7 +161,10 @@ export class NiveauxEnseignementComponent implements OnInit {
 
   filterNiveaux(): void {
     const text = this.searchText.toLowerCase();
-    this.filteredNiveaux = this.niveaux.filter((n) => (n.libelle || '').toLowerCase().includes(text));
+    this.filteredNiveaux = sortByAlpha(
+      this.niveaux.filter((n) => (n.libelle || '').toLowerCase().includes(text)),
+      (niveau) => niveau.libelle,
+    );
   }
 
   showAddForm(): void {
@@ -174,7 +215,8 @@ export class NiveauxEnseignementComponent implements OnInit {
 
   delete(id: number): void {
     this.confirmDeleteId = id;
-    this.confirmDeleteMessage = 'Voulez-vous vraiment supprimer ce niveau ? Les classes liées peuvent empêcher la suppression.';
+    this.confirmDeleteMessage =
+      'Voulez-vous vraiment supprimer ce niveau ? Les classes liées peuvent empêcher la suppression.';
   }
 
   cancelDelete(): void {
@@ -200,8 +242,9 @@ export class NiveauxEnseignementComponent implements OnInit {
 
   private handleSaveError(error: any, fallback: string): void {
     this.isSaving = false;
-    this.errorMessage = error?.name === 'TimeoutError'
-      ? 'Le serveur met trop de temps à répondre.'
-      : error?.error?.error || error?.error?.message || fallback;
+    this.errorMessage =
+      error?.name === 'TimeoutError'
+        ? 'Le serveur met trop de temps à répondre.'
+        : error?.error?.error || error?.error?.message || fallback;
   }
 }

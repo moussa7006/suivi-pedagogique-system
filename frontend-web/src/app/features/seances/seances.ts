@@ -10,6 +10,7 @@ import { Classe } from '../../core/models/classe.model';
 import { Teacher } from '../../core/models/user.model';
 import { Salle } from '../../core/models/salle.model';
 import { NotificationService } from '../../shared/notification/notification.service';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 import { FormsModule } from '@angular/forms';
 
@@ -523,9 +524,24 @@ export class SeancesComponent implements OnInit, OnDestroy {
   }
 
   loadData() {
-    this.teacherService.getTeachers().subscribe((t) => (this.teachers = t));
-    this.salleService.getAll().subscribe((s) => (this.salles = s));
-    this.classeService.getAll().subscribe((c) => (this.classes = c));
+    this.teacherService
+      .getTeachers()
+      .subscribe(
+        (t) =>
+          (this.teachers = sortByAlpha(
+            t,
+            (teacher) => `${teacher.nom || ''} ${teacher.prenom || ''}`,
+          )),
+      );
+    this.salleService
+      .getAll()
+      .subscribe(
+        (s) =>
+          (this.salles = sortByAlpha(s, (salle) => `${salle.nom || ''} ${salle.batiment || ''}`)),
+      );
+    this.classeService
+      .getAll()
+      .subscribe((c) => (this.classes = sortByAlpha(c, (classe) => classe.libelle)));
   }
 
   loadSeances() {
@@ -734,33 +750,37 @@ export class SeancesComponent implements OnInit, OnDestroy {
 
   applyFilters() {
     const searchLower = this.searchText.toLowerCase().trim();
-    this.filteredSeances = this.seances.filter((s) => {
-      // 1. Filtre par date
-      if (this.filterDate && this.toDateKey(s.dateCours) !== this.filterDate) {
-        return false;
-      }
-
-      // 2. Filtre par statut
-      if (this.filterStatus && this.getComputedStatus(s) !== this.filterStatus) {
-        return false;
-      }
-
-      // 3. Filtre de recherche par texte libre (Enseignant, Salle, Classe)
-      if (searchLower) {
-        const ens = this.getEnseignantNom(s).toLowerCase();
-        const salle = this.getSalleNom(s).toLowerCase();
-        const classe = this.getClasseLibelle(s).toLowerCase();
-        if (
-          !ens.includes(searchLower) &&
-          !salle.includes(searchLower) &&
-          !classe.includes(searchLower)
-        ) {
+    this.filteredSeances = sortByAlpha(
+      this.seances.filter((s) => {
+        // 1. Filtre par date
+        if (this.filterDate && this.toDateKey(s.dateCours) !== this.filterDate) {
           return false;
         }
-      }
 
-      return true;
-    });
+        // 2. Filtre par statut
+        if (this.filterStatus && this.getComputedStatus(s) !== this.filterStatus) {
+          return false;
+        }
+
+        // 3. Filtre de recherche par texte libre (Enseignant, Salle, Classe)
+        if (searchLower) {
+          const ens = this.getEnseignantNom(s).toLowerCase();
+          const salle = this.getSalleNom(s).toLowerCase();
+          const classe = this.getClasseLibelle(s).toLowerCase();
+          if (
+            !ens.includes(searchLower) &&
+            !salle.includes(searchLower) &&
+            !classe.includes(searchLower)
+          ) {
+            return false;
+          }
+        }
+
+        return true;
+      }),
+      (seance) =>
+        `${this.getEnseignantNom(seance)} ${this.getClasseLibelle(seance)} ${this.getSalleNom(seance)} ${seance.dateCours || ''}`,
+    );
   }
 
   resetFilters() {

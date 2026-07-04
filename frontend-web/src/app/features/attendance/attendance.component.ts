@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { AttendanceService } from '../../core/services/attendance.service';
 import { Emargement } from '../../core/models/attendance.model';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
   selector: 'app-attendance',
@@ -674,15 +675,14 @@ export class AttendanceComponent implements OnInit {
 
   ngOnInit() {
     this.attendanceService.getAllAttendances().subscribe((data) => {
-      this.todayLogs = data;
+      this.todayLogs = sortByAlpha(data, (log) => log.enseignantNomPrenom);
       this.filterLogs();
     });
   }
 
   filterLogs() {
     const text = this.searchText.toLowerCase();
-    this.filteredLogs = this.todayLogs.filter((log) => {
-      // Filtre par date
+    const logs = this.todayLogs.filter((log) => {
       let matchDate = true;
       if (this.filterDate) {
         const logDateStr = log.dateHeureScan || log.heureSeance;
@@ -694,13 +694,7 @@ export class AttendanceComponent implements OnInit {
         }
       }
 
-      // Filtre par statut (dropdown)
-      let matchStatus = true;
-      if (this.filterStatus) {
-        matchStatus = log.statut === this.filterStatus;
-      }
-
-      // Recherche texte libre
+      const matchStatus = this.filterStatus ? log.statut === this.filterStatus : true;
       const matchText =
         (log.enseignantNomPrenom || '').toLowerCase().includes(text) ||
         (log.lieu || '').toLowerCase().includes(text) ||
@@ -709,6 +703,8 @@ export class AttendanceComponent implements OnInit {
 
       return matchDate && matchStatus && matchText;
     });
+
+    this.filteredLogs = sortByAlpha(logs, (log) => log.enseignantNomPrenom);
   }
 
   resetFilters() {
