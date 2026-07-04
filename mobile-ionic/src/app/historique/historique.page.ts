@@ -22,7 +22,8 @@ import {
   arrowDownOutline,
   arrowBackOutline,
 } from 'ionicons/icons';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, from, of } from 'rxjs';
+import { AuthService } from '../core/services/auth.service';
 import { ScheduleService } from '../core/services/schedule.service';
 import { EmargementService } from '../core/services/emargement.service';
 import { FicheProgressionService } from '../core/services/fiche-progression.service';
@@ -31,6 +32,7 @@ import { Seance } from '../core/models/seance.model';
 import { Emargement as EmargementModel } from '../core/models/attendance.model';
 import { FicheProgression } from '../core/models/fiche-progression.model';
 import { Matiere } from '../core/models/matiere.model';
+import { EmploiDuTemps } from '../core/models/schedule.model';
 
 interface HistoriqueItem {
   id?: number;
@@ -62,14 +64,21 @@ interface HistoriqueItem {
   ],
 })
 export class HistoriquePage implements OnInit {
+  private readonly authService = inject(AuthService);
   private readonly scheduleService = inject(ScheduleService);
   private readonly emargementService = inject(EmargementService);
   private readonly ficheProgressionService = inject(FicheProgressionService);
   private readonly matiereService = inject(MatiereService);
 
   filterPeriod = 'all';
+  selectedMonth = '';
+  isLoading = false;
+  errorMessage = '';
+
   stats = {
     seancesCompletees: 0,
+    seancesEmargees: 0,
+    dureeTotale: 0,
   };
 
   seances: HistoriqueItem[] = [];
@@ -77,22 +86,35 @@ export class HistoriquePage implements OnInit {
   private emargementsData: EmargementModel[] = [];
   private fichesProgression: FicheProgression[] = [];
   private matieres: Matiere[] = [];
+  private emploisDuTemps: EmploiDuTemps[] = [];
+  private currentTeacherId?: number;
+  private currentTeacherName = '';
 
   get filteredSeances(): HistoriqueItem[] {
+    const now = new Date();
+    now.setHours(23, 59, 59, 999);
+
+    let result = this.seances.filter(
+      (s) => s.date <= now && s.status !== 'planned',
+    );
+
     if (this.filterPeriod === 'all') {
-      return this.seances;
+      if (this.selectedMonth) {
+        result = result.filter(
+          (s) => this.toMonthKey(s.date) === this.selectedMonth,
+        );
+      }
+      return result;
     }
 
-    const now = new Date();
     const cutoff = new Date();
-
     if (this.filterPeriod === 'week') {
       cutoff.setDate(now.getDate() - 7);
     } else if (this.filterPeriod === 'month') {
       cutoff.setMonth(now.getMonth() - 1);
     }
 
-    return this.seances.filter((s) => s.date >= cutoff);
+    return result.filter((s) => s.date >= cutoff);
   }
 
   constructor() {
@@ -117,29 +139,59 @@ export class HistoriquePage implements OnInit {
   }
 
   filterByPeriod(): void {
+    if (this.filterPeriod !== 'all') {
+      this.selectedMonth = '';
+    }
     // Filtrage géré par le getter filteredSeances.
   }
 
+  clearSelectedMonth(): void {
+    this.selectedMonth = '';
+  }
+
   private loadHistorique(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
     forkJoin({
-      seances: this.scheduleService.getSeances(),
-      emargements: this.emargementService.getEmargements(),
-      fiches: this.ficheProgressionService.getFichesProgression(),
-      matieres: this.matiereService.getAll(),
+      user: this.authService
+        .getMe()
+        .pipe(catchError(() => from(this.authService.getUser()))),
+      seances: this.scheduleService.getSeances().pipe(catchError(() => of([]))),
+      emplois: this.scheduleService
+        .getEmploisDuTemps()
+        .pipe(catchError(() => of([]))),
+      emargements: this.emargementService
+        .getEmargements()
+        .pipe(catchError(() => of([]))),
+      fiches: this.ficheProgressionService
+        .getFichesProgression()
+        .pipe(catchError(() => of([]))),
+      matieres: this.matiereService.getAll().pipe(catchError(() => of([]))),
     }).subscribe({
-      next: ({ seances, emargements, fiches, matieres }) => {
-        this.seancesData = seances || [];
-        this.emargementsData = emargements || [];
-        this.fichesProgression = fiches || [];
+      next: ({ user, seances, emplois, emargements, fiches, matieres }) => {
+        this.currentTeacherId = user?.id;
+        this.currentTeacherName = `${user?.prenom || ''} ${user?.nom || ''}`
+          .trim()
+          .toLowerCase();
+        this.seancesData = this.filterTeacherSeances(seances || []);
+        this.emargementsData = this.filterTeacherEmargements(emargements || []);
+        this.fichesProgression = this.filterTeacherFiches(fiches || []);
+        this.emploisDuTemps = emplois || [];
         this.matieres = matieres || [];
         this.buildHistorique();
+        this.isLoading = false;
       },
       error: () => {
         this.seancesData = [];
         this.emargementsData = [];
         this.fichesProgression = [];
         this.matieres = [];
+        this.emploisDuTemps = [];
         this.buildHistorique();
+        this.errorMessage =
+          "Impossible de charger l'historique depuis la base de données.";
+        this.isLoading = false;
       },
     });
   }
@@ -149,31 +201,76 @@ export class HistoriquePage implements OnInit {
       .map((seance) => {
         const fiche = this.findFicheForSeance(seance);
         const emargement = this.findEmargementForSeance(seance);
+        const duree = this.calculerDureeMinutes(
+          seance.heureDebutReelle,
+          seance.heureFinReelle,
+        );
 
         return {
           id: seance.id,
-          matiere:
-            fiche?.matiereLibelle ||
-            this.getMatiereLabelFromFiche(fiche) ||
-            `Séance #${seance.id}`,
+          matiere: this.getMatiereLabel(seance, fiche),
           date: this.parseDate(seance.dateCours),
           heure: `${this.formatTime(seance.heureDebutReelle)} - ${this.formatTime(seance.heureFinReelle)}`,
-          contenu:
-            fiche?.contenuDetaille || `Statut de la séance : ${seance.statut}`,
-          status: this.mapStatus(seance.statut),
+          contenu: this.getContenuSeance(seance, fiche, emargement),
+          status: this.mapStatus(seance.statut, fiche, emargement),
           presents: emargement ? 1 : 0,
           total: 1,
-          duree: this.calculerDureeMinutes(
-            seance.heureDebutReelle,
-            seance.heureFinReelle,
-          ),
+          duree,
         };
       })
-      .sort((a, b) => b.date.getTime() - a.date.getTime());
+      .sort((a, b) => {
+        const dateCompare = b.date.getTime() - a.date.getTime();
+        if (dateCompare !== 0) return dateCompare;
+        return (
+          this.toMinutes(b.heure.split(' - ')[0])! -
+          this.toMinutes(a.heure.split(' - ')[0])!
+        );
+      });
 
     this.stats.seancesCompletees = this.seances.filter(
       (s) => s.status === 'completed',
     ).length;
+    this.stats.seancesEmargees = this.seances.filter(
+      (s) => s.presents > 0,
+    ).length;
+    this.stats.dureeTotale = this.seances.reduce(
+      (total, seance) => total + seance.duree,
+      0,
+    );
+  }
+
+  private filterTeacherSeances(seances: Seance[]): Seance[] {
+    if (!this.currentTeacherId) return seances;
+    return seances.filter(
+      (seance) =>
+        !seance.enseignantId || seance.enseignantId === this.currentTeacherId,
+    );
+  }
+
+  private filterTeacherEmargements(
+    emargements: EmargementModel[],
+  ): EmargementModel[] {
+    if (!this.currentTeacherName) return emargements;
+    return emargements.filter((emargement) => {
+      const name = (emargement.enseignantNomPrenom || '').toLowerCase();
+      return (
+        !name ||
+        name.includes(this.currentTeacherName) ||
+        this.currentTeacherName.includes(name)
+      );
+    });
+  }
+
+  private filterTeacherFiches(fiches: FicheProgression[]): FicheProgression[] {
+    if (!this.currentTeacherName) return fiches;
+    return fiches.filter((fiche) => {
+      const name = (fiche.enseignantNomPrenom || '').toLowerCase();
+      return (
+        !name ||
+        name.includes(this.currentTeacherName) ||
+        this.currentTeacherName.includes(name)
+      );
+    });
   }
 
   private findFicheForSeance(seance: Seance): FicheProgression | undefined {
@@ -184,25 +281,81 @@ export class HistoriquePage implements OnInit {
   }
 
   private findEmargementForSeance(seance: Seance): EmargementModel | undefined {
-    return this.emargementsData.find(
+    const byId = this.emargementsData.find(
       (emargement) => emargement.id === seance.emargementId,
     );
+    if (byId) return byId;
+
+    const seanceDate = this.parseDate(seance.dateCours)
+      .toISOString()
+      .substring(0, 10);
+    return this.emargementsData.find((emargement) => {
+      const scanDate = (emargement.dateHeureScan || '').substring(0, 10);
+      return (
+        scanDate === seanceDate &&
+        emargement.heureSeance?.includes(
+          this.formatTime(seance.heureDebutReelle),
+        )
+      );
+    });
   }
 
-  private getMatiereLabelFromFiche(fiche?: FicheProgression): string {
-    if (!fiche?.matiereLibelle) {
-      return '';
+  private getMatiereLabel(seance: Seance, fiche?: FicheProgression): string {
+    if (fiche?.matiereLibelle) return fiche.matiereLibelle;
+
+    const emploi = this.emploisDuTemps.find(
+      (item) => item.id === seance.emploiDuTempsId,
+    );
+    const emploiMatiereLabel =
+      (emploi as any)?.matiereLibelle ||
+      (emploi as any)?.matiereNom ||
+      (emploi as any)?.matiere?.libelle;
+    if (emploiMatiereLabel) return emploiMatiereLabel;
+    if (emploi?.titre) return emploi.titre;
+
+    const matiereId =
+      (seance as any).matiereId ||
+      (seance as any).matiere?.id ||
+      emploi?.matiereId;
+    const matiere = this.matieres.find((item: any) => item.id === matiereId);
+
+    return matiere?.libelle || 'Matière non renseignée';
+  }
+
+  private getContenuSeance(
+    seance: Seance,
+    fiche?: FicheProgression,
+    emargement?: EmargementModel,
+  ): string {
+    const parts = [fiche?.contenuDetaille, fiche?.objectifs, fiche?.travaux]
+      .filter(Boolean)
+      .map((value) => String(value).trim())
+      .filter(Boolean);
+
+    if (parts.length > 0) {
+      return parts.join(' • ');
     }
 
-    const matiere = this.matieres.find(
-      (item) => item.libelle === fiche.matiereLibelle,
-    );
-    return matiere?.libelle || fiche.matiereLibelle;
+    if (emargement) {
+      return `Émargement ${emargement.statut?.toString().toLowerCase() || 'enregistré'}${emargement.lieu ? ` à ${emargement.lieu}` : ''}.`;
+    }
+
+    return `Statut de la séance : ${seance.statut}`;
   }
 
-  private mapStatus(statut: string): 'completed' | 'in_progress' | 'planned' {
-    if (statut === 'TERMINEE') return 'completed';
-    if (statut === 'EN_COURS') return 'in_progress';
+  private mapStatus(
+    statut: string,
+    fiche?: FicheProgression,
+    emargement?: EmargementModel,
+  ): 'completed' | 'in_progress' | 'planned' {
+    if (
+      statut === 'TERMINEE' ||
+      fiche?.estValideAdmin ||
+      emargement?.statut === 'VALIDE'
+    ) {
+      return 'completed';
+    }
+    if (statut === 'EN_COURS' || emargement) return 'in_progress';
     return 'planned';
   }
 
@@ -226,6 +379,12 @@ export class HistoriquePage implements OnInit {
     return year && month && day
       ? new Date(year, month - 1, day)
       : new Date(value);
+  }
+
+  private toMonthKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
   }
 
   private formatTime(value?: string): string {

@@ -11,6 +11,7 @@ import { Filiere } from '../../core/models/filiere.model';
 import { NiveauEnseignement } from '../../core/models/niveau-enseignement.model';
 import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model';
 import { timeout } from 'rxjs/operators';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
   selector: 'app-classes',
@@ -79,7 +80,10 @@ import { timeout } from 'rxjs/operators';
               </div>
               <div class="input-group">
                 <label>Niveau d'Enseignement</label>
-                <select [(ngModel)]="currentClasse.niveauEnseignementId" (ngModelChange)="autoFillLibelle()">
+                <select
+                  [(ngModel)]="currentClasse.niveauEnseignementId"
+                  (ngModelChange)="autoFillLibelle()"
+                >
                   <option [ngValue]="null" disabled>Sélectionnez un niveau</option>
                   <option *ngFor="let n of niveauxEnseignement" [ngValue]="n.id">
                     {{ n.libelle }}
@@ -140,7 +144,9 @@ import { timeout } from 'rxjs/operators';
             <div class="card-badges">
               <span class="badge-niveau">{{ getFiliereLibelle(classe.filiereId) }}</span>
               <span class="badge-niveau">{{ getNiveauLibelle(classe.niveauEnseignementId) }}</span>
-              <span class="badge-niveau">{{ getAnneeUniversitaireLibelle(classe.anneeUniversitaireId) }}</span>
+              <span class="badge-niveau">{{
+                getAnneeUniversitaireLibelle(classe.anneeUniversitaireId)
+              }}</span>
             </div>
           </div>
           <div class="card-actions">
@@ -208,7 +214,7 @@ export class Classes implements OnInit {
 
   private loadFilieres(): void {
     this.filiereService.getAll().subscribe({
-      next: (data) => (this.filieres = data),
+      next: (data) => (this.filieres = sortByAlpha(data, (f) => f.libelle)),
       error: (err) => {
         console.error('[Classes] Erreur chargement filières:', err);
         this.errorMessage = 'Impossible de charger les filières. Vérifiez le backend.';
@@ -218,7 +224,7 @@ export class Classes implements OnInit {
 
   private loadNiveauxEnseignement(): void {
     this.niveauEnseignementService.getAll().subscribe({
-      next: (data) => (this.niveauxEnseignement = data),
+      next: (data) => (this.niveauxEnseignement = sortByAlpha(data, (n) => n.libelle)),
       error: (err) => {
         console.error('[Classes] Erreur chargement niveaux:', err);
         this.errorMessage =
@@ -229,7 +235,7 @@ export class Classes implements OnInit {
 
   private loadAnneesUniversitaires(): void {
     this.anneeUniversitaireService.getAll().subscribe({
-      next: (data) => (this.anneesUniversitaires = data),
+      next: (data) => (this.anneesUniversitaires = sortByAlpha(data, (a) => a.libelle, 'desc')),
       error: (err) => {
         console.error('[Classes] Erreur chargement années:', err);
         this.errorMessage = 'Impossible de charger les années universitaires. Vérifiez le backend.';
@@ -240,7 +246,7 @@ export class Classes implements OnInit {
   loadClasses() {
     this.classeService.getAll().subscribe({
       next: (data) => {
-        this.classes = data;
+        this.classes = sortByAlpha(data, (classe) => classe.libelle);
         this.filterClasses();
         this.cdr.detectChanges();
       },
@@ -253,8 +259,9 @@ export class Classes implements OnInit {
 
   filterClasses() {
     const text = this.searchText.toLowerCase();
-    this.filteredClasses = this.classes.filter((c) =>
-      (c.libelle || '').toLowerCase().includes(text),
+    this.filteredClasses = sortByAlpha(
+      this.classes.filter((c) => (c.libelle || '').toLowerCase().includes(text)),
+      (classe) => classe.libelle,
     );
   }
 
@@ -293,7 +300,12 @@ export class Classes implements OnInit {
     this.editingId = null;
     this.errorMessage = '';
     this.isSaving = false;
-    this.currentClasse = { libelle: '', filiereId: undefined, niveauEnseignementId: undefined, anneeUniversitaireId: undefined };
+    this.currentClasse = {
+      libelle: '',
+      filiereId: undefined,
+      niveauEnseignementId: undefined,
+      anneeUniversitaireId: undefined,
+    };
     this.displayForm = true;
   }
 
@@ -313,10 +325,17 @@ export class Classes implements OnInit {
       libelle: (this.currentClasse.libelle || '').trim(),
       filiereId: Number(this.currentClasse.filiereId),
       niveauEnseignementId: Number(this.currentClasse.niveauEnseignementId),
-      anneeUniversitaireId: this.currentClasse.anneeUniversitaireId ? Number(this.currentClasse.anneeUniversitaireId) : undefined,
+      anneeUniversitaireId: this.currentClasse.anneeUniversitaireId
+        ? Number(this.currentClasse.anneeUniversitaireId)
+        : undefined,
     };
 
-    if (!classeToSave.libelle || !classeToSave.filiereId || !classeToSave.niveauEnseignementId || !classeToSave.anneeUniversitaireId) {
+    if (
+      !classeToSave.libelle ||
+      !classeToSave.filiereId ||
+      !classeToSave.niveauEnseignementId ||
+      !classeToSave.anneeUniversitaireId
+    ) {
       this.errorMessage =
         "Veuillez renseigner le libellé, la filière, le niveau d'enseignement et l'année universitaire avant d'enregistrer.";
       return;

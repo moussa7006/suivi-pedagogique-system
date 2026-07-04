@@ -6,6 +6,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { Seance } from '../../core/models/schedule.model';
 import { NotificationService } from '../../shared/notification/notification.service';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
   selector: 'app-qr-generator',
@@ -694,7 +695,10 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
 
   loadSeances() {
     this.scheduleService.getAllSeances().subscribe((data) => {
-      this.seances = (data || []).filter((seance) => this.isTodaySeance(seance));
+      this.seances = sortByAlpha(
+        (data || []).filter((seance) => this.isTodaySeance(seance)),
+        (seance) => `${seance.dateCours || ''} ${seance.heureDebutReelle || ''}`,
+      );
       this.autoSelectSession();
     });
   }
