@@ -2,6 +2,21 @@
   --background: #f6f8fb;
 }
 
+.back-btn {
+  position: absolute;
+  top: calc(12px + var(--ion-safe-area-top));
+  left: 12px;
+  z-index: 20;
+  --color: #1e293b;
+  --background: rgba(255, 255, 255, 0.85);
+  --border-radius: 14px;
+  backdrop-filter: blur(8px);
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
 .header-section {
   display: flex;
   align-items: center;
@@ -255,4 +270,87 @@ ion-badge {
     align-items: flex-start;
     text-align: left;
   }
+}
+
+/* ============================================
+   FILTRE PAR PERIODE
+   ============================================ */
+.filters-section {
+  margin-bottom: 18px;
+
+  .custom-segment {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 18px;
+    padding: 5px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+
+    ion-segment-button {
+      --color: #64748b;
+      --color-checked: #2563eb;
+      --indicator-color: transparent;
+      --indicator-box-shadow: none;
+      --border-radius: 14px;
+      min-height: 42px;
+      font-weight: 700;
+      font-size: 12.5px;
+      border-radius: 14px;
+      text-transform: none;
+    }
+
+    ion-segment-button.segment-button-checked {
+      background: #ffffff;
+      color: #2563eb !important;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18);
+    }
+
+    ion-segment-button.segment-button-checked ion-label {
+      color: #2563eb !important;
+    }
+  }
+}
+
+/* ============================================
+   RESUME DES DETAILS (heures / taux / montant)
+   ============================================ */
+.details-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 12px;
+  background: #eef2ff;
+  border-radius: 14px;
+  margin-bottom: 12px;
+}
+
+.detail-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .label {
+    font-size: 0.7rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 700;
+  }
+
+  strong {
+    color: #1e293b;
+    font-size: 1rem;
+  }
+}
+
+.details-list-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 4px 0 10px 4px;
+}
+
+.detail-niveau {
+  color: #2563eb !important;
+  font-weight: 700;
 }

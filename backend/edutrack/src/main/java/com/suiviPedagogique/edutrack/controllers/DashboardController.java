@@ -19,7 +19,7 @@ public class DashboardController {
     }
 
     @GetMapping("/charts")
-    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<DashboardDataDto> getDashboardData() {
         return ResponseEntity.ok(dashboardService.getDashboardData());
     }

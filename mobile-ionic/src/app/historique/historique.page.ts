@@ -1,7 +1,7 @@
-import { Component, inject, OnInit } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { FormsModule } from "@angular/forms";
-import { RouterLink } from "@angular/router";
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import {
   IonContent,
   IonButton,
@@ -10,8 +10,8 @@ import {
   IonSegment,
   IonSegmentButton,
   IonLabel,
-} from "@ionic/angular/standalone";
-import { addIcons } from "ionicons";
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
 import {
   calendarOutline,
   timeOutline,
@@ -21,16 +21,16 @@ import {
   eyeOutline,
   arrowDownOutline,
   arrowBackOutline,
-} from "ionicons/icons";
-import { forkJoin } from "rxjs";
-import { ScheduleService } from "../core/services/schedule.service";
-import { EmargementService } from "../core/services/emargement.service";
-import { FicheProgressionService } from "../core/services/fiche-progression.service";
-import { MatiereService } from "../core/services/matiere.service";
-import { Seance } from "../core/models/seance.model";
-import { Emargement as EmargementModel } from "../core/models/attendance.model";
-import { FicheProgression } from "../core/models/fiche-progression.model";
-import { Matiere } from "../core/models/matiere.model";
+} from 'ionicons/icons';
+import { forkJoin } from 'rxjs';
+import { ScheduleService } from '../core/services/schedule.service';
+import { EmargementService } from '../core/services/emargement.service';
+import { FicheProgressionService } from '../core/services/fiche-progression.service';
+import { MatiereService } from '../core/services/matiere.service';
+import { Seance } from '../core/models/seance.model';
+import { Emargement as EmargementModel } from '../core/models/attendance.model';
+import { FicheProgression } from '../core/models/fiche-progression.model';
+import { Matiere } from '../core/models/matiere.model';
 
 interface HistoriqueItem {
   id?: number;
@@ -38,16 +38,16 @@ interface HistoriqueItem {
   date: Date;
   heure: string;
   contenu: string;
-  status: "completed" | "in_progress" | "planned";
+  status: 'completed' | 'in_progress' | 'planned';
   presents: number;
   total: number;
   duree: number;
 }
 
 @Component({
-  selector: "app-historique",
-  templateUrl: "historique.page.html",
-  styleUrls: ["historique.page.scss"],
+  selector: 'app-historique',
+  templateUrl: 'historique.page.html',
+  styleUrls: ['historique.page.scss'],
   imports: [
     CommonModule,
     FormsModule,
@@ -67,10 +67,9 @@ export class HistoriquePage implements OnInit {
   private readonly ficheProgressionService = inject(FicheProgressionService);
   private readonly matiereService = inject(MatiereService);
 
-  filterPeriod = "all";
+  filterPeriod = 'all';
   stats = {
     seancesCompletees: 0,
-    moyennePresence: 0,
   };
 
   seances: HistoriqueItem[] = [];
@@ -80,16 +79,16 @@ export class HistoriquePage implements OnInit {
   private matieres: Matiere[] = [];
 
   get filteredSeances(): HistoriqueItem[] {
-    if (this.filterPeriod === "all") {
+    if (this.filterPeriod === 'all') {
       return this.seances;
     }
 
     const now = new Date();
     const cutoff = new Date();
 
-    if (this.filterPeriod === "week") {
+    if (this.filterPeriod === 'week') {
       cutoff.setDate(now.getDate() - 7);
-    } else if (this.filterPeriod === "month") {
+    } else if (this.filterPeriod === 'month') {
       cutoff.setMonth(now.getMonth() - 1);
     }
 
@@ -173,12 +172,8 @@ export class HistoriquePage implements OnInit {
       .sort((a, b) => b.date.getTime() - a.date.getTime());
 
     this.stats.seancesCompletees = this.seances.filter(
-      (s) => s.status === "completed",
+      (s) => s.status === 'completed',
     ).length;
-    const total = this.seances.reduce((acc, s) => acc + s.total, 0);
-    const presents = this.seances.reduce((acc, s) => acc + s.presents, 0);
-    this.stats.moyennePresence =
-      total > 0 ? Math.round((presents / total) * 100) : 0;
   }
 
   private findFicheForSeance(seance: Seance): FicheProgression | undefined {
@@ -196,7 +191,7 @@ export class HistoriquePage implements OnInit {
 
   private getMatiereLabelFromFiche(fiche?: FicheProgression): string {
     if (!fiche?.matiereLibelle) {
-      return "";
+      return '';
     }
 
     const matiere = this.matieres.find(
@@ -205,10 +200,10 @@ export class HistoriquePage implements OnInit {
     return matiere?.libelle || fiche.matiereLibelle;
   }
 
-  private mapStatus(statut: string): "completed" | "in_progress" | "planned" {
-    if (statut === "TERMINEE") return "completed";
-    if (statut === "EN_COURS") return "in_progress";
-    return "planned";
+  private mapStatus(statut: string): 'completed' | 'in_progress' | 'planned' {
+    if (statut === 'TERMINEE') return 'completed';
+    if (statut === 'EN_COURS') return 'in_progress';
+    return 'planned';
   }
 
   private calculerDureeMinutes(debut: string, fin: string): number {
@@ -219,7 +214,7 @@ export class HistoriquePage implements OnInit {
 
   private toMinutes(value?: string): number | null {
     if (!value) return null;
-    const [hours, minutes] = value.split(":").map(Number);
+    const [hours, minutes] = value.split(':').map(Number);
     return Number.isFinite(hours) && Number.isFinite(minutes)
       ? hours * 60 + minutes
       : null;
@@ -227,13 +222,13 @@ export class HistoriquePage implements OnInit {
 
   private parseDate(value?: string): Date {
     if (!value) return new Date();
-    const [year, month, day] = value.split("-").map(Number);
+    const [year, month, day] = value.split('-').map(Number);
     return year && month && day
       ? new Date(year, month - 1, day)
       : new Date(value);
   }
 
   private formatTime(value?: string): string {
-    return value ? value.substring(0, 5) : "--:--";
+    return value ? value.substring(0, 5) : '--:--';
   }
 }

@@ -1,24 +1,26 @@
-import { Component, EnvironmentInjector, inject } from "@angular/core";
+import { Component, EnvironmentInjector, inject } from '@angular/core';
 import {
   IonTabs,
   IonTabBar,
   IonTabButton,
   IonIcon,
   IonLabel,
-} from "@ionic/angular/standalone";
-import { addIcons } from "ionicons";
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
 import {
-  gridOutline,
+  grid,
   calendarOutline,
   bookOutline,
-  personOutline,
+  person,
   cashOutline,
-} from "ionicons/icons";
+  timeOutline,
+  checkmarkDone,
+} from 'ionicons/icons';
 
 @Component({
-  selector: "app-tabs",
-  templateUrl: "tabs.page.html",
-  styleUrls: ["tabs.page.scss"],
+  selector: 'app-tabs',
+  templateUrl: 'tabs.page.html',
+  styleUrls: ['tabs.page.scss'],
   imports: [IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel],
 })
 export class TabsPage {
@@ -26,11 +28,13 @@ export class TabsPage {
 
   constructor() {
     addIcons({
-      gridOutline,
+      grid,
       calendarOutline,
       bookOutline,
       cashOutline,
-      personOutline,
+      person,
+      timeOutline,
+      checkmarkDone,
     });
   }
 }
