@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { UserService } from '../../core/services/user.service';
 import { Teacher } from '../../core/models/teacher.model';
 import { timeout } from 'rxjs/operators';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
   selector: 'app-teachers',
@@ -513,7 +514,10 @@ export class TeachersComponent implements OnInit {
     this.userService.getUsers().subscribe({
       next: (data) => {
         console.log('Données brutes reçues du backend :', data);
-        this.teachers = data;
+        this.teachers = sortByAlpha(
+          data,
+          (teacher) => `${teacher.nom || ''} ${teacher.prenom || ''}`,
+        );
         this.filterTeachers();
         this.cdr.detectChanges();
       },
@@ -532,8 +536,14 @@ export class TeachersComponent implements OnInit {
         (t.matricule || '').toLowerCase().includes(text) ||
         (t.email || '').toLowerCase().includes(text),
     );
-    this.filteredEnseignants = filtered.filter((t) => t.role !== 'ADMINISTRATEUR');
-    this.filteredAdmins = filtered.filter((t) => t.role === 'ADMINISTRATEUR');
+    this.filteredEnseignants = sortByAlpha(
+      filtered.filter((t) => t.role !== 'ADMINISTRATEUR'),
+      (teacher) => `${teacher.nom || ''} ${teacher.prenom || ''}`,
+    );
+    this.filteredAdmins = sortByAlpha(
+      filtered.filter((t) => t.role === 'ADMINISTRATEUR'),
+      (teacher) => `${teacher.nom || ''} ${teacher.prenom || ''}`,
+    );
   }
 
   getInitials(prenom?: string, nom?: string): string {

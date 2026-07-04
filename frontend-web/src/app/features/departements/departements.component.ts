@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { timeout } from 'rxjs/operators';
 import { Departement } from '../../core/models/departement.model';
 import { DepartementService } from '../../core/services/departement.service';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
   selector: 'app-departements',
@@ -38,13 +39,24 @@ import { DepartementService } from '../../core/services/departement.service';
           <div class="section-grid">
             <div class="input-group">
               <label>Libellé</label>
-              <input type="text" [(ngModel)]="currentDepartement.libelle" placeholder="Ex: Informatique" />
+              <input
+                type="text"
+                [(ngModel)]="currentDepartement.libelle"
+                placeholder="Ex: Informatique"
+              />
             </div>
           </div>
           <div class="form-actions">
-            <button class="btn btn-outline" (click)="displayForm = false" [disabled]="isSaving">Annuler</button>
+            <button class="btn btn-outline" (click)="displayForm = false" [disabled]="isSaving">
+              Annuler
+            </button>
             <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
-              <i class="pi" [class.pi-check]="!isSaving" [class.pi-spin]="isSaving" [class.pi-spinner]="isSaving"></i>
+              <i
+                class="pi"
+                [class.pi-check]="!isSaving"
+                [class.pi-spin]="isSaving"
+                [class.pi-spinner]="isSaving"
+              ></i>
               {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
             </button>
           </div>
@@ -54,7 +66,12 @@ import { DepartementService } from '../../core/services/departement.service';
       <div class="search-section">
         <div class="search-wrapper">
           <i class="pi pi-search"></i>
-          <input type="text" placeholder="Rechercher un département..." [(ngModel)]="searchText" (input)="filterDepartements()" />
+          <input
+            type="text"
+            placeholder="Rechercher un département..."
+            [(ngModel)]="searchText"
+            (input)="filterDepartements()"
+          />
         </div>
       </div>
 
@@ -72,8 +89,12 @@ import { DepartementService } from '../../core/services/departement.service';
             <div class="card-subtitle">Département académique</div>
           </div>
           <div class="card-actions">
-            <button class="btn-icon-sm edit" (click)="showEditForm(departement)" title="Modifier"><i class="pi pi-pencil"></i></button>
-            <button class="btn-icon-sm delete" (click)="delete(departement.id!)" title="Supprimer"><i class="pi pi-trash"></i></button>
+            <button class="btn-icon-sm edit" (click)="showEditForm(departement)" title="Modifier">
+              <i class="pi pi-pencil"></i>
+            </button>
+            <button class="btn-icon-sm delete" (click)="delete(departement.id!)" title="Supprimer">
+              <i class="pi pi-trash"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -105,7 +126,10 @@ export class DepartementsComponent implements OnInit {
   confirmDeleteId: number | null = null;
   confirmDeleteMessage = '';
 
-  constructor(private departementService: DepartementService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private departementService: DepartementService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.loadDepartements();
@@ -114,7 +138,7 @@ export class DepartementsComponent implements OnInit {
   loadDepartements(): void {
     this.departementService.getAll().subscribe({
       next: (data) => {
-        this.departements = data;
+        this.departements = sortByAlpha(data, (departement) => departement.libelle);
         this.filterDepartements();
         this.cdr.detectChanges();
       },
@@ -127,7 +151,10 @@ export class DepartementsComponent implements OnInit {
 
   filterDepartements(): void {
     const text = this.searchText.toLowerCase();
-    this.filteredDepartements = this.departements.filter((d) => (d.libelle || '').toLowerCase().includes(text));
+    this.filteredDepartements = sortByAlpha(
+      this.departements.filter((d) => (d.libelle || '').toLowerCase().includes(text)),
+      (departement) => departement.libelle,
+    );
   }
 
   showAddForm(): void {
@@ -177,7 +204,8 @@ export class DepartementsComponent implements OnInit {
 
   delete(id: number): void {
     this.confirmDeleteId = id;
-    this.confirmDeleteMessage = 'Voulez-vous vraiment supprimer ce département ? Les filières et matières liées peuvent empêcher la suppression.';
+    this.confirmDeleteMessage =
+      'Voulez-vous vraiment supprimer ce département ? Les filières et matières liées peuvent empêcher la suppression.';
   }
 
   cancelDelete(): void {
@@ -203,8 +231,9 @@ export class DepartementsComponent implements OnInit {
 
   private handleSaveError(error: any, fallback: string): void {
     this.isSaving = false;
-    this.errorMessage = error?.name === 'TimeoutError'
-      ? 'Le serveur met trop de temps à répondre.'
-      : error?.error?.error || error?.error?.message || fallback;
+    this.errorMessage =
+      error?.name === 'TimeoutError'
+        ? 'Le serveur met trop de temps à répondre.'
+        : error?.error?.error || error?.error?.message || fallback;
   }
 }

@@ -7,6 +7,7 @@ import { DepartementService } from '../../core/services/departement.service';
 import { Matiere } from '../../core/models/matiere.model';
 import { Departement } from '../../core/models/departement.model';
 import { timeout } from 'rxjs/operators';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
   selector: 'app-matieres',
@@ -56,11 +57,7 @@ import { timeout } from 'rxjs/operators';
             <div class="section-grid">
               <div class="input-group">
                 <label>Code</label>
-                <input
-                  type="text"
-                  [(ngModel)]="currentMatiere.code"
-                  placeholder="Ex: INFO101"
-                />
+                <input type="text" [(ngModel)]="currentMatiere.code" placeholder="Ex: INFO101" />
               </div>
               <div class="input-group">
                 <label>Libellé</label>
@@ -135,7 +132,9 @@ import { timeout } from 'rxjs/operators';
             <div class="card-details">
               <div class="detail-item">
                 <i class="pi pi-calculator"></i>
-                <span>Volume : <strong>{{ m.volumeHoraireTotal }}h</strong></span>
+                <span
+                  >Volume : <strong>{{ m.volumeHoraireTotal }}h</strong></span
+                >
               </div>
               <div class="detail-item">
                 <i class="pi pi-folder"></i>
@@ -192,20 +191,23 @@ export class Matieres implements OnInit {
   constructor(
     private matiereService: MatiereService,
     private departementService: DepartementService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
     this.loadMatieres();
     this.departementService.getAll().subscribe((d) => {
-      this.departements = d;
+      this.departements = sortByAlpha(d, (departement) => departement.libelle);
       this.cdr.detectChanges();
     });
   }
 
   loadMatieres() {
     this.matiereService.getAll().subscribe((data) => {
-      this.matieres = data;
+      this.matieres = sortByAlpha(
+        data,
+        (matiere) => `${matiere.code || ''} ${matiere.libelle || ''}`,
+      );
       this.filterMatieres();
       this.cdr.detectChanges();
     });
@@ -213,10 +215,13 @@ export class Matieres implements OnInit {
 
   filterMatieres() {
     const text = this.searchText.toLowerCase();
-    this.filteredMatieres = this.matieres.filter(
-      (m) =>
-        (m.code || '').toLowerCase().includes(text) ||
-        (m.libelle || '').toLowerCase().includes(text),
+    this.filteredMatieres = sortByAlpha(
+      this.matieres.filter(
+        (m) =>
+          (m.code || '').toLowerCase().includes(text) ||
+          (m.libelle || '').toLowerCase().includes(text),
+      ),
+      (matiere) => `${matiere.code || ''} ${matiere.libelle || ''}`,
     );
   }
 
@@ -230,7 +235,12 @@ export class Matieres implements OnInit {
     this.editingId = null;
     this.errorMessage = '';
     this.isSaving = false;
-    this.currentMatiere = { code: '', libelle: '', volumeHoraireTotal: 60, departementId: undefined };
+    this.currentMatiere = {
+      code: '',
+      libelle: '',
+      volumeHoraireTotal: 60,
+      departementId: undefined,
+    };
     this.displayForm = true;
   }
 
@@ -253,9 +263,14 @@ export class Matieres implements OnInit {
       departementId: Number(this.currentMatiere.departementId),
     };
 
-    if (!matiereToSave.code || !matiereToSave.libelle || !matiereToSave.volumeHoraireTotal || !matiereToSave.departementId) {
+    if (
+      !matiereToSave.code ||
+      !matiereToSave.libelle ||
+      !matiereToSave.volumeHoraireTotal ||
+      !matiereToSave.departementId
+    ) {
       this.errorMessage =
-        'Veuillez renseigner le code, le libellé, le volume horaire total et le département avant d\'enregistrer.';
+        "Veuillez renseigner le code, le libellé, le volume horaire total et le département avant d'enregistrer.";
       return;
     }
 
@@ -299,14 +314,14 @@ export class Matieres implements OnInit {
 
         if (error?.status === 403) {
           this.errorMessage =
-            'Vous n\'avez pas les droits nécessaires pour enregistrer une matière.';
+            "Vous n'avez pas les droits nécessaires pour enregistrer une matière.";
           return;
         }
 
         this.errorMessage =
           error?.error?.error ||
           error?.error?.message ||
-          'Impossible d\'enregistrer la matière. Vérifiez le backend et réessayez.';
+          "Impossible d'enregistrer la matière. Vérifiez le backend et réessayez.";
         this.cdr.detectChanges();
       },
     });

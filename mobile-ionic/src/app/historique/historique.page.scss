@@ -86,12 +86,47 @@ ion-content {
   }
 }
 
+.date-filter {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+.date-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input {
+    flex: 1;
+    min-height: 44px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 0 12px;
+    color: var(--text-primary);
+    background: #ffffff;
+    font-weight: 800;
+  }
+}
+
 /* ============================================
    SUMMARY CARDS (avec animations)
    ============================================ */
 .summary-cards {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--space-md);
   margin-bottom: var(--space-xl);
 
@@ -160,6 +195,24 @@ ion-content {
       }
     }
   }
+}
+
+.loading-state,
+.error-state {
+  margin: 0 0 var(--space-xl);
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #ffffff;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+}
+
+.error-state {
+  color: #b42318;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
 }
 
 /* ============================================

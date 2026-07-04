@@ -6,6 +6,7 @@ import { PedagogyService } from '../../core/services/pedagogy.service';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { FicheProgression } from '../../core/models/lesson-log.model';
 import { Seance } from '../../core/models/seance.model';
+import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
   selector: 'app-pedagogy',
@@ -642,8 +643,15 @@ export class PedagogyComponent implements OnInit {
       logs: this.pedagogyService.getLessonLogs(),
       seances: this.scheduleService.getAllSeances(),
     }).subscribe(({ logs, seances }) => {
-      this.lessonLogs = logs || [];
-      this.seances = seances || [];
+      this.lessonLogs = sortByAlpha(
+        logs || [],
+        (log) =>
+          `${log.enseignantNomPrenom || ''} ${log.matiereLibelle || ''} ${log.dateSeance || ''}`,
+      );
+      this.seances = sortByAlpha(
+        seances || [],
+        (seance) => `${seance.dateCours || ''} ${seance.heureDebutReelle || ''}`,
+      );
     });
   }
 
