@@ -29,25 +29,9 @@
         <span>{{ teacher.status }}</span>
       </div>
     </div>
-
-    <ion-button fill="solid" (click)="logout()" class="hero-logout-btn">
-      <ion-icon slot="start" name="log-out-outline"></ion-icon>
-      <span>Déconnexion</span>
-    </ion-button>
   </div>
 
   <div class="profile-section">
-    <div class="summary-card">
-      <div class="summary-avatar">
-        {{ (teacher.firstName || 'E').charAt(0) }}{{ (teacher.lastName ||
-        '').charAt(0) }}
-      </div>
-      <div>
-        <p class="summary-label">Compte connecté</p>
-        <h2>{{ teacher.email || 'Email non renseigné' }}</h2>
-      </div>
-    </div>
-
     <!-- Profil Enseignant (Détails) -->
     <div class="modern-card">
       <div class="card-header">
@@ -74,6 +58,42 @@
           <div class="item-content">
             <label>Email</label>
             <p class="breakable">{{ teacher.email || 'Non renseigné' }}</p>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="person-circle-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>Matricule</label>
+            <p>{{ teacher.matricule || 'Non renseigné' }}</p>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="book-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>Matière(s)</label>
+            <p class="breakable">{{ getMatieresLabel() }}</p>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="call-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>Téléphone</label>
+            <p>{{ teacher.telephone || 'Non renseigné' }}</p>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="location-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>Quartier</label>
+            <p class="breakable">{{ teacher.adresse || 'Non renseigné' }}</p>
           </div>
         </div>
       </div>
@@ -115,6 +135,20 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Bouton Déconnexion (en bas, plus grand) -->
+  <div class="logout-section">
+    <ion-button
+      expand="block"
+      fill="solid"
+      color="danger"
+      (click)="logout()"
+      class="logout-btn-big"
+    >
+      <ion-icon slot="start" name="log-out-outline"></ion-icon>
+      <span>Déconnexion</span>
+    </ion-button>
   </div>
 
   <!-- MODAL DE CHANGEMENT DE MOT DE PASSE (COMPACT) -->

@@ -1,15 +1,20 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnInit, inject } from "@angular/core";
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import {
   IonBadge,
   IonButton,
   IonContent,
   IonIcon,
+  IonLabel,
   IonRefresher,
   IonRefresherContent,
+  IonSegment,
+  IonSegmentButton,
   IonSpinner,
-} from "@ionic/angular/standalone";
-import { addIcons } from "ionicons";
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
 import {
   calendarOutline,
   cashOutline,
@@ -17,21 +22,27 @@ import {
   chevronUpOutline,
   timeOutline,
   walletOutline,
-} from "ionicons/icons";
-import { finalize } from "rxjs";
-import { HonorairesCalcul } from "../core/models/honoraires.model";
-import { HonorairesService } from "../core/services/honoraires.service";
+  arrowBackOutline,
+} from 'ionicons/icons';
+import { finalize } from 'rxjs';
+import { HonorairesCalcul } from '../core/models/honoraires.model';
+import { HonorairesService } from '../core/services/honoraires.service';
 
 @Component({
-  selector: "app-honoraires",
-  templateUrl: "honoraires.page.html",
-  styleUrls: ["honoraires.page.scss"],
+  selector: 'app-honoraires',
+  templateUrl: 'honoraires.page.html',
+  styleUrls: ['honoraires.page.scss'],
   imports: [
     CommonModule,
+    FormsModule,
+    RouterLink,
     IonContent,
     IonIcon,
     IonButton,
     IonBadge,
+    IonLabel,
+    IonSegment,
+    IonSegmentButton,
     IonSpinner,
     IonRefresher,
     IonRefresherContent,
@@ -43,7 +54,10 @@ export class HonorairesPage implements OnInit {
   honoraires: HonorairesCalcul[] = [];
   expandedId: number | null = null;
   loading = false;
-  errorMessage = "";
+  errorMessage = '';
+
+  // Filtre par periode : 'all' | 'current' | 'previous'
+  filterPeriod: 'all' | 'current' | 'previous' = 'all';
 
   constructor() {
     addIcons({
@@ -53,21 +67,60 @@ export class HonorairesPage implements OnInit {
       chevronUpOutline,
       timeOutline,
       walletOutline,
+      arrowBackOutline,
     });
   }
 
   get totalMontant(): number {
-    return this.honoraires.reduce(
+    return this.filteredHonoraires.reduce(
       (sum, item) => sum + (item.montantBrut || 0),
       0,
     );
   }
 
   get totalHeures(): number {
-    return this.honoraires.reduce(
+    return this.filteredHonoraires.reduce(
       (sum, item) => sum + (item.totalHeures || 0),
       0,
     );
+  }
+
+  /**
+   * Retourne les honoraires filtrés selon la periode choisie.
+   * - all      : tous les mois disponibles
+   * - current  : mois en cours (YYYY-MM courant)
+   * - previous : tous les mois antérieurs au mois en cours
+   */
+  get filteredHonoraires(): HonorairesCalcul[] {
+    if (this.filterPeriod === 'all') {
+      return this.honoraires;
+    }
+    const currentMonth = this.currentMonthKey();
+    if (this.filterPeriod === 'current') {
+      return this.honoraires.filter(
+        (item) => this.normalizeMonthKey(item.mois) === currentMonth,
+      );
+    }
+    // previous
+    return this.honoraires.filter(
+      (item) => this.normalizeMonthKey(item.mois) < currentMonth,
+    );
+  }
+
+  private currentMonthKey(): string {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  /**
+   * Normalise une valeur de mois (ex: "2026-07" ou "2026-07-01")
+   * vers une cle "YYYY-MM" comparable lexicographiquement.
+   */
+  private normalizeMonthKey(value?: string): string {
+    if (!value) return '';
+    const s = value.trim();
+    // Accepte YYYY-MM ou YYYY-MM-DD
+    return s.length >= 7 ? s.substring(0, 7) : s;
   }
 
   ngOnInit(): void {
@@ -80,7 +133,7 @@ export class HonorairesPage implements OnInit {
 
   loadHonoraires(event?: CustomEvent): void {
     this.loading = !event;
-    this.errorMessage = "";
+    this.errorMessage = '';
 
     this.honorairesService
       .getMesHonoraires()
@@ -98,7 +151,7 @@ export class HonorairesPage implements OnInit {
           this.errorMessage =
             error?.error?.message ||
             error?.error?.error ||
-            "Impossible de charger vos honoraires.";
+            'Impossible de charger vos honoraires.';
         },
       });
   }
@@ -109,28 +162,30 @@ export class HonorairesPage implements OnInit {
 
   getStatutLabel(statut?: string): string {
     const labels: Record<string, string> = {
-      BROUILLON: "Brouillon",
-      VALIDE: "Validé",
-      PAYE: "Payé",
+      BROUILLON: 'EN ATTENTE',
+      VALIDE: 'VALIDÉ',
+      PAYE: 'PAYÉ',
     };
-    return statut ? labels[statut] || statut : "-";
+    return statut ? labels[statut] || statut : '-';
   }
 
   getStatusClass(statut?: string): string {
-    return `badge-${(statut || "BROUILLON").toLowerCase()}`;
+    // On garde une classe stable basee sur le statut backend ;
+    // le style "EN ATTENTE" reutilise le visuel brouillon (ambre).
+    return `badge-${(statut || 'BROUILLON').toLowerCase()}`;
   }
 
   formatMonth(value?: string): string {
-    if (!value) return "Mois non défini";
-    return new Intl.DateTimeFormat("fr-FR", {
-      month: "long",
-      year: "numeric",
+    if (!value) return 'Mois non défini';
+    return new Intl.DateTimeFormat('fr-FR', {
+      month: 'long',
+      year: 'numeric',
     }).format(new Date(value));
   }
 
   formatDate(value?: string): string {
-    if (!value) return "-";
-    return new Intl.DateTimeFormat("fr-FR").format(new Date(value));
+    if (!value) return '-';
+    return new Intl.DateTimeFormat('fr-FR').format(new Date(value));
   }
 
   private sortHonoraires(items: HonorairesCalcul[]): HonorairesCalcul[] {
@@ -138,23 +193,23 @@ export class HonorairesPage implements OnInit {
       .map((item) => ({
         ...item,
         detailsHonoraires: [...(item.detailsHonoraires || [])].sort((a, b) => {
-          const aKey = `${a.dateCours || ""} ${a.matiereLibelle || ""} ${a.classeLibelle || ""} ${a.seanceId || ""}`;
-          const bKey = `${b.dateCours || ""} ${b.matiereLibelle || ""} ${b.classeLibelle || ""} ${b.seanceId || ""}`;
+          const aKey = `${a.dateCours || ''} ${a.matiereLibelle || ''} ${a.classeLibelle || ''} ${a.seanceId || ''}`;
+          const bKey = `${b.dateCours || ''} ${b.matiereLibelle || ''} ${b.classeLibelle || ''} ${b.seanceId || ''}`;
           return this.compareAlphaNumeric(aKey, bKey);
         }),
       }))
       .sort((a, b) => {
-        const aKey = `${a.mois || ""} ${a.enseignantNomPrenom || ""} ${a.id || ""}`;
-        const bKey = `${b.mois || ""} ${b.enseignantNomPrenom || ""} ${b.id || ""}`;
+        const aKey = `${a.mois || ''} ${a.enseignantNomPrenom || ''} ${a.id || ''}`;
+        const bKey = `${b.mois || ''} ${b.enseignantNomPrenom || ''} ${b.id || ''}`;
         return this.compareAlphaNumeric(aKey, bKey);
       });
   }
 
   private compareAlphaNumeric(a: string, b: string): number {
-    return a.localeCompare(b, "fr", { numeric: true, sensitivity: "base" });
+    return a.localeCompare(b, 'fr', { numeric: true, sensitivity: 'base' });
   }
 
   formatTime(value?: string): string {
-    return value ? value.substring(0, 5) : "--:--";
+    return value ? value.substring(0, 5) : '--:--';
   }
 }

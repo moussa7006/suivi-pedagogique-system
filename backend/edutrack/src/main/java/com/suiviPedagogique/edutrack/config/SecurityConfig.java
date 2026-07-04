@@ -15,11 +15,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -29,6 +31,12 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ForcePasswordChangeFilter forcePasswordChangeFilter;
+
+    @Value("${app.cors.allowed-origins:*}")
+    private String allowedOrigins;
+
+    @Value("${app.cors.allow-localhost-dev:false}")
+    private boolean allowLocalhostDev;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService,
                           JwtAuthenticationFilter jwtAuthenticationFilter,
@@ -89,12 +97,33 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        List<String> origins = new java.util.ArrayList<>(
+                Arrays.stream(allowedOrigins.split(","))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .toList()
+        );
+        boolean allowAll = origins.contains("*");
+
+        // En dev, autoriser toute origine http(s)://localhost / 127.0.0.1 sur un
+        // port dynamique. Cela couvre le serveur Ionic (8100), Angular (4200) et
+        // surtout le WebView Capacitor qui sert l'app sur un port aleatoire
+        // (ex. http://localhost:39341) en mode live-reload.
+        if (allowLocalhostDev) {
+            origins.add("http://localhost:[*]");
+            origins.add("https://localhost:[*]");
+            origins.add("http://127.0.0.1:[*]");
+            origins.add("https://127.0.0.1:[*]");
+        }
+
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedOriginPatterns(allowAll ? List.of("*") : origins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Disposition"));
-        configuration.setAllowCredentials(false);
+        // allowCredentials=true est incompatible avec l'origine "*" ; on l'active
+        // uniquement quand des origines explicites sont configurees.
+        configuration.setAllowCredentials(!allowAll);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
