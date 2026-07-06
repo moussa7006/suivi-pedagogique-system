@@ -206,10 +206,11 @@ export class CahierTextesPage implements OnInit {
         this.matieres = this.normalizeArray(matieres);
         this.classes = this.normalizeArray(classes);
         this.seances = this.buildSeanceViews(this.fichesProgression);
-        this.seancesDisponibles = this.normalizeArray(seances).filter(
-          (seance) => this.isSelectableSeance(seance),
+        const rawSeances = this.normalizeArray(seances);
+        this.seancesDisponibles = rawSeances.filter((seance) =>
+          this.isSelectableSeance(seance),
         );
-        this.applyScanContext();
+        this.applyScanContext(rawSeances);
         this.totalHeures = this.fichesProgression.reduce(
           (total, fiche) =>
             total + this.extractDurationHours(fiche.heureSeance),
@@ -274,8 +275,11 @@ export class CahierTextesPage implements OnInit {
     )} • ${this.getSeanceStatusLabel(seance)}`;
   }
 
-  private applyScanContext(): void {
+  private applyScanContext(rawSeances: Seance[]): void {
     const seanceId = Number(this.route.snapshot.queryParamMap.get('seanceId'));
+    const emargementId = Number(
+      this.route.snapshot.queryParamMap.get('emargementId'),
+    );
     this.openedFromScan =
       this.route.snapshot.queryParamMap.get('fromScan') === 'true';
 
@@ -286,10 +290,23 @@ export class CahierTextesPage implements OnInit {
     const seanceIsAvailable = this.seancesDisponibles.some(
       (seance) => seance.id === seanceId,
     );
-    if (seanceIsAvailable) {
-      this.showForm = true;
-      this.seanceForm.patchValue({ seanceId });
+
+    if (!seanceIsAvailable) {
+      const scannedSeance = rawSeances.find((seance) => seance.id === seanceId);
+      if (scannedSeance && !this.hasFicheProgression(scannedSeance)) {
+        this.seancesDisponibles = [
+          ...this.seancesDisponibles,
+          {
+            ...scannedSeance,
+            emargementId:
+              scannedSeance.emargementId || emargementId || undefined,
+          },
+        ];
+      }
     }
+
+    this.showForm = true;
+    this.seanceForm.patchValue({ seanceId });
   }
 
   private buildSeanceViews(fiches: FicheProgression[]): Array<{

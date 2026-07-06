@@ -48,8 +48,16 @@ public class EmargementService {
     private double maxDistanceKm;
 
     public Emargement faireEmargement(EmargementRequest request) {
+        if (request.getSeanceId() == null) {
+            throw new RuntimeException("Séance sélectionnée manquante pour l'émargement.");
+        }
+
         Seance seance = seanceRepository.findByTokenQRCode(request.getTokenQRCode())
                 .orElseThrow(() -> new RuntimeException("QR Code invalide ou séance inexistante."));
+
+        if (!seance.getId().equals(request.getSeanceId())) {
+            throw new RuntimeException("Ce QR Code ne correspond pas à la séance sélectionnée.");
+        }
 
         if (seance.getQrCode() == null || Boolean.FALSE.equals(seance.getQrCode().getEstValide())) {
             throw new RuntimeException("QR Code expiré ou désactivé.");

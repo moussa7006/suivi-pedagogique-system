@@ -86,6 +86,14 @@ export class LoginPage {
     });
   }
 
+  ionViewWillEnter(): void {
+    this.clearLoginFields();
+  }
+
+  ionViewDidLeave(): void {
+    this.clearLoginFields();
+  }
+
   get email() {
     return this.loginForm.get('email');
   }
@@ -121,6 +129,7 @@ export class LoginPage {
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (user) => {
+          this.clearLoginFields();
           if (user?.forcePasswordChange) {
             this.router.navigate(['/change-password'], {
               state: { forced: true },
@@ -133,6 +142,13 @@ export class LoginPage {
           this.apiError.presentError(err, 'Email ou mot de passe incorrect.');
         },
       });
+  }
+
+  private clearLoginFields(): void {
+    this.showPassword = false;
+    this.loginForm.reset({ email: '', password: '' });
+    this.loginForm.markAsPristine();
+    this.loginForm.markAsUntouched();
   }
 
   async changeServerIp() {

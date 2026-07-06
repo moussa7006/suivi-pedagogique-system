@@ -3,14 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { forkJoin, of, Subscription, interval } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { sortByAlpha, sortByNumber } from '../../core/utils/sort-utils';
-import {
-  DashboardService,
-  DashboardData,
-  TopEnseignantRow,
-  MatiereVolumetrieRow,
-  ClasseEmargementRow,
-} from '../../core/services/dashboard.service';
+import { sortByAlpha } from '../../core/utils/sort-utils';
+import { DashboardService } from '../../core/services/dashboard.service';
 import { TeacherService } from '../../core/services/teacher.service';
 import { ClasseService } from '../../core/services/classe.service';
 import { MatiereService } from '../../core/services/matiere.service';
@@ -62,169 +56,6 @@ interface HubTile {
               </span>
             </div>
           </div>
-        </div>
-      </section>
-
-      <!-- TABLEAUX ANALYTICS D'AIDE À LA DÉCISION -->
-      <section class="analytics-section">
-        <div class="section-title">
-          <h2>Analytics décisionnels</h2>
-          <p>
-            Indicateurs clés pour identifier rapidement les forces, les charges importantes et les
-            points à surveiller
-          </p>
-        </div>
-
-        <div class="analytics-grid">
-          <article class="analytics-card">
-            <div class="analytics-card-header">
-              <div>
-                <h3>Enseignants performants</h3>
-                <span>Triés par taux de validation</span>
-              </div>
-              <i class="pi pi-star"></i>
-            </div>
-            <div class="mini-chart" *ngIf="topEnseignants.length > 0">
-              <div class="chart-row" *ngFor="let row of topEnseignants | slice: 0 : 4">
-                <span>{{ row.nom }}</span>
-                <div class="chart-track">
-                  <div
-                    class="chart-bar success"
-                    [style.width.%]="toPercent(row.tauxValidation)"
-                  ></div>
-                </div>
-                <strong>{{ row.tauxValidation }}%</strong>
-              </div>
-            </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Enseignant</th>
-                    <th>Séances</th>
-                    <th>Taux</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngIf="topEnseignants.length === 0">
-                    <td colspan="3" class="empty-row">Aucune donnée disponible</td>
-                  </tr>
-                  <tr *ngFor="let row of topEnseignants | slice: 0 : 5">
-                    <td>
-                      <strong>{{ row.nom }}</strong>
-                      <small>{{ row.specialite || row.matricule }}</small>
-                    </td>
-                    <td>{{ row.emargementsValides }}/{{ row.seancesPlanifiees }}</td>
-                    <td>
-                      <span class="rate-badge" [class.warn]="row.tauxValidation < 70"
-                        >{{ row.tauxValidation }}%</span
-                      >
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          <article class="analytics-card">
-            <div class="analytics-card-header">
-              <div>
-                <h3>Matières à forte charge</h3>
-                <span>Volume horaire décroissant</span>
-              </div>
-              <i class="pi pi-chart-bar"></i>
-            </div>
-            <div class="mini-chart" *ngIf="matieresVolumetrie.length > 0">
-              <div class="chart-row" *ngFor="let row of matieresVolumetrie | slice: 0 : 4">
-                <span>{{ row.libelle }}</span>
-                <div class="chart-track">
-                  <div
-                    class="chart-bar info"
-                    [style.width.%]="getVolumePercent(row.volumeHoraireTotal)"
-                  ></div>
-                </div>
-                <strong>{{ row.volumeHoraireTotal }}h</strong>
-              </div>
-            </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Matière</th>
-                    <th>Volume</th>
-                    <th>Taux</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngIf="matieresVolumetrie.length === 0">
-                    <td colspan="3" class="empty-row">Aucune donnée disponible</td>
-                  </tr>
-                  <tr *ngFor="let row of matieresVolumetrie | slice: 0 : 5">
-                    <td>
-                      <strong>{{ row.libelle }}</strong>
-                      <small>{{ row.code }} · {{ row.departement }}</small>
-                    </td>
-                    <td>{{ row.volumeHoraireTotal }}h</td>
-                    <td>
-                      <span class="rate-badge" [class.warn]="row.tauxValidation < 70"
-                        >{{ row.tauxValidation }}%</span
-                      >
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          <article class="analytics-card priority">
-            <div class="analytics-card-header">
-              <div>
-                <h3>Classes à surveiller</h3>
-                <span>Taux de validation les plus faibles</span>
-              </div>
-              <i class="pi pi-exclamation-triangle"></i>
-            </div>
-            <div class="mini-chart" *ngIf="classesEmargement.length > 0">
-              <div class="chart-row" *ngFor="let row of classesEmargement | slice: 0 : 4">
-                <span>{{ row.libelle }}</span>
-                <div class="chart-track">
-                  <div
-                    class="chart-bar warning"
-                    [style.width.%]="toPercent(row.tauxValidation)"
-                  ></div>
-                </div>
-                <strong>{{ row.tauxValidation }}%</strong>
-              </div>
-            </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Classe</th>
-                    <th>Validées</th>
-                    <th>Taux</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngIf="classesEmargement.length === 0">
-                    <td colspan="3" class="empty-row">Aucune donnée disponible</td>
-                  </tr>
-                  <tr *ngFor="let row of classesEmargement | slice: 0 : 5">
-                    <td>
-                      <strong>{{ row.libelle }}</strong>
-                      <small>{{ row.filiere }} · {{ row.niveau }}</small>
-                    </td>
-                    <td>{{ row.emargementsValides }}/{{ row.seancesPlanifiees }}</td>
-                    <td>
-                      <span class="rate-badge" [class.warn]="row.tauxValidation < 70"
-                        >{{ row.tauxValidation }}%</span
-                      >
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </article>
         </div>
       </section>
 
@@ -616,191 +447,6 @@ interface HubTile {
         }
       }
 
-      /* ANALYTICS DECISIONNELS */
-      .analytics-section {
-        margin-top: 18px;
-      }
-
-      .analytics-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 16px;
-      }
-
-      .analytics-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 18px;
-        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
-        overflow: hidden;
-
-        &.priority {
-          border-color: #fed7aa;
-          box-shadow: 0 12px 28px rgba(249, 115, 22, 0.1);
-        }
-      }
-
-      .analytics-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 12px;
-        margin-bottom: 14px;
-
-        h3 {
-          margin: 0 0 4px;
-          color: #0f172a;
-          font-size: 1rem;
-          font-weight: 850;
-        }
-
-        span {
-          color: #64748b;
-          font-size: 0.78rem;
-          font-weight: 650;
-        }
-
-        i {
-          width: 36px;
-          height: 36px;
-          min-width: 36px;
-          border-radius: 12px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          color: #1d4ed8;
-          background: #eff6ff;
-        }
-      }
-
-      .mini-chart {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding: 12px;
-        margin-bottom: 14px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #f8fafc, #ffffff);
-        border: 1px solid #e2e8f0;
-      }
-
-      .chart-row {
-        display: grid;
-        grid-template-columns: minmax(92px, 1fr) minmax(110px, 1.4fr) 48px;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.76rem;
-        color: #475569;
-
-        span {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          font-weight: 750;
-        }
-
-        strong {
-          color: #0f172a;
-          font-weight: 900;
-          text-align: right;
-        }
-      }
-
-      .chart-track {
-        height: 9px;
-        border-radius: 999px;
-        background: #e2e8f0;
-        overflow: hidden;
-      }
-
-      .chart-bar {
-        height: 100%;
-        min-width: 4px;
-        border-radius: inherit;
-        transition: width 0.35s ease;
-
-        &.success {
-          background: linear-gradient(90deg, #22c55e, #16a34a);
-        }
-
-        &.info {
-          background: linear-gradient(90deg, #38bdf8, #2563eb);
-        }
-
-        &.warning {
-          background: linear-gradient(90deg, #f97316, #ef4444);
-        }
-      }
-
-      .table-responsive {
-        overflow-x: auto;
-      }
-
-      .analytics-card table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 360px;
-      }
-
-      .analytics-card th,
-      .analytics-card td {
-        padding: 10px 8px;
-        border-bottom: 1px solid #f1f5f9;
-        text-align: left;
-        font-size: 0.82rem;
-      }
-
-      .analytics-card th {
-        color: #475569;
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        background: #f8fafc;
-      }
-
-      .analytics-card td {
-        color: #334155;
-        vertical-align: top;
-      }
-
-      .analytics-card strong {
-        display: block;
-        color: #0f172a;
-        font-weight: 800;
-      }
-
-      .analytics-card small {
-        display: block;
-        color: #64748b;
-        font-size: 0.72rem;
-        margin-top: 2px;
-      }
-
-      .rate-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 52px;
-        padding: 4px 8px;
-        border-radius: 999px;
-        background: #dcfce7;
-        color: #166534;
-        font-weight: 850;
-        font-size: 0.76rem;
-
-        &.warn {
-          background: #ffedd5;
-          color: #c2410c;
-        }
-      }
-
-      .empty-row {
-        text-align: center !important;
-        color: #94a3b8 !important;
-        font-weight: 700;
-      }
-
       /* HUB DE NAVIGATION */
       .workspace-hub {
         margin-top: 14px;
@@ -952,15 +598,13 @@ interface HubTile {
       }
 
       @media (max-width: 1180px) {
-        .hub-grid,
-        .analytics-grid {
+        .hub-grid {
           grid-template-columns: repeat(2, 1fr);
         }
       }
 
       @media (max-width: 720px) {
-        .hub-grid,
-        .analytics-grid {
+        .hub-grid {
           grid-template-columns: 1fr;
         }
       }
@@ -988,10 +632,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   adminInitials = 'AU';
 
   private refreshSubscription: Subscription | null = null;
-
-  topEnseignants: TopEnseignantRow[] = [];
-  matieresVolumetrie: MatiereVolumetrieRow[] = [];
-  classesEmargement: ClasseEmargementRow[] = [];
 
   hubTiles: HubTile[] = [
     {
@@ -1052,18 +692,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   get sortedHubTiles(): HubTile[] {
     return sortByAlpha(this.hubTiles, (tile) => tile.label);
-  }
-
-  toPercent(value: number | null | undefined): number {
-    return Math.max(0, Math.min(100, Number(value) || 0));
-  }
-
-  getVolumePercent(value: number | null | undefined): number {
-    const maxVolume = Math.max(
-      ...this.matieresVolumetrie.map((row) => Number(row.volumeHoraireTotal) || 0),
-      1,
-    );
-    return Math.max(4, Math.min(100, ((Number(value) || 0) / maxVolume) * 100));
   }
 
   stats: StatCard[] = [
@@ -1194,25 +822,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.hubTiles[1].indicator = `${matieres.length} matière${matieres.length > 1 ? 's' : ''}`;
       this.hubTiles[3].indicator = `${seances.length} séance${seances.length > 1 ? 's' : ''}`;
       this.hubTiles[5].indicator = `${seances.length} émargement${seances.length > 1 ? 's' : ''}`;
-
-      // Tableaux analytiques : depuis le endpoint dashboard.
-      if (dashboardStats) {
-        this.topEnseignants = sortByNumber(
-          dashboardStats.topEnseignants || [],
-          (row) => row.tauxValidation,
-          'desc',
-        );
-        this.matieresVolumetrie = sortByNumber(
-          dashboardStats.matieresVolumetrie || [],
-          (row) => row.volumeHoraireTotal,
-          'desc',
-        );
-        this.classesEmargement = sortByNumber(
-          dashboardStats.classesEmargement || [],
-          (row) => row.tauxValidation,
-          'asc',
-        );
-      }
     });
   }
 
