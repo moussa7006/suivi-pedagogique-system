@@ -302,12 +302,17 @@ export class ScanQRPage implements OnDestroy {
   }
 
   private async submitToken(tokenQRCode: string): Promise<void> {
+    if (!(await this.ensureTokenMatchesSelectedSeance(tokenQRCode))) {
+      return;
+    }
+
     this.isScanning = true;
 
     try {
       const position = await this.getCurrentPosition();
       this.emargementService
         .scanQRCode({
+          seanceId: this.selectedSeance!.id!,
           tokenQRCode,
           latitude: position.latitude,
           longitude: position.longitude,
@@ -325,9 +330,10 @@ export class ScanQRPage implements OnDestroy {
               position: 'top',
             });
             await toast.present();
-            await this.router.navigate(['/tabs/tabs/tab3'], {
+            await this.router.navigate(['/cahier-textes'], {
               queryParams: {
                 seanceId: response.seanceId || this.selectedSeanceId,
+                emargementId: response.emargementId,
                 fromScan: true,
               },
             });
@@ -347,6 +353,32 @@ export class ScanQRPage implements OnDestroy {
         error?.message || 'Impossible de récupérer votre position.',
       );
     }
+  }
+
+  private async ensureTokenMatchesSelectedSeance(
+    tokenQRCode: string,
+  ): Promise<boolean> {
+    const selectedSeance = this.selectedSeance;
+    if (!selectedSeance?.id) {
+      await this.presentAlert(
+        'Séance requise',
+        'Veuillez sélectionner la séance concernée.',
+      );
+      return false;
+    }
+
+    if (
+      selectedSeance.qrCodeToken &&
+      selectedSeance.qrCodeToken.trim() !== tokenQRCode.trim()
+    ) {
+      await this.presentAlert(
+        'QR Code non correspondant',
+        "Le QR Code scanné n'appartient pas à la séance sélectionnée. Veuillez sélectionner la bonne séance ou scanner le QR Code correspondant.",
+      );
+      return false;
+    }
+
+    return true;
   }
 
   private getScanErrorMessage(error: any): string {

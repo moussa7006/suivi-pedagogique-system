@@ -1,6 +1,14 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { Router } from '@angular/router';
+import {
+  IonApp,
+  IonRouterOutlet,
+  ToastController,
+} from '@ionic/angular/standalone';
+import { App as CapacitorApp } from '@capacitor/app';
+import type { PluginListenerHandle } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -11,12 +19,20 @@ export class AppComponent implements OnInit, OnDestroy {
   hasScrolled = false;
 
   private observer?: MutationObserver;
+  private backButtonListener?: PluginListenerHandle;
+  private lastLoginBackPress = 0;
   private readonly listeners: Array<() => void> = [];
 
-  constructor(private readonly ngZone: NgZone) {}
+  constructor(
+    private readonly ngZone: NgZone,
+    private readonly router: Router,
+    private readonly authService: AuthService,
+    private readonly toastController: ToastController,
+  ) {}
 
   ngOnInit(): void {
     void this.configureStatusBar();
+    void this.configureAndroidBackButton();
 
     this.ngZone.runOutsideAngular(() => {
       this.attachScrollListeners();
@@ -30,6 +46,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.observer?.disconnect();
+    void this.backButtonListener?.remove();
     this.listeners.forEach((remove) => remove());
   }
 
@@ -41,6 +58,62 @@ export class AppComponent implements OnInit, OnDestroy {
     } catch {
       // Le plugin StatusBar n'est pas disponible dans le navigateur.
     }
+  }
+
+  private async configureAndroidBackButton(): Promise<void> {
+    this.backButtonListener = await CapacitorApp.addListener(
+      'backButton',
+      async () => {
+        await this.ngZone.run(async () => {
+          const currentUrl = this.router.url.split('?')[0];
+
+          if (currentUrl === '/login') {
+            await this.exitFromLoginAfterDoublePress();
+            return;
+          }
+
+          if (this.isMenuUrl(currentUrl)) {
+            await this.authService.logout();
+            return;
+          }
+
+          if (this.isPublicAuthUrl(currentUrl)) {
+            await this.router.navigateByUrl('/login', { replaceUrl: true });
+            return;
+          }
+
+          await this.router.navigateByUrl('/tabs/tabs/tab1', {
+            replaceUrl: true,
+          });
+        });
+      },
+    );
+  }
+
+  private isMenuUrl(url: string): boolean {
+    return url === '/tabs' || url === '/tabs/tabs' || url === '/tabs/tabs/tab1';
+  }
+
+  private isPublicAuthUrl(url: string): boolean {
+    return url === '/forgot-password' || url === '/reset-password';
+  }
+
+  private async exitFromLoginAfterDoublePress(): Promise<void> {
+    const now = Date.now();
+
+    if (now - this.lastLoginBackPress < 1800) {
+      await CapacitorApp.exitApp();
+      return;
+    }
+
+    this.lastLoginBackPress = now;
+    const toast = await this.toastController.create({
+      message: 'Appuyez encore une fois pour quitter EduTrack.',
+      duration: 1600,
+      position: 'bottom',
+      color: 'medium',
+    });
+    await toast.present();
   }
 
   private attachScrollListeners(): void {

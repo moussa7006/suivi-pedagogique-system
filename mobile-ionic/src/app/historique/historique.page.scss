@@ -13,6 +13,7 @@
 
 ion-content {
   --background: var(--bg-light);
+  --padding-top: calc(16px + var(--ion-safe-area-top));
 }
 
 /* ============================================
@@ -25,7 +26,8 @@ ion-content {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   height: 48px;
   width: 48px;
-  margin: 0 0 var(--space-lg) 0;
+  margin: 0 auto var(--space-lg) 0;
+  display: block;
 
   ion-icon {
     font-size: 24px;

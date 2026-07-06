@@ -1,6 +1,7 @@
-import { StatutEmargement } from "./enums";
+import { StatutEmargement } from './enums';
 
 export interface EmargementRequest {
+  seanceId: number;
   tokenQRCode: string;
   latitude: number;
   longitude: number;

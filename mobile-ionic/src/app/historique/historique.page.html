@@ -1,6 +1,12 @@
 <ion-content [fullscreen]="true" class="ion-padding">
   <!-- Bouton Retour -->
-  <ion-button fill="clear" class="back-btn-header" routerLink="/tabs/tabs/tab1">
+  <ion-button
+    fill="clear"
+    class="back-btn-header"
+    routerLink="/tabs/tabs/tab1"
+    [replaceUrl]="true"
+    aria-label="Retour au menu"
+  >
     <ion-icon name="arrow-back-outline"></ion-icon>
   </ion-button>
 
