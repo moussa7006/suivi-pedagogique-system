@@ -8,6 +8,7 @@ import {
   ApexChart,
   ApexDataLabels,
   ApexFill,
+  ApexGrid,
   ApexLegend,
   ApexNonAxisChartSeries,
   ApexPlotOptions,
@@ -50,14 +51,6 @@ interface HubTile {
   indicator: string;
 }
 
-interface WatchClassRow {
-  classe: string;
-  prevues: number;
-  realisees: number;
-  taux: number;
-  niveau: 'Critique' | 'À suivre' | 'Normal';
-}
-
 type RadialChartOptions = {
   series: ApexNonAxisChartSeries;
   chart: ApexChart;
@@ -89,6 +82,7 @@ type AxisChartOptions = {
   fill: ApexFill;
   tooltip: ApexTooltip;
   plotOptions: ApexPlotOptions;
+  grid: ApexGrid;
 };
 
 @Component({
@@ -96,136 +90,118 @@ type AxisChartOptions = {
   standalone: true,
   imports: [CommonModule, RouterLink, NgApexchartsModule],
   template: `
-    <div class="dashboard-container">
-      <section class="stats-overview">
-        <div class="stat-card" *ngFor="let stat of stats" [style.--accent]="stat.color">
-          <div class="stat-icon">
-            <i [class]="stat.icon"></i>
-          </div>
-          <div class="stat-details">
-            <span class="stat-label">{{ stat.label }}</span>
-            <div class="stat-value-row">
-              <span class="stat-number">{{ stat.value }}{{ stat.suffix }}</span>
-              <span class="stat-badge" [class]="stat.trendClass">
-                <i
-                  class="pi"
-                  [class.pi-arrow-up]="stat.trendClass === 'positive'"
-                  [class.pi-arrow-down]="stat.trendClass === 'negative'"
-                  [class.pi-minus]="stat.trendClass === 'neutral'"
-                ></i>
-                {{ stat.trend }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <header class="page-header">
-        <div class="header-content">
-          <span class="welcome-text"
-            ><i class="pi pi-sparkles"></i> Tableau de bord décisionnel</span
-          >
-          <h1>Vue globale du suivi pédagogique et financier</h1>
-          <p>
-            Analysez les séances, les émargements, les heures effectuées et les honoraires afin de
-            prendre rapidement les bonnes décisions administratives.
+    <div class="bento-dashboard">
+      <!-- Hero Section -->
+      <div class="hero-bento">
+        <div class="hero-content">
+          <span class="hero-badge"><i class="pi pi-sparkles"></i> EduTrack OS</span>
+          <h1 class="hero-title">Bonjour, {{ adminName }} 👋</h1>
+          <p class="hero-subtitle">
+            Voici un résumé premium de l'activité pédagogique et financière de votre établissement.
+            Prenez des décisions éclairées, plus rapidement.
           </p>
-        </div>
-        <div class="header-actions">
-          <button class="btn-secondary" [routerLink]="['/attendance']">
-            <i class="pi pi-chart-bar"></i>
-            Voir les présences
-          </button>
-        </div>
-      </header>
-
-      <section class="analytics-section">
-        <div class="section-title compact">
-          <div>
-            <h2>Indicateurs d'aide à la décision</h2>
-            <p>Graphiques dynamiques basés sur les données réelles de la plateforme.</p>
+          <div class="hero-actions">
+            <button class="btn-dark" [routerLink]="['/schedule']">
+              <i class="pi pi-plus"></i> Nouvelle séance
+            </button>
+            <button class="btn-glass" [routerLink]="['/attendance']">
+              <i class="pi pi-chart-bar"></i> Présences
+            </button>
           </div>
-          <span class="period-chip">6 derniers mois</span>
         </div>
+        <!-- Abstract Glassmorphism Shapes -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+      </div>
 
-        <div class="analytics-grid top-grid">
-          <article class="analytics-card gauge-card">
-            <div class="card-title-row">
-              <div>
-                <h3>Taux d'émargement global</h3>
-                <p>Séances ayant un émargement enregistré</p>
-              </div>
-              <i class="pi pi-verified card-icon blue"></i>
+      <!-- KPI Grid -->
+      <div class="kpi-grid">
+        <div class="kpi-card" *ngFor="let stat of stats">
+          <div class="kpi-header">
+            <span class="kpi-title">{{ stat.label }}</span>
+            <div class="kpi-icon" [style.background]="stat.color + '1A'" [style.color]="stat.color">
+              <i [class]="stat.icon"></i>
             </div>
-            <apx-chart
-              [series]="attendanceGaugeOptions.series"
-              [chart]="attendanceGaugeOptions.chart"
-              [plotOptions]="attendanceGaugeOptions.plotOptions"
-              [labels]="attendanceGaugeOptions.labels"
-              [fill]="attendanceGaugeOptions.fill"
-              [stroke]="attendanceGaugeOptions.stroke"
-            ></apx-chart>
-            <div class="decision-note" [class.warning]="attendanceRate < 70">
-              <i
-                class="pi"
-                [class.pi-check-circle]="attendanceRate >= 70"
-                [class.pi-exclamation-triangle]="attendanceRate < 70"
-              ></i>
-              {{ attendanceInsight }}
-            </div>
-          </article>
-
-          <article class="analytics-card donut-card">
-            <div class="card-title-row">
-              <div>
-                <h3>Répartition des séances</h3>
-                <p>Prévue, en cours et terminée</p>
-              </div>
-              <i class="pi pi-chart-pie card-icon purple"></i>
-            </div>
-            <apx-chart
-              [series]="sessionStatusOptions.series"
-              [chart]="sessionStatusOptions.chart"
-              [labels]="sessionStatusOptions.labels"
-              [colors]="sessionStatusOptions.colors"
-              [legend]="sessionStatusOptions.legend"
-              [dataLabels]="sessionStatusOptions.dataLabels"
-              [plotOptions]="sessionStatusOptions.plotOptions"
-              [responsive]="sessionStatusOptions.responsive"
-            ></apx-chart>
-          </article>
-        </div>
-
-        <article class="analytics-card wide-card">
-          <div class="card-title-row">
-            <div>
-              <h3>Évolution des séances réalisées</h3>
-              <p>Volume mensuel des séances terminées ou émargées</p>
-            </div>
-            <i class="pi pi-chart-line card-icon green"></i>
           </div>
-          <apx-chart
-            [series]="sessionsTrendOptions.series"
-            [chart]="sessionsTrendOptions.chart"
-            [xaxis]="sessionsTrendOptions.xaxis"
-            [yaxis]="sessionsTrendOptions.yaxis"
-            [colors]="sessionsTrendOptions.colors"
-            [dataLabels]="sessionsTrendOptions.dataLabels"
-            [stroke]="sessionsTrendOptions.stroke"
-            [fill]="sessionsTrendOptions.fill"
-            [tooltip]="sessionsTrendOptions.tooltip"
-          ></apx-chart>
-        </article>
+          <div class="kpi-value">{{ stat.value }}{{ stat.suffix }}</div>
+          <div class="kpi-trend" [class]="stat.trendClass">
+            <i
+              class="pi"
+              [class.pi-arrow-up]="stat.trendClass === 'positive'"
+              [class.pi-arrow-down]="stat.trendClass === 'negative'"
+              [class.pi-minus]="stat.trendClass === 'neutral'"
+            ></i>
+            {{ stat.trend }}
+          </div>
+        </div>
+      </div>
 
-        <div class="analytics-grid bottom-grid">
-          <article class="analytics-card">
-            <div class="card-title-row">
-              <div>
-                <h3>Enseignants les plus performants</h3>
-                <p>Top 5 selon les heures réalisées</p>
-              </div>
-              <i class="pi pi-users card-icon orange"></i>
+      <!-- Bento Grid Layout -->
+      <div class="bento-grid">
+        <!-- Chart 1: Area -->
+        <div class="bento-card col-span-8">
+          <div class="card-header">
+            <h3>Évolution des séances</h3>
+            <p>Volume mensuel des réalisations</p>
+          </div>
+          <div class="chart-wrapper">
+            <apx-chart
+              [series]="sessionsTrendOptions.series"
+              [chart]="sessionsTrendOptions.chart"
+              [xaxis]="sessionsTrendOptions.xaxis"
+              [yaxis]="sessionsTrendOptions.yaxis"
+              [colors]="sessionsTrendOptions.colors"
+              [dataLabels]="sessionsTrendOptions.dataLabels"
+              [stroke]="sessionsTrendOptions.stroke"
+              [fill]="sessionsTrendOptions.fill"
+              [tooltip]="sessionsTrendOptions.tooltip"
+              [grid]="sessionsTrendOptions.grid"
+            ></apx-chart>
+          </div>
+        </div>
+
+        <!-- Gauges & Donut (Side column) -->
+        <div class="bento-column col-span-4">
+          <div class="bento-card flex-center-chart">
+            <div class="card-header">
+              <h3>Taux d'émargement</h3>
             </div>
+            <div class="chart-wrapper gauge-wrapper">
+              <apx-chart
+                [series]="attendanceGaugeOptions.series"
+                [chart]="attendanceGaugeOptions.chart"
+                [plotOptions]="attendanceGaugeOptions.plotOptions"
+                [labels]="attendanceGaugeOptions.labels"
+                [fill]="attendanceGaugeOptions.fill"
+                [stroke]="attendanceGaugeOptions.stroke"
+              ></apx-chart>
+            </div>
+          </div>
+          <div class="bento-card flex-center-chart">
+            <div class="card-header">
+              <h3>Statut des séances</h3>
+            </div>
+            <div class="chart-wrapper donut-wrapper">
+              <apx-chart
+                [series]="sessionStatusOptions.series"
+                [chart]="sessionStatusOptions.chart"
+                [labels]="sessionStatusOptions.labels"
+                [colors]="sessionStatusOptions.colors"
+                [legend]="sessionStatusOptions.legend"
+                [dataLabels]="sessionStatusOptions.dataLabels"
+                [plotOptions]="sessionStatusOptions.plotOptions"
+              ></apx-chart>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Teachers -->
+        <div class="bento-card col-span-6">
+          <div class="card-header">
+            <h3>Top Enseignants</h3>
+            <p>Heures réalisées</p>
+          </div>
+          <div class="chart-wrapper">
             <apx-chart
               [series]="teacherHoursOptions.series"
               [chart]="teacherHoursOptions.chart"
@@ -233,21 +209,22 @@ type AxisChartOptions = {
               [yaxis]="teacherHoursOptions.yaxis"
               [colors]="teacherHoursOptions.colors"
               [dataLabels]="teacherHoursOptions.dataLabels"
+              [plotOptions]="teacherHoursOptions.plotOptions"
+              [grid]="teacherHoursOptions.grid"
+              [tooltip]="teacherHoursOptions.tooltip"
               [stroke]="teacherHoursOptions.stroke"
               [fill]="teacherHoursOptions.fill"
-              [tooltip]="teacherHoursOptions.tooltip"
-              [plotOptions]="teacherHoursOptions.plotOptions"
             ></apx-chart>
-          </article>
+          </div>
+        </div>
 
-          <article class="analytics-card">
-            <div class="card-title-row">
-              <div>
-                <h3>Honoraires calculés</h3>
-                <p>Prévision financière mensuelle</p>
-              </div>
-              <i class="pi pi-wallet card-icon rose"></i>
-            </div>
+        <!-- Honoraires -->
+        <div class="bento-card col-span-6">
+          <div class="card-header">
+            <h3>Honoraires</h3>
+            <p>Prévisions mensuelles</p>
+          </div>
+          <div class="chart-wrapper">
             <apx-chart
               [series]="honorairesOptions.series"
               [chart]="honorairesOptions.chart"
@@ -255,629 +232,453 @@ type AxisChartOptions = {
               [yaxis]="honorairesOptions.yaxis"
               [colors]="honorairesOptions.colors"
               [dataLabels]="honorairesOptions.dataLabels"
+              [plotOptions]="honorairesOptions.plotOptions"
+              [grid]="honorairesOptions.grid"
+              [tooltip]="honorairesOptions.tooltip"
               [stroke]="honorairesOptions.stroke"
               [fill]="honorairesOptions.fill"
-              [tooltip]="honorairesOptions.tooltip"
-              [plotOptions]="honorairesOptions.plotOptions"
             ></apx-chart>
-          </article>
-        </div>
-
-        <article class="analytics-card watch-card">
-          <div class="card-title-row">
-            <div>
-              <h3>Classes à surveiller</h3>
-              <p>Classes ayant le plus faible taux de réalisation des séances</p>
-            </div>
-            <i class="pi pi-shield card-icon red"></i>
           </div>
-
-          <div class="watch-table" *ngIf="classesToWatch.length; else noWatchData">
-            <div class="watch-header">
-              <span>Classe</span>
-              <span>Prévues</span>
-              <span>Réalisées</span>
-              <span>Taux</span>
-              <span>Niveau</span>
-            </div>
-            <div class="watch-row" *ngFor="let row of classesToWatch">
-              <strong>{{ row.classe }}</strong>
-              <span>{{ row.prevues }}</span>
-              <span>{{ row.realisees }}</span>
-              <span>
-                <span class="progress-line"><i [style.width.%]="row.taux"></i></span>
-                {{ row.taux }}%
-              </span>
-              <span
-                class="risk-badge"
-                [class.critical]="row.niveau === 'Critique'"
-                [class.warning]="row.niveau === 'À suivre'"
-              >
-                {{ row.niveau }}
-              </span>
-            </div>
-          </div>
-          <ng-template #noWatchData>
-            <div class="empty-state">
-              <i class="pi pi-info-circle"></i>
-              Aucune donnée suffisante pour identifier des classes à surveiller.
-            </div>
-          </ng-template>
-        </article>
-      </section>
-
-      <section class="workspace-hub">
-        <div class="section-title">
-          <h2>Modules de gestion</h2>
-          <p>Accédez rapidement à vos outils quotidiens</p>
         </div>
+      </div>
 
+      <!-- Quick Access Hub -->
+      <div class="hub-container">
+        <h3 class="hub-title">Accès rapide</h3>
         <div class="hub-grid">
-          <a
-            *ngFor="let tile of sortedHubTiles"
-            [routerLink]="tile.route"
-            class="hub-card"
-            [style.--tile-color]="tile.color"
-          >
-            <div class="card-glow"></div>
-            <div class="card-header">
-              <div class="icon-wrapper">
-                <i [class]="tile.icon"></i>
-              </div>
-              <span class="tag">{{ tile.meta }}</span>
+          <a *ngFor="let tile of sortedHubTiles" [routerLink]="tile.route" class="hub-tile">
+            <div
+              class="tile-icon"
+              [style.background]="tile.color + '1A'"
+              [style.color]="tile.color"
+            >
+              <i [class]="tile.icon"></i>
             </div>
-            <div class="card-body">
-              <h3>{{ tile.label }}</h3>
+            <div class="tile-content">
+              <h4>{{ tile.label }}</h4>
               <p>{{ tile.description }}</p>
-              <span class="module-indicator">{{ tile.indicator }}</span>
             </div>
-            <div class="card-footer">
-              <span class="action-link">Ouvrir <i class="pi pi-chevron-right"></i></span>
-            </div>
+            <i class="pi pi-arrow-right tile-arrow"></i>
           </a>
         </div>
-      </section>
+      </div>
     </div>
   `,
   styles: [
     `
-      .dashboard-container {
-        max-width: 1400px;
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+      .bento-dashboard {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        max-width: 1440px;
         margin: 0 auto;
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 24px;
+        padding-bottom: 32px;
       }
 
-      h1 {
-        font-size: clamp(1.5rem, 2.4vw, 2.25rem);
-        font-weight: 900;
-        color: #0f172a;
-        margin: 8px 0;
-        letter-spacing: -0.04em;
+      .hero-bento {
+        position: relative;
+        background: #0f172a;
+        border-radius: 32px;
+        padding: 56px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        overflow: hidden;
+        box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.4);
       }
-      h2 {
-        font-size: 1.35rem;
-        font-weight: 850;
-        color: #0f172a;
-        margin: 0;
+      .hero-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+        max-width: 60%;
       }
-      h3 {
-        margin: 0;
-        color: #0f172a;
-        font-size: 1rem;
-        font-weight: 850;
-      }
-      p {
-        color: #64748b;
-        font-size: 0.9rem;
-        line-height: 1.45;
-        margin: 4px 0 0;
-      }
-
-      .stats-overview {
-        position: sticky;
-        top: 80px;
-        z-index: 30;
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-        padding-bottom: 8px;
-        background: linear-gradient(
-          180deg,
-          #f8fafc 0%,
-          rgba(248, 250, 252, 0.96) 76%,
-          rgba(248, 250, 252, 0)
-        );
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
-      }
-
-      .stat-card {
-        position: relative;
-        overflow: hidden;
-        background: white;
-        padding: 18px;
-        border-radius: 20px;
-        border: 1px solid #e2e8f0;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
-        transition:
-          transform 0.25s ease,
-          box-shadow 0.25s ease,
-          border-color 0.25s ease;
-
-        &::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            135deg,
-            color-mix(in srgb, var(--accent) 15%, transparent),
-            transparent
-          );
-          opacity: 0.5;
-        }
-
-        &:hover {
-          transform: translateY(-4px);
-          border-color: var(--accent);
-          box-shadow: 0 22px 44px color-mix(in srgb, var(--accent) 22%, rgba(15, 23, 42, 0.12));
-        }
-
-        .stat-icon {
-          width: 52px;
-          height: 52px;
-          border-radius: 16px;
-          background: linear-gradient(
-            135deg,
-            var(--accent),
-            color-mix(in srgb, var(--accent), black 18%)
-          );
-          color: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.4rem;
-          box-shadow: 0 8px 16px color-mix(in srgb, var(--accent) 30%, transparent);
-          position: relative;
-          z-index: 1;
-        }
-        .stat-details {
-          position: relative;
-          z-index: 1;
-          min-width: 0;
-        }
-        .stat-label {
-          font-size: 0.82rem;
-          font-weight: 700;
-          color: #64748b;
-        }
-        .stat-number {
-          font-size: 1.35rem;
-          font-weight: 900;
-          color: #0f172a;
-        }
-        .stat-value-row {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-top: 2px;
-          flex-wrap: wrap;
-        }
-        .stat-badge {
-          padding: 4px 8px;
-          border-radius: 8px;
-          font-size: 0.72rem;
-          font-weight: 800;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-
-          &.positive {
-            background: #dcfce7;
-            color: #166534;
-          }
-          &.negative {
-            background: #fee2e2;
-            color: #991b1b;
-          }
-          &.neutral {
-            background: #f1f5f9;
-            color: #475569;
-          }
-        }
-      }
-
-      .page-header {
-        position: relative;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 18px;
-        padding: 26px;
-        border-radius: 28px;
-        background:
-          radial-gradient(circle at 92% 12%, rgba(59, 130, 246, 0.18), transparent 28%),
-          linear-gradient(135deg, #ffffff 0%, #eff6ff 52%, #eef2ff 100%);
-        border: 1px solid #dbeafe;
-        box-shadow: 0 18px 42px rgba(37, 99, 235, 0.1);
-      }
-      .welcome-text {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        color: #1d4ed8;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        font-size: 0.78rem;
-      }
-      .header-actions {
-        display: flex;
-        justify-content: flex-end;
-      }
-      .btn-secondary {
-        padding: 11px 16px;
-        border-radius: 14px;
-        font-weight: 800;
-        font-size: 0.84rem;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.2s ease;
-        background: #ffffff;
-        color: #1d4ed8;
-        border: 1px solid #bfdbfe;
-        box-shadow: 0 10px 22px rgba(37, 99, 235, 0.08);
-
-        &:hover {
-          background: #dbeafe;
-          border-color: #93c5fd;
-          transform: translateY(-2px);
-        }
-      }
-
-      .section-title {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 14px;
-
-        &.compact {
-          margin-bottom: 16px;
-        }
-      }
-      .period-chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 7px 12px;
-        border-radius: 999px;
-        background: #eef2ff;
-        color: #4338ca;
-        font-size: 0.76rem;
-        font-weight: 900;
-        border: 1px solid #c7d2fe;
-        white-space: nowrap;
-      }
-
-      .analytics-section {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      }
-      .analytics-grid {
-        display: grid;
-        gap: 16px;
-      }
-      .top-grid {
-        grid-template-columns: minmax(320px, 0.9fr) minmax(360px, 1.1fr);
-      }
-      .bottom-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .analytics-card {
-        min-width: 0;
-        background: rgba(255, 255, 255, 0.98);
-        border-radius: 26px;
-        padding: 22px;
-        border: 1px solid rgba(226, 232, 240, 0.95);
-        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
-        overflow: hidden;
-      }
-      .wide-card {
-        padding-bottom: 10px;
-      }
-      .card-title-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 14px;
-        align-items: flex-start;
-        margin-bottom: 12px;
-      }
-      .card-icon {
-        width: 44px;
-        height: 44px;
-        min-width: 44px;
-        border-radius: 16px;
-        display: grid;
-        place-items: center;
-        color: #fff;
-        font-size: 1.1rem;
-        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
-
-        &.blue {
-          background: linear-gradient(135deg, #2563eb, #06b6d4);
-        }
-        &.purple {
-          background: linear-gradient(135deg, #7c3aed, #ec4899);
-        }
-        &.green {
-          background: linear-gradient(135deg, #16a34a, #22c55e);
-        }
-        &.orange {
-          background: linear-gradient(135deg, #f97316, #f59e0b);
-        }
-        &.rose {
-          background: linear-gradient(135deg, #db2777, #f43f5e);
-        }
-        &.red {
-          background: linear-gradient(135deg, #dc2626, #f97316);
-        }
-      }
-      .decision-note {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 10px 12px;
-        border-radius: 16px;
-        background: #dcfce7;
-        color: #166534;
-        font-weight: 800;
-        font-size: 0.82rem;
-        text-align: center;
-
-        &.warning {
-          background: #fff7ed;
-          color: #9a3412;
-        }
-      }
-
-      .watch-card {
-        padding-bottom: 18px;
-      }
-      .watch-table {
-        display: flex;
-        flex-direction: column;
-        border: 1px solid #e2e8f0;
-        border-radius: 18px;
-        overflow: hidden;
-      }
-      .watch-header,
-      .watch-row {
-        display: grid;
-        grid-template-columns: 1.5fr 0.7fr 0.8fr 1.2fr 0.9fr;
-        gap: 12px;
-        align-items: center;
-        padding: 12px 14px;
-      }
-      .watch-header {
-        background: #f8fafc;
-        color: #64748b;
-        font-size: 0.72rem;
-        font-weight: 900;
-        text-transform: uppercase;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 8px 16px;
+        border-radius: 99px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 24px;
         letter-spacing: 0.05em;
+        text-transform: uppercase;
       }
-      .watch-row {
-        background: #ffffff;
-        border-top: 1px solid #eef2f7;
-        color: #334155;
-        font-size: 0.86rem;
+      .hero-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin: 0 0 12px 0;
+        letter-spacing: -0.04em;
+        line-height: 1.1;
       }
-      .progress-line {
-        display: inline-flex;
-        width: 62px;
-        height: 7px;
-        border-radius: 999px;
-        background: #e2e8f0;
-        overflow: hidden;
-        margin-right: 8px;
-        vertical-align: middle;
+      .hero-subtitle {
+        color: #94a3b8;
+        font-size: 1.15rem;
+        margin: 0;
+        line-height: 1.6;
+      }
+      .hero-actions {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        gap: 16px;
+        margin-top: 32px;
+      }
 
-        i {
-          display: block;
-          height: 100%;
-          border-radius: inherit;
-          background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);
-        }
-      }
-      .risk-badge {
-        display: inline-flex;
-        justify-content: center;
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: #dcfce7;
-        color: #166534;
-        font-weight: 900;
-        font-size: 0.75rem;
-
-        &.warning {
-          background: #fef3c7;
-          color: #92400e;
-        }
-        &.critical {
-          background: #fee2e2;
-          color: #991b1b;
-        }
-      }
-      .empty-state {
+      .btn-dark {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 16px 28px;
+        border-radius: 18px;
+        font-weight: 700;
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 18px;
-        border-radius: 18px;
-        background: #f8fafc;
-        color: #64748b;
-        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.5);
+        text-decoration: none;
+        font-size: 0.95rem;
+      }
+      .btn-dark:hover {
+        background: #2563eb;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 25px -5px rgba(59, 130, 246, 0.6);
       }
 
-      .workspace-hub {
-        margin-top: 4px;
+      .btn-glass {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        backdrop-filter: blur(16px);
+        padding: 16px 28px;
+        border-radius: 18px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        font-size: 0.95rem;
+      }
+      .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-3px);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+
+      .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(90px);
+        z-index: 1;
+        pointer-events: none;
+      }
+      .blob-1 {
+        top: -40%;
+        right: 5%;
+        width: 500px;
+        height: 500px;
+        background: rgba(59, 130, 246, 0.5);
+      }
+      .blob-2 {
+        bottom: -30%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: rgba(168, 85, 247, 0.4);
+      }
+
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+      }
+      .kpi-card {
+        background: white;
+        border-radius: 28px;
+        padding: 28px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        border: 1px solid #f1f5f9;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .kpi-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+        border-color: #e2e8f0;
+      }
+      .kpi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+      }
+      .kpi-title {
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.95rem;
+      }
+      .kpi-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.4rem;
+      }
+      .kpi-value {
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 12px;
+        letter-spacing: -0.03em;
+        line-height: 1;
+      }
+      .kpi-trend {
+        font-size: 0.85rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 10px;
+      }
+      .positive {
+        color: #10b981;
+        background: #d1fae5;
+      }
+      .negative {
+        color: #ef4444;
+        background: #fee2e2;
+      }
+      .neutral {
+        color: #64748b;
+        background: #f1f5f9;
+      }
+
+      .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 24px;
+      }
+      .col-span-8 {
+        grid-column: span 8;
+      }
+      .col-span-6 {
+        grid-column: span 6;
+      }
+      .col-span-4 {
+        grid-column: span 4;
+      }
+      .bento-column {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .bento-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 32px;
+        padding: 28px;
+        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.03),
+                    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(226, 232, 240, 0.6);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .bento-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08),
+                    inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+      }
+      .card-header {
+        margin-bottom: 20px;
+      }
+      .card-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+      }
+      .card-header p {
+        margin: 6px 0 0 0;
+        font-size: 0.9rem;
+        color: #64748b;
+        font-weight: 500;
+      }
+
+      .chart-wrapper {
+        flex: 1;
+        min-height: 250px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .flex-center-chart {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .gauge-wrapper,
+      .donut-wrapper {
+        align-items: center;
+        justify-content: center;
+        margin-top: -10px;
+      }
+
+      .watch-list {
+        display: none;
+      }
+      .watch-item {
+        display: none;
+      }
+      .watch-item:hover {
+        display: none;
+      }
+      .watch-info {
+        display: none;
+      }
+      .watch-name {
+        display: none;
+      }
+      .watch-meta {
+        display: none;
+      }
+      .watch-score {
+        display: none;
+      }
+      .text-red {
+        display: none;
+      }
+      .text-orange {
+        display: none;
+      }
+      .text-green {
+        display: none;
+      }
+
+      .hub-container {
+        margin-top: 16px;
+      }
+      .hub-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 24px 0;
+        letter-spacing: -0.03em;
       }
       .hub-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 18px;
+        gap: 24px;
       }
-      .hub-card {
-        position: relative;
+      .hub-tile {
         display: flex;
-        flex-direction: column;
-        background: #ffffff;
-        border-radius: 20px;
-        border: 1px solid #e2e8f0;
-        padding: 22px;
+        align-items: center;
+        gap: 18px;
+        background: white;
+        padding: 24px;
+        border-radius: 28px;
         text-decoration: none;
-        color: inherit;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
-        cursor: pointer;
-
-        &::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 4px;
-          background: var(--tile-color);
-        }
-        &:hover {
-          transform: translateY(-6px);
-          border-color: var(--tile-color);
-          box-shadow: 0 20px 40px color-mix(in srgb, var(--tile-color) 20%, rgba(15, 23, 42, 0.1));
-
-          .card-glow {
-            opacity: 1;
-          }
-          .icon-wrapper {
-            transform: scale(1.08);
-          }
-          .action-link {
-            color: var(--tile-color);
-          }
-        }
-        .card-glow {
-          position: absolute;
-          top: -50%;
-          right: -30%;
-          width: 200px;
-          height: 200px;
-          background: radial-gradient(circle, var(--tile-color) 0%, transparent 70%);
-          opacity: 0.08;
-          transition: opacity 0.3s;
-          pointer-events: none;
-        }
-        .card-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 14px;
-        }
-        .icon-wrapper {
-          width: 48px;
-          height: 48px;
-          border-radius: 14px;
-          background: linear-gradient(
-            135deg,
-            var(--tile-color),
-            color-mix(in srgb, var(--tile-color), black 20%)
-          );
-          color: #ffffff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.3rem;
-          box-shadow: 0 8px 16px color-mix(in srgb, var(--tile-color) 30%, transparent);
-          transition: transform 0.3s;
-        }
-        .tag {
-          font-size: 0.7rem;
-          font-weight: 800;
-          color: #64748b;
-          background: #f1f5f9;
-          padding: 4px 10px;
-          border-radius: 999px;
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-        }
-        .card-body h3 {
-          font-size: 1.1rem;
-          margin-bottom: 6px;
-        }
-        .module-indicator {
-          display: inline-block;
-          font-size: 0.78rem;
-          font-weight: 800;
-          color: var(--tile-color);
-          background: color-mix(in srgb, var(--tile-color) 10%, transparent);
-          padding: 4px 10px;
-          border-radius: 8px;
-        }
-        .card-footer {
-          margin-top: 16px;
-          padding-top: 14px;
-          border-top: 1px solid #f1f5f9;
-        }
-        .action-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 0.85rem;
-          font-weight: 800;
-          color: #94a3b8;
-          transition: color 0.2s;
-        }
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        border: 1px solid #f1f5f9;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .hub-tile:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+        border-color: #e2e8f0;
+      }
+      .tile-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+      }
+      .tile-content h4 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.01em;
+      }
+      .tile-content p {
+        margin: 6px 0 0 0;
+        font-size: 0.9rem;
+        color: #64748b;
+        line-height: 1.4;
+        font-weight: 500;
+      }
+      .tile-arrow {
+        margin-left: auto;
+        color: #cbd5e1;
+        font-size: 1.2rem;
+        transition: all 0.3s;
+      }
+      .hub-tile:hover .tile-arrow {
+        transform: translateX(6px);
+        color: #0f172a;
       }
 
-      @media (max-width: 1180px) {
-        .stats-overview,
-        .hub-grid,
-        .bottom-grid,
-        .top-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+      @media (max-width: 1024px) {
+        .bento-grid,
+        .kpi-grid {
+          grid-template-columns: repeat(12, 1fr);
         }
-      }
-
-      @media (max-width: 760px) {
-        .stats-overview,
-        .hub-grid,
-        .bottom-grid,
-        .top-grid {
-          grid-template-columns: 1fr;
+        .col-span-8,
+        .col-span-6,
+        .col-span-4 {
+          grid-column: span 12;
         }
-        .stats-overview {
-          position: static;
-          background: transparent;
-          backdrop-filter: none;
+        .hub-grid {
+          grid-template-columns: repeat(2, 1fr);
         }
-        .page-header,
-        .section-title {
+        .hero-bento {
           flex-direction: column;
           align-items: flex-start;
+          gap: 40px;
+          padding: 40px;
         }
-        .watch-header {
-          display: none;
+        .hero-content {
+          max-width: 100%;
         }
-        .watch-row {
+      }
+      @media (max-width: 768px) {
+        .bento-grid,
+        .kpi-grid,
+        .hub-grid {
           grid-template-columns: 1fr;
-          gap: 8px;
+        }
+        .col-span-8,
+        .col-span-6,
+        .col-span-4 {
+          grid-column: span 1;
+        }
+        .hero-actions {
+          flex-direction: column;
+          width: 100%;
+        }
+        .btn-dark,
+        .btn-glass {
+          width: 100%;
+          justify-content: center;
         }
       }
     `,
@@ -889,7 +690,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   adminInitials = 'AU';
   attendanceRate = 0;
   attendanceInsight = 'Aucune séance disponible pour le calcul.';
-  classesToWatch: WatchClassRow[] = [];
 
   private refreshSubscription: Subscription | null = null;
   private readonly monthsWindow = this.getLastMonths(6);
@@ -1006,6 +806,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             color: '#0f172a',
             fontSize: '38px',
             fontWeight: 900,
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
             formatter: (value) => `${Math.round(value)}%`,
           },
         },
@@ -1018,7 +819,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   sessionStatusOptions: DonutChartOptions = {
     series: [0, 0, 0],
-    chart: { type: 'donut', height: 300 },
+    chart: { type: 'donut', height: 260, fontFamily: "'Plus Jakarta Sans', sans-serif" },
     labels: ['Prévues', 'En cours', 'Terminées'],
     colors: ['#f59e0b', '#2563eb', '#16a34a'],
     legend: { position: 'bottom', fontWeight: 800 },
@@ -1038,12 +839,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   sessionsTrendOptions: AxisChartOptions = this.createLineChartOptions(
     'Séances réalisées',
-    '#16a34a',
+    '#8b5cf6',
   );
-  teacherHoursOptions: AxisChartOptions = this.createBarChartOptions('Heures', '#f97316', true);
+  teacherHoursOptions: AxisChartOptions = this.createBarChartOptions('Heures', '#3b82f6', true);
   honorairesOptions: AxisChartOptions = this.createBarChartOptions(
     'Montant',
-    '#db2777',
+    '#ec4899',
     false,
     'FCFA',
   );
@@ -1220,37 +1021,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
       ...this.honorairesOptions,
       series: [{ name: 'Honoraires', data: honorairesTotals }],
       xaxis: { ...this.honorairesOptions.xaxis, categories: monthLabels },
+    this.honorairesOptions.series = [
+      {
+        name: 'Honoraires (FCFA)',
+        data: Array.from(honorairesTotals.values()),
+      },
+    ];
+    this.honorairesOptions.xaxis = {
+      categories: monthLabels,
     };
-
-    this.classesToWatch = this.buildClassesToWatch(seances, classes);
-  }
-
-  private buildClassesToWatch(seances: Seance[], classes: Classe[]): WatchClassRow[] {
-    const classNames = new Map(classes.map((classe) => [classe.id, classe.libelle]));
-    const grouped = new Map<number, { prevues: number; realisees: number }>();
-
-    seances.forEach((seance) => {
-      const current = grouped.get(seance.classeId) || { prevues: 0, realisees: 0 };
-      current.prevues += 1;
-      if (this.isRealizedSeance(seance)) {
-        current.realisees += 1;
-      }
-      grouped.set(seance.classeId, current);
-    });
-
-    return Array.from(grouped.entries())
-      .map(([classeId, value]) => {
-        const taux = value.prevues ? Math.round((value.realisees / value.prevues) * 100) : 0;
-        return {
-          classe: classNames.get(classeId) || `Classe #${classeId}`,
-          prevues: value.prevues,
-          realisees: value.realisees,
-          taux,
-          niveau: taux < 50 ? 'Critique' : taux < 75 ? 'À suivre' : 'Normal',
-        } as WatchClassRow;
-      })
-      .sort((a, b) => a.taux - b.taux || b.prevues - a.prevues)
-      .slice(0, 5);
   }
 
   private groupHoursByTeacher(seances: Seance[]): Map<number, number> {
@@ -1274,21 +1053,38 @@ export class DashboardComponent implements OnInit, OnDestroy {
       series: [{ name, data: [] }],
       chart: {
         type: 'area',
-        height: 320,
+        height: 300,
         toolbar: { show: false },
-        fontFamily: 'Inter, sans-serif',
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
       },
-      xaxis: { categories: [], labels: { style: { colors: '#64748b', fontWeight: 800 } } },
-      yaxis: { labels: { style: { colors: '#64748b' } } },
+      xaxis: {
+        categories: [],
+        labels: { style: { colors: '#64748b', fontWeight: 600 } },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+      },
+      yaxis: { labels: { style: { colors: '#64748b', fontWeight: 600 } } },
       colors: [color],
       dataLabels: { enabled: false },
-      stroke: { curve: 'smooth', width: 4 },
+      stroke: { curve: 'smooth', width: 3 },
       fill: {
         type: 'gradient',
-        gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.02, stops: [0, 90, 100] },
+        gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.0, stops: [0, 90, 100] },
       },
-      tooltip: { theme: 'light' },
+      tooltip: {
+        theme: 'light',
+        style: { fontSize: '13px', fontFamily: "'Plus Jakarta Sans', sans-serif" },
+      },
       plotOptions: {},
+      grid: {
+        show: true,
+        borderColor: '#f1f5f9',
+        strokeDashArray: 4,
+        position: 'back',
+        xaxis: { lines: { show: false } },
+        yaxis: { lines: { show: true } },
+        padding: { top: 0, right: 0, bottom: 0, left: 10 },
+      },
     };
   }
 
@@ -1302,18 +1098,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
       series: [{ name, data: [] }],
       chart: {
         type: 'bar',
-        height: 320,
+        height: 280,
         toolbar: { show: false },
-        fontFamily: 'Inter, sans-serif',
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
       },
-      xaxis: { categories: [], labels: { style: { colors: '#64748b', fontWeight: 800 } } },
-      yaxis: { labels: { style: { colors: '#64748b' } } },
+      xaxis: {
+        categories: [],
+        labels: { style: { colors: '#64748b', fontWeight: 600 } },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+      },
+      yaxis: { labels: { style: { colors: '#64748b', fontWeight: 600 } } },
       colors: [color],
       dataLabels: { enabled: false },
-      stroke: { show: true, width: 2, colors: ['transparent'] },
-      fill: { opacity: 0.95 },
+      stroke: { show: true, width: 4, colors: ['transparent'] },
+      fill: { opacity: 1 },
       tooltip: {
         theme: 'light',
+        style: { fontSize: '13px', fontFamily: "'Plus Jakarta Sans', sans-serif" },
         y: {
           formatter: (value) =>
             suffix === 'FCFA'
@@ -1321,7 +1123,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
               : `${value} ${suffix}`,
         },
       },
-      plotOptions: { bar: { horizontal, borderRadius: 8, columnWidth: '52%', barHeight: '58%' } },
+      plotOptions: { bar: { horizontal, borderRadius: 6, columnWidth: '40%', barHeight: '40%' } },
+      grid: { show: false, padding: { top: 0, right: 0, bottom: 0, left: 10 } },
     };
   }
 
