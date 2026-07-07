@@ -84,72 +84,38 @@ type AxisChartOptions = {
   imports: [CommonModule, RouterLink, NgApexchartsModule],
   template: `
     <div class="dashboard-shell">
-      <section class="hero-card">
-        <div class="hero-content">
-          <span class="hero-badge"><i class="pi pi-sparkles"></i> EduTrack</span>
-          <h1>Bonjour, {{ adminName }} 👋</h1>
-          <p>
-            Pilotez les séances, l’émargement et les honoraires depuis un tableau de bord plus
-            lisible, plus rapide et pensé pour l’action.
-          </p>
-          <div class="hero-actions">
-            <a class="hero-button primary" [routerLink]="['/schedule']">
-              <i class="pi pi-plus"></i>
-              Nouvelle séance
-            </a>
-            <a class="hero-button secondary" [routerLink]="['/attendance']">
-              <i class="pi pi-chart-bar"></i>
-              Voir les présences
-            </a>
-          </div>
-        </div>
-
-        <div class="hero-illustration" aria-hidden="true">
-          <div class="orbital-ring ring-one"></div>
-          <div class="orbital-ring ring-two"></div>
-          <div class="abstract-panel panel-main">
-            <div class="panel-topbar"><span></span><span></span><span></span></div>
-            <div class="panel-metrics"><span></span><span></span><span></span></div>
-            <div class="panel-chart">
-              <i style="height: 42%"></i>
-              <i style="height: 72%"></i>
-              <i style="height: 50%"></i>
-              <i style="height: 88%"></i>
-              <i style="height: 64%"></i>
-            </div>
-          </div>
-          <div class="abstract-panel panel-floating">
-            <i class="pi pi-qrcode"></i>
-            <strong>{{ attendanceRate }}%</strong>
-            <span>émargement</span>
-          </div>
-        </div>
-      </section>
+      <header class="page-header">
+        <h1>Aperçu <span>Global</span></h1>
+        <div class="header-date">Bienvenue sur votre espace de pilotage</div>
+      </header>
 
       <section class="kpi-grid" aria-label="Indicateurs clés">
         <article class="kpi-card" *ngFor="let stat of stats" [style.--accent]="stat.color">
-          <div class="kpi-accent"></div>
           <div class="kpi-header">
-            <span>{{ stat.label }}</span>
             <div class="kpi-icon"><i [class]="stat.icon"></i></div>
+            <div class="kpi-trend" [class]="stat.trendClass">
+              <i
+                class="pi"
+                [class.pi-arrow-up]="stat.trendClass === 'positive'"
+                [class.pi-arrow-down]="stat.trendClass === 'negative'"
+                [class.pi-minus]="stat.trendClass === 'neutral'"
+              ></i>
+              {{ stat.trend }}
+            </div>
           </div>
-          <strong>{{ stat.value }}{{ stat.suffix }}</strong>
-          <div class="kpi-trend" [class]="stat.trendClass">
-            <i
-              class="pi"
-              [class.pi-arrow-up]="stat.trendClass === 'positive'"
-              [class.pi-arrow-down]="stat.trendClass === 'negative'"
-              [class.pi-minus]="stat.trendClass === 'neutral'"
-            ></i>
-            {{ stat.trend }}
+          <div class="kpi-body">
+            <span>{{ stat.label }}</span>
+            <strong
+              >{{ stat.value }}<small>{{ stat.suffix }}</small></strong
+            >
           </div>
         </article>
       </section>
 
       <section class="quick-access">
         <div class="section-heading">
-          <span>Actions fréquentes</span>
           <h2>Accès rapide</h2>
+          <span>Raccourcis opérationnels</span>
         </div>
         <div class="hub-grid">
           <a
@@ -158,23 +124,24 @@ type AxisChartOptions = {
             class="hub-tile"
             [style.--tile-color]="tile.color"
           >
-            <div class="tile-glow"></div>
             <div class="tile-icon"><i [class]="tile.icon"></i></div>
             <div class="tile-content">
               <div class="tile-meta">{{ tile.meta }}</div>
               <h3>{{ tile.label }}</h3>
               <p>{{ tile.description }}</p>
-              <span>{{ tile.indicator }}</span>
+              <div class="tile-indicator">{{ tile.indicator }}</div>
             </div>
-            <i class="pi pi-arrow-right tile-arrow"></i>
+            <div class="tile-arrow-wrapper">
+              <i class="pi pi-arrow-right tile-arrow"></i>
+            </div>
           </a>
         </div>
       </section>
 
       <section class="analysis-section">
         <div class="section-heading">
-          <span>Analyse temps réel</span>
           <h2>Tableaux d’analyse</h2>
+          <span>Mesures en temps réel</span>
         </div>
 
         <div class="bento-grid">
@@ -184,7 +151,7 @@ type AxisChartOptions = {
                 <h3>Émargements récents</h3>
                 <p>Données réelles des 7 derniers jours</p>
               </div>
-              <i class="pi pi-chart-line"></i>
+              <div class="header-icon"><i class="pi pi-chart-line"></i></div>
             </div>
             <div class="chart-wrapper">
               <apx-chart
@@ -209,7 +176,7 @@ type AxisChartOptions = {
                   <h3>Taux d'émargement</h3>
                   <p>{{ attendanceInsight }}</p>
                 </div>
-                <i class="pi pi-verified"></i>
+                <div class="header-icon"><i class="pi pi-verified"></i></div>
               </div>
               <div class="chart-wrapper gauge-wrapper">
                 <apx-chart
@@ -229,7 +196,7 @@ type AxisChartOptions = {
                   <h3>Statut des séances</h3>
                   <p>Répartition opérationnelle</p>
                 </div>
-                <i class="pi pi-clock"></i>
+                <div class="header-icon"><i class="pi pi-clock"></i></div>
               </div>
               <div class="chart-wrapper donut-wrapper">
                 <apx-chart
@@ -251,7 +218,7 @@ type AxisChartOptions = {
                 <h3>Top Enseignants</h3>
                 <p>Émargements validés par enseignant</p>
               </div>
-              <i class="pi pi-users"></i>
+              <div class="header-icon"><i class="pi pi-users"></i></div>
             </div>
             <div class="chart-wrapper">
               <apx-chart
@@ -276,7 +243,7 @@ type AxisChartOptions = {
                 <h3>Honoraires</h3>
                 <p>Prévisions mensuelles</p>
               </div>
-              <i class="pi pi-wallet"></i>
+              <div class="header-icon"><i class="pi pi-wallet"></i></div>
             </div>
             <div class="chart-wrapper">
               <apx-chart
@@ -304,282 +271,87 @@ type AxisChartOptions = {
         display: block;
         min-height: 100%;
         margin: -1.5rem;
-        padding: 1.5rem;
-        background:
-          radial-gradient(circle at 8% 8%, rgba(99, 102, 241, 0.18), transparent 30%),
-          radial-gradient(circle at 88% 12%, rgba(236, 72, 153, 0.16), transparent 28%),
-          radial-gradient(circle at 52% 98%, rgba(14, 165, 233, 0.14), transparent 34%),
-          linear-gradient(135deg, #f8fafc 0%, #eef2ff 45%, #fdf2f8 100%);
+        padding: 2.5rem;
+        background-color: #fafafa;
+        background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+        background-size: 24px 24px;
       }
 
       .dashboard-shell {
         position: relative;
-        z-index: 0;
         max-width: 1440px;
         margin: 0 auto;
         display: flex;
         flex-direction: column;
-        gap: 26px;
+        gap: 56px;
         padding-bottom: 36px;
         color: #0f172a;
         font-family: 'Plus Jakarta Sans', sans-serif;
       }
 
-      .dashboard-shell::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
-        opacity: 0.35;
-        background-image:
-          linear-gradient(rgba(15, 23, 42, 0.05) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(15, 23, 42, 0.05) 1px, transparent 1px);
-        background-size: 42px 42px;
-        mask-image: linear-gradient(to bottom, black, transparent 78%);
+      /* Clean Header */
+      .page-header {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: -16px;
       }
 
-      .hero-card {
-        position: relative;
-        min-height: 390px;
-        display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-        gap: 32px;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.45);
-        border-radius: 36px;
-        padding: 58px;
-        background:
-          linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.92)),
-          radial-gradient(circle at top right, rgba(99, 102, 241, 0.65), transparent 40%);
-        box-shadow: 0 28px 70px rgba(15, 23, 42, 0.28);
-      }
-
-      .hero-card::before,
-      .hero-card::after {
-        content: '';
-        position: absolute;
-        border-radius: 999px;
-        filter: blur(8px);
-        pointer-events: none;
-      }
-
-      .hero-card::before {
-        width: 440px;
-        height: 440px;
-        right: -120px;
-        top: -140px;
-        background: radial-gradient(circle, rgba(99, 102, 241, 0.62), transparent 68%);
-      }
-
-      .hero-card::after {
-        width: 360px;
-        height: 360px;
-        right: 22%;
-        bottom: -190px;
-        background: radial-gradient(circle, rgba(236, 72, 153, 0.42), transparent 70%);
-      }
-
-      .hero-content,
-      .hero-illustration {
-        position: relative;
-        z-index: 1;
-      }
-
-      .hero-content {
-        max-width: 690px;
-        color: #fff;
-      }
-
-      .hero-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        width: fit-content;
-        margin-bottom: 24px;
-        padding: 9px 16px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.1);
-        color: #dbeafe;
-        font-size: 0.78rem;
-        font-weight: 900;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        backdrop-filter: blur(18px);
-      }
-
-      .hero-content h1 {
+      .page-header h1 {
         margin: 0;
-        font-size: clamp(2.2rem, 5vw, 4.25rem);
-        line-height: 0.98;
-        letter-spacing: -0.065em;
+        font-size: 2.4rem;
         font-weight: 900;
+        letter-spacing: -0.05em;
+        line-height: 1.1;
       }
 
-      .hero-content p {
-        max-width: 660px;
-        margin: 20px 0 0;
-        color: #cbd5e1;
-        font-size: 1.08rem;
-        line-height: 1.75;
+      .page-header h1 span {
+        color: #6366f1;
       }
 
-      .hero-actions {
+      .header-date {
+        color: #64748b;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      /* Section Headings */
+      .section-heading {
         display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
-        margin-top: 34px;
+        align-items: baseline;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #0f172a;
       }
 
-      .hero-button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        min-height: 52px;
-        padding: 0 22px;
-        border-radius: 18px;
+      .section-heading h2 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 1.6rem;
         font-weight: 900;
-        text-decoration: none;
-        transition:
-          transform 0.25s ease,
-          box-shadow 0.25s ease,
-          background 0.25s ease;
+        letter-spacing: -0.04em;
+        text-transform: lowercase;
+        font-variant: small-caps;
       }
 
-      .hero-button:hover {
-        transform: translateY(-3px);
-      }
-
-      .hero-button.primary {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      .section-heading span {
+        background: #0f172a;
         color: #fff;
-        box-shadow: 0 18px 38px rgba(99, 102, 241, 0.36);
-      }
-
-      .hero-button.secondary {
-        border: 1px solid rgba(255, 255, 255, 0.22);
-        background: rgba(255, 255, 255, 0.1);
-        color: #fff;
-        backdrop-filter: blur(16px);
-      }
-
-      .hero-illustration {
-        min-height: 275px;
-        display: grid;
-        place-items: center;
-      }
-
-      .orbital-ring {
-        position: absolute;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.14);
-      }
-
-      .ring-one {
-        width: 330px;
-        height: 330px;
-        transform: rotate(-18deg);
-      }
-
-      .ring-two {
-        width: 430px;
-        height: 210px;
-        transform: rotate(28deg);
-      }
-
-      .abstract-panel {
-        position: absolute;
-        border: 1px solid rgba(255, 255, 255, 0.22);
-        background: rgba(255, 255, 255, 0.13);
-        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.26);
-        backdrop-filter: blur(24px);
-      }
-
-      .panel-main {
-        width: min(360px, 100%);
-        min-height: 238px;
-        padding: 22px;
-        border-radius: 30px;
-        transform: rotate(-3deg);
-      }
-
-      .panel-topbar,
-      .panel-metrics,
-      .panel-chart {
-        display: flex;
-        gap: 10px;
-      }
-
-      .panel-topbar span {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.78);
-      }
-
-      .panel-metrics {
-        margin-top: 24px;
-      }
-
-      .panel-metrics span {
-        flex: 1;
-        height: 54px;
-        border-radius: 18px;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08));
-      }
-
-      .panel-chart {
-        align-items: end;
-        height: 92px;
-        margin-top: 24px;
-        padding: 14px;
-        border-radius: 20px;
-        background: rgba(15, 23, 42, 0.28);
-      }
-
-      .panel-chart i {
-        flex: 1;
-        border-radius: 999px 999px 8px 8px;
-        background: linear-gradient(180deg, #a5b4fc, #22d3ee);
-      }
-
-      .panel-floating {
-        right: 8px;
-        bottom: 12px;
-        display: grid;
-        gap: 4px;
-        min-width: 150px;
-        padding: 18px;
-        border-radius: 24px;
-        color: #fff;
-        transform: rotate(5deg);
-      }
-
-      .panel-floating i {
-        color: #bfdbfe;
-        font-size: 1.3rem;
-      }
-
-      .panel-floating strong {
-        font-size: 2rem;
-        line-height: 1;
-      }
-
-      .panel-floating span {
-        color: #cbd5e1;
-        font-size: 0.78rem;
+        padding: 4px 10px;
+        border-radius: 6px;
         font-weight: 800;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
       }
 
+      /* Neo-brutalist / Geometric Grids */
       .kpi-grid,
       .hub-grid,
       .bento-grid {
         display: grid;
-        gap: 22px;
+        gap: 28px;
       }
 
       .kpi-grid {
@@ -588,88 +360,54 @@ type AxisChartOptions = {
 
       .kpi-card {
         --accent: #6366f1;
-        position: relative;
-        overflow: hidden;
-        min-height: 170px;
-        padding: 25px;
-        border: 1px solid rgba(255, 255, 255, 0.72);
-        border-radius: 30px;
-        background:
-          linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.72)),
-          radial-gradient(
-            circle at 88% 12%,
-            color-mix(in srgb, var(--accent) 20%, transparent),
-            transparent 34%
-          );
-        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
-        backdrop-filter: blur(18px);
+        background: #ffffff;
+        border: 2px solid #0f172a;
+        border-radius: 16px;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 180px;
+        box-shadow: 6px 6px 0px var(--accent);
         transition:
-          transform 0.25s ease,
-          box-shadow 0.25s ease;
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
       }
 
-      .kpi-card:hover,
-      .hub-tile:hover,
-      .bento-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.13);
-      }
-
-      .kpi-accent {
-        position: absolute;
-        inset: 0 auto 0 0;
-        width: 6px;
-        background: linear-gradient(
-          180deg,
-          var(--accent),
-          color-mix(in srgb, var(--accent) 30%, white)
-        );
+      .kpi-card:hover {
+        transform: translate(-3px, -3px);
+        box-shadow: 9px 9px 0px var(--accent);
       }
 
       .kpi-header {
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
-        gap: 18px;
-      }
-
-      .kpi-header span {
-        color: #64748b;
-        font-size: 0.9rem;
-        font-weight: 900;
+        gap: 16px;
       }
 
       .kpi-icon {
         display: grid;
         place-items: center;
-        width: 52px;
-        height: 52px;
-        border-radius: 18px;
-        background: color-mix(in srgb, var(--accent) 13%, white);
-        color: var(--accent);
-        font-size: 1.35rem;
-        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent);
-      }
-
-      .kpi-card strong {
-        display: block;
-        margin-top: 18px;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--accent) 15%, white);
         color: #0f172a;
-        font-size: 2.55rem;
-        font-weight: 900;
-        line-height: 1;
-        letter-spacing: -0.055em;
+        font-size: 1.4rem;
+        border: 2px solid #0f172a;
       }
 
       .kpi-trend {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-        margin-top: 16px;
-        padding: 7px 11px;
-        border-radius: 999px;
-        font-size: 0.78rem;
+        gap: 6px;
+        padding: 6px 10px;
+        border: 2px solid #0f172a;
+        border-radius: 99px;
+        font-size: 0.8rem;
         font-weight: 900;
+        background: #fff;
       }
 
       .positive {
@@ -685,103 +423,94 @@ type AxisChartOptions = {
         background: #f1f5f9;
       }
 
-      .quick-access,
-      .analysis-section {
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
+      .kpi-body {
+        margin-top: 24px;
       }
 
-      .section-heading span {
+      .kpi-body span {
         display: block;
-        color: #6366f1;
-        font-size: 0.76rem;
-        font-weight: 900;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
+        color: #64748b;
+        font-size: 0.95rem;
+        font-weight: 800;
+        margin-bottom: 4px;
       }
 
-      .section-heading h2 {
-        margin: 4px 0 0;
+      .kpi-body strong {
+        display: block;
         color: #0f172a;
-        font-size: 1.55rem;
+        font-size: 3.2rem;
         font-weight: 900;
-        letter-spacing: -0.04em;
+        line-height: 1;
+        letter-spacing: -0.05em;
       }
 
+      .kpi-body small {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-left: 4px;
+        color: #94a3b8;
+      }
+
+      /* Hub Tiles (Quick Access) */
       .hub-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
       .hub-tile {
         --tile-color: #6366f1;
-        position: relative;
-        isolation: isolate;
+        background: #ffffff;
+        border: 2px solid #0f172a;
+        border-radius: 16px;
+        padding: 24px;
         display: grid;
         grid-template-columns: auto minmax(0, 1fr) auto;
         align-items: center;
-        gap: 16px;
-        overflow: hidden;
-        min-height: 140px;
-        padding: 22px;
-        border: 1px solid rgba(255, 255, 255, 0.72);
-        border-radius: 28px;
-        background: rgba(255, 255, 255, 0.82);
-        color: inherit;
+        gap: 20px;
         text-decoration: none;
-        box-shadow: 0 16px 44px rgba(15, 23, 42, 0.07);
-        backdrop-filter: blur(18px);
+        color: inherit;
+        box-shadow: 5px 5px 0px #cbd5e1;
         transition:
-          transform 0.25s ease,
-          box-shadow 0.25s ease,
-          border-color 0.25s ease;
+          transform 0.2s ease,
+          box-shadow 0.2s ease,
+          border-color 0.2s ease;
       }
 
       .hub-tile:hover {
-        border-color: color-mix(in srgb, var(--tile-color) 30%, white);
-      }
-
-      .tile-glow {
-        position: absolute;
-        inset: auto -42px -60px auto;
-        z-index: -1;
-        width: 170px;
-        height: 170px;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--tile-color) 22%, transparent);
-        filter: blur(10px);
-        transition: transform 0.25s ease;
-      }
-
-      .hub-tile:hover .tile-glow {
-        transform: scale(1.22);
+        transform: translate(-3px, -3px);
+        box-shadow: 8px 8px 0px var(--tile-color);
+        border-color: var(--tile-color);
       }
 
       .tile-icon {
         display: grid;
         place-items: center;
-        width: 58px;
-        height: 58px;
-        border-radius: 20px;
-        background: color-mix(in srgb, var(--tile-color) 13%, white);
-        color: var(--tile-color);
-        font-size: 1.45rem;
-        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tile-color) 20%, transparent);
+        width: 64px;
+        height: 64px;
+        border-radius: 14px;
+        background: color-mix(in srgb, var(--tile-color) 12%, white);
+        color: #0f172a;
+        font-size: 1.8rem;
+        border: 2px solid #0f172a;
       }
 
-      .tile-meta,
-      .tile-content span {
-        color: var(--tile-color);
-        font-size: 0.72rem;
+      .tile-meta {
+        display: inline-block;
+        color: #0f172a;
+        font-size: 0.75rem;
         font-weight: 900;
         letter-spacing: 0.08em;
         text-transform: uppercase;
+        margin-bottom: 6px;
+        background: #f1f5f9;
+        padding: 2px 8px;
+        border-radius: 4px;
+        border: 1px solid #cbd5e1;
       }
 
       .tile-content h3 {
-        margin: 4px 0 6px;
+        margin: 0 0 4px;
         color: #0f172a;
-        font-size: 1.02rem;
+        font-size: 1.15rem;
         font-weight: 900;
         letter-spacing: -0.02em;
       }
@@ -789,23 +518,51 @@ type AxisChartOptions = {
       .tile-content p {
         margin: 0 0 10px;
         color: #64748b;
-        font-size: 0.88rem;
+        font-size: 0.9rem;
         font-weight: 600;
-        line-height: 1.45;
+        line-height: 1.4;
+      }
+
+      .tile-indicator {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: var(--tile-color);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .tile-arrow-wrapper {
+        display: grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid #e2e8f0;
+        background: #f8fafc;
+        transition: all 0.2s ease;
       }
 
       .tile-arrow {
         color: #94a3b8;
+        font-size: 1.2rem;
+        font-weight: bold;
         transition:
-          transform 0.25s ease,
-          color 0.25s ease;
+          transform 0.2s ease,
+          color 0.2s ease;
+      }
+
+      .hub-tile:hover .tile-arrow-wrapper {
+        border-color: #0f172a;
+        background: #0f172a;
       }
 
       .hub-tile:hover .tile-arrow {
-        color: var(--tile-color);
-        transform: translateX(5px);
+        color: #fff;
+        transform: translateX(2px);
       }
 
+      /* Bento Grid / Analysis */
       .bento-grid {
         grid-template-columns: repeat(12, minmax(0, 1fr));
       }
@@ -823,26 +580,30 @@ type AxisChartOptions = {
       .bento-column {
         display: flex;
         flex-direction: column;
-        gap: 22px;
+        gap: 28px;
       }
 
       .bento-card {
         display: flex;
         flex-direction: column;
-        min-height: 350px;
-        padding: 26px;
-        border: 1px solid rgba(255, 255, 255, 0.72);
-        border-radius: 32px;
-        background: rgba(255, 255, 255, 0.86);
-        box-shadow: 0 18px 55px rgba(15, 23, 42, 0.08);
-        backdrop-filter: blur(20px);
+        min-height: 380px;
+        padding: 28px;
+        background: #ffffff;
+        border: 2px solid #0f172a;
+        border-radius: 20px;
+        box-shadow: 6px 6px 0px rgba(15, 23, 42, 0.08);
         transition:
-          transform 0.25s ease,
-          box-shadow 0.25s ease;
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .bento-card:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 8px 8px 0px rgba(15, 23, 42, 0.15);
       }
 
       .compact-chart {
-        min-height: 280px;
+        min-height: 300px;
       }
 
       .card-header {
@@ -850,13 +611,15 @@ type AxisChartOptions = {
         align-items: flex-start;
         justify-content: space-between;
         gap: 16px;
-        margin-bottom: 16px;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 2px dashed #e2e8f0;
       }
 
       .card-header h3 {
         margin: 0;
         color: #0f172a;
-        font-size: 1.13rem;
+        font-size: 1.25rem;
         font-weight: 900;
         letter-spacing: -0.03em;
       }
@@ -864,20 +627,22 @@ type AxisChartOptions = {
       .card-header p {
         margin: 6px 0 0;
         color: #64748b;
-        font-size: 0.86rem;
+        font-size: 0.9rem;
         font-weight: 600;
-        line-height: 1.45;
+        line-height: 1.4;
       }
 
-      .card-header > i {
+      .header-icon {
         display: grid;
         place-items: center;
-        width: 42px;
-        height: 42px;
+        width: 44px;
+        height: 44px;
         flex: 0 0 auto;
-        border-radius: 15px;
-        background: #eef2ff;
-        color: #6366f1;
+        border-radius: 12px;
+        background: #f1f5f9;
+        border: 2px solid #0f172a;
+        color: #0f172a;
+        font-size: 1.2rem;
       }
 
       .chart-wrapper {
@@ -894,15 +659,8 @@ type AxisChartOptions = {
         margin-top: -8px;
       }
 
+      /* Responsive Adjustments */
       @media (max-width: 1180px) {
-        .hero-card {
-          grid-template-columns: 1fr;
-        }
-
-        .hero-illustration {
-          min-height: 250px;
-        }
-
         .kpi-grid,
         .hub-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -918,22 +676,7 @@ type AxisChartOptions = {
       @media (max-width: 760px) {
         :host {
           margin: -1rem;
-          padding: 1rem;
-        }
-
-        .hero-card {
-          min-height: auto;
-          padding: 34px 24px;
-          border-radius: 28px;
-        }
-
-        .hero-actions,
-        .hero-button {
-          width: 100%;
-        }
-
-        .hero-illustration {
-          display: none;
+          padding: 1.5rem;
         }
 
         .kpi-grid,
@@ -942,18 +685,19 @@ type AxisChartOptions = {
           grid-template-columns: 1fr;
         }
 
-        .col-span-8,
-        .col-span-6,
-        .col-span-4 {
-          grid-column: span 1;
-        }
-
         .hub-tile {
           grid-template-columns: auto minmax(0, 1fr);
         }
 
-        .tile-arrow {
+        .tile-arrow-wrapper {
           display: none;
+        }
+
+        .section-heading {
+          flex-direction: column;
+          gap: 8px;
+          border-bottom: none;
+          padding-bottom: 0;
         }
       }
     `,
