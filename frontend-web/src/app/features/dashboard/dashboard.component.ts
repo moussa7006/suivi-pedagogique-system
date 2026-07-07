@@ -332,7 +332,7 @@ type AxisChartOptions = {
       }
 
       .btn-dark {
-        background: #3b82f6;
+        background: #4f46e5;
         color: white;
         border: none;
         padding: 16px 28px;
@@ -343,14 +343,14 @@ type AxisChartOptions = {
         gap: 10px;
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.5);
+        box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.5);
         text-decoration: none;
         font-size: 0.95rem;
       }
       .btn-dark:hover {
-        background: #2563eb;
+        background: #4338ca;
         transform: translateY(-3px);
-        box-shadow: 0 15px 25px -5px rgba(59, 130, 246, 0.6);
+        box-shadow: 0 15px 25px -5px rgba(79, 70, 229, 0.6);
       }
 
       .btn-glass {
@@ -387,14 +387,14 @@ type AxisChartOptions = {
         right: 5%;
         width: 500px;
         height: 500px;
-        background: rgba(59, 130, 246, 0.5);
+        background: rgba(99, 102, 241, 0.5);
       }
       .blob-2 {
         bottom: -30%;
         right: -10%;
         width: 400px;
         height: 400px;
-        background: rgba(168, 85, 247, 0.4);
+        background: rgba(236, 72, 153, 0.45);
       }
 
       .kpi-grid {
@@ -760,7 +760,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       value: 0,
       suffix: '',
       icon: 'pi pi-id-card',
-      color: '#2563eb',
+      color: '#6366f1',
       trend: 'Actifs',
       trendClass: 'positive',
     },
@@ -769,7 +769,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       value: 0,
       suffix: '',
       icon: 'pi pi-building',
-      color: '#16a34a',
+      color: '#10b981',
       trend: 'Ouvertes',
       trendClass: 'neutral',
     },
@@ -778,7 +778,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       value: 0,
       suffix: '',
       icon: 'pi pi-book',
-      color: '#f97316',
+      color: '#f43f5e',
       trend: 'Actives',
       trendClass: 'neutral',
     },
@@ -787,7 +787,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       value: 0,
       suffix: '',
       icon: 'pi pi-calendar-plus',
-      color: '#7c3aed',
+      color: '#8b5cf6',
       trend: 'Planifiées',
       trendClass: 'neutral',
     },
@@ -816,7 +816,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
     },
     labels: ['Émargement'],
-    fill: { colors: ['#2563eb'] },
+    fill: { colors: ['#6366f1'] },
     stroke: { lineCap: 'round' },
   };
 
@@ -824,7 +824,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     series: [0, 0, 0],
     chart: { type: 'donut', height: 260, fontFamily: "'Plus Jakarta Sans', sans-serif" },
     labels: ['Prévues', 'En cours', 'Terminées'],
-    colors: ['#f59e0b', '#2563eb', '#16a34a'],
+    colors: ['#f59e0b', '#3b82f6', '#10b981'],
     legend: { position: 'bottom', fontWeight: 800 },
     dataLabels: { enabled: true, style: { fontWeight: '900' } },
     plotOptions: {
@@ -842,12 +842,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   sessionsTrendOptions: AxisChartOptions = this.createLineChartOptions(
     'Séances réalisées',
-    '#8b5cf6',
+    '#6366f1',
   );
-  teacherHoursOptions: AxisChartOptions = this.createBarChartOptions('Heures', '#3b82f6', true);
+  teacherHoursOptions: AxisChartOptions = this.createBarChartOptions('Heures', '#8b5cf6', true);
   honorairesOptions: AxisChartOptions = this.createBarChartOptions(
     'Montant',
-    '#ec4899',
+    '#f43f5e',
     false,
     'FCFA',
   );
