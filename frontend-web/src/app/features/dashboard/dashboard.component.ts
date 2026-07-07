@@ -20,15 +20,8 @@ import {
   NgApexchartsModule,
 } from 'ng-apexcharts';
 import { sortByAlpha } from '../../core/utils/sort-utils';
-import { DashboardService } from '../../core/services/dashboard.service';
-import { TeacherService } from '../../core/services/teacher.service';
-import { ClasseService } from '../../core/services/classe.service';
-import { MatiereService } from '../../core/services/matiere.service';
-import { ScheduleService } from '../../core/services/schedule.service';
+import { DashboardData, DashboardService } from '../../core/services/dashboard.service';
 import { HonorairesService } from '../../core/services/honoraires.service';
-import { Seance } from '../../core/models/seance.model';
-import { Teacher } from '../../core/models/user.model';
-import { Classe } from '../../core/models/classe.model';
 import { HonorairesCalcul } from '../../core/models/honoraires.model';
 
 interface StatCard {
@@ -90,40 +83,57 @@ type AxisChartOptions = {
   standalone: true,
   imports: [CommonModule, RouterLink, NgApexchartsModule],
   template: `
-    <div class="bento-dashboard">
-      <!-- Hero Section -->
-      <div class="hero-bento">
+    <div class="dashboard-shell">
+      <section class="hero-card">
         <div class="hero-content">
-          <span class="hero-badge"><i class="pi pi-sparkles"></i> EduTrack OS</span>
-          <h1 class="hero-title">Bonjour, {{ adminName }} 👋</h1>
-          <p class="hero-subtitle">
-            Voici un résumé premium de l'activité pédagogique et financière de votre établissement.
-            Prenez des décisions éclairées, plus rapidement.
+          <span class="hero-badge"><i class="pi pi-sparkles"></i> EduTrack</span>
+          <h1>Bonjour, {{ adminName }} 👋</h1>
+          <p>
+            Pilotez les séances, l’émargement et les honoraires depuis un tableau de bord plus
+            lisible, plus rapide et pensé pour l’action.
           </p>
           <div class="hero-actions">
-            <button class="btn-dark" [routerLink]="['/schedule']">
-              <i class="pi pi-plus"></i> Nouvelle séance
-            </button>
-            <button class="btn-glass" [routerLink]="['/attendance']">
-              <i class="pi pi-chart-bar"></i> Présences
-            </button>
+            <a class="hero-button primary" [routerLink]="['/schedule']">
+              <i class="pi pi-plus"></i>
+              Nouvelle séance
+            </a>
+            <a class="hero-button secondary" [routerLink]="['/attendance']">
+              <i class="pi pi-chart-bar"></i>
+              Voir les présences
+            </a>
           </div>
         </div>
-        <!-- Abstract Glassmorphism Shapes -->
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-      </div>
 
-      <!-- KPI Grid -->
-      <div class="kpi-grid">
-        <div class="kpi-card" *ngFor="let stat of stats">
-          <div class="kpi-header">
-            <span class="kpi-title">{{ stat.label }}</span>
-            <div class="kpi-icon" [style.background]="stat.color + '1A'" [style.color]="stat.color">
-              <i [class]="stat.icon"></i>
+        <div class="hero-illustration" aria-hidden="true">
+          <div class="orbital-ring ring-one"></div>
+          <div class="orbital-ring ring-two"></div>
+          <div class="abstract-panel panel-main">
+            <div class="panel-topbar"><span></span><span></span><span></span></div>
+            <div class="panel-metrics"><span></span><span></span><span></span></div>
+            <div class="panel-chart">
+              <i style="height: 42%"></i>
+              <i style="height: 72%"></i>
+              <i style="height: 50%"></i>
+              <i style="height: 88%"></i>
+              <i style="height: 64%"></i>
             </div>
           </div>
-          <div class="kpi-value">{{ stat.value }}{{ stat.suffix }}</div>
+          <div class="abstract-panel panel-floating">
+            <i class="pi pi-qrcode"></i>
+            <strong>{{ attendanceRate }}%</strong>
+            <span>émargement</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="kpi-grid" aria-label="Indicateurs clés">
+        <article class="kpi-card" *ngFor="let stat of stats" [style.--accent]="stat.color">
+          <div class="kpi-accent"></div>
+          <div class="kpi-header">
+            <span>{{ stat.label }}</span>
+            <div class="kpi-icon"><i [class]="stat.icon"></i></div>
+          </div>
+          <strong>{{ stat.value }}{{ stat.suffix }}</strong>
           <div class="kpi-trend" [class]="stat.trendClass">
             <i
               class="pi"
@@ -133,343 +143,673 @@ type AxisChartOptions = {
             ></i>
             {{ stat.trend }}
           </div>
-        </div>
-      </div>
+        </article>
+      </section>
 
-      <!-- Bento Grid Layout -->
-      <div class="bento-grid">
-        <!-- Chart 1: Area -->
-        <div class="bento-card col-span-8">
-          <div class="card-header">
-            <h3>Évolution des séances</h3>
-            <p>Volume mensuel des réalisations</p>
-          </div>
-          <div class="chart-wrapper">
-            <apx-chart
-              [series]="sessionsTrendOptions.series"
-              [chart]="sessionsTrendOptions.chart"
-              [xaxis]="sessionsTrendOptions.xaxis"
-              [yaxis]="sessionsTrendOptions.yaxis"
-              [colors]="sessionsTrendOptions.colors"
-              [dataLabels]="sessionsTrendOptions.dataLabels"
-              [stroke]="sessionsTrendOptions.stroke"
-              [fill]="sessionsTrendOptions.fill"
-              [tooltip]="sessionsTrendOptions.tooltip"
-              [grid]="sessionsTrendOptions.grid"
-            ></apx-chart>
-          </div>
+      <section class="quick-access">
+        <div class="section-heading">
+          <span>Actions fréquentes</span>
+          <h2>Accès rapide</h2>
         </div>
-
-        <!-- Gauges & Donut (Side column) -->
-        <div class="bento-column col-span-4">
-          <div class="bento-card flex-center-chart">
-            <div class="card-header">
-              <h3>Taux d'émargement</h3>
-            </div>
-            <div class="chart-wrapper gauge-wrapper">
-              <apx-chart
-                [series]="attendanceGaugeOptions.series"
-                [chart]="attendanceGaugeOptions.chart"
-                [plotOptions]="attendanceGaugeOptions.plotOptions"
-                [labels]="attendanceGaugeOptions.labels"
-                [fill]="attendanceGaugeOptions.fill"
-                [stroke]="attendanceGaugeOptions.stroke"
-              ></apx-chart>
-            </div>
-          </div>
-          <div class="bento-card flex-center-chart">
-            <div class="card-header">
-              <h3>Statut des séances</h3>
-            </div>
-            <div class="chart-wrapper donut-wrapper">
-              <apx-chart
-                [series]="sessionStatusOptions.series"
-                [chart]="sessionStatusOptions.chart"
-                [labels]="sessionStatusOptions.labels"
-                [colors]="sessionStatusOptions.colors"
-                [legend]="sessionStatusOptions.legend"
-                [dataLabels]="sessionStatusOptions.dataLabels"
-                [plotOptions]="sessionStatusOptions.plotOptions"
-              ></apx-chart>
-            </div>
-          </div>
-        </div>
-
-        <!-- Top Teachers -->
-        <div class="bento-card col-span-6">
-          <div class="card-header">
-            <h3>Top Enseignants</h3>
-            <p>Heures réalisées</p>
-          </div>
-          <div class="chart-wrapper">
-            <apx-chart
-              [series]="teacherHoursOptions.series"
-              [chart]="teacherHoursOptions.chart"
-              [xaxis]="teacherHoursOptions.xaxis"
-              [yaxis]="teacherHoursOptions.yaxis"
-              [colors]="teacherHoursOptions.colors"
-              [dataLabels]="teacherHoursOptions.dataLabels"
-              [plotOptions]="teacherHoursOptions.plotOptions"
-              [grid]="teacherHoursOptions.grid"
-              [tooltip]="teacherHoursOptions.tooltip"
-              [stroke]="teacherHoursOptions.stroke"
-              [fill]="teacherHoursOptions.fill"
-            ></apx-chart>
-          </div>
-        </div>
-
-        <!-- Honoraires -->
-        <div class="bento-card col-span-6">
-          <div class="card-header">
-            <h3>Honoraires</h3>
-            <p>Prévisions mensuelles</p>
-          </div>
-          <div class="chart-wrapper">
-            <apx-chart
-              [series]="honorairesOptions.series"
-              [chart]="honorairesOptions.chart"
-              [xaxis]="honorairesOptions.xaxis"
-              [yaxis]="honorairesOptions.yaxis"
-              [colors]="honorairesOptions.colors"
-              [dataLabels]="honorairesOptions.dataLabels"
-              [plotOptions]="honorairesOptions.plotOptions"
-              [grid]="honorairesOptions.grid"
-              [tooltip]="honorairesOptions.tooltip"
-              [stroke]="honorairesOptions.stroke"
-              [fill]="honorairesOptions.fill"
-            ></apx-chart>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Access Hub -->
-      <div class="hub-container">
-        <h3 class="hub-title">Accès rapide</h3>
         <div class="hub-grid">
-          <a *ngFor="let tile of sortedHubTiles" [routerLink]="tile.route" class="hub-tile">
-            <div
-              class="tile-icon"
-              [style.background]="tile.color + '1A'"
-              [style.color]="tile.color"
-            >
-              <i [class]="tile.icon"></i>
-            </div>
+          <a
+            *ngFor="let tile of sortedHubTiles"
+            [routerLink]="tile.route"
+            class="hub-tile"
+            [style.--tile-color]="tile.color"
+          >
+            <div class="tile-glow"></div>
+            <div class="tile-icon"><i [class]="tile.icon"></i></div>
             <div class="tile-content">
-              <h4>{{ tile.label }}</h4>
+              <div class="tile-meta">{{ tile.meta }}</div>
+              <h3>{{ tile.label }}</h3>
               <p>{{ tile.description }}</p>
+              <span>{{ tile.indicator }}</span>
             </div>
             <i class="pi pi-arrow-right tile-arrow"></i>
           </a>
         </div>
-      </div>
+      </section>
+
+      <section class="analysis-section">
+        <div class="section-heading">
+          <span>Analyse temps réel</span>
+          <h2>Tableaux d’analyse</h2>
+        </div>
+
+        <div class="bento-grid">
+          <article class="bento-card col-span-8">
+            <div class="card-header">
+              <div>
+                <h3>Émargements récents</h3>
+                <p>Données réelles des 7 derniers jours</p>
+              </div>
+              <i class="pi pi-chart-line"></i>
+            </div>
+            <div class="chart-wrapper">
+              <apx-chart
+                [series]="sessionsTrendOptions.series"
+                [chart]="sessionsTrendOptions.chart"
+                [xaxis]="sessionsTrendOptions.xaxis"
+                [yaxis]="sessionsTrendOptions.yaxis"
+                [colors]="sessionsTrendOptions.colors"
+                [dataLabels]="sessionsTrendOptions.dataLabels"
+                [stroke]="sessionsTrendOptions.stroke"
+                [fill]="sessionsTrendOptions.fill"
+                [tooltip]="sessionsTrendOptions.tooltip"
+                [grid]="sessionsTrendOptions.grid"
+              ></apx-chart>
+            </div>
+          </article>
+
+          <div class="bento-column col-span-4">
+            <article class="bento-card compact-chart">
+              <div class="card-header">
+                <div>
+                  <h3>Taux d'émargement</h3>
+                  <p>{{ attendanceInsight }}</p>
+                </div>
+                <i class="pi pi-verified"></i>
+              </div>
+              <div class="chart-wrapper gauge-wrapper">
+                <apx-chart
+                  [series]="attendanceGaugeOptions.series"
+                  [chart]="attendanceGaugeOptions.chart"
+                  [plotOptions]="attendanceGaugeOptions.plotOptions"
+                  [labels]="attendanceGaugeOptions.labels"
+                  [fill]="attendanceGaugeOptions.fill"
+                  [stroke]="attendanceGaugeOptions.stroke"
+                ></apx-chart>
+              </div>
+            </article>
+
+            <article class="bento-card compact-chart">
+              <div class="card-header">
+                <div>
+                  <h3>Statut des séances</h3>
+                  <p>Répartition opérationnelle</p>
+                </div>
+                <i class="pi pi-clock"></i>
+              </div>
+              <div class="chart-wrapper donut-wrapper">
+                <apx-chart
+                  [series]="sessionStatusOptions.series"
+                  [chart]="sessionStatusOptions.chart"
+                  [labels]="sessionStatusOptions.labels"
+                  [colors]="sessionStatusOptions.colors"
+                  [legend]="sessionStatusOptions.legend"
+                  [dataLabels]="sessionStatusOptions.dataLabels"
+                  [plotOptions]="sessionStatusOptions.plotOptions"
+                ></apx-chart>
+              </div>
+            </article>
+          </div>
+
+          <article class="bento-card col-span-6">
+            <div class="card-header">
+              <div>
+                <h3>Top Enseignants</h3>
+                <p>Émargements validés par enseignant</p>
+              </div>
+              <i class="pi pi-users"></i>
+            </div>
+            <div class="chart-wrapper">
+              <apx-chart
+                [series]="teacherHoursOptions.series"
+                [chart]="teacherHoursOptions.chart"
+                [xaxis]="teacherHoursOptions.xaxis"
+                [yaxis]="teacherHoursOptions.yaxis"
+                [colors]="teacherHoursOptions.colors"
+                [dataLabels]="teacherHoursOptions.dataLabels"
+                [plotOptions]="teacherHoursOptions.plotOptions"
+                [grid]="teacherHoursOptions.grid"
+                [tooltip]="teacherHoursOptions.tooltip"
+                [stroke]="teacherHoursOptions.stroke"
+                [fill]="teacherHoursOptions.fill"
+              ></apx-chart>
+            </div>
+          </article>
+
+          <article class="bento-card col-span-6">
+            <div class="card-header">
+              <div>
+                <h3>Honoraires</h3>
+                <p>Prévisions mensuelles</p>
+              </div>
+              <i class="pi pi-wallet"></i>
+            </div>
+            <div class="chart-wrapper">
+              <apx-chart
+                [series]="honorairesOptions.series"
+                [chart]="honorairesOptions.chart"
+                [xaxis]="honorairesOptions.xaxis"
+                [yaxis]="honorairesOptions.yaxis"
+                [colors]="honorairesOptions.colors"
+                [dataLabels]="honorairesOptions.dataLabels"
+                [plotOptions]="honorairesOptions.plotOptions"
+                [grid]="honorairesOptions.grid"
+                [tooltip]="honorairesOptions.tooltip"
+                [stroke]="honorairesOptions.stroke"
+                [fill]="honorairesOptions.fill"
+              ></apx-chart>
+            </div>
+          </article>
+        </div>
+      </section>
     </div>
   `,
   styles: [
     `
-      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+      :host {
+        display: block;
+        min-height: 100%;
+        margin: -1.5rem;
+        padding: 1.5rem;
+        background:
+          radial-gradient(circle at 8% 8%, rgba(99, 102, 241, 0.18), transparent 30%),
+          radial-gradient(circle at 88% 12%, rgba(236, 72, 153, 0.16), transparent 28%),
+          radial-gradient(circle at 52% 98%, rgba(14, 165, 233, 0.14), transparent 34%),
+          linear-gradient(135deg, #f8fafc 0%, #eef2ff 45%, #fdf2f8 100%);
+      }
 
-      .bento-dashboard {
-        font-family: 'Plus Jakarta Sans', sans-serif;
+      .dashboard-shell {
+        position: relative;
+        z-index: 0;
         max-width: 1440px;
         margin: 0 auto;
         display: flex;
         flex-direction: column;
-        gap: 24px;
-        padding-bottom: 32px;
+        gap: 26px;
+        padding-bottom: 36px;
+        color: #0f172a;
+        font-family: 'Plus Jakarta Sans', sans-serif;
       }
 
-      .hero-bento {
+      .dashboard-shell::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        opacity: 0.35;
+        background-image:
+          linear-gradient(rgba(15, 23, 42, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(15, 23, 42, 0.05) 1px, transparent 1px);
+        background-size: 42px 42px;
+        mask-image: linear-gradient(to bottom, black, transparent 78%);
+      }
+
+      .hero-card {
         position: relative;
-        background: #0f172a;
-        border-radius: 32px;
-        padding: 56px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        min-height: 390px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        gap: 32px;
         overflow: hidden;
-        box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        border-radius: 36px;
+        padding: 58px;
+        background:
+          linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.92)),
+          radial-gradient(circle at top right, rgba(99, 102, 241, 0.65), transparent 40%);
+        box-shadow: 0 28px 70px rgba(15, 23, 42, 0.28);
       }
-      .hero-content {
+
+      .hero-card::before,
+      .hero-card::after {
+        content: '';
+        position: absolute;
+        border-radius: 999px;
+        filter: blur(8px);
+        pointer-events: none;
+      }
+
+      .hero-card::before {
+        width: 440px;
+        height: 440px;
+        right: -120px;
+        top: -140px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.62), transparent 68%);
+      }
+
+      .hero-card::after {
+        width: 360px;
+        height: 360px;
+        right: 22%;
+        bottom: -190px;
+        background: radial-gradient(circle, rgba(236, 72, 153, 0.42), transparent 70%);
+      }
+
+      .hero-content,
+      .hero-illustration {
         position: relative;
-        z-index: 2;
-        color: white;
-        max-width: 60%;
+        z-index: 1;
       }
+
+      .hero-content {
+        max-width: 690px;
+        color: #fff;
+      }
+
       .hero-badge {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        padding: 8px 16px;
-        border-radius: 99px;
-        font-size: 0.85rem;
-        font-weight: 700;
+        gap: 10px;
+        width: fit-content;
         margin-bottom: 24px;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-      }
-      .hero-title {
-        font-size: 3rem;
-        font-weight: 800;
-        margin: 0 0 12px 0;
-        letter-spacing: -0.04em;
-        line-height: 1.1;
-      }
-      .hero-subtitle {
-        color: #94a3b8;
-        font-size: 1.15rem;
-        margin: 0;
-        line-height: 1.6;
-      }
-      .hero-actions {
-        position: relative;
-        z-index: 2;
-        display: flex;
-        gap: 16px;
-        margin-top: 32px;
-      }
-
-      .btn-dark {
-        background: #4f46e5;
-        color: white;
-        border: none;
-        padding: 16px 28px;
-        border-radius: 18px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.5);
-        text-decoration: none;
-        font-size: 0.95rem;
-      }
-      .btn-dark:hover {
-        background: #4338ca;
-        transform: translateY(-3px);
-        box-shadow: 0 15px 25px -5px rgba(79, 70, 229, 0.6);
-      }
-
-      .btn-glass {
+        padding: 9px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
         background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-        backdrop-filter: blur(16px);
-        padding: 16px 28px;
-        border-radius: 18px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        text-decoration: none;
-        font-size: 0.95rem;
-      }
-      .btn-glass:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-3px);
-        border-color: rgba(255, 255, 255, 0.3);
+        color: #dbeafe;
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        backdrop-filter: blur(18px);
       }
 
-      .blob {
+      .hero-content h1 {
+        margin: 0;
+        font-size: clamp(2.2rem, 5vw, 4.25rem);
+        line-height: 0.98;
+        letter-spacing: -0.065em;
+        font-weight: 900;
+      }
+
+      .hero-content p {
+        max-width: 660px;
+        margin: 20px 0 0;
+        color: #cbd5e1;
+        font-size: 1.08rem;
+        line-height: 1.75;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 34px;
+      }
+
+      .hero-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 52px;
+        padding: 0 22px;
+        border-radius: 18px;
+        font-weight: 900;
+        text-decoration: none;
+        transition:
+          transform 0.25s ease,
+          box-shadow 0.25s ease,
+          background 0.25s ease;
+      }
+
+      .hero-button:hover {
+        transform: translateY(-3px);
+      }
+
+      .hero-button.primary {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff;
+        box-shadow: 0 18px 38px rgba(99, 102, 241, 0.36);
+      }
+
+      .hero-button.secondary {
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        backdrop-filter: blur(16px);
+      }
+
+      .hero-illustration {
+        min-height: 275px;
+        display: grid;
+        place-items: center;
+      }
+
+      .orbital-ring {
         position: absolute;
-        border-radius: 50%;
-        filter: blur(90px);
-        z-index: 1;
-        pointer-events: none;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
       }
-      .blob-1 {
-        top: -40%;
-        right: 5%;
-        width: 500px;
-        height: 500px;
-        background: rgba(99, 102, 241, 0.5);
+
+      .ring-one {
+        width: 330px;
+        height: 330px;
+        transform: rotate(-18deg);
       }
-      .blob-2 {
-        bottom: -30%;
-        right: -10%;
-        width: 400px;
-        height: 400px;
-        background: rgba(236, 72, 153, 0.45);
+
+      .ring-two {
+        width: 430px;
+        height: 210px;
+        transform: rotate(28deg);
+      }
+
+      .abstract-panel {
+        position: absolute;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.13);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.26);
+        backdrop-filter: blur(24px);
+      }
+
+      .panel-main {
+        width: min(360px, 100%);
+        min-height: 238px;
+        padding: 22px;
+        border-radius: 30px;
+        transform: rotate(-3deg);
+      }
+
+      .panel-topbar,
+      .panel-metrics,
+      .panel-chart {
+        display: flex;
+        gap: 10px;
+      }
+
+      .panel-topbar span {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.78);
+      }
+
+      .panel-metrics {
+        margin-top: 24px;
+      }
+
+      .panel-metrics span {
+        flex: 1;
+        height: 54px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08));
+      }
+
+      .panel-chart {
+        align-items: end;
+        height: 92px;
+        margin-top: 24px;
+        padding: 14px;
+        border-radius: 20px;
+        background: rgba(15, 23, 42, 0.28);
+      }
+
+      .panel-chart i {
+        flex: 1;
+        border-radius: 999px 999px 8px 8px;
+        background: linear-gradient(180deg, #a5b4fc, #22d3ee);
+      }
+
+      .panel-floating {
+        right: 8px;
+        bottom: 12px;
+        display: grid;
+        gap: 4px;
+        min-width: 150px;
+        padding: 18px;
+        border-radius: 24px;
+        color: #fff;
+        transform: rotate(5deg);
+      }
+
+      .panel-floating i {
+        color: #bfdbfe;
+        font-size: 1.3rem;
+      }
+
+      .panel-floating strong {
+        font-size: 2rem;
+        line-height: 1;
+      }
+
+      .panel-floating span {
+        color: #cbd5e1;
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .kpi-grid,
+      .hub-grid,
+      .bento-grid {
+        display: grid;
+        gap: 22px;
       }
 
       .kpi-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 24px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
+
       .kpi-card {
-        background: white;
-        border-radius: 28px;
-        padding: 28px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-        border: 1px solid #f1f5f9;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        --accent: #6366f1;
+        position: relative;
+        overflow: hidden;
+        min-height: 170px;
+        padding: 25px;
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        border-radius: 30px;
+        background:
+          linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.72)),
+          radial-gradient(
+            circle at 88% 12%,
+            color-mix(in srgb, var(--accent) 20%, transparent),
+            transparent 34%
+          );
+        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+        backdrop-filter: blur(18px);
+        transition:
+          transform 0.25s ease,
+          box-shadow 0.25s ease;
       }
-      .kpi-card:hover {
+
+      .kpi-card:hover,
+      .hub-tile:hover,
+      .bento-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
-        border-color: #e2e8f0;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.13);
       }
+
+      .kpi-accent {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 6px;
+        background: linear-gradient(
+          180deg,
+          var(--accent),
+          color-mix(in srgb, var(--accent) 30%, white)
+        );
+      }
+
       .kpi-header {
         display: flex;
-        justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 20px;
+        justify-content: space-between;
+        gap: 18px;
       }
-      .kpi-title {
+
+      .kpi-header span {
         color: #64748b;
-        font-weight: 700;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
+        font-weight: 900;
       }
+
       .kpi-icon {
+        display: grid;
+        place-items: center;
         width: 52px;
         height: 52px;
-        border-radius: 16px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 1.4rem;
+        border-radius: 18px;
+        background: color-mix(in srgb, var(--accent) 13%, white);
+        color: var(--accent);
+        font-size: 1.35rem;
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent);
       }
-      .kpi-value {
-        font-size: 2.4rem;
-        font-weight: 800;
+
+      .kpi-card strong {
+        display: block;
+        margin-top: 18px;
         color: #0f172a;
-        margin-bottom: 12px;
-        letter-spacing: -0.03em;
+        font-size: 2.55rem;
+        font-weight: 900;
         line-height: 1;
+        letter-spacing: -0.055em;
       }
+
       .kpi-trend {
-        font-size: 0.85rem;
-        font-weight: 700;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 6px 10px;
-        border-radius: 10px;
+        gap: 7px;
+        margin-top: 16px;
+        padding: 7px 11px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 900;
       }
+
       .positive {
-        color: #10b981;
+        color: #047857;
         background: #d1fae5;
       }
       .negative {
-        color: #ef4444;
+        color: #dc2626;
         background: #fee2e2;
       }
       .neutral {
-        color: #64748b;
+        color: #475569;
         background: #f1f5f9;
       }
 
-      .bento-grid {
-        display: grid;
-        grid-template-columns: repeat(12, 1fr);
-        gap: 24px;
+      .quick-access,
+      .analysis-section {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
       }
+
+      .section-heading span {
+        display: block;
+        color: #6366f1;
+        font-size: 0.76rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .section-heading h2 {
+        margin: 4px 0 0;
+        color: #0f172a;
+        font-size: 1.55rem;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+      }
+
+      .hub-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .hub-tile {
+        --tile-color: #6366f1;
+        position: relative;
+        isolation: isolate;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 16px;
+        overflow: hidden;
+        min-height: 140px;
+        padding: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.82);
+        color: inherit;
+        text-decoration: none;
+        box-shadow: 0 16px 44px rgba(15, 23, 42, 0.07);
+        backdrop-filter: blur(18px);
+        transition:
+          transform 0.25s ease,
+          box-shadow 0.25s ease,
+          border-color 0.25s ease;
+      }
+
+      .hub-tile:hover {
+        border-color: color-mix(in srgb, var(--tile-color) 30%, white);
+      }
+
+      .tile-glow {
+        position: absolute;
+        inset: auto -42px -60px auto;
+        z-index: -1;
+        width: 170px;
+        height: 170px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--tile-color) 22%, transparent);
+        filter: blur(10px);
+        transition: transform 0.25s ease;
+      }
+
+      .hub-tile:hover .tile-glow {
+        transform: scale(1.22);
+      }
+
+      .tile-icon {
+        display: grid;
+        place-items: center;
+        width: 58px;
+        height: 58px;
+        border-radius: 20px;
+        background: color-mix(in srgb, var(--tile-color) 13%, white);
+        color: var(--tile-color);
+        font-size: 1.45rem;
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tile-color) 20%, transparent);
+      }
+
+      .tile-meta,
+      .tile-content span {
+        color: var(--tile-color);
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .tile-content h3 {
+        margin: 4px 0 6px;
+        color: #0f172a;
+        font-size: 1.02rem;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+      }
+
+      .tile-content p {
+        margin: 0 0 10px;
+        color: #64748b;
+        font-size: 0.88rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .tile-arrow {
+        color: #94a3b8;
+        transition:
+          transform 0.25s ease,
+          color 0.25s ease;
+      }
+
+      .hub-tile:hover .tile-arrow {
+        color: var(--tile-color);
+        transform: translateX(5px);
+      }
+
+      .bento-grid {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+      }
+
       .col-span-8 {
         grid-column: span 8;
       }
@@ -479,209 +819,141 @@ type AxisChartOptions = {
       .col-span-4 {
         grid-column: span 4;
       }
+
       .bento-column {
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 22px;
       }
+
       .bento-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-radius: 32px;
-        padding: 28px;
-        box-shadow:
-          0 10px 40px -10px rgba(0, 0, 0, 0.03),
-          inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-        border: 1px solid rgba(226, 232, 240, 0.6);
         display: flex;
         flex-direction: column;
+        min-height: 350px;
+        padding: 26px;
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        border-radius: 32px;
+        background: rgba(255, 255, 255, 0.86);
+        box-shadow: 0 18px 55px rgba(15, 23, 42, 0.08);
+        backdrop-filter: blur(20px);
         transition:
-          transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-          box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transform 0.25s ease,
+          box-shadow 0.25s ease;
       }
-      .bento-card:hover {
-        transform: translateY(-4px);
-        box-shadow:
-          0 20px 40px -10px rgba(0, 0, 0, 0.08),
-          inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+
+      .compact-chart {
+        min-height: 280px;
       }
+
       .card-header {
-        margin-bottom: 20px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
       }
+
       .card-header h3 {
         margin: 0;
-        font-size: 1.2rem;
-        font-weight: 800;
         color: #0f172a;
-        letter-spacing: -0.02em;
+        font-size: 1.13rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
       }
+
       .card-header p {
-        margin: 6px 0 0 0;
-        font-size: 0.9rem;
+        margin: 6px 0 0;
         color: #64748b;
-        font-weight: 500;
+        font-size: 0.86rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .card-header > i {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        flex: 0 0 auto;
+        border-radius: 15px;
+        background: #eef2ff;
+        color: #6366f1;
       }
 
       .chart-wrapper {
         flex: 1;
-        min-height: 250px;
+        min-height: 240px;
         display: flex;
         flex-direction: column;
         justify-content: center;
       }
-      .flex-center-chart {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-      }
+
       .gauge-wrapper,
       .donut-wrapper {
         align-items: center;
-        justify-content: center;
-        margin-top: -10px;
+        margin-top: -8px;
       }
 
-      .watch-list {
-        display: none;
-      }
-      .watch-item {
-        display: none;
-      }
-      .watch-item:hover {
-        display: none;
-      }
-      .watch-info {
-        display: none;
-      }
-      .watch-name {
-        display: none;
-      }
-      .watch-meta {
-        display: none;
-      }
-      .watch-score {
-        display: none;
-      }
-      .text-red {
-        display: none;
-      }
-      .text-orange {
-        display: none;
-      }
-      .text-green {
-        display: none;
-      }
-
-      .hub-container {
-        margin-top: 16px;
-      }
-      .hub-title {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: #0f172a;
-        margin: 0 0 24px 0;
-        letter-spacing: -0.03em;
-      }
-      .hub-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 24px;
-      }
-      .hub-tile {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        background: white;
-        padding: 24px;
-        border-radius: 28px;
-        text-decoration: none;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-        border: 1px solid #f1f5f9;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      .hub-tile:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
-        border-color: #e2e8f0;
-      }
-      .tile-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 16px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 1.5rem;
-        flex-shrink: 0;
-      }
-      .tile-content h4 {
-        margin: 0;
-        font-size: 1.05rem;
-        font-weight: 800;
-        color: #0f172a;
-        letter-spacing: -0.01em;
-      }
-      .tile-content p {
-        margin: 6px 0 0 0;
-        font-size: 0.9rem;
-        color: #64748b;
-        line-height: 1.4;
-        font-weight: 500;
-      }
-      .tile-arrow {
-        margin-left: auto;
-        color: #cbd5e1;
-        font-size: 1.2rem;
-        transition: all 0.3s;
-      }
-      .hub-tile:hover .tile-arrow {
-        transform: translateX(6px);
-        color: #0f172a;
-      }
-
-      @media (max-width: 1024px) {
-        .bento-grid,
-        .kpi-grid {
-          grid-template-columns: repeat(12, 1fr);
+      @media (max-width: 1180px) {
+        .hero-card {
+          grid-template-columns: 1fr;
         }
+
+        .hero-illustration {
+          min-height: 250px;
+        }
+
+        .kpi-grid,
+        .hub-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
         .col-span-8,
         .col-span-6,
         .col-span-4 {
           grid-column: span 12;
         }
-        .hub-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        .hero-bento {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 40px;
-          padding: 40px;
-        }
-        .hero-content {
-          max-width: 100%;
-        }
       }
-      @media (max-width: 768px) {
-        .bento-grid,
+
+      @media (max-width: 760px) {
+        :host {
+          margin: -1rem;
+          padding: 1rem;
+        }
+
+        .hero-card {
+          min-height: auto;
+          padding: 34px 24px;
+          border-radius: 28px;
+        }
+
+        .hero-actions,
+        .hero-button {
+          width: 100%;
+        }
+
+        .hero-illustration {
+          display: none;
+        }
+
         .kpi-grid,
-        .hub-grid {
+        .hub-grid,
+        .bento-grid {
           grid-template-columns: 1fr;
         }
+
         .col-span-8,
         .col-span-6,
         .col-span-4 {
           grid-column: span 1;
         }
-        .hero-actions {
-          flex-direction: column;
-          width: 100%;
+
+        .hub-tile {
+          grid-template-columns: auto minmax(0, 1fr);
         }
-        .btn-dark,
-        .btn-glass {
-          width: 100%;
-          justify-content: center;
+
+        .tile-arrow {
+          display: none;
         }
       }
     `,
@@ -821,10 +1093,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   };
 
   sessionStatusOptions: DonutChartOptions = {
-    series: [0, 0, 0],
+    series: [0, 0, 0, 0],
     chart: { type: 'donut', height: 260, fontFamily: "'Plus Jakarta Sans', sans-serif" },
-    labels: ['Prévues', 'En cours', 'Terminées'],
-    colors: ['#f59e0b', '#3b82f6', '#10b981'],
+    labels: ['Validée', 'En cours', 'Prévue', 'Terminée'],
+    colors: ['#22c55e', '#38bdf8', '#fbbf24', '#a78bfa'],
     legend: { position: 'bottom', fontWeight: 800 },
     dataLabels: { enabled: true, style: { fontWeight: '900' } },
     plotOptions: {
@@ -841,10 +1113,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   };
 
   sessionsTrendOptions: AxisChartOptions = this.createLineChartOptions(
-    'Séances réalisées',
+    'Émargements validés',
     '#6366f1',
   );
-  teacherHoursOptions: AxisChartOptions = this.createBarChartOptions('Heures', '#8b5cf6', true);
+  teacherHoursOptions: AxisChartOptions = this.createBarChartOptions(
+    'Émargements',
+    '#8b5cf6',
+    true,
+    'validés',
+  );
   honorairesOptions: AxisChartOptions = this.createBarChartOptions(
     'Montant',
     '#f43f5e',
@@ -854,10 +1131,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private dashboardService: DashboardService,
-    private teacherService: TeacherService,
-    private classeService: ClasseService,
-    private matiereService: MatiereService,
-    private scheduleService: ScheduleService,
     private honorairesService: HonorairesService,
   ) {}
 
@@ -904,68 +1177,47 @@ export class DashboardComponent implements OnInit, OnDestroy {
       dashboardStats: this.dashboardService.getDashboardData().pipe(
         catchError((error) => {
           console.error('[Dashboard] Erreur API Dashboard:', error);
-          return of(null);
-        }),
-      ),
-      teachers: this.teacherService.getTeachers().pipe(
-        catchError((error) => {
-          console.error('[Dashboard] Erreur chargement enseignants:', error);
-          return of([] as Teacher[]);
-        }),
-      ),
-      classes: this.classeService.getAll().pipe(
-        catchError((error) => {
-          console.error('[Dashboard] Erreur chargement classes:', error);
-          return of([] as Classe[]);
-        }),
-      ),
-      matieres: this.matiereService.getAll().pipe(
-        catchError((error) => {
-          console.error('[Dashboard] Erreur chargement matières:', error);
-          return of([]);
-        }),
-      ),
-      seances: this.scheduleService.getAllSeances().pipe(
-        catchError((error) => {
-          console.error('[Dashboard] Erreur chargement séances:', error);
-          return of([] as Seance[]);
+          return of(null as DashboardData | null);
         }),
       ),
       honorairesByMonth: forkJoin(honorairesRequests),
-    }).subscribe(({ dashboardStats, teachers, classes, matieres, seances, honorairesByMonth }) => {
-      const today = new Date().toISOString().slice(0, 10);
-      const seancesTodayCount = seances.filter(
-        (seance) => this.toDateKey(seance.dateCours) === today,
-      ).length;
-
-      this.stats[0].value = teachers.length || dashboardStats?.totalTeachers || 0;
-      this.stats[1].value = classes.length || dashboardStats?.totalClasses || 0;
-      this.stats[2].value = matieres.length || dashboardStats?.totalMatieres || 0;
-      this.stats[3].value = seancesTodayCount || dashboardStats?.sessionsToday || 0;
-
-      this.hubTiles[2].indicator = `${teachers.length} enseignant${teachers.length > 1 ? 's' : ''}`;
-      this.hubTiles[0].indicator = `${classes.length} classe${classes.length > 1 ? 's' : ''}`;
-      this.hubTiles[1].indicator = `${matieres.length} matière${matieres.length > 1 ? 's' : ''}`;
-      this.hubTiles[3].indicator = `${seances.length} séance${seances.length > 1 ? 's' : ''}`;
-      this.hubTiles[5].indicator = `${this.countEmargedSeances(seances)} émargement${this.countEmargedSeances(seances) > 1 ? 's' : ''}`;
-
-      this.updateAnalytics(seances, teachers, classes, honorairesByMonth);
+    }).subscribe(({ dashboardStats, honorairesByMonth }) => {
+      this.applyBackendStats(dashboardStats);
+      this.updateAnalytics(dashboardStats, honorairesByMonth);
     });
   }
 
+  private applyBackendStats(dashboardStats: DashboardData | null): void {
+    const totalTeachers = dashboardStats?.totalTeachers ?? 0;
+    const totalClasses = dashboardStats?.totalClasses ?? 0;
+    const totalMatieres = dashboardStats?.totalMatieres ?? 0;
+    const sessionsToday = dashboardStats?.sessionsToday ?? 0;
+    const totalSeances = dashboardStats?.totalSeances ?? 0;
+    const emargementsValides = dashboardStats?.emargementsValides ?? 0;
+
+    this.stats[0].value = totalTeachers;
+    this.stats[1].value = totalClasses;
+    this.stats[2].value = totalMatieres;
+    this.stats[3].value = sessionsToday;
+
+    this.hubTiles[2].indicator = `${totalTeachers} enseignant${totalTeachers > 1 ? 's' : ''}`;
+    this.hubTiles[0].indicator = `${totalClasses} classe${totalClasses > 1 ? 's' : ''}`;
+    this.hubTiles[1].indicator = `${totalMatieres} matière${totalMatieres > 1 ? 's' : ''}`;
+    this.hubTiles[3].indicator = `${totalSeances} séance${totalSeances > 1 ? 's' : ''}`;
+    this.hubTiles[5].indicator = `${emargementsValides} émargement${emargementsValides > 1 ? 's' : ''}`;
+  }
+
   private updateAnalytics(
-    seances: Seance[],
-    teachers: Teacher[],
-    classes: Classe[],
+    dashboardStats: DashboardData | null,
     honorairesByMonth: HonorairesCalcul[][],
   ): void {
-    const emargedCount = this.countEmargedSeances(seances);
-    this.attendanceRate = seances.length ? Math.round((emargedCount / seances.length) * 100) : 0;
-    this.attendanceInsight = seances.length
-      ? this.attendanceRate >= 80
-        ? 'Suivi satisfaisant : le taux d’émargement est élevé.'
-        : 'Attention : plusieurs séances restent sans émargement.'
-      : 'Aucune séance disponible pour le calcul.';
+    this.attendanceRate = Math.round(dashboardStats?.tauxValidationGlobal ?? 0);
+    this.attendanceInsight =
+      (dashboardStats?.totalSeances ?? 0) > 0
+        ? this.attendanceRate >= 80
+          ? 'Suivi satisfaisant : le taux d’émargement est élevé.'
+          : 'Attention : plusieurs séances restent sans émargement validé.'
+        : 'Aucune séance disponible pour le calcul.';
     this.attendanceGaugeOptions = {
       ...this.attendanceGaugeOptions,
       series: [this.attendanceRate],
@@ -976,47 +1228,52 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
     };
 
-    const computedStatuses = seances.map((seance) => this.getComputedSeanceStatus(seance));
-    const statusCounts = [
-      computedStatuses.filter((status) => status === 'PREVUE').length,
-      computedStatuses.filter((status) => status === 'EN_COURS').length,
-      computedStatuses.filter((status) => status === 'TERMINEE').length,
-    ];
-    this.sessionStatusOptions = { ...this.sessionStatusOptions, series: statusCounts };
-
-    const monthLabels = this.monthsWindow.map((month) => month.label);
-    const realizedByMonth = this.monthsWindow.map(
-      (month) =>
-        seances.filter(
-          (seance) =>
-            this.isSameMonth(seance.dateCours, month.year, month.month) &&
-            this.isRealizedSeance(seance),
-        ).length,
-    );
-    this.sessionsTrendOptions = {
-      ...this.sessionsTrendOptions,
-      series: [{ name: 'Séances réalisées', data: realizedByMonth }],
-      xaxis: { ...this.sessionsTrendOptions.xaxis, categories: monthLabels },
+    const statusEntries = Object.entries(dashboardStats?.seancesParStatut ?? {});
+    this.sessionStatusOptions = {
+      ...this.sessionStatusOptions,
+      labels: statusEntries.length
+        ? statusEntries.map(([label]) => label)
+        : this.sessionStatusOptions.labels,
+      series: statusEntries.length ? statusEntries.map(([, value]) => Number(value)) : [0, 0, 0, 0],
     };
 
-    const hoursByTeacherMap = this.groupHoursByTeacher(seances);
-    const hoursByTeacher = teachers
-      .filter((teacher) => typeof teacher.id === 'number')
-      .map((teacher) => ({
-        label: `${teacher.prenom} ${teacher.nom}`.trim() || `Enseignant #${teacher.id}`,
-        totalHours: hoursByTeacherMap.get(teacher.id as number) || 0,
-      }))
-      .sort((a, b) => b.totalHours - a.totalHours || a.label.localeCompare(b.label))
-      .slice(0, 5);
-    this.teacherHoursOptions = {
-      ...this.teacherHoursOptions,
-      series: [{ name: 'Heures effectuées', data: hoursByTeacher.map((item) => item.totalHours) }],
+    const emargementsEntries = Object.entries(dashboardStats?.emargementsParJour ?? {});
+    this.sessionsTrendOptions = {
+      ...this.sessionsTrendOptions,
+      series: [
+        {
+          name: 'Émargements validés',
+          data: emargementsEntries.map(([, value]) => Number(value)),
+        },
+      ],
       xaxis: {
-        ...this.teacherHoursOptions.xaxis,
-        categories: hoursByTeacher.map((item) => item.label),
+        ...this.sessionsTrendOptions.xaxis,
+        categories: emargementsEntries.map(([label]) => label),
       },
     };
 
+    const topTeachers = [...(dashboardStats?.topEnseignants ?? [])]
+      .sort(
+        (a, b) =>
+          Number(b.emargementsValides || 0) - Number(a.emargementsValides || 0) ||
+          String(a.nom || '').localeCompare(String(b.nom || '')),
+      )
+      .slice(0, 5);
+    this.teacherHoursOptions = {
+      ...this.teacherHoursOptions,
+      series: [
+        {
+          name: 'Émargements validés',
+          data: topTeachers.map((teacher) => Number(teacher.emargementsValides || 0)),
+        },
+      ],
+      xaxis: {
+        ...this.teacherHoursOptions.xaxis,
+        categories: topTeachers.map((teacher) => teacher.nom || `Enseignant #${teacher.id}`),
+      },
+    };
+
+    const monthLabels = this.monthsWindow.map((month) => month.label);
     const honorairesTotals = honorairesByMonth.map((rows) =>
       rows.reduce((total, row) => total + Number(row.montantBrut || 0), 0),
     );
@@ -1025,22 +1282,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       series: [{ name: 'Honoraires', data: honorairesTotals }],
       xaxis: { ...this.honorairesOptions.xaxis, categories: monthLabels },
     };
-  }
-
-  private groupHoursByTeacher(seances: Seance[]): Map<number, number> {
-    const result = new Map<number, number>();
-
-    seances
-      .filter((seance) => this.isRealizedSeance(seance))
-      .forEach((seance) => {
-        const hours = this.extractHours(seance.heureDebutReelle, seance.heureFinReelle);
-        result.set(
-          seance.enseignantId,
-          Math.round(((result.get(seance.enseignantId) || 0) + hours) * 10) / 10,
-        );
-      });
-
-    return result;
   }
 
   private createLineChartOptions(name: string, color: string): AxisChartOptions {
@@ -1123,76 +1364,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     };
   }
 
-  private countEmargedSeances(seances: Seance[]): number {
-    return seances.filter((seance) => !!seance.emargementId).length;
-  }
-
-  private isRealizedSeance(seance: Seance): boolean {
-    return this.getComputedSeanceStatus(seance) === 'TERMINEE';
-  }
-
-  private getComputedSeanceStatus(seance: Seance): 'PREVUE' | 'EN_COURS' | 'TERMINEE' {
-    if (seance.statut === 'TERMINEE' || !!seance.emargementId || !!seance.ficheProgressionId) {
-      return 'TERMINEE';
-    }
-
-    const start = this.combineDateAndTime(seance.dateCours, seance.heureDebutReelle);
-    const end = this.combineDateAndTime(seance.dateCours, seance.heureFinReelle);
-    const now = new Date();
-
-    if (start && end) {
-      if (now >= start && now <= end) {
-        return 'EN_COURS';
-      }
-
-      if (now > end) {
-        return 'TERMINEE';
-      }
-    }
-
-    if (seance.statut === 'EN_COURS') {
-      return 'EN_COURS';
-    }
-
-    return 'PREVUE';
-  }
-
-  private combineDateAndTime(dateValue?: string, timeValue?: string): Date | null {
-    if (!dateValue || !timeValue) {
-      return null;
-    }
-
-    const dateKey = this.toDateKey(dateValue);
-    if (!dateKey) {
-      return null;
-    }
-
-    const timeKey = timeValue.substring(0, 5);
-    const date = new Date(`${dateKey}T${timeKey}:00`);
-
-    return Number.isNaN(date.getTime()) ? null : date;
-  }
-
-  private extractHours(startTime?: string, endTime?: string): number {
-    const start = this.toMinutes(startTime);
-    const end = this.toMinutes(endTime);
-
-    if (start === null || end === null || end <= start) {
-      return 0;
-    }
-
-    return Math.round(((end - start) / 60) * 10) / 10;
-  }
-
-  private toMinutes(value?: string): number | null {
-    if (!value) {
-      return null;
-    }
-
-    const [hours, minutes] = value.substring(0, 5).split(':').map(Number);
-    return Number.isFinite(hours) && Number.isFinite(minutes) ? hours * 60 + minutes : null;
-  }
-
   private getLastMonths(count: number): Array<{ year: number; month: number; label: string }> {
     const formatter = new Intl.DateTimeFormat('fr-FR', { month: 'short' });
     const today = new Date();
@@ -1208,23 +1379,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     return months;
-  }
-
-  private isSameMonth(dateValue: string | undefined, year: number, month: number): boolean {
-    if (!dateValue) {
-      return false;
-    }
-
-    const date = new Date(dateValue);
-    return date.getFullYear() === year && date.getMonth() + 1 === month;
-  }
-
-  private toDateKey(dateValue: string | undefined): string | null {
-    if (!dateValue) {
-      return null;
-    }
-
-    return new Date(dateValue).toISOString().slice(0, 10);
   }
 
   private loadAdminProfile(): void {

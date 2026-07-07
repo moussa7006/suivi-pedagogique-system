@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -87,27 +88,10 @@ public class DashboardService {
         }
         dto.setEmargementsParJour(emargementsParJour);
 
-        // Graphique 2: Statut des séances du jour
-        List<Seance> seancesAujourdhui = seanceRepository.findByDateCours(LocalDate.now());
-        Map<String, Long> seancesParStatut = new LinkedHashMap<>();
-        seancesParStatut.put("Non démarré", 0L);
-        seancesParStatut.put("En attente", 0L);
-        seancesParStatut.put("Validé", 0L);
-        seancesParStatut.put("Rejeté", 0L);
-
-        for (Seance s : seancesAujourdhui) {
-            if (s.getEmargement() == null) {
-                seancesParStatut.put("Non démarré", seancesParStatut.get("Non démarré") + 1);
-            } else {
-                StatutEmargement statut = s.getEmargement().getStatut();
-                if (statut == StatutEmargement.EN_ATTENTE_FICHE) {
-                    seancesParStatut.put("En attente", seancesParStatut.get("En attente") + 1);
-                } else if (statut == StatutEmargement.VALIDE) {
-                    seancesParStatut.put("Validé", seancesParStatut.get("Validé") + 1);
-                }
-            }
-        }
-        dto.setSeancesParStatut(seancesParStatut);
+        // Graphique 2: statut calculé sur toutes les séances.
+        // Une séance est "Validée" seulement si le scan a été fait et la fiche de
+        // progression remplie. Les autres statuts reflètent l'état opérationnel.
+        dto.setSeancesParStatut(buildSeancesParStatut(allSeances));
 
         // Tableau 1: Performance par enseignant
         dto.setTopEnseignants(buildTopEnseignants(allSeances));
@@ -119,6 +103,61 @@ public class DashboardService {
         dto.setClassesEmargement(buildClassesEmargement(allSeances));
 
         return dto;
+    }
+
+    private Map<String, Long> buildSeancesParStatut(List<Seance> seances) {
+        Map<String, Long> seancesParStatut = new LinkedHashMap<>();
+        seancesParStatut.put("Validée", 0L);
+        seancesParStatut.put("En cours", 0L);
+        seancesParStatut.put("Prévue", 0L);
+        seancesParStatut.put("Terminée", 0L);
+
+        for (Seance seance : seances) {
+            String statut = getStatutAffichage(seance);
+            seancesParStatut.put(statut, seancesParStatut.get(statut) + 1);
+        }
+
+        return seancesParStatut;
+    }
+
+    private String getStatutAffichage(Seance seance) {
+        if (isSeanceValidee(seance)) {
+            return "Validée";
+        }
+
+        LocalDate dateCours = seance.getDateCours();
+        LocalTime heureDebut = seance.getHeureDebutReelle();
+        LocalTime heureFin = seance.getHeureFinReelle();
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+
+        if (dateCours != null && heureDebut != null && heureFin != null) {
+            if (dateCours.isAfter(today) || (dateCours.isEqual(today) && now.isBefore(heureDebut))) {
+                return "Prévue";
+            }
+
+            if (dateCours.isEqual(today) && !now.isBefore(heureDebut) && !now.isAfter(heureFin)) {
+                return "En cours";
+            }
+
+            if (dateCours.isBefore(today) || (dateCours.isEqual(today) && now.isAfter(heureFin))) {
+                return "Terminée";
+            }
+        }
+
+        if (seance.getStatut() == com.suiviPedagogique.edutrack.Entities.enums.StatutSeance.EN_COURS) {
+            return "En cours";
+        }
+
+        if (seance.getStatut() == com.suiviPedagogique.edutrack.Entities.enums.StatutSeance.TERMINEE) {
+            return "Terminée";
+        }
+
+        return "Prévue";
+    }
+
+    private boolean isSeanceValidee(Seance seance) {
+        return seance.getEmargement() != null && seance.getFicheProgression() != null;
     }
 
     private List<Map<String, Object>> buildTopEnseignants(List<Seance> seances) {
