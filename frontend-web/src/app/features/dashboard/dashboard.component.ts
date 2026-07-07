@@ -490,18 +490,21 @@ type AxisChartOptions = {
         -webkit-backdrop-filter: blur(20px);
         border-radius: 32px;
         padding: 28px;
-        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.03),
-                    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        box-shadow:
+          0 10px 40px -10px rgba(0, 0, 0, 0.03),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.5);
         border: 1px solid rgba(226, 232, 240, 0.6);
         display: flex;
         flex-direction: column;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition:
+          transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+          box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .bento-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08),
-                    inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+        box-shadow:
+          0 20px 40px -10px rgba(0, 0, 0, 0.08),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.8);
       }
       .card-header {
         margin-bottom: 20px;
@@ -1021,14 +1024,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       ...this.honorairesOptions,
       series: [{ name: 'Honoraires', data: honorairesTotals }],
       xaxis: { ...this.honorairesOptions.xaxis, categories: monthLabels },
-    this.honorairesOptions.series = [
-      {
-        name: 'Honoraires (FCFA)',
-        data: Array.from(honorairesTotals.values()),
-      },
-    ];
-    this.honorairesOptions.xaxis = {
-      categories: monthLabels,
     };
   }
 
