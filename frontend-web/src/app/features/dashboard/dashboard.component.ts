@@ -505,15 +505,22 @@ type AxisChartOptions = {
       }
 
       .tile-icon {
-        display: grid;
-        place-items: center;
-        width: 64px;
-        height: 64px;
-        border-radius: 14px;
-        background: color-mix(in srgb, var(--tile-color) 12%, white);
-        color: #0f172a;
-        font-size: 1.8rem;
-        border: 2px solid #0f172a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        background: linear-gradient(
+          135deg,
+          var(--tile-color),
+          color-mix(in srgb, var(--tile-color), black 20%)
+        );
+        color: #ffffff;
+        font-size: 1.4rem;
+        box-shadow: 0 8px 16px color-mix(in srgb, var(--tile-color) 30%, transparent);
+        position: relative;
+        z-index: 1;
       }
 
       .tile-meta {
@@ -656,16 +663,17 @@ type AxisChartOptions = {
       }
 
       .header-icon {
-        display: grid;
-        place-items: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         width: 44px;
         height: 44px;
         flex: 0 0 auto;
         border-radius: 12px;
-        background: #f1f5f9;
-        border: 2px solid #0f172a;
-        color: #0f172a;
+        background: linear-gradient(135deg, #6366f1, color-mix(in srgb, #6366f1, black 20%));
+        color: #ffffff;
         font-size: 1.2rem;
+        box-shadow: 0 6px 12px color-mix(in srgb, #6366f1 30%, transparent);
       }
 
       .chart-wrapper {
