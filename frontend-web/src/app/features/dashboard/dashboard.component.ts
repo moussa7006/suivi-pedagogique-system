@@ -362,50 +362,49 @@ type AxisChartOptions = {
         --accent: #6366f1;
         background: #ffffff;
         border: 2px solid #0f172a;
-        border-radius: 16px;
-        padding: 24px;
+        border-radius: 12px;
+        padding: 18px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        min-height: 180px;
-        box-shadow: 6px 6px 0px var(--accent);
+        box-shadow: 4px 4px 0px var(--accent);
         transition:
           transform 0.2s ease,
           box-shadow 0.2s ease;
       }
 
       .kpi-card:hover {
-        transform: translate(-3px, -3px);
-        box-shadow: 9px 9px 0px var(--accent);
+        transform: translate(-2px, -2px);
+        box-shadow: 6px 6px 0px var(--accent);
       }
 
       .kpi-header {
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
-        gap: 16px;
+        gap: 12px;
       }
 
       .kpi-icon {
         display: grid;
         place-items: center;
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
         background: color-mix(in srgb, var(--accent) 15%, white);
         color: #0f172a;
-        font-size: 1.4rem;
+        font-size: 1.2rem;
         border: 2px solid #0f172a;
       }
 
       .kpi-trend {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 6px 10px;
+        gap: 4px;
+        padding: 4px 8px;
         border: 2px solid #0f172a;
         border-radius: 99px;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         font-weight: 900;
         background: #fff;
       }
@@ -424,13 +423,13 @@ type AxisChartOptions = {
       }
 
       .kpi-body {
-        margin-top: 24px;
+        margin-top: 16px;
       }
 
       .kpi-body span {
         display: block;
         color: #64748b;
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         font-weight: 800;
         margin-bottom: 4px;
       }
@@ -438,7 +437,7 @@ type AxisChartOptions = {
       .kpi-body strong {
         display: block;
         color: #0f172a;
-        font-size: 3.2rem;
+        font-size: 2.2rem;
         font-weight: 900;
         line-height: 1;
         letter-spacing: -0.05em;
