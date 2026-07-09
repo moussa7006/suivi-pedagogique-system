@@ -482,8 +482,8 @@ type AxisChartOptions = {
       .hub-tile {
         --tile-color: #6366f1;
         background: #ffffff;
-        border: 2px solid #0f172a;
-        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
         padding: 24px;
         display: grid;
         grid-template-columns: auto minmax(0, 1fr) auto;
@@ -491,17 +491,34 @@ type AxisChartOptions = {
         gap: 20px;
         text-decoration: none;
         color: inherit;
-        box-shadow: 5px 5px 0px #cbd5e1;
-        transition:
-          transform 0.2s ease,
-          box-shadow 0.2s ease,
-          border-color 0.2s ease;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hub-tile::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          color-mix(in srgb, var(--tile-color) 8%, transparent),
+          transparent
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
       }
 
       .hub-tile:hover {
-        transform: translate(-3px, -3px);
-        box-shadow: 8px 8px 0px var(--tile-color);
-        border-color: var(--tile-color);
+        transform: translateY(-4px) scale(1.02);
+        border-color: color-mix(in srgb, var(--tile-color) 40%, #e2e8f0);
+        box-shadow: 0 20px 40px color-mix(in srgb, var(--tile-color) 15%, rgba(15, 23, 42, 0.1));
+      }
+
+      .hub-tile:hover::before {
+        opacity: 1;
       }
 
       .tile-icon {
@@ -619,17 +636,16 @@ type AxisChartOptions = {
         min-height: 380px;
         padding: 28px;
         background: #ffffff;
-        border: 2px solid #0f172a;
-        border-radius: 20px;
-        box-shadow: 6px 6px 0px rgba(15, 23, 42, 0.08);
-        transition:
-          transform 0.2s ease,
-          box-shadow 0.2s ease;
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+        transition: all 0.3s ease;
       }
 
       .bento-card:hover {
-        transform: translate(-2px, -2px);
-        box-shadow: 8px 8px 0px rgba(15, 23, 42, 0.15);
+        transform: translateY(-4px);
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+        border-color: #cbd5e1;
       }
 
       .compact-chart {
@@ -643,7 +659,7 @@ type AxisChartOptions = {
         gap: 16px;
         margin-bottom: 20px;
         padding-bottom: 20px;
-        border-bottom: 2px dashed #e2e8f0;
+        border-bottom: 1px solid #f1f5f9;
       }
 
       .card-header h3 {
