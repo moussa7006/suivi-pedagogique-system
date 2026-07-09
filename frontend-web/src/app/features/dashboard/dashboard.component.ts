@@ -89,27 +89,27 @@ type AxisChartOptions = {
         <div class="header-date">Bienvenue sur votre espace de pilotage</div>
       </header>
 
-      <section class="kpi-grid" aria-label="Indicateurs clés">
-        <article class="kpi-card" *ngFor="let stat of stats" [style.--accent]="stat.color">
-          <div class="kpi-header">
-            <div class="kpi-icon"><i [class]="stat.icon"></i></div>
-            <div class="kpi-trend" [class]="stat.trendClass">
-              <i
-                class="pi"
-                [class.pi-arrow-up]="stat.trendClass === 'positive'"
-                [class.pi-arrow-down]="stat.trendClass === 'negative'"
-                [class.pi-minus]="stat.trendClass === 'neutral'"
-              ></i>
-              {{ stat.trend }}
+      <section class="stats-overview" aria-label="Indicateurs clés">
+        <div class="stat-card" *ngFor="let stat of stats" [style.--accent]="stat.color">
+          <div class="stat-icon">
+            <i [class]="stat.icon"></i>
+          </div>
+          <div class="stat-details">
+            <span class="stat-label">{{ stat.label }}</span>
+            <div class="stat-value-row">
+              <span class="stat-number">{{ stat.value }}{{ stat.suffix }}</span>
+              <span class="stat-badge" [class]="stat.trendClass">
+                <i
+                  class="pi"
+                  [class.pi-arrow-up]="stat.trendClass === 'positive'"
+                  [class.pi-arrow-down]="stat.trendClass === 'negative'"
+                  [class.pi-minus]="stat.trendClass === 'neutral'"
+                ></i>
+                {{ stat.trend }}
+              </span>
             </div>
           </div>
-          <div class="kpi-body">
-            <span>{{ stat.label }}</span>
-            <strong
-              >{{ stat.value }}<small>{{ stat.suffix }}</small></strong
-            >
-          </div>
-        </article>
+        </div>
       </section>
 
       <section class="quick-access">
@@ -347,101 +347,124 @@ type AxisChartOptions = {
       }
 
       /* Neo-brutalist / Geometric Grids */
-      .kpi-grid,
       .hub-grid,
       .bento-grid {
         display: grid;
         gap: 28px;
       }
 
-      .kpi-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
-
-      .kpi-card {
-        --accent: #6366f1;
-        background: #ffffff;
-        border: 2px solid #0f172a;
-        border-radius: 16px;
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        min-height: 180px;
-        box-shadow: 6px 6px 0px var(--accent);
-        transition:
-          transform 0.2s ease,
-          box-shadow 0.2s ease;
-      }
-
-      .kpi-card:hover {
-        transform: translate(-3px, -3px);
-        box-shadow: 9px 9px 0px var(--accent);
-      }
-
-      .kpi-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 16px;
-      }
-
-      .kpi-icon {
+      .stats-overview {
+        position: sticky;
+        top: 80px;
+        z-index: 30;
         display: grid;
-        place-items: center;
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        background: color-mix(in srgb, var(--accent) 15%, white);
-        color: #0f172a;
-        font-size: 1.4rem;
-        border: 2px solid #0f172a;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        padding: 0;
+        background: linear-gradient(
+          180deg,
+          #f8fafc 0%,
+          rgba(248, 250, 252, 0.94) 78%,
+          rgba(248, 250, 252, 0)
+        );
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
       }
 
-      .kpi-trend {
-        display: inline-flex;
+      .stat-card {
+        position: relative;
+        overflow: hidden;
+        background: white;
+        padding: 18px;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        display: flex;
         align-items: center;
-        gap: 6px;
-        padding: 6px 10px;
-        border: 2px solid #0f172a;
-        border-radius: 99px;
-        font-size: 0.8rem;
-        font-weight: 900;
-        background: #fff;
-      }
+        gap: 14px;
+        transition:
+          transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+          box-shadow 0.35s ease,
+          border-color 0.35s ease;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+        will-change: transform;
 
-      .positive {
-        color: #047857;
-        background: #d1fae5;
-      }
-      .negative {
-        color: #dc2626;
-        background: #fee2e2;
-      }
-      .neutral {
-        color: #475569;
-        background: #f1f5f9;
-      }
+        &::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--accent) 15%, transparent),
+            transparent
+          );
+          opacity: 0.5;
+        }
 
-      .kpi-body {
-        margin-top: 24px;
-      }
+        &:hover {
+          transform: translateY(-6px) scale(1.07);
+          border-color: var(--accent);
+          box-shadow: 0 26px 50px color-mix(in srgb, var(--accent) 28%, rgba(15, 23, 42, 0.18));
+        }
 
-      .kpi-body span {
-        display: block;
-        color: #64748b;
-        font-size: 0.95rem;
-        font-weight: 800;
-        margin-bottom: 4px;
-      }
+        .stat-icon {
+          width: 52px;
+          height: 52px;
+          border-radius: 16px;
+          background: linear-gradient(
+            135deg,
+            var(--accent),
+            color-mix(in srgb, var(--accent), black 20%)
+          );
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.4rem;
+          box-shadow: 0 8px 16px color-mix(in srgb, var(--accent) 30%, transparent);
+          position: relative;
+          z-index: 1;
+        }
 
-      .kpi-body strong {
-        display: block;
-        color: #0f172a;
-        font-size: 3.2rem;
-        font-weight: 900;
-        line-height: 1;
-        letter-spacing: -0.05em;
+        .stat-label {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #64748b;
+        }
+        .stat-number {
+          font-size: 1.35rem;
+          font-weight: 800;
+          color: #0f172a;
+        }
+
+        .stat-value-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 2px;
+        }
+
+        .stat-badge {
+          padding: 4px 8px;
+          border-radius: 8px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+
+          &.positive {
+            background: #dcfce7;
+            color: #166534;
+          }
+          &.negative {
+            background: #fee2e2;
+            color: #991b1b;
+          }
+          &.neutral {
+            background: #f1f5f9;
+            color: #475569;
+          }
+        }
       }
 
       .kpi-body small {
@@ -661,9 +684,17 @@ type AxisChartOptions = {
 
       /* Responsive Adjustments */
       @media (max-width: 1180px) {
-        .kpi-grid,
+        .stats-overview,
         .hub-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .stats-overview {
+          position: static;
+          padding: 0;
+          background: transparent;
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
         }
 
         .col-span-8,
@@ -679,7 +710,7 @@ type AxisChartOptions = {
           padding: 1.5rem;
         }
 
-        .kpi-grid,
+        .stats-overview,
         .hub-grid,
         .bento-grid {
           grid-template-columns: 1fr;
