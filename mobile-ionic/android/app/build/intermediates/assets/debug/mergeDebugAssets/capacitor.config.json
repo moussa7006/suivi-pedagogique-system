@@ -1,9 +1,0 @@
-{
-	"appId": "io.ionic.starter",
-	"appName": "mobile-ionic",
-	"webDir": "www",
-	"server": {
-		"cleartext": true,
-		"androidScheme": "http"
-	}
-}
