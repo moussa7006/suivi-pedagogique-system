@@ -31,6 +31,10 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
           </div>
         </div>
         <div class="header-actions">
+          <button class="btn btn-outline" (click)="refreshAll()" [disabled]="loading">
+            <i class="pi" [ngClass]="loading ? 'pi-spin pi-spinner' : 'pi-refresh'"></i>
+            {{ loading ? 'Actualisation...' : 'Actualiser' }}
+          </button>
           <button class="btn btn-outline" (click)="exportExcel()" [disabled]="exportingExcel">
             <i class="pi" [ngClass]="exportingExcel ? 'pi-spin pi-spinner' : 'pi-download'"></i>
             {{ exportingExcel ? 'Export...' : 'Exporter' }}
@@ -45,16 +49,7 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
           </div>
           <div class="stat-content">
             <span class="val">{{ getStats().valides }}</span>
-            <span class="lab">Validés</span>
-          </div>
-        </div>
-        <div class="mini-stat">
-          <div class="stat-icon orange">
-            <i class="pi pi-exclamation-triangle"></i>
-          </div>
-          <div class="stat-content">
-            <span class="val">{{ getStats().horsPerimetre }}</span>
-            <span class="lab">Hors périmètre</span>
+            <span class="lab">Émargés</span>
           </div>
         </div>
         <div class="mini-stat">
@@ -92,8 +87,7 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
               style="padding: 10px 14px; border: 1px solid var(--border-color, #e2e8f0); border-radius: 10px; font-size: 0.88rem; background: #f8fafc; color: #475569; min-width: 150px; outline: none;"
             >
               <option value="">Tous les statuts</option>
-              <option value="VALIDE">Validé</option>
-              <option value="HORS_PERIMETRE">Hors périmètre</option>
+              <option value="VALIDE">Émargé</option>
               <option value="JUSTIFIE">Justifié</option>
             </select>
 
@@ -112,14 +106,6 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
                 />
               </div>
             </div>
-
-            <button
-              class="btn btn-outline"
-              (click)="resetFilters()"
-              style="padding: 9px 14px; margin: 0;"
-            >
-              <i class="pi pi-refresh"></i> Réinitialiser
-            </button>
           </div>
         </div>
         <div class="table-scrollless">
@@ -616,17 +602,6 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
           }
         }
 
-        &.hors-perimetre {
-          background: rgba(254, 226, 226, 0.85);
-          color: #b91c1c;
-          border-color: rgba(239, 68, 68, 0.5);
-
-          .status-dot {
-            background: #ef4444;
-            box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
-          }
-        }
-
         &.justifie {
           background: rgba(254, 237, 195, 0.85);
           color: #b45309;
@@ -670,14 +645,28 @@ export class AttendanceComponent implements OnInit {
   filterDate: string = '';
   filterStatus: string = '';
   exportingExcel = false;
+  loading = false;
 
   constructor(private attendanceService: AttendanceService) {}
 
   ngOnInit() {
-    this.attendanceService.getAllAttendances().subscribe((data) => {
-      this.todayLogs = sortByAlpha(data, (log) => log.enseignantNomPrenom);
-      this.filterLogs();
-    });
+    this.refreshAll();
+  }
+
+  refreshAll() {
+    this.loading = true;
+    this.attendanceService
+      .getAllAttendances()
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (data) => {
+          this.todayLogs = sortByAlpha(data, (log) => log.enseignantNomPrenom);
+          this.filterLogs();
+        },
+        error: () => {
+          this.loading = false;
+        },
+      });
   }
 
   filterLogs() {
@@ -716,9 +705,8 @@ export class AttendanceComponent implements OnInit {
 
   getStats() {
     const valides = this.todayLogs.filter((l) => l.statut === 'VALIDE').length;
-    const horsPerimetre = this.todayLogs.filter((l) => l.statut === 'HORS_PERIMETRE').length;
     const justifies = this.todayLogs.filter((l) => l.statut === 'JUSTIFIE').length;
-    return { valides, horsPerimetre, justifies };
+    return { valides, justifies };
   }
 
   async exportExcel(): Promise<void> {
@@ -773,11 +761,9 @@ export class AttendanceComponent implements OnInit {
   getStatutLabel(statut: string | undefined): string {
     switch (statut) {
       case 'EN_ATTENTE_FICHE':
-        return 'Scan validé - fiche attendue';
+        return 'Scan émargé - fiche attendue';
       case 'VALIDE':
-        return 'Validé';
-      case 'HORS_PERIMETRE':
-        return 'Hors périmètre';
+        return 'Émargé';
       case 'JUSTIFIE':
         return 'Justifié';
       default:
@@ -799,8 +785,6 @@ export class AttendanceComponent implements OnInit {
         return 'pending';
       case 'VALIDE':
         return 'valide';
-      case 'HORS_PERIMETRE':
-        return 'hors-perimetre';
       case 'JUSTIFIE':
         return 'justifie';
       default:

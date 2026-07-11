@@ -104,7 +104,7 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
             </div>
             <div class="log-content">
               <span class="log-message"
-                ><strong>K. Keita</strong> a émargé avec succès (Position GPS validée)</span
+                ><strong>K. Keita</strong> a émargé avec succès (Position GPS vérifiée)</span
               >
               <span class="log-time">14:32:05</span>
             </div>

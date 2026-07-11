@@ -1,7 +1,7 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { forkJoin, interval, of, Subscription } from 'rxjs';
+import { interval, of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import {
   ApexAxisChartSeries,
@@ -21,8 +21,6 @@ import {
 } from 'ng-apexcharts';
 import { sortByAlpha } from '../../core/utils/sort-utils';
 import { DashboardData, DashboardService } from '../../core/services/dashboard.service';
-import { HonorairesService } from '../../core/services/honoraires.service';
-import { HonorairesCalcul } from '../../core/models/honoraires.model';
 
 interface StatCard {
   label: string;
@@ -42,6 +40,8 @@ interface HubTile {
   icon: string;
   color: string;
   indicator: string;
+  gaugeValue: number;
+  gaugeLabel: string;
 }
 
 type RadialChartOptions = {
@@ -62,6 +62,9 @@ type DonutChartOptions = {
   dataLabels: ApexDataLabels;
   plotOptions: ApexPlotOptions;
   responsive: ApexResponsive[];
+  tooltip: ApexTooltip;
+  fill: ApexFill;
+  stroke: ApexStroke;
 };
 
 type AxisChartOptions = {
@@ -76,6 +79,7 @@ type AxisChartOptions = {
   tooltip: ApexTooltip;
   plotOptions: ApexPlotOptions;
   grid: ApexGrid;
+  legend: ApexLegend;
 };
 
 @Component({
@@ -84,11 +88,6 @@ type AxisChartOptions = {
   imports: [CommonModule, RouterLink, NgApexchartsModule],
   template: `
     <div class="dashboard-shell">
-      <header class="page-header">
-        <h1>Aperçu <span>Global</span></h1>
-        <div class="header-date">Bienvenue sur votre espace de pilotage</div>
-      </header>
-
       <section class="stats-overview" aria-label="Indicateurs clés">
         <div class="stat-card" *ngFor="let stat of stats" [style.--accent]="stat.color">
           <div class="stat-icon">
@@ -113,10 +112,6 @@ type AxisChartOptions = {
       </section>
 
       <section class="quick-access">
-        <div class="section-heading">
-          <h2>Accès rapide</h2>
-          <span>Raccourcis opérationnels</span>
-        </div>
         <div class="hub-grid">
           <a
             *ngFor="let tile of sortedHubTiles"
@@ -129,12 +124,57 @@ type AxisChartOptions = {
               <div class="tile-meta">{{ tile.meta }}</div>
               <h3>{{ tile.label }}</h3>
               <p>{{ tile.description }}</p>
-              <div class="tile-indicator">{{ tile.indicator }}</div>
+              <div class="tile-footer">
+                <div class="tile-gauge"
+                  [style.--gauge-color]="gaugeColor(tile.gaugeValue)"
+                  [style.background]="conicGradient(tile.gaugeValue)"
+                >
+                  <span class="gauge-value">{{ tile.gaugeValue }}<small>%</small></span>
+                </div>
+                <div class="tile-indicators">
+                  <span class="tile-gauge-label">{{ tile.gaugeLabel }}</span>
+                  <span class="tile-indicator">{{ tile.indicator }}</span>
+                </div>
+              </div>
             </div>
             <div class="tile-arrow-wrapper">
               <i class="pi pi-arrow-right tile-arrow"></i>
             </div>
           </a>
+        </div>
+      </section>
+
+      <section class="emargement-cycle">
+        <div class="section-heading">
+          <h2>Statut des séances</h2>
+          <span>Répartition opérationnelle</span>
+        </div>
+        <div class="cycle-wrapper">
+          <div class="cycle-chart">
+            <apx-chart
+              [series]="sessionStatusOptions.series"
+              [chart]="sessionStatusOptions.chart"
+              [labels]="sessionStatusOptions.labels"
+              [colors]="sessionStatusOptions.colors"
+              [legend]="sessionStatusOptions.legend"
+              [dataLabels]="sessionStatusOptions.dataLabels"
+              [plotOptions]="sessionStatusOptions.plotOptions"
+              [tooltip]="sessionStatusOptions.tooltip"
+              [responsive]="sessionStatusOptions.responsive"
+              [fill]="sessionStatusOptions.fill"
+              [stroke]="sessionStatusOptions.stroke"
+            ></apx-chart>
+          </div>
+          <div class="cycle-legend">
+            <div class="legend-item" *ngFor="let seg of cycleLegend; let i = index">
+              <span class="legend-dot" [style.background]="seg.color"></span>
+              <div class="legend-text">
+                <strong>{{ seg.label }}</strong>
+                <span>{{ seg.count }} séance{{ seg.count > 1 ? 's' : '' }} · {{ seg.pct }}%</span>
+                <p>{{ seg.desc }}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -193,30 +233,31 @@ type AxisChartOptions = {
             <article class="bento-card compact-chart">
               <div class="card-header">
                 <div>
-                  <h3>Statut des séances</h3>
-                  <p>Répartition opérationnelle</p>
+                  <h3>Performance par classe</h3>
+                  <p>Répartition de l'émargement</p>
                 </div>
-                <div class="header-icon"><i class="pi pi-clock"></i></div>
+                <div class="header-icon"><i class="pi pi-chart-pie"></i></div>
               </div>
               <div class="chart-wrapper donut-wrapper">
                 <apx-chart
-                  [series]="sessionStatusOptions.series"
-                  [chart]="sessionStatusOptions.chart"
-                  [labels]="sessionStatusOptions.labels"
-                  [colors]="sessionStatusOptions.colors"
-                  [legend]="sessionStatusOptions.legend"
-                  [dataLabels]="sessionStatusOptions.dataLabels"
-                  [plotOptions]="sessionStatusOptions.plotOptions"
+                  [series]="classPerformanceOptions.series"
+                  [chart]="classPerformanceOptions.chart"
+                  [labels]="classPerformanceOptions.labels"
+                  [colors]="classPerformanceOptions.colors"
+                  [legend]="classPerformanceOptions.legend"
+                  [dataLabels]="classPerformanceOptions.dataLabels"
+                  [plotOptions]="classPerformanceOptions.plotOptions"
+                  [tooltip]="classPerformanceOptions.tooltip"
                 ></apx-chart>
               </div>
             </article>
           </div>
 
-          <article class="bento-card col-span-6">
+          <article class="bento-card col-span-12">
             <div class="card-header">
               <div>
                 <h3>Top Enseignants</h3>
-                <p>Émargements validés par enseignant</p>
+                <p>Émargements par enseignant</p>
               </div>
               <div class="header-icon"><i class="pi pi-users"></i></div>
             </div>
@@ -233,31 +274,7 @@ type AxisChartOptions = {
                 [tooltip]="teacherHoursOptions.tooltip"
                 [stroke]="teacherHoursOptions.stroke"
                 [fill]="teacherHoursOptions.fill"
-              ></apx-chart>
-            </div>
-          </article>
-
-          <article class="bento-card col-span-6">
-            <div class="card-header">
-              <div>
-                <h3>Honoraires</h3>
-                <p>Prévisions mensuelles</p>
-              </div>
-              <div class="header-icon"><i class="pi pi-wallet"></i></div>
-            </div>
-            <div class="chart-wrapper">
-              <apx-chart
-                [series]="honorairesOptions.series"
-                [chart]="honorairesOptions.chart"
-                [xaxis]="honorairesOptions.xaxis"
-                [yaxis]="honorairesOptions.yaxis"
-                [colors]="honorairesOptions.colors"
-                [dataLabels]="honorairesOptions.dataLabels"
-                [plotOptions]="honorairesOptions.plotOptions"
-                [grid]="honorairesOptions.grid"
-                [tooltip]="honorairesOptions.tooltip"
-                [stroke]="honorairesOptions.stroke"
-                [fill]="honorairesOptions.fill"
+                [legend]="teacherHoursOptions.legend"
               ></apx-chart>
             </div>
           </article>
@@ -287,32 +304,6 @@ type AxisChartOptions = {
         padding-bottom: 36px;
         color: #0f172a;
         font-family: 'Plus Jakarta Sans', sans-serif;
-      }
-
-      /* Clean Header */
-      .page-header {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        margin-bottom: -16px;
-      }
-
-      .page-header h1 {
-        margin: 0;
-        font-size: 2.4rem;
-        font-weight: 900;
-        letter-spacing: -0.05em;
-        line-height: 1.1;
-      }
-
-      .page-header h1 span {
-        color: #6366f1;
-      }
-
-      .header-date {
-        color: #64748b;
-        font-size: 1rem;
-        font-weight: 600;
       }
 
       /* Section Headings */
@@ -476,11 +467,12 @@ type AxisChartOptions = {
 
       /* Hub Tiles (Quick Access) */
       .hub-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .hub-tile {
         --tile-color: #6366f1;
+        --gauge-color: #16a34a;
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 20px;
@@ -579,6 +571,60 @@ type AxisChartOptions = {
         gap: 4px;
       }
 
+      .tile-footer {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      .tile-gauge {
+        flex: 0 0 auto;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        position: relative;
+        transition: background 0.4s ease;
+      }
+
+      .tile-gauge::after {
+        content: '';
+        position: absolute;
+        inset: 5px;
+        border-radius: 50%;
+        background: #ffffff;
+      }
+
+      .gauge-value {
+        position: relative;
+        z-index: 1;
+        font-size: 0.8rem;
+        font-weight: 900;
+        color: var(--gauge-color);
+        line-height: 1;
+      }
+
+      .gauge-value small {
+        font-size: 0.55rem;
+        font-weight: 700;
+      }
+
+      .tile-indicators {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .tile-gauge-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
       .tile-arrow-wrapper {
         display: grid;
         place-items: center;
@@ -622,6 +668,9 @@ type AxisChartOptions = {
       }
       .col-span-4 {
         grid-column: span 4;
+      }
+      .col-span-12 {
+        grid-column: span 12;
       }
 
       .bento-column {
@@ -693,22 +742,92 @@ type AxisChartOptions = {
       }
 
       .chart-wrapper {
-        flex: 1;
-        min-height: 240px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
+          flex: 1;
+          min-height: 240px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
 
-      .gauge-wrapper,
-      .donut-wrapper {
-        align-items: center;
-        margin-top: -8px;
-      }
+        .gauge-wrapper,
+        .donut-wrapper {
+          align-items: center;
+          margin-top: -8px;
+        }
+
+        /* Emargement Cycle — Donut hero */
+        .emargement-cycle {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .cycle-wrapper {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 28px;
+          align-items: center;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 24px;
+          padding: 32px;
+          box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+        }
+
+        .cycle-chart {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .cycle-legend {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+
+        .legend-item {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+        }
+
+        .legend-dot {
+          flex: 0 0 auto;
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          margin-top: 3px;
+        }
+
+        .legend-text strong {
+          display: block;
+          font-size: 0.95rem;
+          font-weight: 900;
+          color: #0f172a;
+        }
+
+        .legend-text span {
+          display: block;
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: #64748b;
+          margin-bottom: 2px;
+        }
+
+        .legend-text p {
+          margin: 0;
+          font-size: 0.82rem;
+          color: #94a3b8;
+          font-weight: 500;
+          line-height: 1.4;
+        }
 
       /* Responsive Adjustments */
       @media (max-width: 1180px) {
-        .stats-overview,
+        .stats-overview {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
         .hub-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -723,8 +842,14 @@ type AxisChartOptions = {
 
         .col-span-8,
         .col-span-6,
-        .col-span-4 {
+        .col-span-4,
+        .col-span-12 {
           grid-column: span 12;
+        }
+
+        .cycle-wrapper {
+          grid-template-columns: 1fr;
+          gap: 20px;
         }
       }
 
@@ -766,62 +891,73 @@ export class DashboardComponent implements OnInit, OnDestroy {
   attendanceInsight = 'Aucune séance disponible pour le calcul.';
 
   private refreshSubscription: Subscription | null = null;
-  private readonly monthsWindow = this.getLastMonths(6);
 
   hubTiles: HubTile[] = [
     {
       label: 'Gestion des Classes',
-      description: 'Filières, niveaux et effectifs.',
+      description: 'Classes, filières et niveaux d\'enseignement.',
       meta: 'Académique',
       route: '/classes',
       icon: 'pi pi-users',
       color: '#2563eb',
       indicator: 'Chargement...',
+      gaugeValue: 0,
+      gaugeLabel: 'Émargement',
     },
     {
       label: 'Catalogue Matières',
-      description: 'Programmes et coefficients.',
+      description: 'Matières, programmes et coefficients par niveau.',
       meta: 'Programme',
       route: '/matieres',
       icon: 'pi pi-book',
       color: '#16a34a',
       indicator: 'Gestion active',
+      gaugeValue: 0,
+      gaugeLabel: 'Émargement',
     },
     {
       label: 'Corps Enseignant',
-      description: 'Professeurs et affectations.',
+      description: 'Professeurs, spécialités et affectations de classes.',
       meta: 'Ressources',
       route: '/teachers',
       icon: 'pi pi-id-card',
       color: '#f97316',
       indicator: 'Chargement...',
+      gaugeValue: 0,
+      gaugeLabel: 'Performance',
     },
     {
       label: 'Plannings & Horaires',
-      description: 'Séances, horaires et salles.',
+      description: 'Emplois du temps, séances et réservation de salles.',
       meta: 'Logistique',
       route: '/schedule',
       icon: 'pi pi-calendar',
       color: '#0ea5e9',
       indicator: 'Chargement...',
+      gaugeValue: 0,
+      gaugeLabel: 'Aujourd\'hui',
     },
     {
       label: 'Générateur QR Code',
-      description: 'Codes dynamiques d’émargement.',
-      meta: 'Contrôle',
+      description: 'Génération de codes QR pour l\'émargement des enseignants.',
+      meta: 'Émargement',
       route: '/qr-generator',
       icon: 'pi pi-qrcode',
       color: '#7c3aed',
       indicator: 'Accès rapide',
+      gaugeValue: 0,
+      gaugeLabel: 'En attente',
     },
     {
       label: 'Rapports d’Assiduité',
-      description: 'Présences, retards et rapports.',
+      description: 'Suivi des émargements, présences et assiduité.',
       meta: 'Analyse',
       route: '/attendance',
       icon: 'pi pi-chart-bar',
       color: '#ec4899',
       indicator: 'Chargement...',
+      gaugeValue: 0,
+      gaugeLabel: 'Assiduité',
     },
   ];
 
@@ -881,7 +1017,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             fontSize: '38px',
             fontWeight: 900,
             fontFamily: "'Plus Jakarta Sans', sans-serif",
-            formatter: (value) => `${Math.round(value)}%`,
+            formatter: (value: number) => `${Math.round(value)}%`,
           },
         },
       },
@@ -893,48 +1029,147 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   sessionStatusOptions: DonutChartOptions = {
     series: [0, 0, 0, 0],
-    chart: { type: 'donut', height: 260, fontFamily: "'Plus Jakarta Sans', sans-serif" },
-    labels: ['Validée', 'En cours', 'Prévue', 'Terminée'],
+    chart: { type: 'donut', height: 420, fontFamily: "'Plus Jakarta Sans', sans-serif" },
+    labels: ['Émargée', 'En cours', 'Prévue', 'Non émargée'],
     colors: ['#22c55e', '#38bdf8', '#fbbf24', '#a78bfa'],
+    legend: { show: false },
+    dataLabels: {
+      enabled: true,
+      formatter: (_val: number, opts: { label: string }) => `${opts.label}`,
+      style: { fontWeight: '900', fontSize: '14px' },
+      dropShadow: { enabled: false },
+    },
+    plotOptions: {
+      pie: {
+        donut: {
+          size: '72%',
+          labels: {
+            show: true,
+            total: {
+              show: true,
+              label: 'Séances',
+              fontSize: '16px',
+              fontWeight: 900,
+              color: '#64748b',
+              formatter: (w: { globals: { seriesTotals: number[] } }) =>
+                `${w.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0)}`,
+            },
+            value: {
+              fontSize: '32px',
+              fontWeight: 900,
+              color: '#0f172a',
+              formatter: (val: number) => `${Math.round(val)}`,
+            },
+          },
+        },
+      },
+    },
+    tooltip: {
+      theme: 'light',
+      style: { fontSize: '13px', fontFamily: "'Plus Jakarta Sans', sans-serif" },
+      y: {
+        formatter: (val: number) => `${val} séance${val > 1 ? 's' : ''}`,
+      },
+    },
+    fill: { type: 'solid' },
+    stroke: { width: 2, colors: ['#ffffff'] },
+    responsive: [
+      { breakpoint: 760, options: { chart: { height: 320 } } },
+    ],
+  };
+
+  classPerformanceOptions: DonutChartOptions = {
+    series: [0, 0, 0],
+    chart: { type: 'donut', height: 260, fontFamily: "'Plus Jakarta Sans', sans-serif" },
+    labels: ['Excellent', 'Moyen', 'Faible'],
+    colors: ['#22c55e', '#f59e0b', '#dc2626'],
     legend: { position: 'bottom', fontWeight: 800 },
     dataLabels: { enabled: true, style: { fontWeight: '900' } },
     plotOptions: {
       pie: {
         donut: {
           size: '68%',
-          labels: { show: true, total: { show: true, label: 'Séances', fontWeight: 900 } },
+          labels: { show: true, total: { show: true, label: 'Classes', fontWeight: 900 } },
         },
       },
     },
+    tooltip: { theme: 'light' },
+    fill: { type: 'solid' },
+    stroke: { width: 2, colors: ['#ffffff'] },
     responsive: [
       { breakpoint: 760, options: { chart: { height: 260 }, legend: { position: 'bottom' } } },
     ],
   };
 
+  classLegend: { label: string; color: string; count: number; pct: number; desc: string }[] = [
+    { label: 'Excellent', color: '#22c55e', count: 0, pct: 0, desc: 'Taux d\'émargement ≥ 80% — suivi rigoureux.' },
+    { label: 'Moyen', color: '#f59e0b', count: 0, pct: 0, desc: 'Taux d\'émargement 60–79% — suivi à améliorer.' },
+    { label: 'Faible', color: '#dc2626', count: 0, pct: 0, desc: 'Taux d\'émargement < 60% — suivi insuffisant.' },
+  ];
+
+  cycleLegend: { label: string; color: string; count: number; pct: number; desc: string }[] = [
+    { label: 'Émargée', color: '#22c55e', count: 0, pct: 0, desc: 'L\'enseignant a pointé via QR code — émargement effectué.' },
+    { label: 'En cours', color: '#38bdf8', count: 0, pct: 0, desc: 'La séance se déroule actuellement.' },
+    { label: 'Prévue', color: '#fbbf24', count: 0, pct: 0, desc: 'Séance planifiée, en attente du pointage.' },
+    { label: 'Non émargée', color: '#a78bfa', count: 0, pct: 0, desc: 'Séance écoulée sans émargement.' },
+  ];
+
   sessionsTrendOptions: AxisChartOptions = this.createLineChartOptions(
-    'Émargements validés',
+    'Émargements',
     '#6366f1',
   );
-  teacherHoursOptions: AxisChartOptions = this.createBarChartOptions(
-    'Émargements',
-    '#8b5cf6',
-    true,
-    'validés',
-  );
-  honorairesOptions: AxisChartOptions = this.createBarChartOptions(
-    'Montant',
-    '#f43f5e',
-    false,
-    'FCFA',
-  );
+  teacherHoursOptions: AxisChartOptions = {
+    series: [
+      { name: 'Émargements', data: [] },
+      { name: 'Séances planifiées', data: [] },
+    ],
+    chart: {
+      type: 'bar',
+      height: 360,
+      toolbar: { show: false },
+      fontFamily: "'Plus Jakarta Sans', sans-serif",
+      stacked: false,
+    },
+    xaxis: {
+      categories: [],
+      labels: { style: { colors: '#64748b', fontWeight: 600 } },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: { labels: { style: { colors: '#64748b', fontWeight: 600 } } },
+    colors: ['#8b5cf6', '#cbd5e1'],
+    dataLabels: { enabled: false },
+    stroke: { show: true, width: 4, colors: ['transparent'] },
+    fill: { opacity: 1 },
+    tooltip: {
+      theme: 'light',
+      style: { fontSize: '13px', fontFamily: "'Plus Jakarta Sans', sans-serif" },
+      y: { formatter: (value: number) => `${value} séance${value > 1 ? 's' : ''}` },
+    },
+    plotOptions: { bar: { horizontal: false, borderRadius: 6, columnWidth: '45%', barHeight: '45%' } },
+    grid: { show: true, borderColor: '#f1f5f9', strokeDashArray: 4, position: 'back', padding: { top: 0, right: 0, bottom: 0, left: 10 } },
+    legend: { show: true, position: 'top', fontWeight: 800, fontSize: '13px' },
+  };
 
   constructor(
     private dashboardService: DashboardService,
-    private honorairesService: HonorairesService,
   ) {}
 
   get sortedHubTiles(): HubTile[] {
     return sortByAlpha(this.hubTiles, (tile) => tile.label);
+  }
+
+  gaugeColor(value: number): string {
+    if (value >= 80) return '#16a34a';
+    if (value >= 60) return '#f59e0b';
+    if (value > 0) return '#dc2626';
+    return '#cbd5e1';
+  }
+
+  conicGradient(value: number): string {
+    const clamped = Math.max(0, Math.min(100, value));
+    const color = this.gaugeColor(value);
+    return `conic-gradient(${color} ${clamped * 3.6}deg, #e2e8f0 ${clamped * 3.6}deg)`;
   }
 
   ngOnInit(): void {
@@ -963,26 +1198,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadDashboardStats(): void {
-    const honorairesRequests = this.monthsWindow.map((month) =>
-      this.honorairesService.getParMois(month.year, month.month).pipe(
-        catchError((error) => {
-          console.error('[Dashboard] Erreur chargement honoraires:', error);
-          return of([] as HonorairesCalcul[]);
-        }),
-      ),
-    );
-
-    forkJoin({
-      dashboardStats: this.dashboardService.getDashboardData().pipe(
-        catchError((error) => {
-          console.error('[Dashboard] Erreur API Dashboard:', error);
-          return of(null as DashboardData | null);
-        }),
-      ),
-      honorairesByMonth: forkJoin(honorairesRequests),
-    }).subscribe(({ dashboardStats, honorairesByMonth }) => {
+    this.dashboardService.getDashboardData().pipe(
+      catchError((error) => {
+        console.error('[Dashboard] Erreur API Dashboard:', error);
+        return of(null as DashboardData | null);
+      }),
+    ).subscribe((dashboardStats) => {
       this.applyBackendStats(dashboardStats);
-      this.updateAnalytics(dashboardStats, honorairesByMonth);
+      this.updateAnalytics(dashboardStats);
     });
   }
 
@@ -993,29 +1216,58 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const sessionsToday = dashboardStats?.sessionsToday ?? 0;
     const totalSeances = dashboardStats?.totalSeances ?? 0;
     const emargementsValides = dashboardStats?.emargementsValides ?? 0;
+    const pendingEmargements = dashboardStats?.pendingEmargements ?? 0;
+    const tauxGlobal = dashboardStats?.tauxValidationGlobal ?? 0;
 
     this.stats[0].value = totalTeachers;
     this.stats[1].value = totalClasses;
     this.stats[2].value = totalMatieres;
     this.stats[3].value = sessionsToday;
 
-    this.hubTiles[2].indicator = `${totalTeachers} enseignant${totalTeachers > 1 ? 's' : ''}`;
-    this.hubTiles[0].indicator = `${totalClasses} classe${totalClasses > 1 ? 's' : ''}`;
-    this.hubTiles[1].indicator = `${totalMatieres} matière${totalMatieres > 1 ? 's' : ''}`;
-    this.hubTiles[3].indicator = `${totalSeances} séance${totalSeances > 1 ? 's' : ''}`;
-    this.hubTiles[5].indicator = `${emargementsValides} émargement${emargementsValides > 1 ? 's' : ''}`;
+    // --- Gauges & enriched indicators for hub tiles ---
+    // Index mapping: 0=Classes, 1=Matières, 2=Enseignant, 3=Planning, 4=QR, 5=Assiduité
+
+    const classesRows = dashboardStats?.classesEmargement ?? [];
+    const avgClassTaux = classesRows.length
+      ? Math.round(classesRows.reduce((s, r) => s + (r.tauxValidation || 0), 0) / classesRows.length)
+      : 0;
+    this.hubTiles[0].indicator = `${totalClasses} classe${totalClasses > 1 ? 's' : ''} · ${avgClassTaux}% émargé`;
+    this.hubTiles[0].gaugeValue = avgClassTaux;
+
+    const matieresRows = dashboardStats?.matieresVolumetrie ?? [];
+    const avgMatiereTaux = matieresRows.length
+      ? Math.round(matieresRows.reduce((s, r) => s + (r.tauxValidation || 0), 0) / matieresRows.length)
+      : 0;
+    this.hubTiles[1].indicator = `${totalMatieres} matière${totalMatieres > 1 ? 's' : ''} · ${avgMatiereTaux}% émargé`;
+    this.hubTiles[1].gaugeValue = avgMatiereTaux;
+
+    const teachersRows = dashboardStats?.topEnseignants ?? [];
+    const avgTeacherTaux = teachersRows.length
+      ? Math.round(teachersRows.reduce((s, r) => s + (r.tauxValidation || 0), 0) / teachersRows.length)
+      : 0;
+    this.hubTiles[2].indicator = `${totalTeachers} enseignant${totalTeachers > 1 ? 's' : ''} · ${avgTeacherTaux}% performance`;
+    this.hubTiles[2].gaugeValue = avgTeacherTaux;
+
+    const planningPct = totalSeances > 0 ? Math.round((sessionsToday / totalSeances) * 100) : 0;
+    this.hubTiles[3].indicator = `${totalSeances} séance${totalSeances > 1 ? 's' : ''} · ${sessionsToday} aujourd'hui`;
+    this.hubTiles[3].gaugeValue = planningPct;
+
+    this.hubTiles[4].indicator = `${pendingEmargements} en attente`;
+    this.hubTiles[4].gaugeValue = pendingEmargements > 0 ? 35 : 100;
+
+    this.hubTiles[5].indicator = `${emargementsValides} émargement${emargementsValides > 1 ? 's' : ''} · ${Math.round(tauxGlobal)}% assiduité`;
+    this.hubTiles[5].gaugeValue = Math.round(tauxGlobal);
   }
 
   private updateAnalytics(
     dashboardStats: DashboardData | null,
-    honorairesByMonth: HonorairesCalcul[][],
   ): void {
     this.attendanceRate = Math.round(dashboardStats?.tauxValidationGlobal ?? 0);
     this.attendanceInsight =
       (dashboardStats?.totalSeances ?? 0) > 0
         ? this.attendanceRate >= 80
-          ? 'Suivi satisfaisant : le taux d’émargement est élevé.'
-          : 'Attention : plusieurs séances restent sans émargement validé.'
+          ? 'Suivi satisfaisant : le taux d\'émargement est élevé.'
+          : 'Attention : plusieurs séances restent sans émargement.'
         : 'Aucune séance disponible pour le calcul.';
     this.attendanceGaugeOptions = {
       ...this.attendanceGaugeOptions,
@@ -1028,20 +1280,56 @@ export class DashboardComponent implements OnInit, OnDestroy {
     };
 
     const statusEntries = Object.entries(dashboardStats?.seancesParStatut ?? {});
+    const statusSeries = statusEntries.length
+      ? statusEntries.map(([, value]) => Number(value))
+      : [0, 0, 0, 0];
     this.sessionStatusOptions = {
       ...this.sessionStatusOptions,
       labels: statusEntries.length
         ? statusEntries.map(([label]) => label)
         : this.sessionStatusOptions.labels,
-      series: statusEntries.length ? statusEntries.map(([, value]) => Number(value)) : [0, 0, 0, 0],
+      series: statusSeries,
     };
+
+    // --- Narrative legend for the big donut ---
+    const statusTotal = statusSeries.reduce((a: number, b: number) => a + b, 0);
+    this.cycleLegend = this.cycleLegend.map((seg, i) => ({
+      ...seg,
+      count: statusSeries[i] ?? 0,
+      pct: statusTotal > 0 ? Math.round(((statusSeries[i] ?? 0) / statusTotal) * 100) : 0,
+    }));
+
+    // --- Performance par classe donut + narrative legend ---
+    const classesRows = dashboardStats?.classesEmargement ?? [];
+    const perfCounts = {
+      EXCELLENT: 0,
+      MOYEN: 0,
+      FAIBLE: 0,
+    } as { [key: string]: number };
+    for (const row of classesRows) {
+      const s = String(row.statut || '').toUpperCase();
+      if (s in perfCounts) {
+        perfCounts[s] += 1;
+      }
+    }
+    const perfSeries = [perfCounts['EXCELLENT'], perfCounts['MOYEN'], perfCounts['FAIBLE']];
+    const perfTotal = perfSeries.reduce((a: number, b: number) => a + b, 0);
+    this.classPerformanceOptions = {
+      ...this.classPerformanceOptions,
+      series: perfSeries,
+    };
+    this.classLegend = this.classLegend.map((seg, i) => ({
+      ...seg,
+      count: perfSeries[i] ?? 0,
+      pct: perfTotal > 0 ? Math.round(((perfSeries[i] ?? 0) / perfTotal) * 100) : 0,
+    }));
 
     const emargementsEntries = Object.entries(dashboardStats?.emargementsParJour ?? {});
     this.sessionsTrendOptions = {
       ...this.sessionsTrendOptions,
       series: [
         {
-          name: 'Émargements validés',
+          name: 'Émargements',
           data: emargementsEntries.map(([, value]) => Number(value)),
         },
       ],
@@ -1062,24 +1350,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
       ...this.teacherHoursOptions,
       series: [
         {
-          name: 'Émargements validés',
+          name: 'Émargements',
           data: topTeachers.map((teacher) => Number(teacher.emargementsValides || 0)),
+        },
+        {
+          name: 'Séances planifiées',
+          data: topTeachers.map((teacher) => Number(teacher.seancesPlanifiees || 0)),
         },
       ],
       xaxis: {
         ...this.teacherHoursOptions.xaxis,
-        categories: topTeachers.map((teacher) => teacher.nom || `Enseignant #${teacher.id}`),
+        categories: topTeachers.map(
+          (teacher) =>
+            `${teacher.nom || `Enseignant #${teacher.id}`}${teacher.specialite ? ` (${teacher.specialite})` : ''}`,
+        ),
       },
-    };
-
-    const monthLabels = this.monthsWindow.map((month) => month.label);
-    const honorairesTotals = honorairesByMonth.map((rows) =>
-      rows.reduce((total, row) => total + Number(row.montantBrut || 0), 0),
-    );
-    this.honorairesOptions = {
-      ...this.honorairesOptions,
-      series: [{ name: 'Honoraires', data: honorairesTotals }],
-      xaxis: { ...this.honorairesOptions.xaxis, categories: monthLabels },
     };
   }
 
@@ -1120,6 +1405,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         yaxis: { lines: { show: true } },
         padding: { top: 0, right: 0, bottom: 0, left: 10 },
       },
+      legend: { show: false },
     };
   }
 
@@ -1152,7 +1438,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         theme: 'light',
         style: { fontSize: '13px', fontFamily: "'Plus Jakarta Sans', sans-serif" },
         y: {
-          formatter: (value) =>
+          formatter: (value: number) =>
             suffix === 'FCFA'
               ? `${Number(value).toLocaleString('fr-FR')} FCFA`
               : `${value} ${suffix}`,
@@ -1160,24 +1446,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
       plotOptions: { bar: { horizontal, borderRadius: 6, columnWidth: '40%', barHeight: '40%' } },
       grid: { show: false, padding: { top: 0, right: 0, bottom: 0, left: 10 } },
+      legend: { show: false },
     };
-  }
-
-  private getLastMonths(count: number): Array<{ year: number; month: number; label: string }> {
-    const formatter = new Intl.DateTimeFormat('fr-FR', { month: 'short' });
-    const today = new Date();
-    const months: Array<{ year: number; month: number; label: string }> = [];
-
-    for (let index = count - 1; index >= 0; index -= 1) {
-      const date = new Date(today.getFullYear(), today.getMonth() - index, 1);
-      months.push({
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        label: `${formatter.format(date)} ${String(date.getFullYear()).slice(2)}`,
-      });
-    }
-
-    return months;
   }
 
   private loadAdminProfile(): void {

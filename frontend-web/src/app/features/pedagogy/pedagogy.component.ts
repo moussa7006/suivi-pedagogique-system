@@ -27,11 +27,15 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
             </a>
             <div class="header-left-titles">
               <h1>Fiches de Progression</h1>
-              <p>Consultez les fiches de progression validées automatiquement après scan</p>
+              <p>Consultez les fiches de progression émargées automatiquement après scan</p>
             </div>
           </div>
         </div>
         <div class="header-actions">
+          <button class="btn btn-outline" (click)="refreshAll()" [disabled]="loading">
+            <i class="pi" [ngClass]="loading ? 'pi-spin pi-spinner' : 'pi-refresh'"></i>
+            {{ loading ? 'Actualisation...' : 'Actualiser' }}
+          </button>
           <button class="btn btn-outline"><i class="pi pi-filter"></i> Filtres</button>
           <button class="btn btn-outline" (click)="exportExcel()" [disabled]="exportingExcel">
             <i class="pi" [ngClass]="exportingExcel ? 'pi-spin pi-spinner' : 'pi-download'"></i>
@@ -65,7 +69,7 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
           </div>
           <div class="stat-content">
             <span class="value">{{ getValidatedCount() }}</span>
-            <span class="label">Validées</span>
+            ,<span class="label">Émargées</span>
           </div>
         </div>
       </div>
@@ -123,7 +127,7 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
                   </span>
                   <span class="meta-item" *ngIf="log.dateValidation">
                     <i class="pi pi-check-circle"></i>
-                    <span>Validé le {{ log.dateValidation }}</span>
+                    <span>Émargé le {{ log.dateValidation }}</span>
                   </span>
                 </div>
               </div>
@@ -628,6 +632,7 @@ export class PedagogyComponent implements OnInit {
   lessonLogs: FicheProgression[] = [];
   seances: Seance[] = [];
   exportingExcel = false;
+  loading = false;
 
   constructor(
     private pedagogyService: PedagogyService,
@@ -638,11 +643,18 @@ export class PedagogyComponent implements OnInit {
     this.loadLogs();
   }
 
+  refreshAll() {
+    this.loading = true;
+    this.loadLogs();
+  }
+
   private loadLogs() {
     forkJoin({
       logs: this.pedagogyService.getLessonLogs(),
       seances: this.scheduleService.getAllSeances(),
-    }).subscribe(({ logs, seances }) => {
+    })
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe(({ logs, seances }) => {
       this.lessonLogs = sortByAlpha(
         logs || [],
         (log) =>
@@ -723,7 +735,7 @@ export class PedagogyComponent implements OnInit {
 
   getStatutLabel(estValideAdmin: boolean | null | undefined): string {
     if (estValideAdmin === true) {
-      return 'Validée automatiquement';
+      return 'Émargée automatiquement';
     }
     return 'À finaliser';
   }

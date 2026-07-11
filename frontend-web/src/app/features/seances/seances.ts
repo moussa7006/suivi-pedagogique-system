@@ -65,11 +65,6 @@ import { FormsModule } from '@angular/forms';
             placeholder="Enseignant, Salle, Classe..."
           />
         </div>
-        <div class="field actions">
-          <button class="btn btn-outline" (click)="resetFilters()">
-            <i class="pi pi-refresh"></i> Rénitialiser
-          </button>
-        </div>
       </div>
 
       <div class="table-card">
