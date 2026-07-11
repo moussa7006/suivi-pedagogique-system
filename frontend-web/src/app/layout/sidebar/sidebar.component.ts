@@ -168,6 +168,10 @@ import { AuthService } from '../../core/services/auth.service';
       }
 
       .sidebar-logo {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #0f172a;
         padding: 32px 24px;
         display: flex;
         align-items: center;

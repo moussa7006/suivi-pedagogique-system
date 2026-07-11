@@ -395,7 +395,7 @@ export class ScanQRPage implements OnDestroy {
       return 'Vous avez déjà émargé pour cette séance.';
     }
     if (error.status === 403) {
-      return "Hors périmètre autorisé pour l'émargement.";
+      return "Émargement non autorisé.";
     }
 
     return (

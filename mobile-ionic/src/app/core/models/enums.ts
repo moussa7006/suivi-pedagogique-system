@@ -12,7 +12,6 @@ export enum StatutSeance {
 export enum StatutEmargement {
   EN_ATTENTE_FICHE = "EN_ATTENTE_FICHE",
   VALIDE = "VALIDE",
-  HORS_PERIMETRE = "HORS_PERIMETRE",
   JUSTIFIE = "JUSTIFIE",
 }
 

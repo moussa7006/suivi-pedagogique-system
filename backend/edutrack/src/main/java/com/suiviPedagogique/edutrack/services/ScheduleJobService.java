@@ -44,14 +44,17 @@ public class ScheduleJobService {
 
     /**
      * S'exécute tous les jours à 00:01
-     * Génère les séances (Seance) du jour à partir des EmploiDuTemps actifs.
+     * Génère les séances (Seance) du jour ET des 6 jours suivants
+     * à partir des EmploiDuTemps actifs, de façon idempotente.
      */
     @Scheduled(cron = "0 1 0 * * ?")
     @Transactional
     public void generateDailySeances() {
         List<EmploiDuTemps> activeSchedules = emploiDuTempsRepository.findAllActive();
         for (EmploiDuTemps emploi : activeSchedules) {
-            checkAndGenerateSeanceForToday(emploi);
+            for (int offset = 0; offset <= 6; offset++) {
+                checkAndGenerateSeanceForDate(emploi, LocalDate.now().plusDays(offset));
+            }
         }
     }
 
@@ -73,29 +76,28 @@ public class ScheduleJobService {
     }
 
     /**
-     * Vérifie si un emploi du temps s'applique à aujourd'hui et génère la séance si nécessaire.
+     * Vérifie si un emploi du temps s'applique à une date donnée et génère la séance si nécessaire.
      */
     @Transactional
-    public void checkAndGenerateSeanceForToday(EmploiDuTemps emploi) {
-        LocalDate today = LocalDate.now();
+    public void checkAndGenerateSeanceForDate(EmploiDuTemps emploi, LocalDate targetDate) {
         boolean shouldGenerate = false;
 
         if (emploi.getTypeRecurrence() == TypeRecurrence.UNIQUE) {
-            if (today.equals(emploi.getDateSpecifique())) {
+            if (targetDate.equals(emploi.getDateSpecifique())) {
                 shouldGenerate = true;
             }
         } else if (emploi.getTypeRecurrence() == TypeRecurrence.HEBDOMADAIRE) {
-            if (emploi.getJourSemaine() != null && emploi.getJourSemaine() == mapDayOfWeek(today.getDayOfWeek())) {
-                boolean isValidStartDate = (emploi.getDateDebutValidite() == null || !today.isBefore(emploi.getDateDebutValidite()));
-                boolean isValidEndDate = (emploi.getDateFinValidite() == null || !today.isAfter(emploi.getDateFinValidite()));
+            if (emploi.getJourSemaine() != null && emploi.getJourSemaine() == mapDayOfWeek(targetDate.getDayOfWeek())) {
+                boolean isValidStartDate = (emploi.getDateDebutValidite() == null || !targetDate.isBefore(emploi.getDateDebutValidite()));
+                boolean isValidEndDate = (emploi.getDateFinValidite() == null || !targetDate.isAfter(emploi.getDateFinValidite()));
                 if (isValidStartDate && isValidEndDate) {
                     shouldGenerate = true;
                 }
             }
         } else if (emploi.getTypeRecurrence() == TypeRecurrence.MENSUEL) {
-            if (emploi.getJourDuMois() != null && today.getDayOfMonth() == emploi.getJourDuMois()) {
-                boolean isValidStartDate = (emploi.getDateDebutValidite() == null || !today.isBefore(emploi.getDateDebutValidite()));
-                boolean isValidEndDate = (emploi.getDateFinValidite() == null || !today.isAfter(emploi.getDateFinValidite()));
+            if (emploi.getJourDuMois() != null && targetDate.getDayOfMonth() == emploi.getJourDuMois()) {
+                boolean isValidStartDate = (emploi.getDateDebutValidite() == null || !targetDate.isBefore(emploi.getDateDebutValidite()));
+                boolean isValidEndDate = (emploi.getDateFinValidite() == null || !targetDate.isAfter(emploi.getDateFinValidite()));
                 if (isValidStartDate && isValidEndDate) {
                     shouldGenerate = true;
                 }
@@ -103,13 +105,13 @@ public class ScheduleJobService {
         }
 
         if (shouldGenerate) {
-            if (seanceRepository.existsByEmploiDuTempsIdAndDateCours(emploi.getId(), today)) {
+            if (seanceRepository.existsByEmploiDuTempsIdAndDateCours(emploi.getId(), targetDate)) {
                 return;
             }
 
             if (!seanceRepository.findOverlappingSeancesForTeacher(
                     emploi.getEnseignant().getId(),
-                    today,
+                    targetDate,
                     emploi.getHeureDebut(),
                     emploi.getHeureFin(),
                     null
@@ -119,7 +121,7 @@ public class ScheduleJobService {
             }
 
             Seance seance = new Seance();
-            seance.setDateCours(today);
+            seance.setDateCours(targetDate);
             seance.setHeureDebutReelle(emploi.getHeureDebut());
             seance.setHeureFinReelle(emploi.getHeureFin());
             seance.setStatut(StatutSeance.PREVUE);
@@ -128,9 +130,8 @@ public class ScheduleJobService {
             seance.setClasse(emploi.getClasse());
             seance.setEmploiDuTemps(emploi);
 
-            // IMPORTANT: L'émargement et le QR code seront générés plus tard.
             seanceRepository.save(seance);
-            System.out.println("Séance générée pour: " + emploi.getTitre());
+            System.out.println("Séance générée pour: " + emploi.getTitre() + " le " + targetDate);
         }
     }
 
