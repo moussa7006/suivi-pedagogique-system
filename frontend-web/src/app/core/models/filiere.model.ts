@@ -1,5 +1,1 @@
-export interface Filiere {
-  id?: number;
-  libelle: string;
-  departementId: number;
-}
+export type { Filiere } from '@edutrack/shared/models';

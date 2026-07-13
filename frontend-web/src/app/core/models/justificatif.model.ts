@@ -1,11 +1,1 @@
-import { TypeAbsence } from './enums';
-
-export interface Justificatif {
-  id?: number;
-  fichier: string;
-  commentaire: string;
-  typeAbsence: TypeAbsence;
-  estValideAdmin: boolean;
-  enseignantId: number;
-  emargementId: number;
-}
+export type { Justificatif } from '@edutrack/shared/models';

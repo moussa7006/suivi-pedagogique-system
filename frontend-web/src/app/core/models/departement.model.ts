@@ -1,4 +1,1 @@
-export interface Departement {
-  id?: number;
-  libelle: string;
-}
+export type { Departement } from '@edutrack/shared/models';
