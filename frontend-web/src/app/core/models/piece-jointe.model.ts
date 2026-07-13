@@ -1,8 +1,1 @@
-import { TypePieceJointe } from './enums';
-
-export interface PieceJointe {
-  id?: number;
-  urlChemin: string;
-  type: TypePieceJointe;
-  ficheProgressionId: number;
-}
+export type { PieceJointe } from '@edutrack/shared/models';

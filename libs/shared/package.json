@@ -1,0 +1,11 @@
+{
+  "name": "@edutrack/shared",
+  "version": "1.0.0",
+  "description": "Modèles, utilitaires et types partagés pour les apps EduTrack (web admin + mobile Ionic)",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {},
+  "keywords": ["edutrack", "shared", "types"],
+  "license": "UNLICENSED",
+  "private": true
+}

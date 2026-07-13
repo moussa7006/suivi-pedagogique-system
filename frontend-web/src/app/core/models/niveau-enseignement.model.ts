@@ -1,5 +1,1 @@
-export interface NiveauEnseignement {
-  id?: number;
-  libelle: string;
-  prixHoraire: number;
-}
+export type { NiveauEnseignement } from '@edutrack/shared/models';

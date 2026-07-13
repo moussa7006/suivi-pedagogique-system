@@ -1,7 +1,1 @@
-export interface Classe {
-  id?: number;
-  libelle: string;
-  filiereId: number;
-  niveauEnseignementId: number;
-  anneeUniversitaireId?: number;
-}
+export type { Classe } from '@edutrack/shared/models';
