@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Serveur mobile statique + proxy API pour tests téléphone/relais.
 
-- Sert mobile-ionic/www sur le port 8100.
+- Sert frontend-ionic/www sur le port 8100.
 - Redirige /api/* vers http://localhost:8099/api/*.
 
 Ainsi, le mobile peut utiliser apiBaseUrl: '/api' et un seul tunnel relais suffit.
@@ -128,13 +128,13 @@ def main() -> int:
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--backend-host", default="localhost")
     parser.add_argument("--backend-port", type=int, default=8099)
-    parser.add_argument("--www", default="mobile-ionic/www")
+    parser.add_argument("--www", default="frontend-ionic/www")
     args = parser.parse_args()
 
     www_dir = Path(args.www).resolve()
     if not www_dir.exists():
         raise SystemExit(
-            f"Dossier introuvable: {www_dir}. Lance d'abord npm --prefix mobile-ionic run build"
+            f"Dossier introuvable: {www_dir}. Lance d'abord npm --prefix frontend-ionic run build"
         )
 
     MobileProxyHandler.www_dir = www_dir

@@ -1,0 +1,798 @@
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
+import { AttendanceService } from '../../core/services/attendance.service';
+import { Emargement } from '../../core/models/attendance.model';
+import { sortByAlpha } from '../../core/utils/sort-utils';
+
+@Component({
+  selector: 'app-attendance',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink],
+  template: `
+    <div class="attendance-page">
+      <div class="page-header">
+        <div class="header-left">
+          <div class="header-left-top">
+            <a
+              routerLink="/web/dashboard"
+              class="btn-back-arrow"
+              aria-label="Retour au tableau de bord"
+              title="Retour au tableau de bord"
+            >
+              <i class="pi pi-arrow-left"></i>
+            </a>
+            <div class="header-left-titles">
+              <h1>Suivi des Émargements</h1>
+              <p>Historique des émargements enregistrés ({{ todayLogs.length }} entrées)</p>
+            </div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-outline" (click)="refreshAll()" [disabled]="loading">
+            <i class="pi" [ngClass]="loading ? 'pi-spin pi-spinner' : 'pi-refresh'"></i>
+            {{ loading ? 'Actualisation...' : 'Actualiser' }}
+          </button>
+          <button class="btn btn-outline" (click)="exportExcel()" [disabled]="exportingExcel">
+            <i class="pi" [ngClass]="exportingExcel ? 'pi-spin pi-spinner' : 'pi-download'"></i>
+            {{ exportingExcel ? 'Export...' : 'Exporter' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="mini-stat">
+          <div class="stat-icon green">
+            <i class="pi pi-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <span class="val">{{ getStats().valides }}</span>
+            <span class="lab">Émargés</span>
+          </div>
+        </div>
+        <div class="mini-stat">
+          <div class="stat-icon blue">
+            <i class="pi pi-file"></i>
+          </div>
+          <div class="stat-content">
+            <span class="val">{{ getStats().justifies }}</span>
+            <span class="lab">Justifiés</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-header-top" style="margin-bottom: 16px;">
+            <h3>Émargements</h3>
+            <span class="record-count">{{ filteredLogs.length }} / {{ todayLogs.length }}</span>
+          </div>
+
+          <div
+            class="header-filters"
+            style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;"
+          >
+            <input
+              type="date"
+              [(ngModel)]="filterDate"
+              (change)="filterLogs()"
+              style="padding: 10px 14px; border: 1px solid var(--border-color, #e2e8f0); border-radius: 10px; font-size: 0.88rem; background: #f8fafc; color: #475569; outline: none;"
+            />
+
+            <select
+              [(ngModel)]="filterStatus"
+              (change)="filterLogs()"
+              style="padding: 10px 14px; border: 1px solid var(--border-color, #e2e8f0); border-radius: 10px; font-size: 0.88rem; background: #f8fafc; color: #475569; min-width: 150px; outline: none;"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="VALIDE">Émargé</option>
+              <option value="JUSTIFIE">Justifié</option>
+            </select>
+
+            <!-- Centered Search Bar -->
+            <div
+              class="search-container centered-search"
+              style="flex: 1; min-width: 200px; max-width: 380px;"
+            >
+              <div class="search-input-wrapper">
+                <i class="pi pi-search"></i>
+                <input
+                  type="text"
+                  placeholder="Rechercher enseignant, lieu, statut..."
+                  [(ngModel)]="searchText"
+                  (input)="filterLogs()"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="table-scrollless">
+          <table class="attendance-table">
+            <thead>
+              <tr>
+                <th>Enseignant</th>
+                <th>Lieu / Adresse</th>
+                <th>Date & Heure</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="filteredLogs.length === 0">
+                <td colspan="4" class="text-center empty-state-cell">
+                  Aucun enregistrement trouvé.
+                </td>
+              </tr>
+              @for (log of filteredLogs; track log.id) {
+                <tr>
+                  <td>
+                    <div class="teacher-cell">
+                      <div class="teacher-avatar">
+                        {{ getInitials(log.enseignantNomPrenom || '??') }}
+                      </div>
+                      <div class="teacher-name">
+                        <strong>{{ log.enseignantNomPrenom }}</strong>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="sub-info">
+                      <span class="subject">{{ log.lieu || 'Non spécifié' }}</span>
+                      <small class="location"
+                        ><i class="pi pi-map-marker"></i> {{ log.adresseApproximative }}</small
+                      >
+                    </div>
+                  </td>
+                  <td>
+                    <span class="time-cell">
+                      <i class="pi pi-clock"></i>
+                      {{
+                        log.dateHeureScan
+                          ? (log.dateHeureScan | date: 'dd/MM/yy HH:mm')
+                          : log.heureSeance
+                      }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-pill" [ngClass]="getStatusClass(log.statut || '')">
+                      <span class="status-dot"></span>
+                      {{ getStatutLabel(log.statut) }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [
+    `
+      .attendance-page {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+
+        @media (max-width: 768px) {
+          gap: 18px;
+        }
+
+        @media (max-width: 480px) {
+          gap: 14px;
+        }
+      }
+
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        flex-wrap: wrap;
+
+        .header-left {
+          flex: 1;
+          min-width: 220px;
+
+          h1 {
+            margin: 0 0 4px;
+            font-size: clamp(1.1rem, 3vw, 1.75rem);
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            word-break: break-word;
+
+            i {
+              color: var(--primary-color);
+              font-size: clamp(1.2rem, 3vw, 1.6rem);
+            }
+          }
+
+          p {
+            color: #64748b;
+            margin: 6px 0 0;
+            font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+            font-weight: 500;
+          }
+        }
+
+        .header-actions {
+          display: flex;
+          gap: 10px;
+
+          @media (max-width: 600px) {
+            width: 100%;
+            justify-content: flex-end;
+          }
+        }
+      }
+
+      .btn {
+        padding: 11px 18px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        transition: all 0.15s ease;
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: rgba(255, 255, 255, 0.05);
+          transition: opacity 0.3s;
+          opacity: 0;
+        }
+
+        i {
+          font-size: 1rem;
+        }
+
+        &.btn-outline {
+          background: white;
+          border: 1px solid var(--border-color);
+          color: #475569;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+          &:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+
+            &::before {
+              opacity: 1;
+            }
+          }
+
+          &:active {
+            transform: scale(0.97);
+          }
+        }
+      }
+
+      .stats-row {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+
+        @media (max-width: 768px) {
+          gap: 12px;
+        }
+
+        @media (max-width: 480px) {
+          flex-direction: column;
+        }
+
+        .mini-stat {
+          background: white;
+          flex: 1;
+          min-width: 150px;
+          padding: 18px 20px;
+          border-radius: 14px;
+          border: 1px solid rgba(226, 232, 240, 0.9);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          transition: all 0.2s;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+          }
+
+          .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+
+            &.green {
+              background: rgba(220, 252, 231, 0.8);
+              color: #166534;
+            }
+
+            &.blue {
+              background: rgba(219, 234, 254, 0.8);
+              color: #1d4ed8;
+            }
+
+            &.orange {
+              background: rgba(254, 237, 195, 0.8);
+              color: #b45309;
+            }
+          }
+
+          .stat-content {
+            display: flex;
+            flex-direction: column;
+
+            .val {
+              font-size: 1.5rem;
+              font-weight: 800;
+              color: #0f172a;
+              line-height: 1;
+            }
+
+            .lab {
+              font-size: 0.75rem;
+              color: #64748b;
+              font-weight: 600;
+              margin-top: 4px;
+            }
+          }
+        }
+      }
+
+      .table-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+
+        &:hover {
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        }
+      }
+
+      .table-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(241, 245, 249, 0.9);
+      }
+
+      .custom-table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .table-header-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        h3 {
+          margin: 0;
+          font-size: 1.15rem;
+          font-weight: 700;
+          color: #0f172a;
+        }
+
+        .record-count {
+          background: rgba(219, 234, 254, 0.7);
+          padding: 3px 10px;
+          border-radius: 999px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #1d4ed8;
+        }
+      }
+
+      .centered-search {
+        flex: 1;
+        min-width: 240px;
+        max-width: 380px;
+      }
+
+      .search-input-wrapper {
+        position: relative;
+        width: 100%;
+
+        .pi-search {
+          position: absolute;
+          left: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #94a3b8;
+          font-size: 0.9rem;
+          pointer-events: none;
+        }
+
+        input {
+          width: 100%;
+          padding: 10px 14px 10px 40px;
+          border-radius: 10px;
+          border: 1px solid var(--border-color);
+          font-size: 0.88rem;
+          background: #f8fafc;
+          transition: all 0.2s;
+          box-sizing: border-box;
+
+          &:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+          }
+
+          &::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+          }
+        }
+      }
+
+      .table-scrollless {
+        overflow-x: auto;
+      }
+
+      .table-scrollless::-webkit-scrollbar {
+        height: 6px;
+      }
+
+      .empty-state-cell {
+        padding: 48px 24px !important;
+        color: #94a3b8;
+        font-size: 0.95rem;
+      }
+
+      .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+        min-width: 580px;
+
+        thead {
+          th {
+            padding: 14px 20px;
+            text-align: left;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            background: rgba(248, 250, 252, 0.6);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+          }
+        }
+
+        tbody {
+          tr {
+            transition: background 0.15s;
+
+            &:last-child {
+              td {
+                border-bottom: none;
+              }
+            }
+
+            &:hover {
+              background: rgba(248, 250, 252, 0.6);
+            }
+          }
+
+          td {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(241, 245, 249, 0.9);
+            vertical-align: middle;
+          }
+        }
+      }
+
+      .teacher-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .teacher-avatar {
+          width: 38px;
+          height: 38px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(148, 163, 184, 0.07));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 0.78rem;
+          color: var(--primary-color);
+          flex-shrink: 0;
+        }
+
+        .teacher-name {
+          strong {
+            color: #1e293b;
+            font-size: 0.88rem;
+          }
+        }
+      }
+
+      .sub-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .subject {
+          font-weight: 600;
+          color: #334155;
+          font-size: 0.88rem;
+        }
+
+        .location {
+          color: #64748b;
+          font-size: 0.8rem;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+
+          i {
+            color: #94a3b8;
+            font-size: 0.75rem;
+          }
+        }
+      }
+
+      .time-cell {
+        font-size: 0.85rem;
+        color: #475569;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        i {
+          color: #94a3b8;
+          font-size: 0.85rem;
+        }
+      }
+
+      .status-pill {
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 1px solid;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+
+        .status-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+
+        &.valide {
+          background: rgba(220, 252, 231, 0.85);
+          color: #166534;
+          border-color: rgba(34, 197, 94, 0.5);
+
+          .status-dot {
+            background: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+          }
+        }
+
+        &.justifie {
+          background: rgba(254, 237, 195, 0.85);
+          color: #b45309;
+          border-color: rgba(251, 191, 36, 0.5);
+
+          .status-dot {
+            background: #f59e0b;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+          }
+        }
+      }
+
+      @media (max-width: 768px) {
+        .table-card {
+          .attendance-table {
+            font-size: 0.82rem;
+          }
+        }
+
+        .page-header {
+          .header-actions {
+            width: 100%;
+          }
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header-left h1 {
+          i {
+            display: none;
+          }
+        }
+      }
+    `,
+  ],
+})
+export class AttendanceComponent implements OnInit {
+  todayLogs: Emargement[] = [];
+  filteredLogs: Emargement[] = [];
+  searchText: string = '';
+  filterDate: string = '';
+  filterStatus: string = '';
+  exportingExcel = false;
+  loading = false;
+
+  constructor(private attendanceService: AttendanceService,
+    private readonly cdr: ChangeDetectorRef,
+  ) {}
+
+  ngOnInit() {
+    this.refreshAll();
+  }
+
+  refreshAll() {
+    this.loading = true;
+    this.attendanceService
+      .getAllAttendances()
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (data) => {
+          this.todayLogs = sortByAlpha(data, (log) => log.enseignantNomPrenom);
+          this.filterLogs();
+        this.cdr.detectChanges();
+        },
+        error: () => {
+          this.loading = false;
+        this.cdr.detectChanges();
+        },
+      });
+  }
+
+  filterLogs() {
+    const text = this.searchText.toLowerCase();
+    const logs = this.todayLogs.filter((log) => {
+      let matchDate = true;
+      if (this.filterDate) {
+        const logDateStr = log.dateHeureScan || log.heureSeance;
+        if (logDateStr) {
+          const logDate = new Date(logDateStr).toISOString().split('T')[0];
+          matchDate = logDate === this.filterDate;
+        } else {
+          matchDate = false;
+        }
+      }
+
+      const matchStatus = this.filterStatus ? log.statut === this.filterStatus : true;
+      const matchText =
+        (log.enseignantNomPrenom || '').toLowerCase().includes(text) ||
+        (log.lieu || '').toLowerCase().includes(text) ||
+        (log.adresseApproximative || '').toLowerCase().includes(text) ||
+        (log.statut || '').toLowerCase().includes(text);
+
+      return matchDate && matchStatus && matchText;
+    });
+
+    this.filteredLogs = sortByAlpha(logs, (log) => log.enseignantNomPrenom);
+  }
+
+  resetFilters() {
+    this.filterDate = '';
+    this.filterStatus = '';
+    this.searchText = '';
+    this.filterLogs();
+  }
+
+  getStats() {
+    const valides = this.todayLogs.filter((l) => l.statut === 'VALIDE').length;
+    const justifies = this.todayLogs.filter((l) => l.statut === 'JUSTIFIE').length;
+    return { valides, justifies };
+  }
+
+  async exportExcel(): Promise<void> {
+    this.exportingExcel = true;
+    this.attendanceService
+      .exportEmargementsExcel()
+      .pipe(finalize(() => (this.exportingExcel = false)))
+      .subscribe({
+        next: async (blob) => {
+          await this.saveFile(blob, 'suivi_presences_emargements.xlsx', 'xlsx');
+        },
+        error: (error) => console.error("Échec de l'export Excel.", error),
+      });
+  }
+
+  private async saveFile(blob: Blob, defaultFileName: string, extension: string) {
+    if ('showSaveFilePicker' in window) {
+      try {
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: defaultFileName,
+          types: [
+            {
+              description: 'Fichier Excel',
+              accept: {
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [
+                  `.${extension}`,
+                ],
+              },
+            },
+          ],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return;
+      } catch (err: any) {
+        if (err.name === 'AbortError') return;
+        console.error('Erreur saveFile:', err);
+      }
+    }
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = defaultFileName;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+
+  getStatutLabel(statut: string | undefined): string {
+    switch (statut) {
+      case 'EN_ATTENTE_FICHE':
+        return 'Scan émargé - fiche attendue';
+      case 'VALIDE':
+        return 'Émargé';
+      case 'JUSTIFIE':
+        return 'Justifié';
+      default:
+        return statut || 'N/A';
+    }
+  }
+
+  getInitials(name: string): string {
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  getStatusClass(statut: string): string {
+    switch (statut) {
+      case 'EN_ATTENTE_FICHE':
+        return 'pending';
+      case 'VALIDE':
+        return 'valide';
+      case 'JUSTIFIE':
+        return 'justifie';
+      default:
+        return '';
+    }
+  }
+}

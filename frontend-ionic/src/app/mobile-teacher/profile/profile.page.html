@@ -1,0 +1,371 @@
+<ion-content [fullscreen]="true">
+  <ion-button
+    fill="clear"
+    class="back-btn"
+    routerLink="/mobile/tabs/tabs/tab1"
+    [replaceUrl]="true"
+    aria-label="Retour au menu"
+  >
+    <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+  </ion-button>
+
+  <div class="profile-hero">
+    <div class="avatar-shell">
+      <div
+        class="profile-avatar"
+        [style.background-image]="'url(' + teacher.avatar + ')'"
+      ></div>
+      <button
+        class="edit-photo-btn"
+        type="button"
+        (click)="changePhoto()"
+        aria-label="Changer la photo de profil"
+      >
+        <ion-icon name="camera-outline"></ion-icon>
+      </button>
+      <div class="online-dot"></div>
+    </div>
+
+    <div class="hero-text">
+      <p class="eyebrow">{{ 'Profil enseignant' }}</p>
+      <h1>{{ teacher.firstName }} {{ teacher.lastName }}</h1>
+      <div class="hero-badges">
+        <span *ngIf="teacher.matricule">ID: {{ teacher.matricule }}</span>
+        <span>{{ teacher.status }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-section">
+    <div class="section-tabs" aria-label="Sections du profil">
+      <button
+        type="button"
+        [class.active]="activeSection === 'personal'"
+        (click)="setActiveSection('personal')"
+      >
+        <ion-icon name="person-circle-outline"></ion-icon>
+        <span>{{ 'Informations' }}</span>
+      </button>
+      <button
+        type="button"
+        [class.active]="activeSection === 'academic'"
+        (click)="setActiveSection('academic')"
+      >
+        <ion-icon name="school-outline"></ion-icon>
+        <span>{{ 'Académique' }}</span>
+      </button>
+      <button
+        type="button"
+        [class.active]="activeSection === 'stats'"
+        (click)="setActiveSection('stats')"
+      >
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        <span>{{ 'Stats' }}</span>
+      </button>
+      <button
+        type="button"
+        [class.active]="activeSection === 'security'"
+        (click)="setActiveSection('security')"
+      >
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+        <span>{{ 'Sécurité' }}</span>
+      </button>
+    </div>
+
+    <div class="modern-card" *ngIf="activeSection === 'personal'">
+      <button
+        class="card-header card-header-button"
+        type="button"
+        (click)="setActiveSection('personal')"
+      >
+        <ion-icon name="person-circle-outline"></ion-icon>
+        <div>
+          <h3>{{ 'Informations personnelles' }}</h3>
+          <p>
+            {{ 'Données récupérées depuis le compte enseignant connecté.' }}
+          </p>
+        </div>
+      </button>
+      <div class="info-list">
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="person-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>{{ 'Nom complet' }}</label>
+            <p>{{ teacher.firstName }} {{ teacher.lastName }}</p>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="person-circle-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>{{ 'Matricule' }}</label>
+            <p>{{ teacher.matricule || 'Non renseigné' }}</p>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box"><ion-icon name="mail-outline"></ion-icon></div>
+          <div class="item-content">
+            <label>{{ 'Email' }}</label>
+            <p class="breakable">{{ teacher.email || 'Non renseigné' }}</p>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box"><ion-icon name="call-outline"></ion-icon></div>
+          <div class="item-content">
+            <label>{{ 'Téléphone' }}</label>
+            <p>{{ teacher.telephone || 'Non renseigné' }}</p>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="location-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>{{ 'Adresse / quartier' }}</label>
+            <p class="breakable">{{ teacher.adresse || 'Non renseigné' }}</p>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="business-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>{{ 'Rôle' }}</label>
+            <p>{{ teacher.role || 'Non renseigné' }}</p>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="school-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>{{ 'Grade' }}</label>
+            <p>{{ teacher.grade || 'Non renseigné' }}</p>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="book-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>{{ 'Spécialité' }}</label>
+            <p class="breakable">{{ teacher.specialite || 'Non renseigné' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modern-card" *ngIf="activeSection === 'academic'">
+      <button
+        class="card-header card-header-button"
+        type="button"
+        (click)="setActiveSection('academic')"
+      >
+        <ion-icon name="school-outline"></ion-icon>
+        <div>
+          <h3>{{ 'Informations académiques' }}</h3>
+          <p>
+            {{ 'Matières enseignées et volume horaire calculés depuis les
+            séances.' }}
+          </p>
+        </div>
+      </button>
+      <div class="info-list">
+        <div class="info-row">
+          <div class="icon-box"><ion-icon name="book-outline"></ion-icon></div>
+          <div class="item-content">
+            <label>{{ 'Matière(s)' }}</label>
+            <p class="breakable">{{ getMatieresLabel() }}</p>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box"><ion-icon name="time-outline"></ion-icon></div>
+          <div class="item-content">
+            <label>{{ 'Volume horaire effectué' }}</label>
+            <p>
+              {{ teacher.volumeHoraire.effectue }} h / {{
+              teacher.volumeHoraire.total }} h
+            </p>
+          </div>
+        </div>
+        <div class="progress-card">
+          <div class="progress-head">
+            <span>{{ 'Progression horaire' }}</span>
+            <strong>{{ getProgressPercent() | number:'1.0-0' }}%</strong>
+          </div>
+          <div class="progress-track">
+            <div
+              class="progress-fill"
+              [style.width.%]="getProgressPercent()"
+            ></div>
+          </div>
+          <p>Reste à effectuer : {{ teacher.volumeHoraire.restant }} h</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modern-card" *ngIf="activeSection === 'stats'">
+      <button
+        class="card-header card-header-button"
+        type="button"
+        (click)="setActiveSection('stats')"
+      >
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        <div>
+          <h3>{{ 'Statistiques pédagogiques' }}</h3>
+          <p>
+            {{ 'Indicateurs calculés à partir des vraies séances de
+            l’enseignant.' }}
+          </p>
+        </div>
+      </button>
+      <div class="stats-row">
+        <div class="stat-box">
+          <span class="stat-value"
+            >{{ teacher.statistiques.totalSeances }}</span
+          >
+          <span class="stat-label">{{ 'Séances' }}</span>
+        </div>
+        <div class="stat-box success">
+          <span class="stat-value"
+            >{{ teacher.statistiques.tauxPresence }}%</span
+          >
+          <span class="stat-label">{{ 'Émargées' }}</span>
+        </div>
+        <div class="stat-box secondary">
+          <span class="stat-value">{{ teacher.volumeHoraire.effectue }}h</span>
+          <span class="stat-label">{{ 'Volume' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modern-card" *ngIf="activeSection === 'security'">
+      <button
+        class="card-header card-header-button"
+        type="button"
+        (click)="setActiveSection('security')"
+      >
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+        <div>
+          <h3>{{ 'Sécurité & appli' }}</h3>
+          <p>{{ 'Gérez votre mot de passe et vos préférences.' }}</p>
+        </div>
+      </button>
+      <div class="info-list">
+        <button
+          class="security-action"
+          type="button"
+          (click)="openPasswordModal()"
+        >
+          <div class="icon-box">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>{{ 'Mot de passe' }}</label>
+            <p>{{ '••••••••••••' }}</p>
+          </div>
+        </button>
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="notifications-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>{{ 'Notifications' }}</label>
+            <p>{{ 'Activées' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="logout-section">
+    <ion-button
+      expand="block"
+      fill="solid"
+      color="danger"
+      (click)="logout()"
+      class="logout-btn-big"
+    >
+      <ion-icon slot="start" name="log-out-outline"></ion-icon>
+      <span>{{ 'Déconnexion' }}</span>
+    </ion-button>
+  </div>
+
+  <ion-modal
+    [isOpen]="isPasswordModalOpen"
+    (ionModalDidDismiss)="isPasswordModalOpen = false"
+    class="password-modal-compact"
+  >
+    <ng-template>
+      <div class="modal-compact-container">
+        <div class="drag-handle"></div>
+        <div class="modal-compact-header">
+          <h2>{{ 'Modifier le mot de passe' }}</h2>
+          <ion-button
+            fill="clear"
+            (click)="isPasswordModalOpen = false"
+            class="btn-close-compact"
+          >
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="compact-form">
+          <div class="compact-input-group">
+            <ion-icon name="lock-closed-outline" class="start-icon"></ion-icon>
+            <ion-input
+              [type]="showOldPassword ? 'text' : 'password'"
+              placeholder="Ancien mot de passe"
+              [(ngModel)]="oldPassword"
+            ></ion-input>
+            <ion-icon
+              [name]="showOldPassword ? 'eye-off-outline' : 'eye-outline'"
+              class="eye-icon"
+              (click)="showOldPassword = !showOldPassword"
+            ></ion-icon>
+          </div>
+          <div class="compact-input-group">
+            <ion-icon name="key-outline" class="start-icon"></ion-icon>
+            <ion-input
+              [type]="showNewPassword ? 'text' : 'password'"
+              placeholder="Nouveau mot de passe"
+              [(ngModel)]="newPassword"
+            ></ion-input>
+            <ion-icon
+              [name]="showNewPassword ? 'eye-off-outline' : 'eye-outline'"
+              class="eye-icon"
+              (click)="showNewPassword = !showNewPassword"
+            ></ion-icon>
+          </div>
+          <div class="compact-input-group">
+            <ion-icon
+              name="checkmark-circle-outline"
+              class="start-icon"
+            ></ion-icon>
+            <ion-input
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              placeholder="Confirmer le mot de passe"
+              [(ngModel)]="confirmPassword"
+            ></ion-input>
+            <ion-icon
+              [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"
+              class="eye-icon"
+              (click)="showConfirmPassword = !showConfirmPassword"
+            ></ion-icon>
+          </div>
+
+          <ion-button
+            expand="block"
+            class="btn-save-compact"
+            (click)="updatePassword()"
+          >
+            {{ 'Enregistrer les modifications' }}
+          </ion-button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+</ion-content>
