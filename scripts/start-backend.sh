@@ -1,9 +1,24 @@
 #!/bin/bash
-set -euo pipefail
+# ============================================================
+#  EduTrack - Script de lancement BACKEND
+#  Usage: ./scripts/start-backend.sh
+# ============================================================
+set -e
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT_DIR"
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+BACKEND_DIR="$PROJECT_DIR/backend/edutrack"
 
-nohup backend/edutrack/mvnw -f backend/edutrack/pom.xml spring-boot:run > backend-run.log 2>&1 &
-echo "Backend PID: $!"
-echo "Logs: $ROOT_DIR/backend-run.log"
+echo "============================================"
+echo "  EduTrack - Demarrage BACKEND (Spring Boot)"
+echo "============================================"
+echo ""
+
+cd "$BACKEND_DIR"
+
+echo ">>> Compilation..."
+mvn compile -q
+
+echo ">>> Lancement sur http://localhost:8099 ..."
+echo "    Swagger: http://localhost:8099/swagger-ui.html"
+echo ""
+mvn spring-boot:run

@@ -21,6 +21,6 @@ describe('App', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.sidebar-logo span')?.textContent).toContain('PEDAGO-SUIVI');
+    expect(compiled.querySelector('.sidebar-logo span')?.textContent).toContain('EduTrack');
   });
 });
