@@ -38,9 +38,9 @@ import {
   eyeOffOutline,
   trashOutline,
   schoolOutline,
+  chevronForwardOutline,
 } from 'ionicons/icons';
 
-import { ActionSheetController } from '@ionic/angular/standalone';
 import { AuthService } from '../../core/services/auth.service';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { UtilisateurService } from '../../core/services/utilisateur.service';
@@ -69,7 +69,6 @@ export class ProfilePage implements OnInit {
   private scheduleService = inject(ScheduleService);
   private utilisateurService = inject(UtilisateurService);
   private ficheProgressionService = inject(FicheProgressionService);
-  private actionSheetController = inject(ActionSheetController);
   private toastController = inject(ToastController);
   private ngZone = inject(NgZone);
 
@@ -78,6 +77,7 @@ export class ProfilePage implements OnInit {
   showNewPassword = false;
   showConfirmPassword = false;
   isChangingPassword = false;
+  showPhotoPopup = false;
   activeSection: 'personal' | 'academic' | 'stats' | 'security' = 'personal';
 
   oldPassword = '';
@@ -139,6 +139,7 @@ export class ProfilePage implements OnInit {
       eyeOutline,
       eyeOffOutline,
       schoolOutline,
+      chevronForwardOutline,
     });
   }
 
@@ -379,39 +380,20 @@ export class ProfilePage implements OnInit {
   }
 
   async changePhoto() {
-    const actionSheet = await this.actionSheetController.create({
-      header: 'Changer la photo de profil',
-      buttons: [
-        {
-          text: 'Prendre une photo',
-          icon: 'camera-outline',
-          handler: () => {
-            this.takePhoto('camera');
-          },
-        },
-        {
-          text: 'Choisir depuis la galerie',
-          icon: 'images-outline',
-          handler: () => {
-            this.takePhoto('gallery');
-          },
-        },
-        {
-          text: 'Supprimer la photo',
-          icon: 'trash-outline',
-          handler: () => {
-            void this.saveProfilePhoto('');
-          },
-          role: 'destructive',
-        },
-        {
-          text: 'Annuler',
-          icon: 'close-outline',
-          role: 'cancel',
-        },
-      ],
-    });
-    await actionSheet.present();
+    this.showPhotoPopup = true;
+  }
+
+  closePhotoPopup() {
+    this.showPhotoPopup = false;
+  }
+
+  onPhotoOption(option: 'camera' | 'gallery' | 'delete') {
+    this.showPhotoPopup = false;
+    if (option === 'delete') {
+      void this.saveProfilePhoto('');
+    } else {
+      this.takePhoto(option);
+    }
   }
 
   private async takePhoto(source: 'camera' | 'gallery') {
