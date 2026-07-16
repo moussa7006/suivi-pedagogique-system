@@ -26,6 +26,13 @@
  */
 @import "@ionic/angular/css/palettes/dark.system.css";
 
+/* --- Liquid Glass Tab Bar: CSS custom property animee --- */
+@property --active-tab {
+  syntax: '<number>';
+  initial-value: 0;
+  inherits: true;
+}
+
 /* ============================================
    DESIGN TOKENS - Système de design
    ============================================ */

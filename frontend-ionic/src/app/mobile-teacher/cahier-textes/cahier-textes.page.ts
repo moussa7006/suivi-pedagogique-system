@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -18,7 +18,7 @@ import {
   IonSpinner,
   ToastController,
 } from '@ionic/angular/standalone';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
   documentTextOutline,
@@ -36,6 +36,7 @@ import {
   informationCircleOutline,
   peopleOutline,
   schoolOutline,
+  arrowBackOutline,
 } from 'ionicons/icons';
 import { catchError, finalize, forkJoin, of, timeout } from 'rxjs';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
@@ -65,9 +66,10 @@ import { ClasseService } from '../../core/services/classe.service';
     IonSelectOption,
     IonBadge,
     IonSpinner,
+    RouterLink,
   ],
 })
-export class CahierTextesPage implements OnInit {
+export class CahierTextesPage {
   private readonly fb = inject(FormBuilder);
   private readonly ficheProgressionService = inject(FicheProgressionService);
   private readonly scheduleService = inject(ScheduleService);
@@ -75,6 +77,7 @@ export class CahierTextesPage implements OnInit {
   private readonly classeService = inject(ClasseService);
   private readonly toastController = inject(ToastController);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   seanceForm: FormGroup;
   isSubmitting = false;
@@ -113,6 +116,7 @@ export class CahierTextesPage implements OnInit {
       closeOutline,
       addOutline,
       checkmarkDoneOutline,
+      arrowBackOutline,
     });
 
     this.seanceForm = this.fb.group({
@@ -123,7 +127,9 @@ export class CahierTextesPage implements OnInit {
     });
   }
 
-  ngOnInit(): void {}
+  goBack(): void {
+    this.router.navigateByUrl('/mobile/tabs/tabs/tab1', { replaceUrl: true });
+  }
 
   ionViewWillEnter(): void {
     this.loadData();

@@ -1,6 +1,15 @@
 <ion-content [fullscreen]="true" class="ion-padding">
   <!-- Header -->
   <div class="header-section animate-fade-in">
+    <ion-button
+      class="back-btn"
+      routerLink="/mobile/tabs/tabs/tab1"
+      [replaceUrl]="true"
+      (click)="goBack()"
+      aria-label="Retour au menu"
+    >
+      <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+    </ion-button>
     <div class="header-top">
       <div>
         <h1 class="page-title">Fiche de Progression</h1>
