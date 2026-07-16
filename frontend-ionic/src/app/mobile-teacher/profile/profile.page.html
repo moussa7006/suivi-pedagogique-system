@@ -294,6 +294,47 @@
     </ion-button>
   </div>
 
+  <!-- Floating Photo Options Popup -->
+  <div class="floating-popup-backdrop" *ngIf="showPhotoPopup" (click)="closePhotoPopup()">
+    <div class="floating-popup" (click)="$event.stopPropagation()">
+      <div class="popup-drag-handle"></div>
+      <h3 class="popup-title">Photo de profil</h3>
+      <div class="popup-options">
+        <button class="popup-option" (click)="onPhotoOption('camera')">
+          <div class="popup-icon camera">
+            <ion-icon name="camera-outline"></ion-icon>
+          </div>
+          <div class="popup-text">
+            <strong>Prendre une photo</strong>
+            <span>Utiliser l'appareil photo</span>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="popup-chevron"></ion-icon>
+        </button>
+        <button class="popup-option" (click)="onPhotoOption('gallery')">
+          <div class="popup-icon gallery">
+            <ion-icon name="images-outline"></ion-icon>
+          </div>
+          <div class="popup-text">
+            <strong>Choisir depuis la galerie</strong>
+            <span>Parcourir vos photos</span>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="popup-chevron"></ion-icon>
+        </button>
+        <button class="popup-option danger" (click)="onPhotoOption('delete')">
+          <div class="popup-icon delete">
+            <ion-icon name="trash-outline"></ion-icon>
+          </div>
+          <div class="popup-text">
+            <strong>Supprimer la photo</strong>
+            <span>Revenir à l'avatar par défaut</span>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="popup-chevron"></ion-icon>
+        </button>
+      </div>
+      <button class="popup-cancel" (click)="closePhotoPopup()">Annuler</button>
+    </div>
+  </div>
+
   <ion-modal
     [isOpen]="isPasswordModalOpen"
     (ionModalDidDismiss)="isPasswordModalOpen = false"

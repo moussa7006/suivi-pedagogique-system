@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -94,6 +95,8 @@ public class AuthController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            // Log la vraie erreur pour diagnostic, mais renvoie un message générique
+            System.err.println("[LOGIN ERROR] " + e.getClass().getSimpleName() + ": " + e.getMessage());
             Map<String, String> error = new HashMap<>();
             error.put("error", "Identifiants invalides");
             return ResponseEntity.status(401).body(error);
@@ -167,6 +170,24 @@ public class AuthController {
             authService.resetPassword(request.getEmail(), request.getCode(), request.getNewPassword());
             Map<String, String> response = new HashMap<>();
             response.put("message", "Mot de passe réinitialisé avec succès");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return badRequest(e.getMessage());
+        }
+    }
+
+    @PostMapping("/admin/reset-user-password")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
+    public ResponseEntity<?> adminResetUserPassword(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String newPassword = request.get("newPassword");
+            if (email == null || newPassword == null) {
+                return badRequest("Email et nouveau mot de passe requis");
+            }
+            authService.adminResetPassword(email, newPassword);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Mot de passe de l'utilisateur reinitialise avec succes");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return badRequest(e.getMessage());

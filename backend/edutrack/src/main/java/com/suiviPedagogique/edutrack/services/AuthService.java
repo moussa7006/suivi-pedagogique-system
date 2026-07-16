@@ -10,7 +10,7 @@ import com.suiviPedagogique.edutrack.repositories.EnseignantRepository;
 import com.suiviPedagogique.edutrack.repositories.PasswordResetCodeRepository;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
 import com.suiviPedagogique.edutrack.security.PasswordPolicy;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -87,7 +87,7 @@ public class AuthService {
             }
             remplirDonneesDeBase(enseignant, requestdto, motDePasseCrypte);
             enseignant.setRole(Role.ENSEIGNANT);
-            enseignant.setForcePasswordChange(true);
+            enseignant.setForcePasswordChange(false);
             enseignant.setSpecialite(requestdto.getSpecialite() != null ? requestdto.getSpecialite() : "Non spécifié");
             enseignant.setDateEmbauche(requestdto.getDateEmbauche() != null ? requestdto.getDateEmbauche() : LocalDate.now());
             enseignant.setGrade(requestdto.getGrade() != null ? requestdto.getGrade() : "Non spécifié");
@@ -120,13 +120,20 @@ public class AuthService {
         utilisateur.setForcePasswordChange(false);
     }
 
+    @Transactional
     public Utilisateur authentifier(LoginRequest loginRequest) {
-        Utilisateur utilisateur = utilisateurRepository.findByEmail(normalizeEmail(loginRequest.getEmail()))
+        String emailNormalise = normalizeEmail(loginRequest.getEmail());
+        System.err.println("[AUTH] Recherche: " + emailNormalise);
+        var opt = utilisateurRepository.findByEmail(emailNormalise);
+        System.err.println("[AUTH] Trouve: " + opt.isPresent());
+        Utilisateur utilisateur = opt
                 .orElseThrow(() -> new RuntimeException("Identifiants invalides"));
+        System.err.println("[AUTH] Classe: " + utilisateur.getClass().getSimpleName() + ", Actif: " + utilisateur.getActif());
         if (!Boolean.TRUE.equals(utilisateur.getActif())) {
             throw new RuntimeException("Compte désactivé. Veuillez contacter l'administration.");
         }
         boolean match = passwordEncoder.matches(loginRequest.getMotDePasse(), utilisateur.getMotDePasse());
+        System.err.println("[AUTH] Password match: " + match);
         if (!match) {
             throw new RuntimeException("Identifiants invalides");
         }
@@ -210,6 +217,16 @@ public class AuthService {
         if (!PasswordPolicy.isValid(password)) {
             throw new RuntimeException(PasswordPolicy.MESSAGE);
         }
+    }
+
+    @Transactional
+    public void adminResetPassword(String email, String newPassword) {
+        validatePassword(newPassword);
+        Utilisateur utilisateur = utilisateurRepository.findByEmail(normalizeEmail(email))
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouve"));
+        utilisateur.setMotDePasse(passwordEncoder.encode(newPassword));
+        utilisateur.setForcePasswordChange(false);
+        utilisateurRepository.save(utilisateur);
     }
 
     private String normalizeEmail(String email) {

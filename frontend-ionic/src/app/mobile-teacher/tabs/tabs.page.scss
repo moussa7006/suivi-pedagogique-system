@@ -1,135 +1,230 @@
 /* ============================================
-   MODERN TABS - Suivi Pédagogique
-   Barre flottante avec glassmorphism
+   LIQUID GLASS TABS - Suivi Pedagogique
+   Effet verre liquide avec indicateur glissant
+   Animation pure CSS via :has()
    ============================================ */
 
-.modern-tab-bar {
-  --background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: none;
-  height: 72px;
-  margin: 12px 16px;
-  border-radius: 24px;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
-  padding: 0 8px;
+/* --- Override Ionic tab bar CSS custom properties --- */
+.liquid-glass-bar {
+  --background: rgba(18, 18, 30, 0.72);
+  --border-color: transparent;
+  --box-shadow: none;
+  --color: rgba(255, 255, 255, 0.45);
+  --color-selected: #ffffff;
+  --color-focused: #ffffff;
+  --color-hover: rgba(255, 255, 255, 0.75);
+  --color-activated: #ffffff;
+  --indicator-color: transparent;
+  --ripple-color: transparent;
+}
+
+.liquid-glass-bar ion-tab-button {
+  --background: transparent;
+  --background-focused: transparent;
+  --background-hover: transparent;
+  --background-activated: transparent;
+  --color: rgba(255, 255, 255, 0.45);
+  --color-selected: #ffffff;
+  --color-focused: #ffffff;
+  --color-hover: rgba(255, 255, 255, 0.75);
+  --color-activated: #ffffff;
+  --indicator-color: transparent;
+  --ripple-color: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+/* ============================================
+   TAB BAR - Verre depoli flottant
+   ============================================ */
+.liquid-glass-bar {
   position: absolute;
-  bottom: 0;
+  bottom: calc(8px + var(--ion-safe-area-bottom, 0px));
   left: 0;
   right: 0;
   width: auto;
-
-  .tab-button {
-    --color: #94a3b8;
-    --color-selected: #4361ee;
-    --icon-color: #4361ee;
-    --padding-top: 6px;
-    --padding-bottom: 6px;
-    background: transparent;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 18px;
-    margin: 4px;
-    position: relative;
-    min-width: 0;
-    pointer-events: auto;
-
-    /* Couleur par onglet (icône toujours colorée, comme un logo d'appli) */
-    &.tab-accueil {
-      --icon-color: #4361ee;
-      --color-selected: #4361ee;
-    }
-    &.tab-historique {
-      --icon-color: #78716c;
-      --color-selected: #78716c;
-    }
-    &.tab-profil {
-      --icon-color: #7c3aed;
-      --color-selected: #7c3aed;
-    }
-    &.tab-accueil {
-      --color-selected: #4361ee;
-    }
-    &.tab-historique {
-      --color-selected: #78716c;
-    }
-    &.tab-profil {
-      --color-selected: #7c3aed;
-    }
-
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 18px;
-      background: transparent;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 0;
-    }
-
-    &.tab-selected {
-      &.tab-accueil::before {
-        background: rgba(67, 97, 238, 0.1);
-      }
-      &.tab-historique::before {
-        background: rgba(120, 113, 108, 0.12);
-      }
-      &.tab-profil::before {
-        background: rgba(124, 58, 237, 0.1);
-      }
-
-      &::before {
-        background: rgba(67, 97, 238, 0.1);
-      }
-
-      ion-icon {
-        transform: translateY(-2px) scale(1.1);
-        color: var(--color-selected);
-      }
-
-      ion-label {
-        color: var(--color-selected);
-        font-weight: 700;
-        opacity: 1;
-      }
-    }
-
-    &:active:not(.tab-selected) {
-      transform: scale(0.92);
-
-      ion-icon {
-        color: var(--color-selected);
-      }
-    }
-
-    ion-icon {
-      font-size: 24px;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      z-index: 1;
-      position: relative;
-      /* Toujours colorée (logo d'appli), meme non selectionnee */
-      color: var(--icon-color);
-    }
-
-    ion-label {
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: none;
-      letter-spacing: 0.02em;
-      margin-top: 2px;
-      opacity: 0.7;
-      white-space: nowrap;
-      transition: all 0.3s ease;
-      z-index: 1;
-      position: relative;
-    }
-  }
+  height: 76px;
+  margin: 0 16px 12px;
+  padding: 6px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 30px;
+  background: rgba(18, 18, 30, 0.72);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  overflow: visible;
+  z-index: 100;
 }
 
-/* Supprimer le padding bottom par défaut */
 :host {
   ion-tab-bar {
     padding-bottom: 0;
+    contain: none;
+  }
+}
+
+/* ============================================
+   LIQUID PILL - Indicateur glissant
+   ============================================ */
+.liquid-pill {
+  --tab-width: calc((100% - 12px) / 3);
+
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: var(--tab-width);
+  height: calc(100% - 12px);
+  border-radius: 24px;
+  background: linear-gradient(
+    160deg,
+    #818cf8 0%,
+    #6366f1 25%,
+    #8b5cf6 55%,
+    #a855f7 100%
+  );
+  box-shadow:
+    0 8px 32px rgba(99, 102, 241, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+    0 2px 0 rgba(255, 255, 255, 0.3) inset;
+  z-index: 0;
+  transition: left 0.55s cubic-bezier(0.22, 1.0, 0.36, 1.0);
+  pointer-events: none;
+}
+
+/* Gloss / reflet liquide sur le pill */
+.liquid-pill::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 12px;
+  right: 12px;
+  height: 40%;
+  border-radius: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  filter: blur(2px);
+}
+
+/* --- Sliding pill via JS class (avoids :has() shadow DOM issues) --- */
+.liquid-pill.tab-0 { left: calc(6px + var(--tab-width) * 0); }
+.liquid-pill.tab-1 { left: calc(6px + var(--tab-width) * 1); }
+.liquid-pill.tab-2 { left: calc(6px + var(--tab-width) * 2); }
+
+/* ============================================
+   TAB BUTTONS - Au-dessus du pill
+   ============================================ */
+.liquid-glass-bar .tab-btn {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  border-radius: 24px;
+  background: transparent;
+  --background: transparent;
+  --background-focused: transparent;
+  --background-hover: transparent;
+  --background-activated: transparent;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: auto;
+}
+
+.liquid-glass-bar .tab-btn ion-icon {
+  font-size: 22px;
+  transition:
+    color 0.35s ease,
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.liquid-glass-bar .tab-btn ion-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  margin-top: 2px;
+  transition: color 0.35s ease, opacity 0.35s ease;
+  opacity: 0.65;
+  white-space: nowrap;
+}
+
+/* --- Active state --- */
+.liquid-glass-bar .tab-btn.tab-selected {
+  --color: #ffffff;
+  --background: transparent;
+  --background-focused: transparent;
+  --background-hover: transparent;
+  --background-activated: transparent;
+}
+
+.liquid-glass-bar .tab-btn.tab-selected ion-icon {
+  color: #ffffff;
+  transform: scale(1.15);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+}
+
+.liquid-glass-bar .tab-btn.tab-selected ion-label {
+  color: #ffffff;
+  opacity: 1;
+  font-weight: 800;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Hover / Press (non-selected) --- */
+.liquid-glass-bar .tab-btn:active:not(.tab-selected) {
+  transform: scale(0.94);
+}
+
+.liquid-glass-bar .tab-btn:active:not(.tab-selected) ion-icon {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ============================================
+   LIGHT MODE (optionnel)
+   ============================================ */
+@media (prefers-color-scheme: light) {
+  .liquid-glass-bar {
+    --background: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.75);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.15),
+      0 0 0 1px rgba(0, 0, 0, 0.04) inset,
+      0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  }
+
+  .liquid-glass-bar ion-tab-button {
+    --color: rgba(100, 100, 120, 0.55);
+  }
+
+  .liquid-glass-bar .tab-btn ion-icon {
+    color: rgba(100, 100, 120, 0.55);
+  }
+
+  .liquid-glass-bar .tab-btn ion-label {
+    color: rgba(100, 100, 120, 0.65);
+  }
+
+  .liquid-glass-bar .tab-btn.tab-selected {
+    --color: #ffffff;
+  }
+
+  .liquid-glass-bar .tab-btn.tab-selected ion-icon {
+    color: #ffffff;
+  }
+
+  .liquid-glass-bar .tab-btn.tab-selected ion-label {
+    color: #ffffff;
+  }
+
+  .liquid-glass-bar .tab-btn:active:not(.tab-selected) ion-icon {
+    color: rgba(100, 100, 120, 0.9);
   }
 }

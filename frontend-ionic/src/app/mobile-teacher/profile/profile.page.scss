@@ -57,7 +57,6 @@ ion-content {
 }
 
 .hero-logout-btn {
-  /* Bouton deplace en bas de page (voir .logout-section). */
   display: none;
 }
 
@@ -610,7 +609,6 @@ ion-content {
   }
 
   .hero-logout-btn {
-    /* Bouton deplace en bas de page. */
     display: none;
   }
 
@@ -646,5 +644,186 @@ ion-content {
 @media (max-height: 700px) {
   .password-modal-compact {
     align-items: flex-end;
+  }
+}
+
+/* ============================================
+   FLOATING PHOTO POPUP - Modern Liquid Glass
+   ============================================ */
+.floating-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.22s ease;
+  padding: 16px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%) scale(0.96); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.floating-popup {
+  width: 100%;
+  max-width: 430px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 28px;
+  box-shadow:
+    0 30px 70px rgba(15, 23, 42, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.4) inset,
+    0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  overflow: hidden;
+  animation: slideUp 0.35s cubic-bezier(0.22, 1.0, 0.36, 1.0);
+  padding-bottom: calc(12px + var(--ion-safe-area-bottom, 0px));
+}
+
+.popup-drag-handle {
+  width: 36px;
+  height: 5px;
+  background: rgba(100, 116, 139, 0.25);
+  border-radius: 999px;
+  margin: 16px auto 10px;
+}
+
+.popup-title {
+  margin: 0 0 8px;
+  padding: 0 22px;
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.popup-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 14px;
+}
+
+.popup-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  border: none;
+  background: rgba(241, 245, 249, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 14px 12px;
+  border-radius: 18px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.22, 1.0, 0.36, 1.0);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+
+  &:hover {
+    background: rgba(226, 232, 240, 0.8);
+    transform: translateX(4px);
+  }
+
+  &:active {
+    background: rgba(203, 213, 225, 0.9);
+    transform: scale(0.97);
+  }
+}
+
+.popup-option.danger .popup-text strong {
+  color: #dc2626;
+}
+
+.popup-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 1.25rem;
+  }
+
+  &.camera {
+    background: #ede9fe;
+    color: #7c3aed;
+  }
+
+  &.gallery {
+    background: #dbeafe;
+    color: #2563eb;
+  }
+
+  &.delete {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+}
+
+.popup-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    font-size: 0.95rem;
+    font-weight: 760;
+    color: #0f172a;
+  }
+
+  span {
+    font-size: 0.78rem;
+    color: #64748b;
+  }
+}
+
+.popup-chevron {
+  color: #94a3b8;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.popup-cancel {
+  display: block;
+  width: calc(100% - 28px);
+  margin: 12px auto 0;
+  padding: 15px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 16px;
+  background: rgba(241, 245, 249, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #475569;
+  font-size: 0.95rem;
+  font-weight: 760;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.22, 1.0, 0.36, 1.0);
+
+  &:hover {
+    background: rgba(226, 232, 240, 0.9);
+    color: #0f172a;
+    border-color: rgba(203, 213, 225, 0.8);
+  }
+
+  &:active {
+    transform: scale(0.97);
+    background: rgba(203, 213, 225, 0.95);
   }
 }
