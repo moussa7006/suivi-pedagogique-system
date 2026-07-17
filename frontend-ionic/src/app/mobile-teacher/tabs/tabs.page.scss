@@ -1,17 +1,17 @@
 /* ============================================
    LIQUID GLASS TABS - Suivi Pedagogique
-   Effet verre liquide avec indicateur glissant
+   Effet verre liquide blanc avec indicateur violet
    ============================================ */
 
 /* --- Override Ionic tab bar CSS custom properties --- */
 .liquid-glass-bar {
-  --background: rgba(18, 18, 30, 0.72);
+  --background: rgba(255, 255, 255, 0.85);
   --border-color: transparent;
   --box-shadow: none;
-  --color: rgba(255, 255, 255, 0.45);
+  --color: rgba(15, 23, 42, 0.55);
   --color-selected: #ffffff;
   --color-focused: #ffffff;
-  --color-hover: rgba(255, 255, 255, 0.75);
+  --color-hover: rgba(15, 23, 42, 0.8);
   --color-activated: #ffffff;
   --indicator-color: transparent;
   --ripple-color: transparent;
@@ -22,10 +22,10 @@
   --background-focused: transparent;
   --background-hover: transparent;
   --background-activated: transparent;
-  --color: rgba(255, 255, 255, 0.45);
+  --color: rgba(15, 23, 42, 0.55);
   --color-selected: #ffffff;
   --color-focused: #ffffff;
-  --color-hover: rgba(255, 255, 255, 0.75);
+  --color-hover: rgba(15, 23, 42, 0.8);
   --color-activated: #ffffff;
   --indicator-color: transparent;
   --ripple-color: transparent;
@@ -36,7 +36,7 @@
 }
 
 /* ============================================
-   TAB BAR - Verre depoli flottant + centrage
+   TAB BAR - Verre depoli blanc flottant + centrage
    ============================================ */
 .liquid-glass-bar {
   position: absolute;
@@ -49,15 +49,15 @@
   height: 76px;
   margin: 0 0 12px;
   padding: 6px;
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(15, 23, 42, 0.08);
   border-radius: 30px;
-  background: rgba(18, 18, 30, 0.72);
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
   box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
-    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+    0 24px 60px rgba(15, 23, 42, 0.18),
+    0 0 0 1px rgba(15, 23, 42, 0.04) inset,
+    0 1px 0 rgba(255, 255, 255, 0.6) inset;
   overflow: visible;
   z-index: 100;
 }
@@ -72,7 +72,7 @@
 }
 
 /* ============================================
-   LIQUID PILL - Indicateur glissant
+   LIQUID PILL - Indicateur violet glissant
    Les 3 boutons occupent exactement 1/3 chacun
    car le padding interne d'Ionic est neutralise.
    ============================================ */
@@ -125,6 +125,7 @@
 
 /* ============================================
    TAB BUTTONS - Au-dessus du pill
+   Texte fonce sur fond blanc, blanc sur le pill violet
    ============================================ */
 .liquid-glass-bar .tab-btn {
   position: relative;
@@ -145,6 +146,7 @@
 
 .liquid-glass-bar .tab-btn ion-icon {
   font-size: 22px;
+  color: rgba(15, 23, 42, 0.55);
   transition:
     color 0.35s ease,
     transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -156,12 +158,13 @@
   letter-spacing: 0.03em;
   text-transform: none;
   margin-top: 2px;
+  color: rgba(15, 23, 42, 0.6);
   transition: color 0.35s ease, opacity 0.35s ease;
-  opacity: 0.65;
+  opacity: 0.85;
   white-space: nowrap;
 }
 
-/* --- Active state --- */
+/* --- Active state (bouton sur le pill violet) --- */
 .liquid-glass-bar .tab-btn.tab-selected {
   --color: #ffffff;
   --background: transparent;
@@ -173,14 +176,14 @@
 .liquid-glass-bar .tab-btn.tab-selected ion-icon {
   color: #ffffff;
   transform: scale(1.15);
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(0 2px 6px rgba(99, 102, 241, 0.35));
 }
 
 .liquid-glass-bar .tab-btn.tab-selected ion-label {
   color: #ffffff;
   opacity: 1;
   font-weight: 800;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 3px rgba(99, 102, 241, 0.3);
 }
 
 /* --- Hover / Press (non-selected) --- */
@@ -189,48 +192,5 @@
 }
 
 .liquid-glass-bar .tab-btn:active:not(.tab-selected) ion-icon {
-  color: rgba(255, 255, 255, 0.75);
-}
-
-/* ============================================
-   LIGHT MODE (optionnel)
-   ============================================ */
-@media (prefers-color-scheme: light) {
-  .liquid-glass-bar {
-    --background: rgba(255, 255, 255, 0.75);
-    background: rgba(255, 255, 255, 0.75);
-    border-color: rgba(0, 0, 0, 0.08);
-    box-shadow:
-      0 24px 60px rgba(0, 0, 0, 0.15),
-      0 0 0 1px rgba(0, 0, 0, 0.04) inset,
-      0 1px 0 rgba(255, 255, 255, 0.6) inset;
-  }
-
-  .liquid-glass-bar ion-tab-button {
-    --color: rgba(100, 100, 120, 0.55);
-  }
-
-  .liquid-glass-bar .tab-btn ion-icon {
-    color: rgba(100, 100, 120, 0.55);
-  }
-
-  .liquid-glass-bar .tab-btn ion-label {
-    color: rgba(100, 100, 120, 0.65);
-  }
-
-  .liquid-glass-bar .tab-btn.tab-selected {
-    --color: #ffffff;
-  }
-
-  .liquid-glass-bar .tab-btn.tab-selected ion-icon {
-    color: #ffffff;
-  }
-
-  .liquid-glass-bar .tab-btn.tab-selected ion-label {
-    color: #ffffff;
-  }
-
-  .liquid-glass-bar .tab-btn:active:not(.tab-selected) ion-icon {
-    color: rgba(100, 100, 120, 0.9);
-  }
+  color: rgba(15, 23, 42, 0.85);
 }
