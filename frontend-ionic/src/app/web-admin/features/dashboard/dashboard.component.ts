@@ -119,27 +119,17 @@ type AxisChartOptions = {
             class="hub-tile"
             [style.--tile-color]="tile.color"
           >
-            <div class="tile-icon"><i [class]="tile.icon"></i></div>
-            <div class="tile-content">
-              <div class="tile-meta">{{ tile.meta }}</div>
+            <div class="tile-top">
+              <div class="tile-icon"><i [class]="tile.icon"></i></div>
+              <span class="tile-indicator">{{ tile.indicator }}</span>
+            </div>
+            <div class="tile-body">
               <h3>{{ tile.label }}</h3>
-              <p>{{ tile.description }}</p>
-              <div class="tile-footer">
-                <div class="tile-gauge"
-                  [style.--gauge-color]="gaugeColor(tile.gaugeValue)"
-                  [style.background]="conicGradient(tile.gaugeValue)"
-                >
-                  <span class="gauge-value">{{ tile.gaugeValue }}<small>%</small></span>
-                </div>
-                <div class="tile-indicators">
-                  <span class="tile-gauge-label">{{ tile.gaugeLabel }}</span>
-                  <span class="tile-indicator">{{ tile.indicator }}</span>
-                </div>
+              <div class="tile-progress" [style.--gauge-color]="gaugeColor(tile.gaugeValue)">
+                <div class="tile-progress-bar" [style.width.%]="tile.gaugeValue"></div>
               </div>
             </div>
-            <div class="tile-arrow-wrapper">
-              <i class="pi pi-arrow-right tile-arrow"></i>
-            </div>
+            <i class="pi pi-arrow-right tile-arrow"></i>
           </a>
         </div>
       </section>
@@ -256,8 +246,8 @@ type AxisChartOptions = {
           <article class="bento-card col-span-12">
             <div class="card-header">
               <div>
-                <h3>Top Enseignants</h3>
-                <p>Émargements par enseignant</p>
+                <h3>Performance Pédagogique</h3>
+                <p>Taux de validation des émargements par enseignant</p>
               </div>
               <div class="header-icon"><i class="pi pi-users"></i></div>
             </div>
@@ -475,16 +465,16 @@ type AxisChartOptions = {
         --gauge-color: #16a34a;
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 24px;
+        border-radius: 18px;
+        padding: 20px;
         display: grid;
-        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-columns: 1fr auto;
         align-items: center;
-        gap: 20px;
+        gap: 16px;
         text-decoration: none;
         color: inherit;
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
         position: relative;
         overflow: hidden;
       }
@@ -495,7 +485,7 @@ type AxisChartOptions = {
         inset: 0;
         background: linear-gradient(
           135deg,
-          color-mix(in srgb, var(--tile-color) 8%, transparent),
+          color-mix(in srgb, var(--tile-color) 6%, transparent),
           transparent
         );
         opacity: 0;
@@ -504,66 +494,44 @@ type AxisChartOptions = {
       }
 
       .hub-tile:hover {
-        transform: translateY(-4px) scale(1.02);
-        border-color: color-mix(in srgb, var(--tile-color) 40%, #e2e8f0);
-        box-shadow: 0 20px 40px color-mix(in srgb, var(--tile-color) 15%, rgba(15, 23, 42, 0.1));
+        transform: translateY(-3px);
+        border-color: color-mix(in srgb, var(--tile-color) 35%, #e2e8f0);
+        box-shadow: 0 16px 32px color-mix(in srgb, var(--tile-color) 12%, rgba(15, 23, 42, 0.08));
       }
 
       .hub-tile:hover::before {
         opacity: 1;
       }
 
+      .tile-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
       .tile-icon {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 52px;
-        height: 52px;
-        border-radius: 16px;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
         background: linear-gradient(
           135deg,
           var(--tile-color),
-          color-mix(in srgb, var(--tile-color), black 20%)
+          color-mix(in srgb, var(--tile-color), black 18%)
         );
         color: #ffffff;
-        font-size: 1.4rem;
-        box-shadow: 0 8px 16px color-mix(in srgb, var(--tile-color) 30%, transparent);
+        font-size: 1.1rem;
+        box-shadow: 0 6px 12px color-mix(in srgb, var(--tile-color) 28%, transparent);
         position: relative;
         z-index: 1;
-      }
-
-      .tile-meta {
-        display: inline-block;
-        color: #0f172a;
-        font-size: 0.75rem;
-        font-weight: 900;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        margin-bottom: 6px;
-        background: #f1f5f9;
-        padding: 2px 8px;
-        border-radius: 4px;
-        border: 1px solid #cbd5e1;
-      }
-
-      .tile-content h3 {
-        margin: 0 0 4px;
-        color: #0f172a;
-        font-size: 1.15rem;
-        font-weight: 900;
-        letter-spacing: -0.02em;
-      }
-
-      .tile-content p {
-        margin: 0 0 10px;
-        color: #64748b;
-        font-size: 0.9rem;
-        font-weight: 600;
-        line-height: 1.4;
+        flex-shrink: 0;
       }
 
       .tile-indicator {
-        font-size: 0.85rem;
+        font-size: 0.78rem;
         font-weight: 800;
         color: var(--tile-color);
         display: flex;
@@ -571,88 +539,38 @@ type AxisChartOptions = {
         gap: 4px;
       }
 
-      .tile-footer {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        margin-top: 14px;
+      .tile-body h3 {
+        margin: 0 0 8px;
+        color: #0f172a;
+        font-size: 1rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
       }
 
-      .tile-gauge {
-        flex: 0 0 auto;
-        width: 46px;
-        height: 46px;
-        border-radius: 50%;
-        display: grid;
-        place-items: center;
-        position: relative;
-        transition: background 0.4s ease;
+      .tile-progress {
+        height: 4px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        overflow: hidden;
       }
 
-      .tile-gauge::after {
-        content: '';
-        position: absolute;
-        inset: 5px;
-        border-radius: 50%;
-        background: #ffffff;
-      }
-
-      .gauge-value {
-        position: relative;
-        z-index: 1;
-        font-size: 0.8rem;
-        font-weight: 900;
-        color: var(--gauge-color);
-        line-height: 1;
-      }
-
-      .gauge-value small {
-        font-size: 0.55rem;
-        font-weight: 700;
-      }
-
-      .tile-indicators {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-
-      .tile-gauge-label {
-        font-size: 0.72rem;
-        font-weight: 700;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-      }
-
-      .tile-arrow-wrapper {
-        display: grid;
-        place-items: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        border: 2px solid #e2e8f0;
-        background: #f8fafc;
-        transition: all 0.2s ease;
+      .tile-progress-bar {
+        height: 100%;
+        border-radius: inherit;
+        background: var(--gauge-color);
+        transition: width 0.5s cubic-bezier(0.22, 1.0, 0.36, 1.0);
       }
 
       .tile-arrow {
-        color: #94a3b8;
-        font-size: 1.2rem;
+        color: #cbd5e1;
+        font-size: 1rem;
         font-weight: bold;
-        transition:
-          transform 0.2s ease,
-          color 0.2s ease;
-      }
-
-      .hub-tile:hover .tile-arrow-wrapper {
-        border-color: #0f172a;
-        background: #0f172a;
+        transition: transform 0.2s ease, color 0.2s ease;
       }
 
       .hub-tile:hover .tile-arrow {
-        color: #fff;
-        transform: translateX(2px);
+        color: #0f172a;
+        transform: translateX(3px);
       }
 
       /* Bento Grid / Analysis */
@@ -1168,12 +1086,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return '#cbd5e1';
   }
 
-  conicGradient(value: number): string {
-    const clamped = Math.max(0, Math.min(100, value));
-    const color = this.gaugeColor(value);
-    return `conic-gradient(${color} ${clamped * 3.6}deg, #e2e8f0 ${clamped * 3.6}deg)`;
-  }
-
   ngOnInit(): void {
     this.loadAdminProfile();
     this.loadDashboardStats();
@@ -1352,12 +1264,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
     };
 
     const topTeachers = [...(dashboardStats?.topEnseignants ?? [])]
+      .filter((teacher) => Number(teacher.seancesPlanifiees || 0) > 0)
       .sort(
         (a, b) =>
+          Number(b.tauxValidation || 0) - Number(a.tauxValidation || 0) ||
           Number(b.emargementsValides || 0) - Number(a.emargementsValides || 0) ||
           String(a.nom || '').localeCompare(String(b.nom || '')),
       )
       .slice(0, 5);
+
+    // Identifier le prof avec le plus d'emargements valides (mise en valeur)
+    const topEmargementsIdx = topTeachers.reduce(
+      (bestIdx, teacher, idx) =>
+        Number(teacher.emargementsValides || 0) >
+        Number(topTeachers[bestIdx]?.emargementsValides || 0)
+          ? idx
+          : bestIdx,
+      0,
+    );
+
+    // Couleurs par barre (distributed: true).
+    // ApexCharts applique les couleurs dans l'ordre : serie 0 (toutes ses
+    // barres), puis serie 1. Le top prof recoit une couleur dorée pour sa
+    // serie "Emargements", une teinte dorée claire pour "Séances planifiées",
+    // les autres profs restent en violet / gris.
+    const goldEmarg = '#f59e0b';   // doré éclatant pour le top prof
+    const goldPlan  = '#fcd34d';   // doré clair pour la 2eme serie du top prof
+    const baseEmarg = '#8b5cf6';   // violet pour les autres
+    const basePlan  = '#cbd5e1';   // gris pour les autres
+    const barColors: string[] = [];
+    topTeachers.forEach((_, idx) => {
+      if (idx === topEmargementsIdx) {
+        barColors.push(goldEmarg, goldPlan);
+      } else {
+        barColors.push(baseEmarg, basePlan);
+      }
+    });
+
     this.teacherHoursOptions = {
       ...this.teacherHoursOptions,
       series: [
@@ -1370,6 +1313,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
           data: topTeachers.map((teacher) => Number(teacher.seancesPlanifiees || 0)),
         },
       ],
+      colors: barColors,
+      plotOptions: {
+        ...this.teacherHoursOptions.plotOptions,
+        bar: {
+          ...this.teacherHoursOptions.plotOptions.bar,
+          distributed: true,
+          columnWidth: '45%',
+          borderRadius: 6,
+        },
+      },
       xaxis: {
         ...this.teacherHoursOptions.xaxis,
         categories: topTeachers.map(
