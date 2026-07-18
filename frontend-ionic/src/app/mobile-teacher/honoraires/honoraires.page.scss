@@ -1,6 +1,7 @@
 .honoraires-content {
   --background: #f6f8fb;
   --padding-top: calc(16px + var(--ion-safe-area-top));
+  --padding-bottom: calc(132px + var(--ion-safe-area-bottom, 0px));
 }
 
 .back-btn {

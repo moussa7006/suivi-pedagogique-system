@@ -15,6 +15,7 @@
 ion-content {
   --background: var(--bg-light);
   --padding-top: calc(16px + var(--ion-safe-area-top));
+  --padding-bottom: calc(132px + var(--ion-safe-area-bottom, 0px));
 }
 
 .back-btn {

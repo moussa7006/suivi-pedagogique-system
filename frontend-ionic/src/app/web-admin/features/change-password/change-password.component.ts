@@ -99,6 +99,27 @@ import { NotificationService } from '../../shared/notification/notification.serv
         border-radius: 12px;
         padding: 13px 14px;
         font: inherit;
+        background: #ffffff;
+        color: #0f172a;
+        caret-color: #2563eb;
+        outline: none;
+      }
+
+      input::placeholder {
+        color: #94a3b8;
+      }
+
+      input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+      }
+
+      input:-webkit-autofill,
+      input:-webkit-autofill:hover,
+      input:-webkit-autofill:focus {
+        -webkit-text-fill-color: #0f172a;
+        box-shadow: 0 0 0 1000px #ffffff inset;
+        transition: background-color 9999s ease-in-out 0s;
       }
 
       small {

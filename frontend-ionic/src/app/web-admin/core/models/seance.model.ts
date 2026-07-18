@@ -1,1 +1,1 @@
-export type { Seance } from '@edutrack/shared/models';
+export type { Seance } from '../../../core/models';

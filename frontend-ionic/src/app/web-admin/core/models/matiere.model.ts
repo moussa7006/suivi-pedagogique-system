@@ -1,1 +1,1 @@
-export type { Matiere } from '@edutrack/shared/models';
+export type { Matiere } from '../../../core/models';

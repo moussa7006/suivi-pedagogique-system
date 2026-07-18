@@ -1,4 +1,5 @@
 import {
+  ChangeDetectorRef,
   Component,
   ElementRef,
   OnDestroy,
@@ -65,6 +66,7 @@ export class ScanQRPage implements OnDestroy {
   private readonly toastController = inject(ToastController);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   isScanning = false;
   isCameraOpen = false;
@@ -123,9 +125,11 @@ export class ScanQRPage implements OnDestroy {
         this.fichesProgression = fiches || [];
         this.selectedSeanceId = this.resolveInitialSeanceId(this.seances);
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: async () => {
         this.isLoading = false;
+        this.cdr.detectChanges();
         await this.presentAlert(
           'Chargement impossible',
           'Impossible de charger les séances.',
@@ -162,6 +166,7 @@ export class ScanQRPage implements OnDestroy {
 
     if (!navigator.mediaDevices?.getUserMedia) {
       this.cameraSupported = false;
+      this.cdr.detectChanges();
       await this.presentAlert(
         'Caméra non supportée',
         "La caméra n'est pas disponible dans cet environnement. Utilisez temporairement le champ de secours.",
@@ -177,6 +182,7 @@ export class ScanQRPage implements OnDestroy {
         video: { facingMode: 'environment' },
         audio: false,
       });
+      this.cdr.detectChanges();
 
       setTimeout(() => {
         const video = this.previewVideo?.nativeElement;
@@ -191,6 +197,7 @@ export class ScanQRPage implements OnDestroy {
     } catch (error: any) {
       this.isScanning = false;
       this.isCameraOpen = false;
+      this.cdr.detectChanges();
       await this.presentAlert(
         'Caméra indisponible',
         error?.message ||
@@ -214,6 +221,7 @@ export class ScanQRPage implements OnDestroy {
     this.scanContext = undefined;
     this.isCameraOpen = false;
     this.isScanning = false;
+    this.cdr.detectChanges();
   }
 
   async submitManualToken(): Promise<void> {
@@ -307,6 +315,7 @@ export class ScanQRPage implements OnDestroy {
     }
 
     this.isScanning = true;
+    this.cdr.detectChanges();
 
     try {
       const position = await this.getCurrentPosition();
@@ -322,6 +331,7 @@ export class ScanQRPage implements OnDestroy {
           next: async (response) => {
             this.isScanning = false;
             this.manualToken = '';
+            this.cdr.detectChanges();
             const toast = await this.toastController.create({
               message:
                 'Scan validé ✅ Remplissez maintenant la fiche de progression.',
@@ -340,6 +350,7 @@ export class ScanQRPage implements OnDestroy {
           },
           error: async (error) => {
             this.isScanning = false;
+            this.cdr.detectChanges();
             await this.presentAlert(
               "Échec de l'émargement",
               this.getScanErrorMessage(error),
@@ -348,6 +359,7 @@ export class ScanQRPage implements OnDestroy {
         });
     } catch (error: any) {
       this.isScanning = false;
+      this.cdr.detectChanges();
       await this.presentAlert(
         'Position GPS indisponible',
         error?.message || 'Impossible de récupérer votre position.',

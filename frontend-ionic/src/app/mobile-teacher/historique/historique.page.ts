@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -69,6 +69,7 @@ export class HistoriquePage implements OnInit {
   private readonly emargementService = inject(EmargementService);
   private readonly ficheProgressionService = inject(FicheProgressionService);
   private readonly matiereService = inject(MatiereService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   filterPeriod = 'all';
   selectedMonth = '';
@@ -143,10 +144,12 @@ export class HistoriquePage implements OnInit {
       this.selectedMonth = '';
     }
     // Filtrage géré par le getter filteredSeances.
+    this.cdr.detectChanges();
   }
 
   clearSelectedMonth(): void {
     this.selectedMonth = '';
+    this.cdr.detectChanges();
   }
 
   private loadHistorique(): void {
@@ -181,6 +184,7 @@ export class HistoriquePage implements OnInit {
         this.matieres = matieres || [];
         this.buildHistorique();
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.seancesData = [];
@@ -192,6 +196,7 @@ export class HistoriquePage implements OnInit {
         this.errorMessage =
           "Impossible de charger l'historique depuis la base de données.";
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
     });
   }

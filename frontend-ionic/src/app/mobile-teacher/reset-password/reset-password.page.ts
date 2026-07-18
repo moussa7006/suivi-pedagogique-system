@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
@@ -43,6 +43,7 @@ export class ResetPasswordPage {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private toastController = inject(ToastController);
+  private cdr = inject(ChangeDetectorRef);
   email = this.route.snapshot.queryParamMap.get('email') || '';
   code = '';
   newPassword = '';
@@ -93,7 +94,12 @@ export class ResetPasswordPage {
     this.isLoading = true;
     this.authService
       .resetPassword(this.email, this.code, this.newPassword)
-      .pipe(finalize(() => (this.isLoading = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }),
+      )
       .subscribe({
         next: async () => {
           await this.toast(
@@ -107,6 +113,7 @@ export class ResetPasswordPage {
             err?.error?.error || 'Réinitialisation impossible.',
             'danger',
           );
+          this.cdr.detectChanges();
         },
       });
   }

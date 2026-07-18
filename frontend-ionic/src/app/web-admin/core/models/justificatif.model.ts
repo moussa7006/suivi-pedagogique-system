@@ -1,1 +1,1 @@
-export type { Justificatif } from '@edutrack/shared/models';
+export type { Justificatif } from '../../../core/models';

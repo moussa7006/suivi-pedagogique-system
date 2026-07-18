@@ -1,1 +1,1 @@
-export type { StatutHonoraire, DetailHonoraire, HonorairesCalcul, HonorairesCalculRequest } from '@edutrack/shared/models';
+export type { StatutHonoraire, DetailHonoraire, HonorairesCalcul, HonorairesCalculRequest } from '../../../core/models';
