@@ -173,6 +173,29 @@ server: {
 }
 ```
 
+## Générer l’APK Android
+
+L’application Android utilise l’identifiant :
+
+```text
+com.edutrack.mobile
+```
+
+Workflow recommandé avec Android Studio :
+
+```bash
+cd frontend-ionic
+npm run build
+npx cap sync android
+npx cap open android
+```
+
+Dans Android Studio, générer ensuite l’APK signé via :
+
+```text
+Build > Generate Signed App Bundle / APK > APK
+```
+
 ## Routes importantes
 
 | Route | Description |
