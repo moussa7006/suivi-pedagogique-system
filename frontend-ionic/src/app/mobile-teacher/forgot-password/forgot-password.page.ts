@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
@@ -37,6 +37,7 @@ export class ForgotPasswordPage {
   private authService = inject(AuthService);
   private toastController = inject(ToastController);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
   email = '';
   isLoading = false;
 
@@ -52,7 +53,12 @@ export class ForgotPasswordPage {
     this.isLoading = true;
     this.authService
       .forgotPassword(this.email)
-      .pipe(finalize(() => (this.isLoading = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }),
+      )
       .subscribe({
         next: async (res: any) => {
           await this.toast(
@@ -68,6 +74,7 @@ export class ForgotPasswordPage {
             err?.error?.error || "Impossible d'envoyer le code.",
             'danger',
           );
+          this.cdr.detectChanges();
         },
       });
   }

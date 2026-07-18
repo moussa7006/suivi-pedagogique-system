@@ -1,1 +1,7 @@
-export { Matiere } from '@edutrack/shared/models';
+export interface Matiere {
+  id?: number;
+  code: string;
+  libelle: string;
+  volumeHoraireTotal: number;
+  departementId: number;
+}

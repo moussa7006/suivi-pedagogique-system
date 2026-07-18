@@ -1,2 +1,2 @@
-export type { SortDirection } from '@edutrack/shared/utils';
-export { compareAlphaNumeric, sortByAlpha, sortByNumber } from '@edutrack/shared/utils';
+export type { SortDirection } from '../../../core/utils';
+export { compareAlphaNumeric, sortByAlpha, sortByNumber } from '../../../core/utils';

@@ -1,1 +1,1 @@
-export { extractErrorMessage } from '@edutrack/shared/utils';
+export { extractErrorMessage } from '../../../core/utils';

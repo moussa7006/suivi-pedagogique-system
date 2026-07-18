@@ -1,1 +1,1 @@
-export type { AnneeUniversitaire } from '@edutrack/shared/models';
+export type { AnneeUniversitaire } from '../../../core/models';

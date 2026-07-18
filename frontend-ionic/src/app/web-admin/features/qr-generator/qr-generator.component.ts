@@ -678,7 +678,6 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   constructor(
     private scheduleService: ScheduleService,
     private notificationService: NotificationService,
-  
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
@@ -696,12 +695,20 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   }
 
   loadSeances() {
-    this.scheduleService.getAllSeances().subscribe((data) => {
-      this.seances = sortByAlpha(
-        (data || []).filter((seance) => this.isTodaySeance(seance)),
-        (seance) => `${seance.dateCours || ''} ${seance.heureDebutReelle || ''}`,
-      );
-      this.autoSelectSession();
+    this.scheduleService.getAllSeances().subscribe({
+      next: (data) => {
+        this.seances = sortByAlpha(
+          (data || []).filter((seance) => this.isTodaySeance(seance)),
+          (seance) => `${seance.dateCours || ''} ${seance.heureDebutReelle || ''}`,
+        );
+        this.autoSelectSession();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.seances = [];
+        this.clearQrDisplay();
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -726,6 +733,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
       this.selectedSeanceId = '';
       this.selectedSeance = null;
     }
+    this.cdr.detectChanges();
   }
 
   onSeanceChange() {
@@ -738,6 +746,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
       this.selectedSeance = null;
       this.clearQrDisplay();
     }
+    this.cdr.detectChanges();
   }
 
   ngOnDestroy() {
@@ -750,6 +759,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
   private updateQrWidth() {
     const viewport = typeof window !== 'undefined' ? window.innerWidth : 1200;
     this.qrWidth = Math.max(220, Math.min(320, viewport - 96));
+    this.cdr.detectChanges();
   }
 
   private updateQrDisplayFromSelectedSeance() {
@@ -760,6 +770,7 @@ export class QrGeneratorComponent implements OnInit, OnDestroy {
 
     this.qrData = this.selectedSeance.qrCodeToken || '';
     this.isRunning = !!this.qrData;
+    this.cdr.detectChanges();
   }
 
   private canDisplayQrForSeance(seance: Seance): boolean {

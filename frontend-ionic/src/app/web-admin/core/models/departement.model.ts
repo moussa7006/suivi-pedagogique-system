@@ -1,1 +1,1 @@
-export type { Departement } from '@edutrack/shared/models';
+export type { Departement } from '../../../core/models';

@@ -504,7 +504,7 @@ export class SeancesComponent implements OnInit, OnDestroy {
   classes: Classe[] = [];
   pollingTimer: any;
 
-  filterDate: string = this.getTodayDateKey();
+  filterDate: string = '';
   filterStatus: string = '';
   searchText: string = '';
 

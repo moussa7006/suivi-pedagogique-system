@@ -238,7 +238,7 @@ export class SallesComponent implements OnInit {
 
   getDisplayUrl(salle: Salle): string {
     return salle.tokenAffichage
-      ? `${window.location.origin}/salle-display/${salle.tokenAffichage}`
+      ? `${window.location.origin}/web/salle-display/${salle.tokenAffichage}`
       : '';
   }
 

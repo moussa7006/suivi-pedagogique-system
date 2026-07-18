@@ -1,4 +1,4 @@
-import { Component, EnvironmentInjector, inject, ViewChild, AfterViewInit, NgZone } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, EnvironmentInjector, inject, NgZone, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import {
@@ -30,6 +30,7 @@ export class TabsPage implements AfterViewInit {
   public environmentInjector = inject(EnvironmentInjector);
   private readonly router = inject(Router);
   private readonly ngZone = inject(NgZone);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   @ViewChild(IonTabs) tabs!: IonTabs;
 
@@ -55,6 +56,7 @@ export class TabsPage implements AfterViewInit {
       const idx = this.tabList.indexOf(event.tab);
       if (idx >= 0) {
         this.activeTab = idx;
+        this.cdr.detectChanges();
       }
     });
 
@@ -71,6 +73,7 @@ export class TabsPage implements AfterViewInit {
             const idx = this.tabList.indexOf(tab);
             this.ngZone.run(() => {
               this.activeTab = idx;
+              this.cdr.detectChanges();
             });
           }
         });
@@ -82,6 +85,7 @@ export class TabsPage implements AfterViewInit {
       const tab = this.tabList.find((t) => currentUrl.includes(`/tabs/${t}`));
       if (tab) {
         this.activeTab = this.tabList.indexOf(tab);
+        this.cdr.detectChanges();
       }
     }, 100);
   }

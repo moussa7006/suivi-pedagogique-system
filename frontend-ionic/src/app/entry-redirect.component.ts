@@ -22,21 +22,33 @@ export class EntryRedirectComponent implements OnInit {
       return;
     }
 
-    // Sur navigateur (dev/test) :
-    // - Si l'utilisateur est deja connecte en tant qu'admin -> web admin
-    // - Sinon -> page de login mobile (valeur par defaut)
-    // Le web admin reste accessible via /web/login directement.
-    if (isAuthenticated) {
-      const user = await this.authService.getUser();
-      const role = (user?.role || '').toUpperCase();
-      if (role === 'ADMIN' || role === 'ADMINISTRATEUR') {
-        void this.router.navigateByUrl('/web/dashboard', { replaceUrl: true });
-        return;
-      }
-      void this.router.navigateByUrl('/mobile/tabs/tabs/tab1', { replaceUrl: true });
+    // Sur navigateur, l'interface web admin est l'entrée par défaut.
+    const webUser = this.getWebAdminUser();
+    const webRole = (webUser?.role || webUser?.user?.role || '').toUpperCase();
+
+    if (webUser?.token && (webRole === 'ADMIN' || webRole === 'ADMINISTRATEUR')) {
+      void this.router.navigateByUrl('/web/dashboard', { replaceUrl: true });
       return;
     }
 
-    void this.router.navigateByUrl('/mobile/login', { replaceUrl: true });
+    void this.router.navigateByUrl('/web/login', { replaceUrl: true });
+  }
+
+  private getWebAdminUser(): any | null {
+    if (typeof localStorage === 'undefined') {
+      return null;
+    }
+
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(storedUser);
+    } catch {
+      localStorage.removeItem('user');
+      return null;
+    }
   }
 }
