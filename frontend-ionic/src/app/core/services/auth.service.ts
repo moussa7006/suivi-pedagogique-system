@@ -66,7 +66,46 @@ export class AuthService {
   }
 
   async isAuthenticated(): Promise<boolean> {
-    return !!(await this.tokenStorage.getToken());
+    const token = await this.tokenStorage.getToken();
+    if (!token) {
+      return false;
+    }
+
+    // Verifier l'expiration du token JWT cote client.
+    // Si expire, on efface le token pour eviter qu'un utilisateur
+    // avec une session stale soit redirige vers l'accueil au lieu
+    // de la page de login.
+    if (this.isTokenExpired(token)) {
+      await this.tokenStorage.clearToken();
+      await Preferences.remove({ key: this.userKey });
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Decode le payload JWT et verifie la date d'expiration.
+   * Retourne true si le token est absent ou expire.
+   */
+  private isTokenExpired(token: string): boolean {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        return true;
+      }
+      // Le payload est la 2eme partie, encode en base64url
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (!payload || typeof payload.exp !== 'number') {
+        return true;
+      }
+      // exp est en secondes ; on ajoute une marge de 10s pour eviter
+      // les requetes au moment exact de l'expiration.
+      const nowSec = Math.floor(Date.now() / 1000);
+      return payload.exp <= nowSec + 10;
+    } catch {
+      return true;
+    }
   }
 
   async setToken(token: string): Promise<void> {
