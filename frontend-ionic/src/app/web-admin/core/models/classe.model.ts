@@ -1,1 +1,1 @@
-export type { Classe } from '@edutrack/shared/models';
+export type { Classe } from '../../../core/models';

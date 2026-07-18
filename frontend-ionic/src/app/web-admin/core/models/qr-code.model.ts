@@ -1,1 +1,1 @@
-export type { QRCode } from '@edutrack/shared/models';
+export type { QRCode } from '../../../core/models';

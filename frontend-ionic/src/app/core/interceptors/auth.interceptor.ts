@@ -1,5 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { from, switchMap } from 'rxjs';
 import { TokenStorageService } from '../services/token-storage.service';
 import { ApiConfigService } from '../services/api-config.service';
@@ -7,6 +8,7 @@ import { ApiConfigService } from '../services/api-config.service';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const tokenStorage = inject(TokenStorageService);
   const apiConfig = inject(ApiConfigService);
+  const router = inject(Router);
 
   // Fallback pour les URLs encore construites depuis environment.apiBaseUrl.
   const customApiUrl = apiConfig.getCustomApiBaseUrl();
@@ -23,8 +25,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return from(tokenStorage.getToken()).pipe(
     switchMap((token) => {
-      const fallbackToken = getWebAdminToken();
-      const authToken = token || fallbackToken;
+      const webAdminToken = getWebAdminToken();
+      const isWebAdminRoute = router.url.startsWith('/web');
+      const authToken = isWebAdminRoute ? webAdminToken || token : token || webAdminToken;
 
       if (!authToken) {
         return next(finalReq);

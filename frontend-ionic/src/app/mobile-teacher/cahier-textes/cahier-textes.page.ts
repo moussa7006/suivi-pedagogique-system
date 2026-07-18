@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -78,6 +78,7 @@ export class CahierTextesPage {
   private readonly toastController = inject(ToastController);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   seanceForm: FormGroup;
   isSubmitting = false;
@@ -205,7 +206,12 @@ export class CahierTextesPage {
         catchError(() => of([] as Classe[])),
       ),
     })
-      .pipe(finalize(() => (this.isLoading = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }),
+      )
       .subscribe(({ fiches, seances, emploisDuTemps, matieres, classes }) => {
         this.fichesProgression = this.normalizeArray(fiches);
         this.emploisDuTemps = this.normalizeArray(emploisDuTemps);
@@ -222,6 +228,7 @@ export class CahierTextesPage {
             total + this.extractDurationHours(fiche.heureSeance),
           0,
         );
+        this.cdr.detectChanges();
       });
   }
 

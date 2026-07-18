@@ -1,1 +1,1 @@
-export type { Salle } from '@edutrack/shared/models';
+export type { Salle } from '../../../core/models';

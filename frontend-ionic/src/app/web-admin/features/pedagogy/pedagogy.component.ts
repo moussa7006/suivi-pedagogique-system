@@ -655,18 +655,24 @@ export class PedagogyComponent implements OnInit {
       logs: this.pedagogyService.getLessonLogs(),
       seances: this.scheduleService.getAllSeances(),
     })
-      .pipe(finalize(() => (this.loading = false)))
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }),
+      )
       .subscribe(({ logs, seances }) => {
-      this.lessonLogs = sortByAlpha(
-        logs || [],
-        (log) =>
-          `${log.enseignantNomPrenom || ''} ${log.matiereLibelle || ''} ${log.dateSeance || ''}`,
-      );
-      this.seances = sortByAlpha(
-        seances || [],
-        (seance) => `${seance.dateCours || ''} ${seance.heureDebutReelle || ''}`,
-      );
-    });
+        this.lessonLogs = sortByAlpha(
+          logs || [],
+          (log) =>
+            `${log.enseignantNomPrenom || ''} ${log.matiereLibelle || ''} ${log.dateSeance || ''}`,
+        );
+        this.seances = sortByAlpha(
+          seances || [],
+          (seance) => `${seance.dateCours || ''} ${seance.heureDebutReelle || ''}`,
+        );
+        this.cdr.detectChanges();
+      });
   }
 
   async exportExcel(): Promise<void> {

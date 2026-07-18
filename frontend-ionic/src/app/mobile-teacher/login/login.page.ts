@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
@@ -60,6 +60,7 @@ export class LoginPage {
   private apiError = inject(ApiErrorService);
   private apiConfig = inject(ApiConfigService);
   private alertController = inject(AlertController);
+  private cdr = inject(ChangeDetectorRef);
 
   loginForm: FormGroup;
   showPassword = false;
@@ -104,6 +105,7 @@ export class LoginPage {
 
   togglePassword() {
     this.showPassword = !this.showPassword;
+    this.cdr.detectChanges();
   }
 
   async onSubmit() {
@@ -126,7 +128,12 @@ export class LoginPage {
 
     this.authService
       .login(credentials)
-      .pipe(finalize(() => (this.isLoading = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }),
+      )
       .subscribe({
         next: (user) => {
           this.clearLoginFields();
@@ -140,6 +147,7 @@ export class LoginPage {
         },
         error: (err) => {
           this.apiError.presentError(err, 'Email ou mot de passe incorrect.');
+          this.cdr.detectChanges();
         },
       });
   }
@@ -149,6 +157,7 @@ export class LoginPage {
     this.loginForm.reset({ email: '', password: '' });
     this.loginForm.markAsPristine();
     this.loginForm.markAsUntouched();
+    this.cdr.detectChanges();
   }
 
   async changeServerIp() {

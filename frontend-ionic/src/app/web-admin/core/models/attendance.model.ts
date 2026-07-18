@@ -1,1 +1,1 @@
-export type { Emargement, EmargementRequest } from '@edutrack/shared/models';
+export type { Emargement, EmargementRequest } from '../../../core/models';

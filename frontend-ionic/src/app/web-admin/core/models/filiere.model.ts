@@ -1,1 +1,1 @@
-export type { Filiere } from '@edutrack/shared/models';
+export type { Filiere } from '../../../core/models';

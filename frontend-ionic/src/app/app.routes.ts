@@ -44,6 +44,11 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./web-admin/web-admin.routes').then((m) => m.webAdminRoutes),
   },
+  {
+    path: 'salle-display/:token',
+    redirectTo: 'web/salle-display/:token',
+    pathMatch: 'full',
+  },
   ...legacyMobileRoutes.map((path) => ({
     path,
     redirectTo: `mobile/${path}`,

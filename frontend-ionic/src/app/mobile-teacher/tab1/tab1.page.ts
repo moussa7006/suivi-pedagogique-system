@@ -1,6 +1,6 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 import {
   IonContent,
   IonButton,
@@ -59,6 +59,7 @@ export class Tab1Page implements OnInit {
   private scheduleService = inject(ScheduleService);
   private ficheProgressionService = inject(FicheProgressionService);
   private utilisateurService = inject(UtilisateurService);
+  private cdr = inject(ChangeDetectorRef);
 
   isCahierFait = false;
 
@@ -142,6 +143,7 @@ export class Tab1Page implements OnInit {
         avatar: user.photoUrl || '',
       };
       this.teacherInitials = this.getInitials(firstName, lastName);
+      this.cdr.detectChanges();
 
       // Recharger la photo depuis le backend (non persistee dans le storage
       // pour eviter QuotaExceededError sur les data URLs base64).
@@ -150,9 +152,11 @@ export class Tab1Page implements OnInit {
           if (fullUser?.photoUrl) {
             this.teacher.avatar = fullUser.photoUrl;
           }
+          this.cdr.detectChanges();
         },
         error: () => {
           // Garder l'avatar par defaut.
+          this.cdr.detectChanges();
         },
       });
     }
@@ -160,8 +164,18 @@ export class Tab1Page implements OnInit {
 
   private loadRealData() {
     forkJoin({
-      seances: this.scheduleService.getSeances(),
-      fiches: this.ficheProgressionService.getFichesProgression(),
+      seances: this.scheduleService.getSeances().pipe(
+        catchError((err: unknown) => {
+          console.error('Erreur lors du chargement des séances', err);
+          return of([] as Seance[]);
+        }),
+      ),
+      fiches: this.ficheProgressionService.getFichesProgression().pipe(
+        catchError((err: unknown) => {
+          console.error('Erreur lors du chargement des fiches de progression', err);
+          return of([] as FicheProgression[]);
+        }),
+      ),
     }).subscribe({
       next: ({ seances, fiches }) => {
         const safeSeances = seances || [];
@@ -204,9 +218,11 @@ export class Tab1Page implements OnInit {
             ),
         );
         this.updateNotifications();
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
         console.error('Erreur lors du chargement des séances', err);
+        this.cdr.detectChanges();
       },
     });
   }

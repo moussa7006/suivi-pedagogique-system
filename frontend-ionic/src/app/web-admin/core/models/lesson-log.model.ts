@@ -1,2 +1,2 @@
-export type { FicheProgression, FicheProgressionRequest } from '@edutrack/shared/models';
-export type { FicheProgression as LessonLog } from '@edutrack/shared/models';
+export type { FicheProgression, FicheProgressionRequest } from '../../../core/models';
+export type { FicheProgression as LessonLog } from '../../../core/models';
