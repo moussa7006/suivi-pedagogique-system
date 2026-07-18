@@ -4,7 +4,7 @@ import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@
 import { ActivatedRoute } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { catchError, interval, of, startWith, Subscription, switchMap } from 'rxjs';
-import { environment } from '../../../../environments/environment';
+import { ApiConfigService } from '../../../core/services/api-config.service';
 
 interface QrSalleDisplay {
   seanceId: number;
@@ -380,7 +380,7 @@ export class SalleDisplayComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
-  
+    private apiConfig: ApiConfigService,
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
@@ -399,6 +399,7 @@ export class SalleDisplayComponent implements OnInit, OnDestroy {
         if (qr?.salleNom) {
           this.salleNom = qr.salleNom;
         }
+        this.cdr.detectChanges();
       });
   }
 
@@ -438,13 +439,14 @@ export class SalleDisplayComponent implements OnInit, OnDestroy {
 
     this.http
       .get<SalleDisplayInfo>(
-        `${environment.apiUrl}/ecrans/salles/${encodeURIComponent(token)}/info`,
+        this.apiConfig.buildUrl(`ecrans/salles/${encodeURIComponent(token)}/info`),
       )
       .pipe(
         catchError((error: HttpErrorResponse) => {
           if (error.status === 403 || error.status === 404 || error.status === 500) {
             this.lastError = 'Écran de salle non autorisé ou token invalide.';
           }
+          this.cdr.detectChanges();
           return of(null);
         }),
       )
@@ -453,6 +455,7 @@ export class SalleDisplayComponent implements OnInit, OnDestroy {
         if (apiSalleNom) {
           this.salleNom = apiSalleNom;
         }
+        this.cdr.detectChanges();
       });
   }
 
@@ -472,7 +475,7 @@ export class SalleDisplayComponent implements OnInit, OnDestroy {
 
     return this.http
       .get<QrSalleDisplay>(
-        `${environment.apiUrl}/ecrans/salles/${encodeURIComponent(token)}/qr-actif`,
+        this.apiConfig.buildUrl(`ecrans/salles/${encodeURIComponent(token)}/qr-actif`),
       )
       .pipe(
         catchError((error: HttpErrorResponse) => {
@@ -484,6 +487,7 @@ export class SalleDisplayComponent implements OnInit, OnDestroy {
           } else {
             this.lastError = '';
           }
+          this.cdr.detectChanges();
           return of(null);
         }),
       );

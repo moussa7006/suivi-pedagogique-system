@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, NgZone } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, NgZone, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -71,6 +71,7 @@ export class ProfilePage implements OnInit {
   private ficheProgressionService = inject(FicheProgressionService);
   private toastController = inject(ToastController);
   private ngZone = inject(NgZone);
+  private cdr = inject(ChangeDetectorRef);
 
   isPasswordModalOpen = false;
   showOldPassword = false;
@@ -155,6 +156,7 @@ export class ProfilePage implements OnInit {
     const storedUser = await this.authService.getUser();
     if (storedUser) {
       this.applyUserToTeacher(storedUser);
+      this.cdr.detectChanges();
     }
 
     this.authService
@@ -164,6 +166,7 @@ export class ProfilePage implements OnInit {
         switchMap((user) => {
           if (user) {
             this.applyUserToTeacher(user);
+            this.cdr.detectChanges();
           }
 
           const userId = user?.id || storedUser?.id || this.teacher.id;
@@ -190,9 +193,11 @@ export class ProfilePage implements OnInit {
           const teacherSeances = this.filterTeacherSeances(seances || []);
           this.applySeanceStats(teacherSeances);
           this.applyMatieres(fiches || [], teacherSeances);
+          this.cdr.detectChanges();
         },
         error: () => {
           // Garder les informations déjà disponibles localement.
+          this.cdr.detectChanges();
         },
       });
   }

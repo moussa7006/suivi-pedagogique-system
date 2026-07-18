@@ -1,1 +1,1 @@
-export type { NiveauEnseignement } from '@edutrack/shared/models';
+export type { NiveauEnseignement } from '../../../core/models';

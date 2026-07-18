@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 import { environment } from '../../../environments/environment';
 
 const CUSTOM_API_URL_KEY = 'custom_api_url';
@@ -8,7 +9,17 @@ const API_PATH = 'api';
 @Injectable({ providedIn: 'root' })
 export class ApiConfigService {
   getBaseUrl(): string {
-    return this.getCustomApiBaseUrl() || environment.apiBaseUrl;
+    const customApiBaseUrl = this.getCustomApiBaseUrl();
+
+    if (customApiBaseUrl) {
+      return customApiBaseUrl;
+    }
+
+    if (environment.apiBaseUrl) {
+      return environment.apiBaseUrl;
+    }
+
+    return Capacitor.isNativePlatform() ? '' : environment.apiUrl;
   }
 
   hasConfiguredBaseUrl(): boolean {
@@ -28,6 +39,10 @@ export class ApiConfigService {
   buildUrl(path: string): string {
     const baseUrl = this.getBaseUrl().replace(/\/+$/, '');
     const normalizedPath = path.replace(/^\/+/, '');
+
+    if (!baseUrl) {
+      return `/${normalizedPath}`;
+    }
 
     return `${baseUrl}/${normalizedPath}`;
   }

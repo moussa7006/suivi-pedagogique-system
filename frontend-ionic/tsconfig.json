@@ -21,10 +21,7 @@
     "lib": ["es2018", "dom"],
     "skipLibCheck": true,
     "useDefineForClassFields": false,
-    "paths": {
-      "@edutrack/shared": ["../libs/shared/src"],
-      "@edutrack/shared/*": ["../libs/shared/src/*"]
-    }
+    "paths": {}
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

@@ -33,7 +33,7 @@ ion-content {
   --padding-start: 20px;
   --padding-end: 20px;
   --padding-top: 16px;
-  --padding-bottom: 16px;
+  --padding-bottom: calc(132px + var(--ion-safe-area-bottom, 0px));
 }
 
 /* ============================================

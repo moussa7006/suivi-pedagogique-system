@@ -37,6 +37,11 @@ Thumbs.db
 *.txt
 !README.txt
 
+### Temporary working folders ###
+tmp_*/
+tmp_docx_edit/
+tmp_memoire_analysis/
+
 ### Local debug/test scripts with development credentials ###
 scripts/debug*.sh
 scripts/test_*.sh

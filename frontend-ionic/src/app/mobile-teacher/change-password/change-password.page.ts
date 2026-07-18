@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject } from "@angular/core";
+import { ChangeDetectorRef, Component, inject } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router, RouterLink } from "@angular/router";
 import {
@@ -44,6 +44,7 @@ export class ChangePasswordPage {
   private authService = inject(AuthService);
   private router = inject(Router);
   private toastController = inject(ToastController);
+  private cdr = inject(ChangeDetectorRef);
 
   currentPassword = "";
   newPassword = "";
@@ -87,7 +88,12 @@ export class ChangePasswordPage {
     this.isLoading = true;
     this.authService
       .changePassword(this.currentPassword, this.newPassword)
-      .pipe(finalize(() => (this.isLoading = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }),
+      )
       .subscribe({
         next: async () => {
           const user = await this.authService.getUser();
@@ -103,6 +109,7 @@ export class ChangePasswordPage {
             err?.error?.error || "Erreur lors du changement de mot de passe.",
             "danger",
           );
+          this.cdr.detectChanges();
         },
       });
   }

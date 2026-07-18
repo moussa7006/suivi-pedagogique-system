@@ -1,1 +1,1 @@
-export type { PieceJointe } from '@edutrack/shared/models';
+export type { PieceJointe } from '../../../core/models';

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
@@ -50,6 +50,7 @@ import { HonorairesService } from '../../core/services/honoraires.service';
 })
 export class HonorairesPage implements OnInit {
   private readonly honorairesService = inject(HonorairesService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   honoraires: HonorairesCalcul[] = [];
   expandedId: number | null = null;
@@ -138,10 +139,12 @@ export class HonorairesPage implements OnInit {
     if (this.filterPeriod !== 'all') {
       this.selectedMonth = '';
     }
+    this.cdr.detectChanges();
   }
 
   clearSelectedMonth(): void {
     this.selectedMonth = '';
+    this.cdr.detectChanges();
   }
 
   loadHonoraires(event?: CustomEvent): void {
@@ -154,17 +157,20 @@ export class HonorairesPage implements OnInit {
         finalize(() => {
           this.loading = false;
           event?.target && (event.target as HTMLIonRefresherElement).complete();
+          this.cdr.detectChanges();
         }),
       )
       .subscribe({
         next: (items) => {
           this.honoraires = this.sortHonoraires(items || []);
+          this.cdr.detectChanges();
         },
         error: (error) => {
           this.errorMessage =
             error?.error?.message ||
             error?.error?.error ||
             'Impossible de charger vos honoraires.';
+          this.cdr.detectChanges();
         },
       });
   }

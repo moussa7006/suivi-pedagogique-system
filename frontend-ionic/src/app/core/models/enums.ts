@@ -1,43 +1,14 @@
-export enum Role {
-  ADMINISTRATEUR = "ADMINISTRATEUR",
-  ENSEIGNANT = "ENSEIGNANT",
-}
-
-export enum StatutSeance {
-  PREVUE = "PREVUE",
-  EN_COURS = "EN_COURS",
-  TERMINEE = "TERMINEE",
-}
-
-export enum StatutEmargement {
-  EN_ATTENTE_FICHE = "EN_ATTENTE_FICHE",
-  VALIDE = "VALIDE",
-  JUSTIFIE = "JUSTIFIE",
-}
-
-export enum TypeRecurrence {
-  UNIQUE = "UNIQUE",
-  HEBDOMADAIRE = "HEBDOMADAIRE",
-  MENSUEL = "MENSUEL",
-}
-
-export enum JourSemaine {
-  LUNDI = "LUNDI",
-  MARDI = "MARDI",
-  MERCREDI = "MERCREDI",
-  JEUDI = "JEUDI",
-  VENDREDI = "VENDREDI",
-  SAMEDI = "SAMEDI",
-  DIMANCHE = "DIMANCHE",
-}
-
-export enum TypeAbsence {
-  RETARD = "RETARD",
-  ABSENCE = "ABSENCE",
-}
-
-export enum TypePieceJointe {
-  COURS = "COURS",
-  EXERCICE = "EXERCICE",
-  EVALUATION = "EVALUATION",
-}
+export type Role = 'ADMINISTRATEUR' | 'ENSEIGNANT';
+export type StatutSeance = 'PREVUE' | 'EN_COURS' | 'TERMINEE';
+export type StatutEmargement = 'EN_ATTENTE_FICHE' | 'VALIDE' | 'JUSTIFIE';
+export type TypeRecurrence = 'UNIQUE' | 'HEBDOMADAIRE' | 'MENSUEL';
+export type JourSemaine =
+  | 'LUNDI'
+  | 'MARDI'
+  | 'MERCREDI'
+  | 'JEUDI'
+  | 'VENDREDI'
+  | 'SAMEDI'
+  | 'DIMANCHE';
+export type TypeAbsence = 'RETARD' | 'ABSENCE';
+export type TypePieceJointe = 'COURS' | 'EXERCICE' | 'EVALUATION';

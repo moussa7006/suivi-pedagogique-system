@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
@@ -56,6 +56,7 @@ export class PlanningPage implements OnInit {
   private readonly salleService = inject(SalleService);
   private readonly matiereService = inject(MatiereService);
   private readonly authService = inject(AuthService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   today = new Date();
   selectedDayIndex = 0;
@@ -90,12 +91,15 @@ export class PlanningPage implements OnInit {
   }
 
   ngOnInit(): void {
-    void this.loadCurrentUser();
-    this.loadEmploisDuTemps();
+    void this.refreshPlanningData();
   }
 
   ionViewWillEnter(): void {
-    void this.loadCurrentUser();
+    void this.refreshPlanningData();
+  }
+
+  private async refreshPlanningData(): Promise<void> {
+    await this.loadCurrentUser();
     this.loadEmploisDuTemps();
   }
 
@@ -104,12 +108,14 @@ export class PlanningPage implements OnInit {
     if (user) {
       this.currentUserId = user.id ?? null;
       this.currentUserLabel = `${user.prenom || ''} ${user.nom || ''}`.trim();
+      this.cdr.detectChanges();
     }
   }
 
   selectDay(index: number): void {
     this.selectedDayIndex = index;
     this.buildPlanningForSelectedDay();
+    this.cdr.detectChanges();
   }
 
   refreshPlanning(): void {
@@ -144,7 +150,12 @@ export class PlanningPage implements OnInit {
       salles: this.salleService.getAll(),
       matieres: this.matiereService.getAll(),
     })
-      .pipe(finalize(() => (this.isLoading = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }),
+      )
       .subscribe({
         next: ({ schedules, seances, salles, matieres }) => {
           this.allSchedules = schedules || [];
@@ -152,11 +163,13 @@ export class PlanningPage implements OnInit {
           this.salles = salles || [];
           this.matieres = matieres || [];
           this.buildPlanningForSelectedDay();
+          this.cdr.detectChanges();
         },
         error: () => {
           this.allSchedules = [];
           this.allSeances = [];
           this.emploisDuTemps = [];
+          this.cdr.detectChanges();
         },
       });
   }
