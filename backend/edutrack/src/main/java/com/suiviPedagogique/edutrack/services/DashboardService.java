@@ -193,7 +193,21 @@ public class DashboardService {
                     row.put("statut", taux >= 75 ? "EXCELLENT" : taux >= 50 ? "MOYEN" : "FAIBLE");
                     return row;
                 })
-                .sorted((a, b) -> Long.compare((long) b.get("seancesPlanifiees"), (long) a.get("seancesPlanifiees")))
+                // Top Enseignants = ceux avec le meilleur TAUX DE VALIDATION
+                // (pas le plus de seances). En cas d'egalite, on privilegie
+                // ceux qui ont valide le plus d'emargements en valeur absolue.
+                // On exclut les enseignants sans seance planifiee (taux = 0
+                // mais aucune activite reelle a recompenser).
+                .filter(row -> (long) row.get("seancesPlanifiees") > 0)
+                .sorted((a, b) -> {
+                    int byTaux = Double.compare(
+                            (double) b.get("tauxValidation"),
+                            (double) a.get("tauxValidation"));
+                    if (byTaux != 0) return byTaux;
+                    return Long.compare(
+                            (long) b.get("emargementsValides"),
+                            (long) a.get("emargementsValides"));
+                })
                 .collect(Collectors.toList());
     }
 
