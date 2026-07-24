@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
 import {
@@ -53,7 +59,7 @@ interface NotificationItem {
   styleUrls: ['tab1.page.scss'],
   imports: [CommonModule, IonContent, IonButton, IonIcon, IonBadge],
 })
-export class Tab1Page implements OnInit {
+export class Tab1Page implements OnInit, OnDestroy {
   private router = inject(Router);
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
@@ -125,6 +131,14 @@ export class Tab1Page implements OnInit {
 
   ionViewWillEnter(): void {
     this.refresh();
+  }
+
+  ionViewWillLeave(): void {
+    this.closeNotifications();
+  }
+
+  ngOnDestroy(): void {
+    this.closeNotifications();
   }
 
   private refresh(): void {
@@ -360,10 +374,12 @@ export class Tab1Page implements OnInit {
 
   openNotifications() {
     this.showNotifications = true;
+    document.body.classList.add('mobile-notifications-open');
   }
 
   closeNotifications() {
     this.showNotifications = false;
+    document.body.classList.remove('mobile-notifications-open');
   }
 
   handleNotificationAction(notification: NotificationItem) {
