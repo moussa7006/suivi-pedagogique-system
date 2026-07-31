@@ -225,6 +225,16 @@ ion-tab-bar {
   }
 }
 
+body.mobile-notifications-open ion-tabs ion-tab-bar.liquid-glass-bar,
+body.mobile-notifications-open ion-tab-bar.liquid-glass-bar {
+  z-index: -1 !important;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) translateY(24px) scale(0.96);
+  filter: blur(12px);
+  pointer-events: none;
+}
+
 /* Mode sombre pour le tab bar */
 @media (prefers-color-scheme: dark) {
   ion-tab-bar {
