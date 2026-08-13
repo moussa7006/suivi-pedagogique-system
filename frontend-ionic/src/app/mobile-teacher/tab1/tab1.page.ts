@@ -100,6 +100,21 @@ export class Tab1Page implements OnInit, OnDestroy {
     );
   }
 
+  get greeting(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Bonjour';
+    if (hour < 18) return 'Bon après-midi';
+    return 'Bonsoir';
+  }
+
+  get todayLabel(): string {
+    return new Date().toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
+  }
+
   constructor() {
     addIcons({
       notificationsOutline,

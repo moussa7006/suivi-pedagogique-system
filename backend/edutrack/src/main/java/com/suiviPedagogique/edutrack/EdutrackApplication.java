@@ -34,8 +34,9 @@ public class EdutrackApplication {
 				if (count != null && count == 0) {
 					System.out.println("Aucune donnée trouvée dans la base de données. Initialisation avec data.sql...");
 					ResourceDatabasePopulator populator = new ResourceDatabasePopulator(new ClassPathResource("data.sql"));
-					// Continue on error en cas d'erreurs mineures dans le script pg_dump
-					populator.setContinueOnError(true);
+					// data.sql ne contient plus de méta-commandes psql : on laisse les erreurs remonter
+					// pour ne pas masquer un échec réel d'initialisation.
+					populator.setContinueOnError(false);
 					populator.execute(dataSource);
 					System.out.println("Initialisation de la base de données terminée.");
 				} else {

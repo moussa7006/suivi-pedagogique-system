@@ -9,14 +9,14 @@ const API_PATH = 'api';
 @Injectable({ providedIn: 'root' })
 export class ApiConfigService {
   getBaseUrl(): string {
-    const customApiBaseUrl = this.getCustomApiBaseUrl();
-
-    if (customApiBaseUrl) {
-      return customApiBaseUrl;
-    }
-
+    // FORCE HARDCODED IP FOR THE PRESENTATION TO AVOID CACHE ISSUES
     if (environment.apiBaseUrl) {
       return environment.apiBaseUrl;
+    }
+
+    const customApiBaseUrl = this.getCustomApiBaseUrl();
+    if (customApiBaseUrl) {
+      return customApiBaseUrl;
     }
 
     return Capacitor.isNativePlatform() ? '' : environment.apiUrl;

@@ -6,10 +6,11 @@ import {
   IonContent,
   IonButton,
   IonIcon,
-  IonBadge,
   IonSegment,
   IonSegmentButton,
   IonLabel,
+  IonModal,
+  IonDatetime
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -21,8 +22,16 @@ import {
   eyeOutline,
   arrowDownOutline,
   arrowBackOutline,
+  checkmarkCircleOutline,
+  calendarClearOutline,
+  closeCircle,
+  hourglassOutline,
+  checkmark,
+  ellipsisHorizontal,
+  calendar,
+  alertCircleOutline
 } from 'ionicons/icons';
-import { catchError, forkJoin, from, of } from 'rxjs';
+import { catchError, forkJoin, from, of, take, firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { EmargementService } from '../../core/services/emargement.service';
@@ -57,10 +66,11 @@ interface HistoriqueItem {
     IonContent,
     IonButton,
     IonIcon,
-    IonBadge,
     IonSegment,
     IonSegmentButton,
     IonLabel,
+    IonModal,
+    IonDatetime
   ],
 })
 export class HistoriquePage implements OnInit {
@@ -72,7 +82,7 @@ export class HistoriquePage implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
 
   filterPeriod = 'all';
-  selectedMonth = '';
+  selectedDate = '';
   isLoading = false;
   errorMessage = '';
 
@@ -100,9 +110,9 @@ export class HistoriquePage implements OnInit {
     );
 
     if (this.filterPeriod === 'all') {
-      if (this.selectedMonth) {
+      if (this.selectedDate) {
         result = result.filter(
-          (s) => this.toMonthKey(s.date) === this.selectedMonth,
+          (s) => this.toDateKey(s.date) === this.selectedDate,
         );
       }
       return result;
@@ -118,6 +128,30 @@ export class HistoriquePage implements OnInit {
     return result.filter((s) => s.date >= cutoff);
   }
 
+  get formattedSelectedMonth(): string {
+    if (!this.selectedDate) return 'Sélectionner une date';
+    const parts = this.selectedDate.split('-');
+    if (parts.length < 3) return 'Sélectionner une date';
+    const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  get selectedDatetime(): string | undefined {
+    return this.selectedDate ? `${this.selectedDate}T00:00:00` : undefined;
+  }
+
+  onMonthSelect(event: any): void {
+    const val = event.detail.value;
+    if (val) {
+      this.selectedDate = typeof val === 'string' ? val.substring(0, 10) : val[0].substring(0, 10);
+      this.cdr.detectChanges();
+    }
+  }
+
+  clearSelectedMonth(): void {
+    this.selectedDate = '';
+    this.cdr.detectChanges();
+  }
   constructor() {
     addIcons({
       calendarOutline,
@@ -128,6 +162,14 @@ export class HistoriquePage implements OnInit {
       eyeOutline,
       arrowDownOutline,
       arrowBackOutline,
+      checkmarkCircleOutline,
+      calendarClearOutline,
+      closeCircle,
+      hourglassOutline,
+      checkmark,
+      ellipsisHorizontal,
+      calendar,
+      alertCircleOutline
     });
   }
 
@@ -141,64 +183,52 @@ export class HistoriquePage implements OnInit {
 
   filterByPeriod(): void {
     if (this.filterPeriod !== 'all') {
-      this.selectedMonth = '';
+      this.selectedDate = '';
     }
     // Filtrage géré par le getter filteredSeances.
     this.cdr.detectChanges();
   }
 
-  clearSelectedMonth(): void {
-    this.selectedMonth = '';
-    this.cdr.detectChanges();
-  }
-
-  private loadHistorique(): void {
+  private async loadHistorique(): Promise<void> {
     this.isLoading = true;
     this.errorMessage = '';
+    this.cdr.detectChanges();
 
-    forkJoin({
-      user: this.authService
-        .getMe()
-        .pipe(catchError(() => from(this.authService.getUser()))),
-      seances: this.scheduleService.getSeances().pipe(catchError(() => of([]))),
-      emplois: this.scheduleService
-        .getEmploisDuTemps()
-        .pipe(catchError(() => of([]))),
-      emargements: this.emargementService
-        .getEmargements()
-        .pipe(catchError(() => of([]))),
-      fiches: this.ficheProgressionService
-        .getFichesProgression()
-        .pipe(catchError(() => of([]))),
-      matieres: this.matiereService.getAll().pipe(catchError(() => of([]))),
-    }).subscribe({
-      next: ({ user, seances, emplois, emargements, fiches, matieres }) => {
-        this.currentTeacherId = user?.id;
-        this.currentTeacherName = `${user?.prenom || ''} ${user?.nom || ''}`
-          .trim()
-          .toLowerCase();
-        this.seancesData = this.filterTeacherSeances(seances || []);
-        this.emargementsData = this.filterTeacherEmargements(emargements || []);
-        this.fichesProgression = this.filterTeacherFiches(fiches || []);
-        this.emploisDuTemps = emplois || [];
-        this.matieres = matieres || [];
-        this.buildHistorique();
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.seancesData = [];
-        this.emargementsData = [];
-        this.fichesProgression = [];
-        this.matieres = [];
-        this.emploisDuTemps = [];
-        this.buildHistorique();
-        this.errorMessage =
-          "Impossible de charger l'historique depuis la base de données.";
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-    });
+    try {
+      // On utilise Promise.all pour charger en parallèle
+      // firstValueFrom garantit qu'on prend la 1ere valeur émise (même si l'observable ne se complète pas).
+      const [user, seances, emplois, emargements, fiches, matieres] = await Promise.all([
+        firstValueFrom(this.authService.getMe().pipe(catchError(() => from(this.authService.getUser()))).pipe(catchError(() => of(null)))),
+        firstValueFrom(this.scheduleService.getSeances().pipe(catchError(() => of([])))),
+        firstValueFrom(this.scheduleService.getEmploisDuTemps().pipe(catchError(() => of([])))),
+        firstValueFrom(this.emargementService.getEmargements().pipe(catchError(() => of([])))),
+        firstValueFrom(this.ficheProgressionService.getFichesProgression().pipe(catchError(() => of([])))),
+        firstValueFrom(this.matiereService.getAll().pipe(catchError(() => of([]))))
+      ]);
+
+      this.currentTeacherId = user?.id;
+      this.currentTeacherName = `${user?.prenom || ''} ${user?.nom || ''}`.trim().toLowerCase();
+      
+      this.seancesData = this.filterTeacherSeances(seances || []);
+      this.emargementsData = this.filterTeacherEmargements(emargements || []);
+      this.fichesProgression = this.filterTeacherFiches(fiches || []);
+      this.emploisDuTemps = emplois || [];
+      this.matieres = matieres || [];
+      
+      this.buildHistorique();
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'historique', error);
+      this.seancesData = [];
+      this.emargementsData = [];
+      this.fichesProgression = [];
+      this.matieres = [];
+      this.emploisDuTemps = [];
+      this.buildHistorique();
+      this.errorMessage = "Impossible de charger l'historique complètement.";
+    } finally {
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    }
   }
 
   private buildHistorique(): void {
@@ -386,10 +416,11 @@ export class HistoriquePage implements OnInit {
       : new Date(value);
   }
 
-  private toMonthKey(date: Date): string {
+  private toDateKey(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
-    return `${year}-${month}`;
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   private formatTime(value?: string): string {

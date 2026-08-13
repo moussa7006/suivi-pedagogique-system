@@ -2,24 +2,10 @@
 -- PostgreSQL database dump
 --
 
-\restrict y6LffvgdEpl7RLZ0tyfHi2Dm7daXGy5eiytOz6oujuX1eBnbVYQFvlCLSz9gP7j
-
 -- Dumped from database version 18.4
 -- Dumped by pg_dump version 18.4
 
 -- Started on 2026-08-08 19:00:19
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
 
 --
 -- TOC entry 5199 (class 0 OID 16390)
@@ -631,6 +617,4 @@ SELECT pg_catalog.setval('public.utilisateur_id_seq', 32, true);
 --
 -- PostgreSQL database dump complete
 --
-
-\unrestrict y6LffvgdEpl7RLZ0tyfHi2Dm7daXGy5eiytOz6oujuX1eBnbVYQFvlCLSz9gP7j
 

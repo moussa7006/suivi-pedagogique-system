@@ -33,6 +33,9 @@ backend/edutrack/.mvn/wrapper/maven-wrapper.jar
 .DS_Store
 Thumbs.db
 
+### Microsoft Office lock files ###
+~$*
+
 ### Misc ###
 *.txt
 !README.txt

@@ -314,16 +314,24 @@ ion-content {
       }
 
       ion-input,
-      ion-textarea {
+      ion-textarea,
+      ion-select {
         --padding-start: 0;
         --padding-end: 0;
         --color: #0f172a;
         --placeholder-color: #94a3b8;
         --placeholder-opacity: 1;
+        color: #0f172a;
         font-weight: 600;
         font-family: var(--font-family);
         font-size: 15px;
         min-height: 44px;
+        flex: 1;
+        width: 100%;
+        
+        &::part(text) {
+          color: #0f172a;
+        }
       }
 
       &.textarea-field {

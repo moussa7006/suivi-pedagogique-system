@@ -7,6 +7,6 @@ const apiHost =
 // Cela évite l'erreur mobile où `localhost` pointe vers le téléphone au lieu du PC backend.
 export const environment = {
   production: false,
-  apiBaseUrl: `http://${apiHost || 'localhost'}:8099/api`,
-  apiUrl: `http://${apiHost || 'localhost'}:8099/api`,
+  apiBaseUrl: `http://192.168.1.26:8099/api`,
+  apiUrl: `http://192.168.1.26:8099/api`,
 };
