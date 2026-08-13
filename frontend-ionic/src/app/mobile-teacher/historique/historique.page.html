@@ -1,138 +1,135 @@
-<ion-content [fullscreen]="true" class="ion-padding">
-  <!-- Bouton Retour -->
-  <ion-button
-    fill="clear"
-    class="back-btn-header"
-    routerLink="/mobile/tabs/tabs/tab1"
-    [replaceUrl]="true"
-    aria-label="Retour au menu"
-  >
-    <ion-icon name="arrow-back-outline"></ion-icon>
-  </ion-button>
-
-  <div class="header-section">
-    <h1 class="page-title">Historique</h1>
-    <p class="page-subtitle">Suivi de vos séances passées</p>
+<ion-content [fullscreen]="true">
+  <!-- DECORATIVE BG -->
+  <div class="bg-decoration">
+    <div class="bg-circle bg-circle--1"></div>
+    <div class="bg-circle bg-circle--2"></div>
   </div>
 
-  <!-- Filtres -->
-  <div class="filters-section">
-    <ion-segment
-      [(ngModel)]="filterPeriod"
-      (ionChange)="filterByPeriod()"
-      class="custom-segment"
-    >
-      <ion-segment-button value="all">
-        <ion-label>Tout</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="week">
-        <ion-label>Semaine</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="month">
-        <ion-label>Mois</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-
-    <div class="date-filter" *ngIf="filterPeriod === 'all'">
-      <label for="historique-month">Filtrer par mois et année</label>
-      <div class="date-input-row">
-        <input
-          id="historique-month"
-          type="month"
-          [(ngModel)]="selectedMonth"
-          aria-label="Filtrer les séances passées par mois et année"
-        />
-        <ion-button
-          *ngIf="selectedMonth"
-          fill="clear"
-          size="small"
-          (click)="clearSelectedMonth()"
-        >
-          Effacer
-        </ion-button>
+  <div class="page-wrapper ion-padding">
+    <!-- Header -->
+    <header class="page-header animate-slide-up" style="--delay: 50ms">
+      <ion-button fill="clear" class="back-btn" routerLink="/mobile/tabs/tabs/tab1" [replaceUrl]="true">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+      <div class="header-titles">
+        <h1 class="title">Historique</h1>
+        <p class="subtitle">Vos séances passées</p>
       </div>
-    </div>
-  </div>
+    </header>
 
-  <!-- Résumé statistique -->
-  <div class="summary-cards">
-    <div class="summary-card">
-      <div class="summary-icon blue">
-        <ion-icon name="checkmark-done-outline"></ion-icon>
+    <!-- Stats Row -->
+    <div class="quick-stats animate-slide-up" style="--delay: 100ms">
+      <div class="stat-chip stat-chip--primary">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+        <span>{{ stats.seancesCompletees }} réalisées</span>
       </div>
-      <div class="summary-info">
-        <span class="summary-value">{{ stats.seancesCompletees }}</span>
-        <span class="summary-label">Séances réalisées</span>
-      </div>
-    </div>
-
-    <div class="summary-card">
-      <div class="summary-icon green">
+      <div class="stat-chip stat-chip--success">
         <ion-icon name="people-outline"></ion-icon>
+        <span>{{ stats.seancesEmargees }} émargements</span>
       </div>
-      <div class="summary-info">
-        <span class="summary-value">{{ stats.seancesEmargees }}</span>
-        <span class="summary-label">Émargements</span>
-      </div>
-    </div>
-
-    <div class="summary-card">
-      <div class="summary-icon blue">
+      <div class="stat-chip stat-chip--accent">
         <ion-icon name="time-outline"></ion-icon>
-      </div>
-      <div class="summary-info">
-        <span class="summary-value">{{ stats.dureeTotale }} min</span>
-        <span class="summary-label">Volume effectué</span>
+        <span>{{ stats.dureeTotale }} min</span>
       </div>
     </div>
-  </div>
 
-  <div *ngIf="isLoading" class="loading-state">
-    Chargement de l'historique depuis la base de données...
-  </div>
+    <!-- Filters Segment -->
+    <div class="filters-section animate-slide-up" style="--delay: 150ms">
+      <ion-segment [(ngModel)]="filterPeriod" (ionChange)="filterByPeriod()" class="custom-segment">
+        <ion-segment-button value="all"><ion-label>Tout</ion-label></ion-segment-button>
+        <ion-segment-button value="week"><ion-label>Semaine</ion-label></ion-segment-button>
+        <ion-segment-button value="month"><ion-label>Mois</ion-label></ion-segment-button>
+      </ion-segment>
 
-  <div *ngIf="errorMessage" class="error-state">{{ errorMessage }}</div>
-
-  <!-- Liste chronologique -->
-  <div class="timeline-section">
-    <h3 class="section-title">
-      <ion-icon name="calendar-outline"></ion-icon>
-      Séances passées
-    </h3>
-
-    <div class="timeline">
-      <div
-        *ngFor="let seance of filteredSeances; let i = index"
-        class="timeline-item"
-        [class.last]="i === filteredSeances.length - 1"
-      >
-        <div class="timeline-marker"></div>
-        <div class="timeline-content">
-          <div class="timeline-header">
-            <div class="timeline-date">
-              {{ seance.date | date:'EEEE d MMMM y' }}
-            </div>
-            <ion-badge
-              [class]="seance.status === 'completed' ? 'badge-success' : seance.status === 'in_progress' ? 'badge-warning' : 'badge-info'"
-            >
-              {{ seance.status === 'completed' ? 'Terminée' : seance.status ===
-              'in_progress' ? 'En cours' : 'Prévue' }}
-            </ion-badge>
+      <div class="date-filter animate-fade-in" *ngIf="filterPeriod === 'all'">
+        <div class="date-input-wrapper" id="open-month-picker">
+          <ion-icon name="calendar-outline" class="input-icon"></ion-icon>
+          <div class="fake-input">
+            {{ formattedSelectedMonth }}
           </div>
-          <div class="timeline-body">
-            <h4>{{ seance.matiere }}</h4>
-            <p class="timeline-time">
-              <ion-icon name="time-outline"></ion-icon>
-              {{ seance.heure }}
-            </p>
-            <p class="timeline-content-text">{{ seance.contenu }}</p>
-            <div class="timeline-stats">
-              <div class="stat-item">
-                <ion-icon name="people-outline"></ion-icon>
-                <span>{{ seance.presents }}/{{ seance.total }}</span>
+          <ion-button *ngIf="selectedDate" fill="clear" size="small" class="clear-btn" (click)="clearSelectedMonth(); $event.stopPropagation()">
+            <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <ion-modal trigger="open-month-picker" #monthModal [initialBreakpoint]="0.5" [breakpoints]="[0, 0.5]">
+          <ng-template>
+            <ion-content>
+              <div class="modal-header">
+                <h3>Choisir une date</h3>
               </div>
-              <div class="stat-item">
-                <ion-icon name="document-text-outline"></ion-icon>
+                <ion-datetime
+                  presentation="date"
+                  locale="fr-FR"
+                  [value]="selectedDatetime"
+                  (ionChange)="onMonthSelect($event); monthModal.dismiss()"
+                  size="cover"
+                ></ion-datetime>
+            </ion-content>
+          </ng-template>
+        </ion-modal>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-section animate-slide-up" style="--delay: 200ms">
+      <h2 class="section-title">Parcours pédagogique</h2>
+
+      <div *ngIf="isLoading" class="loading-state">
+        <p>Chargement de l'historique...</p>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-state">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <p>{{ errorMessage }}</p>
+      </div>
+
+      <div *ngIf="!isLoading && filteredSeances.length === 0" class="empty-state animate-fade-in">
+        <div class="empty-icon-wrapper">
+          <ion-icon name="calendar-clear-outline"></ion-icon>
+        </div>
+        <h3>Aucune séance</h3>
+        <p>Il n'y a pas de séances correspondantes pour cette période.</p>
+      </div>
+
+      <div class="timeline" *ngIf="!isLoading && filteredSeances.length > 0">
+        <div class="timeline-line"></div>
+        
+        <div class="timeline-item" *ngFor="let seance of filteredSeances; let i = index" [style.--item-delay]="(i * 50) + 'ms'">
+          <div class="timeline-marker"
+               [class.marker-success]="seance.status === 'completed'"
+               [class.marker-warning]="seance.status === 'in_progress'"
+               [class.marker-info]="seance.status === 'planned'">
+            <ion-icon [name]="seance.status === 'completed' ? 'checkmark' : (seance.status === 'in_progress' ? 'ellipsis-horizontal' : 'calendar')"></ion-icon>
+          </div>
+          
+          <div class="timeline-card">
+            <div class="card-header">
+              <span class="card-date">{{ seance.date | date:'EEEE d MMM y' }}</span>
+              <span class="card-status"
+                    [class.status-success]="seance.status === 'completed'"
+                    [class.status-warning]="seance.status === 'in_progress'"
+                    [class.status-info]="seance.status === 'planned'">
+                {{ seance.status === 'completed' ? 'Terminée' : seance.status === 'in_progress' ? 'En cours' : 'Prévue' }}
+              </span>
+            </div>
+            
+            <h3 class="card-title">{{ seance.matiere }}</h3>
+            
+            <div class="card-time">
+              <ion-icon name="time-outline"></ion-icon>
+              <span>{{ seance.heure }}</span>
+            </div>
+            
+            <p class="card-content">{{ seance.contenu }}</p>
+            
+            <div class="card-footer">
+              <div class="footer-stat">
+                <ion-icon name="people-outline"></ion-icon>
+                <span>{{ seance.presents }}/{{ seance.total }} présents</span>
+              </div>
+              <div class="footer-stat">
+                <ion-icon name="hourglass-outline"></ion-icon>
                 <span>{{ seance.duree }} min</span>
               </div>
             </div>
@@ -140,12 +137,7 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Empty state -->
-  <div *ngIf="!isLoading && filteredSeances.length === 0" class="empty-state">
-    <ion-icon name="calendar-outline" class="empty-icon"></ion-icon>
-    <h3>Aucune séance trouvée</h3>
-    <p>Il n'y a pas de séances pour cette période.</p>
+    
+    <div class="bottom-spacer"></div>
   </div>
 </ion-content>

@@ -132,12 +132,17 @@ import { NotificationService } from '../../shared/notification/notification.serv
       }
       input {
         width: 100%;
+        background: #ffffff;
+        color: #0f172a;
         border: 1px solid #cbd5e1;
         border-radius: 14px;
         padding: 13px 14px;
         font: inherit;
         outline: none;
         transition: all 0.2s ease;
+      }
+      input::placeholder {
+        color: #94a3b8;
       }
       input:focus {
         border-color: #2563eb;

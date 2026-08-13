@@ -21,6 +21,9 @@ import {
   refreshOutline,
   scanOutline,
   arrowBackOutline,
+  checkmark,
+  calendar,
+  calendarClearOutline
 } from 'ionicons/icons';
 import { forkJoin, finalize } from 'rxjs';
 import { ScheduleService } from '../../core/services/schedule.service';
@@ -86,6 +89,9 @@ export class PlanningPage implements OnInit {
       refreshOutline,
       scanOutline,
       arrowBackOutline,
+      checkmark,
+      calendar,
+      calendarClearOutline
     });
     this.generateWeekDays();
   }

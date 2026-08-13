@@ -87,7 +87,7 @@
       <form [formGroup]="seanceForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
           <label>Séance concernée</label>
-          <div class="input-field">
+          <div class="input-field" *ngIf="seancesDisponibles.length > 0">
             <ion-icon name="calendar-outline"></ion-icon>
             <ion-select
               formControlName="seanceId"
@@ -137,8 +137,7 @@
           </div>
 
           <span class="error-msg" *ngIf="seancesDisponibles.length === 0">
-            Aucune séance du jour ou passée avec émargement effectué n'est en
-            attente de fiche.
+            Aucune séance en attente de fiche de progression.
           </span>
         </div>
 
@@ -257,8 +256,8 @@
     <div class="empty-illustration">
       <ion-icon name="book-outline"></ion-icon>
     </div>
-    <h3>Aucune seance</h3>
-    <p>Sélectionnez une séance réelle et remplissez sa fiche de progression.</p>
+    <h3>Aucune séance</h3>
+    <p>Aucune fiche de progression enregistrée pour le moment.</p>
   </div>
 
   <!-- Bottom spacer -->

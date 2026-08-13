@@ -1,196 +1,146 @@
 /* ============================================
-   LIQUID GLASS TABS - Suivi Pedagogique
-   Effet verre liquide blanc avec indicateur violet
+   MODERN GLASS TABS - FAB CENTER STYLE
+   Design avec bouton central flottant et menu vitré
    ============================================ */
 
 /* --- Override Ionic tab bar CSS custom properties --- */
-.liquid-glass-bar {
-  --background: rgba(255, 255, 255, 0.85);
+.modern-glass-bar {
+  --background: rgba(255, 255, 255, 0.92);
   --border-color: transparent;
   --box-shadow: none;
-  --color: rgba(15, 23, 42, 0.55);
-  --color-selected: #ffffff;
-  --color-focused: #ffffff;
-  --color-hover: rgba(15, 23, 42, 0.8);
-  --color-activated: #ffffff;
-  --indicator-color: transparent;
-  --ripple-color: transparent;
-}
-
-.liquid-glass-bar ion-tab-button {
-  --background: transparent;
-  --background-focused: transparent;
-  --background-hover: transparent;
-  --background-activated: transparent;
-  --color: rgba(15, 23, 42, 0.55);
-  --color-selected: #ffffff;
-  --color-focused: #ffffff;
-  --color-hover: rgba(15, 23, 42, 0.8);
-  --color-activated: #ffffff;
-  --indicator-color: transparent;
-  --ripple-color: transparent;
-  --padding-start: 0;
-  --padding-end: 0;
-  --padding-top: 0;
-  --padding-bottom: 0;
-}
-
-/* ============================================
-   TAB BAR - Verre depoli blanc flottant + centrage
-   ============================================ */
-.liquid-glass-bar {
-  position: absolute;
-  bottom: calc(8px + var(--ion-safe-area-bottom, 0px));
-  /* Centrage horizontal : largeur limitee et centree */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 420px;
-  height: 76px;
-  margin: 0 0 12px;
-  padding: 6px;
-  border: 1.5px solid rgba(15, 23, 42, 0.08);
-  border-radius: 30px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  box-shadow:
-    0 24px 60px rgba(15, 23, 42, 0.18),
-    0 0 0 1px rgba(15, 23, 42, 0.04) inset,
-    0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  --color: #94a3b8; /* slate-400 */
+  --color-selected: #4361ee;
+  
+  height: calc(70px + var(--ion-safe-area-bottom, 0px));
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 32px 32px 0 0;
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.06);
   overflow: visible;
+  position: relative;
   z-index: 100;
 }
 
 :host {
+  ion-tabs,
+  ion-tab-bar,
+  ion-tab-button {
+    overflow: visible !important;
+    contain: none !important;
+    clip-path: none !important;
+  }
+  
+  /* Cible le composant natif encapsulé dans le Shadow DOM d'Ionic */
+  ion-tab-button::part(native) {
+    overflow: visible !important;
+    contain: none !important;
+    clip-path: none !important;
+  }
+
   ion-tab-bar {
     padding-bottom: 0;
-    padding-left: 0;
-    padding-right: 0;
-    contain: none;
   }
 }
 
 /* ============================================
-   LIQUID PILL - Indicateur violet glissant
-   Les 3 boutons occupent exactement 1/3 chacun
-   car le padding interne d'Ionic est neutralise.
+   STANDARD TAB BUTTONS (Left & Right)
    ============================================ */
-.liquid-pill {
-  --tab-width: calc((100% - 12px) / 3);
+.tab-btn {
+  --background: transparent;
+  --background-focused: transparent;
+  --background-hover: transparent;
+  --background-activated: transparent;
+  background: transparent;
+  overflow: visible;
 
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: var(--tab-width);
-  height: calc(100% - 12px);
-  border-radius: 24px;
-  background: linear-gradient(
-    160deg,
-    #818cf8 0%,
-    #6366f1 25%,
-    #8b5cf6 55%,
-    #a855f7 100%
-  );
-  box-shadow:
-    0 8px 32px rgba(99, 102, 241, 0.45),
-    0 0 0 1px rgba(255, 255, 255, 0.2) inset,
-    0 2px 0 rgba(255, 255, 255, 0.3) inset;
-  z-index: 0;
-  transition: left 0.55s cubic-bezier(0.22, 1.0, 0.36, 1.0);
-  pointer-events: none;
+  ion-icon {
+    font-size: 24px;
+    color: rgba(15, 23, 42, 0.4);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    margin-bottom: 4px;
+  }
+
+  ion-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(15, 23, 42, 0.5);
+    letter-spacing: 0.02em;
+    transition: all 0.3s ease;
+  }
+
+  /* Active state */
+  &.tab-selected:not(.tab-btn--home) {
+    ion-icon {
+      transform: translateY(-4px) scale(1.15);
+      color: #4361ee;
+      filter: drop-shadow(0 4px 8px rgba(67, 97, 238, 0.3));
+    }
+    ion-label {
+      font-weight: 800;
+      color: #4361ee;
+    }
+  }
+
+  /* Tap animation */
+  &:active:not(.tab-selected) {
+    transform: scale(0.92);
+  }
 }
-
-/* Gloss / reflet liquide sur le pill */
-.liquid-pill::after {
-  content: '';
-  position: absolute;
-  top: 5px;
-  left: 12px;
-  right: 12px;
-  height: 40%;
-  border-radius: 100%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.5) 0%,
-    rgba(255, 255, 255, 0.08) 100%
-  );
-  filter: blur(2px);
-}
-
-/* --- Sliding pill via JS class (avoids :has() shadow DOM issues) --- */
-.liquid-pill.tab-0 { left: calc(6px + var(--tab-width) * 0); }
-.liquid-pill.tab-1 { left: calc(6px + var(--tab-width) * 1); }
-.liquid-pill.tab-2 { left: calc(6px + var(--tab-width) * 2); }
 
 /* ============================================
-   TAB BUTTONS - Au-dessus du pill
-   Texte fonce sur fond blanc, blanc sur le pill violet
+   CENTER HOME TAB (Floating Action Button)
    ============================================ */
-.liquid-glass-bar .tab-btn {
-  position: relative;
-  z-index: 1;
-  flex: 1 1 0;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border-radius: 24px;
-  background: transparent;
-  --background: transparent;
-  --background-focused: transparent;
-  --background-hover: transparent;
-  --background-activated: transparent;
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  pointer-events: auto;
-}
+.tab-btn--home {
+  overflow: visible !important;
+  contain: none !important;
+  
+  /* L'élément flottant lui-même */
+  .fab-btn {
+    position: absolute;
+    top: -26px; /* Ressort vers le haut */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #4361ee, #7c3aed);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Faux effet de découpe (cutout) pour l'intégration visuelle + ombre du bouton */
+    box-shadow: 
+      0 10px 24px rgba(99, 102, 241, 0.45), 
+      0 0 0 8px rgba(255, 255, 255, 0.92); /* Même couleur/opacité que la barre pour donner l'impression qu'elle l'entoure */
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1000;
 
-.liquid-glass-bar .tab-btn ion-icon {
-  font-size: 22px;
-  color: rgba(15, 23, 42, 0.55);
-  transition:
-    color 0.35s ease,
-    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+    ion-icon {
+      font-size: 28px;
+      color: #ffffff;
+      margin: 0;
+      filter: none;
+      transform: none !important;
+    }
+  }
 
-.liquid-glass-bar .tab-btn ion-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: none;
-  margin-top: 2px;
-  color: rgba(15, 23, 42, 0.6);
-  transition: color 0.35s ease, opacity 0.35s ease;
-  opacity: 0.85;
-  white-space: nowrap;
-}
+  /* Le label descend un peu pour laisser la place au bouton */
+  ion-label {
+    margin-top: 36px;
+  }
 
-/* --- Active state (bouton sur le pill violet) --- */
-.liquid-glass-bar .tab-btn.tab-selected {
-  --color: #ffffff;
-  --background: transparent;
-  --background-focused: transparent;
-  --background-hover: transparent;
-  --background-activated: transparent;
-}
-
-.liquid-glass-bar .tab-btn.tab-selected ion-icon {
-  color: #ffffff;
-  transform: scale(1.15);
-  filter: drop-shadow(0 2px 6px rgba(99, 102, 241, 0.35));
-}
-
-.liquid-glass-bar .tab-btn.tab-selected ion-label {
-  color: #ffffff;
-  opacity: 1;
-  font-weight: 800;
-  text-shadow: 0 1px 3px rgba(99, 102, 241, 0.3);
-}
-
-/* --- Hover / Press (non-selected) --- */
-.liquid-glass-bar .tab-btn:active:not(.tab-selected) {
-  transform: scale(0.94);
-}
-
-.liquid-glass-bar .tab-btn:active:not(.tab-selected) ion-icon {
-  color: rgba(15, 23, 42, 0.85);
+  /* Active State for Center Button */
+  &.tab-selected {
+    .fab-btn {
+      /* Petit rebond supplémentaire lorsqu'il est actif */
+      transform: translateX(-50%) translateY(-6px) scale(1.05); 
+      box-shadow: 
+        0 14px 28px rgba(99, 102, 241, 0.55), 
+        0 0 0 8px rgba(255, 255, 255, 0.92);
+    }
+    ion-label {
+      color: #7c3aed;
+      font-weight: 800;
+    }
+  }
 }

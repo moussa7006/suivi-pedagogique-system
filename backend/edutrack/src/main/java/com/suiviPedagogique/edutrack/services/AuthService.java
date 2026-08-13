@@ -87,7 +87,7 @@ public class AuthService {
             }
             remplirDonneesDeBase(enseignant, requestdto, motDePasseCrypte);
             enseignant.setRole(Role.ENSEIGNANT);
-            enseignant.setForcePasswordChange(false);
+            enseignant.setForcePasswordChange(true);
             enseignant.setSpecialite(requestdto.getSpecialite() != null ? requestdto.getSpecialite() : "Non spécifié");
             enseignant.setDateEmbauche(requestdto.getDateEmbauche() != null ? requestdto.getDateEmbauche() : LocalDate.now());
             enseignant.setGrade(requestdto.getGrade() != null ? requestdto.getGrade() : "Non spécifié");

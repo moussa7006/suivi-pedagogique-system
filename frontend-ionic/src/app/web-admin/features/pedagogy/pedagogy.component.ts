@@ -69,7 +69,7 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
           </div>
           <div class="stat-content">
             <span class="value">{{ getValidatedCount() }}</span>
-            ,<span class="label">Émargées</span>
+            <span class="label">Émargées</span>
           </div>
         </div>
       </div>
@@ -227,41 +227,54 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
         .summary-card {
           background: white;
           padding: 20px 24px;
-          border-radius: 14px;
+          border-radius: 16px;
           border: 1px solid rgba(226, 232, 240, 0.9);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
           display: flex;
           align-items: center;
           gap: 16px;
+          position: relative;
+          overflow: hidden;
           transition: all 0.2s ease;
 
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            opacity: 0.85;
+          }
+
           &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
           }
 
           .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             flex-shrink: 0;
 
             &.blue {
-              background: rgba(219, 234, 254, 0.8);
+              background: linear-gradient(135deg, #dbeafe, #bfdbfe);
               color: #1d4ed8;
             }
 
             &.orange {
-              background: rgba(254, 237, 195, 0.8);
+              background: linear-gradient(135deg, #fef3c7, #fde68a);
               color: #b45309;
             }
 
             &.green {
-              background: rgba(220, 252, 231, 0.8);
+              background: linear-gradient(135deg, #dcfce7, #bbf7d0);
               color: #166534;
             }
           }
@@ -743,7 +756,7 @@ export class PedagogyComponent implements OnInit {
 
   getStatutLabel(estValideAdmin: boolean | null | undefined): string {
     if (estValideAdmin === true) {
-      return 'Émargée automatiquement';
+      return 'Émargée';
     }
     return 'À finaliser';
   }
