@@ -1,21 +1,22 @@
 <ion-tabs>
-  <ion-tab-bar slot="bottom" class="liquid-glass-bar">
-    <!-- Liquid indicator pill that slides between tabs (JS-driven) -->
-    <div class="liquid-pill" [ngClass]="'tab-' + activeTab"></div>
-
-    <ion-tab-button tab="tab1" href="/mobile/tabs/tabs/tab1" class="tab-btn">
-      <ion-icon name="grid"></ion-icon>
-      <ion-label>Menu</ion-label>
-    </ion-tab-button>
+  <ion-tab-bar slot="bottom" class="modern-glass-bar">
 
     <ion-tab-button tab="tab2" href="/mobile/tabs/tabs/tab2" class="tab-btn">
       <ion-icon name="checkmark-done"></ion-icon>
       <ion-label>Historique</ion-label>
     </ion-tab-button>
 
+    <ion-tab-button tab="tab1" href="/mobile/tabs/tabs/tab1" class="tab-btn tab-btn--home">
+      <div class="fab-btn">
+        <ion-icon name="home"></ion-icon>
+      </div>
+      <ion-label>Accueil</ion-label>
+    </ion-tab-button>
+
     <ion-tab-button tab="tab3" href="/mobile/tabs/tabs/tab3" class="tab-btn">
       <ion-icon name="person"></ion-icon>
       <ion-label>Profil</ion-label>
     </ion-tab-button>
+
   </ion-tab-bar>
 </ion-tabs>

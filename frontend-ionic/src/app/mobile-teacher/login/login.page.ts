@@ -15,7 +15,7 @@ import {
   IonButton,
   IonIcon,
   IonSpinner,
-  AlertController,
+  IonCheckbox,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -29,11 +29,12 @@ import {
   arrowForwardOutline,
   playOutline,
   helpCircleOutline,
-  settingsOutline,
+  logoGoogle,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
 import { ApiConfigService } from '../../core/services/api-config.service';
+import { ServerDiscoveryService } from '../../core/services/server-discovery.service';
 import { finalize } from 'rxjs';
 
 @Component({
@@ -51,6 +52,7 @@ import { finalize } from 'rxjs';
     IonButton,
     IonIcon,
     IonSpinner,
+    IonCheckbox,
   ],
 })
 export class LoginPage {
@@ -59,7 +61,7 @@ export class LoginPage {
   private authService = inject(AuthService);
   private apiError = inject(ApiErrorService);
   private apiConfig = inject(ApiConfigService);
-  private alertController = inject(AlertController);
+  private serverDiscovery = inject(ServerDiscoveryService);
   private cdr = inject(ChangeDetectorRef);
 
   loginForm: FormGroup;
@@ -78,7 +80,7 @@ export class LoginPage {
       arrowForwardOutline,
       playOutline,
       helpCircleOutline,
-      settingsOutline,
+      logoGoogle,
     });
 
     this.loginForm = this.fb.group({
@@ -89,6 +91,12 @@ export class LoginPage {
 
   ionViewWillEnter(): void {
     this.clearLoginFields();
+    // Détection silencieuse du serveur : si l'app et le backend sont sur le
+    // même réseau local, le serveur est trouvé automatiquement et l'utilisateur
+    // n'a rien à configurer.
+    if (!this.apiConfig.hasConfiguredBaseUrl()) {
+      void this.serverDiscovery.autoDetect();
+    }
   }
 
   ionViewDidLeave(): void {
@@ -109,11 +117,6 @@ export class LoginPage {
   }
 
   async onSubmit() {
-    if (!this.apiConfig.hasConfiguredBaseUrl()) {
-      await this.presentServerConfigurationRequired();
-      return;
-    }
-
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -158,58 +161,5 @@ export class LoginPage {
     this.loginForm.markAsPristine();
     this.loginForm.markAsUntouched();
     this.cdr.detectChanges();
-  }
-
-  async changeServerIp() {
-    const simpleIp = this.apiConfig.getConfiguredServerIp();
-
-    const alert = await this.alertController.create({
-      header: 'Configuration Serveur',
-      message:
-        "Entrez l'adresse du backend sur le même Wi-Fi. Exemple : 192.168.1.15 ou 192.168.1.15:8099/api.",
-      inputs: [
-        {
-          name: 'ipAddress',
-          type: 'text',
-          placeholder: 'Ex: 192.168.1.15:8099/api',
-          value: simpleIp,
-        },
-      ],
-      buttons: [
-        {
-          text: 'Annuler',
-          role: 'cancel',
-        },
-        {
-          text: 'Enregistrer',
-          handler: (data) => {
-            if (!data.ipAddress) {
-              return false;
-            }
-
-            return this.apiConfig.setServerIp(data.ipAddress);
-          },
-        },
-      ],
-    });
-    await alert.present();
-  }
-
-  private async presentServerConfigurationRequired(): Promise<void> {
-    const alert = await this.alertController.create({
-      header: 'Serveur non configuré',
-      message:
-        "Configurez d'abord l'IP de l'ordinateur qui exécute le backend. Le téléphone et l'ordinateur doivent être sur le même Wi-Fi.",
-      buttons: [
-        {
-          text: "Configurer l'IP",
-          handler: () => {
-            void this.changeServerIp();
-          },
-        },
-      ],
-    });
-
-    await alert.present();
   }
 }

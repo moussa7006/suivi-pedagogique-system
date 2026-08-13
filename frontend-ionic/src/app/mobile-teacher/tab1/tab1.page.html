@@ -26,10 +26,11 @@
         <div class="status-dot"></div>
       </div>
       <div class="header-text">
-        <p class="greeting">Bonjour 👋</p>
+        <p class="greeting">{{ greeting }} 👋</p>
         <h1 class="teacher-name">
           {{ teacher.firstName }} {{ teacher.lastName }}
         </h1>
+        <span class="header-date">{{ todayLabel }}</span>
       </div>
     </div>
     <div class="header-right">
@@ -136,17 +137,9 @@
   </div>
 
   <!-- ========================================= -->
-  <!-- SECTION TITLE                             -->
-  <!-- ========================================= -->
-  <div class="section-header animate-slide-up" style="--delay: 150ms">
-    <h2>Actions rapides</h2>
-    <span class="section-subtitle">Gérez votre pédagogie</span>
-  </div>
-
-  <!-- ========================================= -->
   <!-- ACTION TILES GRID 2x2                     -->
   <!-- ========================================= -->
-  <div class="action-grid animate-slide-up" style="--delay: 200ms">
+  <div class="action-grid animate-slide-up" style="--delay: 150ms">
     <!-- TILE 1 - Fiche de Progression -->
     <div
       class="action-card action-card--progression"

@@ -1044,7 +1044,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     ],
     chart: {
       type: 'bar',
-      height: 360,
+      height: 400,
       toolbar: { show: false },
       fontFamily: "'Plus Jakarta Sans', sans-serif",
       stacked: false,
@@ -1055,8 +1055,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
-    yaxis: { labels: { style: { colors: '#64748b', fontWeight: 600 } } },
-    colors: ['#8b5cf6', '#cbd5e1'],
+    yaxis: { labels: { style: { colors: '#1e293b', fontWeight: 700 } } },
+    colors: ['#3b82f6', '#cbd5e1'],
     dataLabels: { enabled: false },
     stroke: { show: true, width: 4, colors: ['transparent'] },
     fill: { opacity: 1 },
@@ -1065,8 +1065,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       style: { fontSize: '13px', fontFamily: "'Plus Jakarta Sans', sans-serif" },
       y: { formatter: (value: number) => `${value} séance${value > 1 ? 's' : ''}` },
     },
-    plotOptions: { bar: { horizontal: false, borderRadius: 6, columnWidth: '45%', barHeight: '45%' } },
-    grid: { show: true, borderColor: '#f1f5f9', strokeDashArray: 4, position: 'back', padding: { top: 0, right: 0, bottom: 0, left: 10 } },
+    plotOptions: { bar: { horizontal: true, borderRadius: 6, barHeight: '50%' } },
+    grid: { show: true, borderColor: '#f1f5f9', strokeDashArray: 4, position: 'back' },
     legend: { show: true, position: 'top', fontWeight: 800, fontSize: '13px' },
   };
 
@@ -1283,24 +1283,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       0,
     );
 
-    // Couleurs par barre (distributed: true).
-    // ApexCharts applique les couleurs dans l'ordre : serie 0 (toutes ses
-    // barres), puis serie 1. Le top prof recoit une couleur dorée pour sa
-    // serie "Emargements", une teinte dorée claire pour "Séances planifiées",
-    // les autres profs restent en violet / gris.
-    const goldEmarg = '#f59e0b';   // doré éclatant pour le top prof
-    const goldPlan  = '#fcd34d';   // doré clair pour la 2eme serie du top prof
-    const baseEmarg = '#8b5cf6';   // violet pour les autres
-    const basePlan  = '#cbd5e1';   // gris pour les autres
-    const barColors: string[] = [];
-    topTeachers.forEach((_, idx) => {
-      if (idx === topEmargementsIdx) {
-        barColors.push(goldEmarg, goldPlan);
-      } else {
-        barColors.push(baseEmarg, basePlan);
-      }
-    });
-
     this.teacherHoursOptions = {
       ...this.teacherHoursOptions,
       series: [
@@ -1313,16 +1295,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
           data: topTeachers.map((teacher) => Number(teacher.seancesPlanifiees || 0)),
         },
       ],
-      colors: barColors,
-      plotOptions: {
-        ...this.teacherHoursOptions.plotOptions,
-        bar: {
-          ...this.teacherHoursOptions.plotOptions.bar,
-          distributed: true,
-          columnWidth: '45%',
-          borderRadius: 6,
-        },
-      },
       xaxis: {
         ...this.teacherHoursOptions.xaxis,
         categories: topTeachers.map(
@@ -1337,7 +1309,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return {
       series: [{ name, data: [] }],
       chart: {
-        type: 'area',
+        type: 'bar', // Changed from area to bar for clearer daily data
         height: 300,
         toolbar: { show: false },
         fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -1351,16 +1323,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
       yaxis: { labels: { style: { colors: '#64748b', fontWeight: 600 } } },
       colors: [color],
       dataLabels: { enabled: false },
-      stroke: { curve: 'smooth', width: 3 },
-      fill: {
-        type: 'gradient',
-        gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.0, stops: [0, 90, 100] },
-      },
+      stroke: { show: true, width: 2, colors: ['transparent'] },
+      fill: { opacity: 1 },
       tooltip: {
         theme: 'light',
         style: { fontSize: '13px', fontFamily: "'Plus Jakarta Sans', sans-serif" },
       },
-      plotOptions: {},
+      plotOptions: {
+        bar: { borderRadius: 4, columnWidth: '60%' }
+      },
       grid: {
         show: true,
         borderColor: '#f1f5f9',

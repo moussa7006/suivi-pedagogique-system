@@ -36,6 +36,12 @@ interface ProfileEditForm {
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule],
   template: `
+    <!-- Floating Toast -->
+    <div class="floating-toast" *ngIf="toastMessage" [ngClass]="toastType">
+      <i class="pi" [ngClass]="toastType === 'success' ? 'pi-check-circle' : 'pi-times-circle'"></i>
+      <span>{{ toastMessage }}</span>
+    </div>
+
     <div class="profile-page">
       <div class="profile-hero">
         <div class="hero-left">
@@ -875,6 +881,41 @@ interface ProfileEditForm {
         cursor: not-allowed;
       }
 
+      .floating-toast {
+        position: fixed;
+        top: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 24px;
+        border-radius: 50px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        font-size: 0.95rem;
+        font-weight: 700;
+        animation: toast-slide-down 0.3s ease forwards;
+        backdrop-filter: blur(10px);
+      }
+
+      .floating-toast.success {
+        background: rgba(220, 252, 231, 0.9);
+        color: #166534;
+        border: 1px solid rgba(134, 239, 172, 0.5);
+      }
+
+      .floating-toast.error {
+        background: rgba(254, 242, 242, 0.9);
+        color: #991b1b;
+        border: 1px solid rgba(252, 165, 165, 0.5);
+      }
+
+      @keyframes toast-slide-down {
+        0% { transform: translate(-50%, -100%); opacity: 0; }
+        100% { transform: translate(-50%, 0); opacity: 1; }
+      }
+
       @media (max-width: 980px) {
         .profile-hero {
           align-items: flex-start;
@@ -933,6 +974,9 @@ export class ProfileComponent implements OnInit {
   isUpdatingProfile = false;
   profileSuccessMessage = '';
   profileErrorMessage = '';
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
+  toastTimeout: any;
   profileForm: ProfileEditForm = {
     matricule: '',
     nom: '',
@@ -1226,11 +1270,8 @@ export class ProfileComponent implements OnInit {
   }
 
   private saveProfilePhoto(photoUrl: string, input?: HTMLInputElement): void {
-    this.profileSuccessMessage = '';
-    this.profileErrorMessage = '';
-
     if (!this.profile.id) {
-      this.profileErrorMessage = 'Impossible de retrouver l’identifiant du compte connecté.';
+      this.showToast('Impossible de retrouver l’identifiant du compte connecté.', 'error');
       if (input) input.value = '';
       return;
     }
@@ -1257,21 +1298,27 @@ export class ProfileComponent implements OnInit {
             ...this.profile,
             photoUrl,
           };
-          this.profileSuccessMessage = photoUrl
-            ? 'Photo de profil mise à jour.'
-            : 'Photo de profil retirée.';
+          this.showToast(photoUrl ? 'Photo de profil mise à jour.' : 'Photo de profil retirée.', 'success');
           window.dispatchEvent(new Event('profile-updated'));
           if (input) input.value = '';
-        this.cdr.detectChanges();
+          this.cdr.detectChanges();
         },
         error: () => {
-          this.profileErrorMessage = photoUrl
-            ? 'Impossible d’enregistrer cette photo. Veuillez réessayer.'
-            : 'Impossible de retirer la photo. Veuillez réessayer.';
+          this.showToast('Échec de la mise à jour de la photo de profil.', 'error');
           if (input) input.value = '';
-        this.cdr.detectChanges();
+          this.cdr.detectChanges();
         },
       });
+  }
+
+  private showToast(message: string, type: 'success' | 'error'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.toastTimeout = setTimeout(() => {
+      this.toastMessage = '';
+      this.cdr.detectChanges();
+    }, 3000);
   }
 
   private getNameFromEmail(email: string): string {

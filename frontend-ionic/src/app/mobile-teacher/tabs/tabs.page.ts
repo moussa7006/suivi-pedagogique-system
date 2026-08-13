@@ -17,6 +17,7 @@ import {
   cashOutline,
   timeOutline,
   checkmarkDone,
+  home
 } from 'ionicons/icons';
 import { filter, map } from 'rxjs/operators';
 
@@ -36,7 +37,7 @@ export class TabsPage implements AfterViewInit {
 
   activeTab = 0;
 
-  private readonly tabList = ['tab1', 'tab2', 'tab3'];
+  private readonly tabList = ['tab2', 'tab1', 'tab3'];
 
   constructor() {
     addIcons({
@@ -47,6 +48,7 @@ export class TabsPage implements AfterViewInit {
       person,
       timeOutline,
       checkmarkDone,
+      home
     });
   }
 

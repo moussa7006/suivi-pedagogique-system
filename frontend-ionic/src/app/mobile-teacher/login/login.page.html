@@ -1,96 +1,59 @@
-<ion-content class="login-content" [fullscreen]="true">
-  <div class="login-container">
-    <!-- Branding Section -->
-    <div class="brand-section animate-fade-in">
-      <div class="logo-container">
-        <img src="assets/logo_edutrack.png" alt="Logo EduTrack" />
-      </div>
-      <h1>Suivi Pro</h1>
-      <p>Espace Enseignants & Pédagogie</p>
+<ion-content class="login-content" scrollY="false" [fullscreen]="true">
+  <div class="page-container">
+
+    <!-- En-tête -->
+    <div class="header-section">
+      <img src="assets/logo_edutrack.png" alt="EduTrack Logo" class="app-logo" />
+      <h1 class="brand-name">EduTrack</h1>
     </div>
 
-    <!-- Glass Form Card -->
-    <div class="form-card animate-slide-up">
-      <div class="form-header">
-        <h2>Bienvenue 👋</h2>
-      </div>
+    <!-- Carte de connexion -->
+    <div class="login-card">
+      <h2 class="form-title">Bienvenue<br>Connectez-vous</h2>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" autocomplete="off">
-        <div class="input-wrapper">
-          <ion-item lines="none">
-            <ion-icon name="mail-outline" slot="start"></ion-icon>
-            <ion-input
-              formControlName="email"
-              type="email"
-              autocomplete="off"
-              placeholder="Email professionnel"
-            ></ion-input>
-          </ion-item>
-        </div>
-
-        <div class="input-wrapper">
-          <ion-item lines="none">
-            <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
-            <ion-input
-              [type]="showPassword ? 'text' : 'password'"
-              formControlName="password"
-              autocomplete="new-password"
-              placeholder="Mot de passe"
-            ></ion-input>
-            <ion-icon
-              [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
-              slot="end"
-              (click)="togglePassword()"
-              style="cursor: pointer; opacity: 0.5"
-            ></ion-icon>
-          </ion-item>
-          <div
-            class="validation-hint"
-            *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.errors"
-          >
-            <small *ngIf="loginForm.get('password')?.errors?.['required']"
-              >Le mot de passe est requis</small
-            >
+        
+        <!-- Champ Email -->
+        <div class="input-group">
+          <label for="email">Identifiant / Email</label>
+          <div class="pill-input">
+            <ion-input id="email" formControlName="email" type="email" placeholder="Entrez votre email"></ion-input>
+          </div>
+          <div class="error-msg" *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.errors?.['required']">
+            L'email est requis
           </div>
         </div>
 
-        <ion-button
-          expand="block"
-          type="submit"
-          [disabled]="isLoading"
-          class="btn-login"
-        >
-          <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
-          <span *ngIf="!isLoading">Se connecter</span>
-        </ion-button>
+        <!-- Champ Mot de passe -->
+        <div class="input-group">
+          <label for="password">Mot de passe</label>
+          <div class="pill-input">
+            <ion-input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Votre mot de passe"></ion-input>
+            <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" (click)="togglePassword()" class="eye-toggle"></ion-icon>
+          </div>
+          <div class="error-msg" *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['required']">
+            Le mot de passe est requis
+          </div>
+        </div>
+
+        <!-- Options (Souvenir / Oublié) -->
+        <div class="form-options">
+          <div class="remember-me">
+            <ion-checkbox mode="md" [ngModel]="true" [ngModelOptions]="{standalone: true}">Se souvenir de moi</ion-checkbox>
+          </div>
+          <a routerLink="/mobile/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
+        </div>
+
+        <!-- Bouton Connexion -->
+        <div class="action-container">
+          <button type="submit" class="submit-btn" [disabled]="isLoading">
+            <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+            <span *ngIf="!isLoading">Se connecter</span>
+          </button>
+        </div>
+
       </form>
-
-      <ion-button fill="clear" size="small" routerLink="/mobile/forgot-password">
-        <ion-icon name="help-circle-outline" slot="start"></ion-icon>
-        Mot de passe oublié ?
-      </ion-button>
     </div>
 
-    <!-- Minimal Footer -->
-    <div
-      class="university-footer animate-fade-in"
-      style="
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-      "
-    >
-      <p>© 2026 Université du Mali</p>
-      <ion-button
-        fill="clear"
-        size="small"
-        (click)="changeServerIp()"
-        color="medium"
-      >
-        <ion-icon name="settings-outline" slot="start"></ion-icon>
-        Configurer l'IP du serveur
-      </ion-button>
-    </div>
   </div>
 </ion-content>
