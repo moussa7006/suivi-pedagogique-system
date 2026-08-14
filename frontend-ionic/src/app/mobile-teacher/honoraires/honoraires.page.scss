@@ -47,7 +47,7 @@ ion-content {
   &--1 {
     width: 400px;
     height: 400px;
-    background: linear-gradient(135deg, #10b981, #3b82f6);
+    background: #2563eb;
     top: -180px;
     right: -100px;
   }
@@ -55,7 +55,7 @@ ion-content {
   &--2 {
     width: 250px;
     height: 250px;
-    background: linear-gradient(135deg, #4361ee, #7c3aed);
+    background: #2563eb;
     top: -80px;
     left: -60px;
   }
@@ -146,14 +146,14 @@ ion-content {
 
   &--primary {
     color: #059669;
-    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    background: #2563eb;
     border-color: rgba(16, 185, 129, 0.16);
     ion-icon { color: #10b981; }
   }
 
   &--accent {
     color: #6d28d9;
-    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+    background: #2563eb;
     border-color: rgba(124, 58, 237, 0.16);
     ion-icon { color: #7c3aed; }
   }
@@ -266,7 +266,7 @@ ion-content {
       width: 4px;
       height: 20px;
       border-radius: 4px;
-      background: linear-gradient(180deg, #10b981, #4361ee);
+      background: #2563eb;
       flex-shrink: 0;
     }
   }
@@ -282,7 +282,7 @@ ion-content {
     top: 10px;
     bottom: 20px;
     width: 2px;
-    background: linear-gradient(180deg, rgba(16, 185, 129, 0.4), rgba(67, 97, 238, 0.1));
+    background: #2563eb;
     border-radius: 2px;
   }
 }
@@ -291,8 +291,6 @@ ion-content {
   position: relative;
   margin-bottom: 24px;
   padding-left: 28px;
-  animation: slideUp 0.5s var(--ease-spring) both;
-  animation-delay: var(--item-delay, 0ms);
 
   &:last-child { margin-bottom: 0; }
 }
@@ -316,10 +314,10 @@ ion-content {
     color: #ffffff;
   }
 
-  &.marker-success { background: linear-gradient(135deg, #10b981, #059669); }
-  &.marker-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
-  &.marker-info { background: linear-gradient(135deg, #4361ee, #3b55d9); }
-  &.marker-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  &.marker-success { background: #2563eb; }
+  &.marker-warning { background: #2563eb; }
+  &.marker-info { background: #2563eb; }
+  &.marker-danger { background: #2563eb; }
 }
 
 .timeline-card {
@@ -413,7 +411,6 @@ ion-content {
     margin-top: 16px;
     padding-top: 16px;
     border-top: 1px dashed rgba(226, 232, 240, 0.8);
-    animation: fadeIn 0.3s ease;
 
     .details-summary {
       display: grid;
@@ -575,21 +572,10 @@ ion-content {
 /* =========================================
    ANIMATIONS
    ========================================= */
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 
 .animate-slide-up {
-  animation: slideUp 0.5s var(--ease-spring) both;
-  animation-delay: var(--delay, 0ms);
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.4s ease both;
 }

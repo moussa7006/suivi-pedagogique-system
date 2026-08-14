@@ -43,13 +43,7 @@ ion-content {
   padding: calc(84px + var(--ion-safe-area-top)) 18px 28px;
   border-radius: 0 0 34px 34px;
   color: #ffffff;
-  background:
-    radial-gradient(
-      circle at 15% 10%,
-      rgba(255, 255, 255, 0.24),
-      transparent 30%
-    ),
-    linear-gradient(135deg, #4361ee 0%, #3a0ca3 55%, #111827 100%);
+  background: #2563eb;
   box-shadow: 0 18px 38px rgba(67, 97, 238, 0.24);
   display: flex;
   align-items: center;
@@ -68,14 +62,9 @@ ion-content {
 }
 
 .logout-btn-big {
-  --background: linear-gradient(135deg, #ef4444 0%, #dc2626 55%, #991b1b 100%);
-  --background-hover: linear-gradient(
-    135deg,
-    #f87171 0%,
-    #ef4444 55%,
-    #b91c1c 100%
-  );
-  --background-activated: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  --background: #2563eb;
+  --background: #2563eb;
+  --background: #2563eb;
   --color: #ffffff;
   --border-radius: 18px;
   --box-shadow: 0 14px 34px rgba(220, 38, 38, 0.38);
@@ -115,16 +104,6 @@ ion-content {
   }
 }
 
-@keyframes logoutPulse {
-  0%,
-  100% {
-    box-shadow: 0 14px 34px rgba(220, 38, 38, 0.34);
-  }
-
-  50% {
-    box-shadow: 0 18px 44px rgba(239, 68, 68, 0.56);
-  }
-}
 
 .avatar-shell {
   position: relative;
@@ -246,7 +225,7 @@ ion-content {
     &.active {
       color: #ffffff;
       border-color: transparent;
-      background: linear-gradient(135deg, #4361ee, #7c3aed);
+      background: #2563eb;
       box-shadow: 0 12px 26px rgba(67, 97, 238, 0.28);
     }
   }
@@ -275,7 +254,7 @@ ion-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #4361ee, #7c3aed);
+  background: #2563eb;
   color: #ffffff;
   font-weight: 900;
   letter-spacing: 0.04em;
@@ -374,7 +353,7 @@ ion-content {
   .progress-fill {
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, #4361ee, #4cc9f0);
+    background: #2563eb;
     transition: width 0.3s ease;
   }
 
@@ -589,7 +568,7 @@ ion-content {
 }
 
 .btn-save-compact {
-  --background: linear-gradient(135deg, #4361ee, #7c3aed);
+  --background: #2563eb;
   --color: #ffffff;
   --border-radius: 16px;
   height: 52px;
@@ -660,19 +639,10 @@ ion-content {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  animation: fadeIn 0.22s ease;
   padding: 16px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 
-@keyframes slideUp {
-  from { transform: translateY(100%) scale(0.96); opacity: 0; }
-  to { transform: translateY(0) scale(1); opacity: 1; }
-}
 
 .floating-popup {
   width: 100%;
@@ -687,7 +657,6 @@ ion-content {
     0 0 0 1px rgba(255, 255, 255, 0.4) inset,
     0 1px 0 rgba(255, 255, 255, 0.6) inset;
   overflow: hidden;
-  animation: slideUp 0.35s cubic-bezier(0.22, 1.0, 0.36, 1.0);
   padding-bottom: calc(12px + var(--ion-safe-area-bottom, 0px));
 }
 

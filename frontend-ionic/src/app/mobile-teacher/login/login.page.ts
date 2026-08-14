@@ -16,6 +16,7 @@ import {
   IonIcon,
   IonSpinner,
   IonCheckbox,
+  ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -63,6 +64,7 @@ export class LoginPage {
   private apiConfig = inject(ApiConfigService);
   private serverDiscovery = inject(ServerDiscoveryService);
   private cdr = inject(ChangeDetectorRef);
+  private toastCtrl = inject(ToastController);
 
   loginForm: FormGroup;
   showPassword = false;
@@ -89,13 +91,26 @@ export class LoginPage {
     });
   }
 
-  ionViewWillEnter(): void {
+  async ionViewWillEnter() {
     this.clearLoginFields();
-    // Détection silencieuse du serveur : si l'app et le backend sont sur le
-    // même réseau local, le serveur est trouvé automatiquement et l'utilisateur
-    // n'a rien à configurer.
+    
     if (!this.apiConfig.hasConfiguredBaseUrl()) {
-      void this.serverDiscovery.autoDetect();
+      const found = await this.serverDiscovery.autoDetect();
+      if (!found) {
+         const toast = await this.toastCtrl.create({
+           message: "⚠️ Aucun serveur trouvé sur le Wi-Fi actuel.",
+           duration: 3000,
+           color: "danger"
+         });
+         await toast.present();
+      } else {
+         const toast = await this.toastCtrl.create({
+           message: "✅ Serveur connecté ! (" + found + ")",
+           duration: 2000,
+           color: "success"
+         });
+         await toast.present();
+      }
     }
   }
 

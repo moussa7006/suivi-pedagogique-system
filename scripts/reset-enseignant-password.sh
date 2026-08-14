@@ -3,19 +3,26 @@
 #  EduTrack - Reinitialisation du mot de passe enseignant
 #  Utilise le compte admin pour reinitialiser le mot de passe
 #
-#  Usage: ./scripts/reset-enseignant-password.sh
+#  Usage: ./scripts/reset-enseignant-password.sh <email-enseignant> "NouveauMdp123!"
 #         ./scripts/reset-enseignant-password.sh ayabourama4@gmail.com "NouveauMdp123!"
 #
-#  Par defaut, cible ayabourama4@gmail.com
+#  Les identifiants admin se configurent via les variables d'environnement
+#  ADMIN_EMAIL et ADMIN_PASSWORD (aucun mot de passe par defaut).
 # ============================================================
 set -e
 
 BACKEND_URL="${BACKEND_URL:-http://localhost:8099}"
-ADMIN_EMAIL="${ADMIN_EMAIL:-admin@edutrack.local}"
-ADMIN_PASSWORD="${ADMIN_PASSWORD:-Admin1234!}"
+ADMIN_EMAIL="${ADMIN_EMAIL:-}"
+ADMIN_PASSWORD="${ADMIN_PASSWORD:-}"
 
-ENSEIGNANT_EMAIL="${1:-ayabourama4@gmail.com}"
-NEW_PASSWORD="${2:-Boura_12345678911!}"
+ENSEIGNANT_EMAIL="${1:-}"
+NEW_PASSWORD="${2:-}"
+
+if [ -z "$ENSEIGNANT_EMAIL" ] || [ -z "$NEW_PASSWORD" ]; then
+  echo "Usage: $0 <email-enseignant> \"NouveauMotDePasse\"" >&2
+  echo "Exemple: $0 enseignant@example.com \"NouveauMdp123!\"" >&2
+  exit 2
+fi
 
 echo "============================================"
 echo "  EduTrack - Reset mot de passe enseignant"

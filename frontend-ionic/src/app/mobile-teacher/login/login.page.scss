@@ -14,7 +14,7 @@
   .page-container {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    min-height: 100%; /* Changed from height: 100% to allow scrolling */
     box-sizing: border-box;
   }
   
@@ -51,7 +51,7 @@
      CARTE DE CONNEXION BLANCHE
      ============================== */
   .login-card {
-    flex: 1;
+    flex-grow: 1; /* Allow to grow without forcing a strict height */
     background: var(--card-bg);
     margin: 0 16px; /* Marges latérales (16px) */
     border-radius: 40px 40px 0 0; /* Coins fortement arrondis en haut */
@@ -140,14 +140,17 @@
      ============================== */
   .form-options {
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
     margin-bottom: 32px;
     padding: 0 4px;
-  
+    flex-wrap: wrap; /* Allows wrapping on very small screens */
+
     .remember-me {
       ion-checkbox {
-        --size: 20px;
+        --size: 18px;
         --checkbox-background-checked: var(--primary-color);
         --border-color: #cbd5e1;
         font-size: 14px;

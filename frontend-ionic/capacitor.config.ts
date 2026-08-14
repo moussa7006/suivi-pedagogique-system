@@ -8,6 +8,12 @@ const config: CapacitorConfig = {
     cleartext: true,
     androidScheme: 'http',
   },
+  plugins: {
+    Keyboard: {
+      resize: 'body',
+      resizeOnFullScreen: true
+    }
+  }
 };
 
 export default config;

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import os
 import sys
 import time
 import urllib.error
@@ -7,10 +8,10 @@ import urllib.parse
 import urllib.request
 from datetime import date, datetime, timedelta
 
-API = "http://localhost:8099/api"
-FRONT = "http://localhost:4200"
-ADMIN_EMAIL = "moussa.b.keita223@gmail.com"
-ADMIN_PASSWORD = "admin123"
+API = os.environ.get("EDUTRACK_API", "http://localhost:8099/api")
+FRONT = os.environ.get("EDUTRACK_FRONT", "http://localhost:4200")
+ADMIN_EMAIL = os.environ.get("EDUTRACK_ADMIN_EMAIL", "")
+ADMIN_PASSWORD = os.environ.get("EDUTRACK_ADMIN_PASSWORD", "")
 
 results = []
 admin_token = None

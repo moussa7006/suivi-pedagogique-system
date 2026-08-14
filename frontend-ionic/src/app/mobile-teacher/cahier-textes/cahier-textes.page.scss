@@ -33,42 +33,13 @@
 /* ============================================
    KEYFRAMES ANIMATIONS
    ============================================ */
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
 
 .animate-fade-in {
-  animation: fadeIn 0.5s ease both;
 }
 
 .animate-slide-up {
-  animation: slideUp 0.5s ease both;
-  animation-delay: var(--delay, 0ms);
 }
 
 /* ============================================
@@ -253,11 +224,7 @@ ion-content {
     .form-icon {
       width: 52px;
       height: 52px;
-      background: linear-gradient(
-        135deg,
-        rgba(67, 97, 238, 0.1),
-        rgba(63, 55, 201, 0.08)
-      );
+      background: #2563eb;
       border-radius: 16px;
       display: flex;
       align-items: center;
@@ -359,7 +326,7 @@ ion-content {
       margin-top: 12px;
       padding: 14px;
       border-radius: 18px;
-      background: linear-gradient(135deg, #ffffff, #f8fafc);
+      background: #2563eb;
       border: 1px solid rgba(226, 232, 240, 0.95);
       box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
 
@@ -478,7 +445,7 @@ ion-content {
 }
 
 .submit-btn {
-  --background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+  --background: #2563eb;
   --border-radius: var(--radius-btn);
   --box-shadow: 0 10px 24px rgba(67, 97, 238, 0.3);
   height: 58px;
@@ -735,9 +702,8 @@ ion-content {
   .skeleton-line {
     height: 14px;
     border-radius: 8px;
-    background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+    background: #2563eb;
     background-size: 200% 100%;
-    animation: shimmer 1.5s infinite ease-in-out;
     margin-bottom: 12px;
 
     &.short {
@@ -764,9 +730,8 @@ ion-content {
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+      background: #2563eb;
       background-size: 200% 100%;
-      animation: shimmer 1.5s infinite ease-in-out;
       flex-shrink: 0;
     }
 
