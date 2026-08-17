@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -15,6 +16,7 @@ import java.util.Optional;
 public class DataSeeder {
 
     @Bean
+    @Order(2)
     public CommandLineRunner initDatabase(UtilisateurRepository utilisateurRepository,
             PasswordEncoder passwordEncoder,
             @Value("${app.seed-admin.enabled}") boolean seedAdminEnabled,

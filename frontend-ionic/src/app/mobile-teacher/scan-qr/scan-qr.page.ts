@@ -14,8 +14,6 @@ import {
   IonButton,
   IonIcon,
   IonInput,
-  IonSelect,
-  IonSelectOption,
   ToastController,
   AlertController,
 } from '@ionic/angular/standalone';
@@ -29,6 +27,8 @@ import {
   arrowBackOutline,
   stopCircleOutline,
   calendarOutline,
+  radioButtonOn,
+  radioButtonOff,
 } from 'ionicons/icons';
 import { Geolocation } from '@capacitor/geolocation';
 import jsQR from 'jsqr';
@@ -38,6 +38,7 @@ import { FicheProgressionService } from '../../core/services/fiche-progression.s
 import { ScheduleService } from '../../core/services/schedule.service';
 import { FicheProgression } from '../../core/models/fiche-progression.model';
 import { Seance } from '../../core/models/seance.model';
+import { StatutSeance } from '../../core/models/enums';
 
 @Component({
   selector: 'app-scan-qr',
@@ -52,12 +53,11 @@ import { Seance } from '../../core/models/seance.model';
     IonButton,
     IonIcon,
     IonInput,
-    IonSelect,
-    IonSelectOption,
   ],
 })
 export class ScanQRPage implements OnDestroy {
   @ViewChild('previewVideo') previewVideo?: ElementRef<HTMLVideoElement>;
+  @ViewChild('seanceGroup') seanceGroup?: ElementRef<HTMLElement>;
 
   private readonly emargementService = inject(EmargementService);
   private readonly ficheProgressionService = inject(FicheProgressionService);
@@ -76,6 +76,7 @@ export class ScanQRPage implements OnDestroy {
   seances: Seance[] = [];
   fichesProgression: FicheProgression[] = [];
   cameraSupported = true;
+  seanceRequiredError = false;
 
   private mediaStream: MediaStream | null = null;
   private scanTimer: number | null = null;
@@ -92,6 +93,8 @@ export class ScanQRPage implements OnDestroy {
       arrowBackOutline,
       stopCircleOutline,
       calendarOutline,
+      radioButtonOn,
+      radioButtonOff,
     });
 
     this.loadData();
@@ -241,10 +244,15 @@ export class ScanQRPage implements OnDestroy {
     await this.submitToken(tokenQRCode);
   }
 
-  formatSeanceLabel(seance: Seance): string {
-    return `${seance.dateCours} • ${this.formatTime(seance.heureDebutReelle)} - ${this.formatTime(
-      seance.heureFinReelle,
-    )} • ${seance.statut}`;
+  statutLabel(statut: StatutSeance): string {
+    switch (statut) {
+      case 'EN_COURS':
+        return 'En cours';
+      case 'TERMINEE':
+        return 'Terminée';
+      default:
+        return 'Prévue';
+    }
   }
 
   hasCahierForSeance(seance: Seance | null): boolean {
@@ -298,15 +306,57 @@ export class ScanQRPage implements OnDestroy {
   }
 
   private async ensureSelectedSeanceIsReady(): Promise<boolean> {
-    if (!this.selectedSeance) {
-      await this.presentAlert(
-        'Séance requise',
-        'Veuillez sélectionner la séance concernée.',
+    if (this.selectedSeance) {
+      this.seanceRequiredError = false;
+      return true;
+    }
+
+    // Aucune séance aujourd'hui : pas de champ à mettre en évidence,
+    // on avertit simplement via un toast.
+    if (this.seances.length === 0) {
+      await this.presentToast(
+        "Aucune séance n'est prévue aujourd'hui.",
+        'warning',
       );
       return false;
     }
 
-    return true;
+    this.triggerSeanceRequiredError();
+    return false;
+  }
+
+  private triggerSeanceRequiredError(): void {
+    this.seanceRequiredError = true;
+    this.cdr.detectChanges();
+    this.scrollToSeanceSelect();
+  }
+
+  private scrollToSeanceSelect(): void {
+    // Petit délai pour laisser la bannière d'erreur s'afficher avant de scroller.
+    window.setTimeout(() => {
+      this.seanceGroup?.nativeElement?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }, 80);
+  }
+
+  selectSeance(id: number | undefined): void {
+    this.selectedSeanceId = id ?? null;
+    this.seanceRequiredError = false;
+  }
+
+  private async presentToast(
+    message: string,
+    color: 'success' | 'warning' | 'danger' = 'danger',
+  ): Promise<void> {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2500,
+      color,
+      position: 'top',
+    });
+    await toast.present();
   }
 
   private async submitToken(tokenQRCode: string): Promise<void> {
@@ -372,10 +422,7 @@ export class ScanQRPage implements OnDestroy {
   ): Promise<boolean> {
     const selectedSeance = this.selectedSeance;
     if (!selectedSeance?.id) {
-      await this.presentAlert(
-        'Séance requise',
-        'Veuillez sélectionner la séance concernée.',
-      );
+      this.triggerSeanceRequiredError();
       return false;
     }
 
@@ -450,7 +497,7 @@ export class ScanQRPage implements OnDestroy {
     }
   }
 
-  private formatTime(value?: string): string {
+  formatTime(value?: string): string {
     return value ? value.substring(0, 5) : '--:--';
   }
 

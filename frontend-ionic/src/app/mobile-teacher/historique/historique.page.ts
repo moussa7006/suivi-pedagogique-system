@@ -6,11 +6,9 @@ import {
   IonContent,
   IonButton,
   IonIcon,
-  IonSegment,
-  IonSegmentButton,
-  IonLabel,
   IonModal,
-  IonDatetime
+  IonDatetime,
+  IonPopover
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -29,7 +27,8 @@ import {
   checkmark,
   ellipsisHorizontal,
   calendar,
-  alertCircleOutline
+  alertCircleOutline,
+  funnelOutline
 } from 'ionicons/icons';
 import { catchError, forkJoin, from, of, take, firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
@@ -66,11 +65,9 @@ interface HistoriqueItem {
     IonContent,
     IonButton,
     IonIcon,
-    IonSegment,
-    IonSegmentButton,
-    IonLabel,
     IonModal,
-    IonDatetime
+    IonDatetime,
+    IonPopover
   ],
 })
 export class HistoriquePage implements OnInit {
@@ -169,7 +166,8 @@ export class HistoriquePage implements OnInit {
       checkmark,
       ellipsisHorizontal,
       calendar,
-      alertCircleOutline
+      alertCircleOutline,
+      funnelOutline
     });
   }
 
@@ -187,6 +185,11 @@ export class HistoriquePage implements OnInit {
     }
     // Filtrage géré par le getter filteredSeances.
     this.cdr.detectChanges();
+  }
+
+  selectFilter(period: 'all' | 'week' | 'month'): void {
+    this.filterPeriod = period;
+    this.filterByPeriod();
   }
 
   private async loadHistorique(): Promise<void> {

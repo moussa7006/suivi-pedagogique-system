@@ -13,7 +13,32 @@
       </ion-button>
       <div class="header-titles">
         <h1 class="title">Historique</h1>
-        <p class="subtitle">Vos séances passées</p>
+      </div>
+      <div class="header-filter">
+        <div class="modern-filter-btn" id="historique-filter-trigger">
+          <ion-icon name="funnel-outline"></ion-icon>
+          <div class="filter-indicator" *ngIf="filterPeriod !== 'all'"></div>
+        </div>
+
+        <ion-popover #popover trigger="historique-filter-trigger" triggerAction="click" side="bottom" alignment="end" class="filter-popover">
+          <ng-template>
+            <div class="filter-menu">
+              <div class="filter-menu__header">Filtrer par période</div>
+              <button type="button" class="filter-option" [class.active]="filterPeriod === 'all'" (click)="selectFilter('all'); popover.dismiss()">
+                <span>Tout</span>
+                <ion-icon *ngIf="filterPeriod === 'all'" name="checkmark"></ion-icon>
+              </button>
+              <button type="button" class="filter-option" [class.active]="filterPeriod === 'week'" (click)="selectFilter('week'); popover.dismiss()">
+                <span>Semaine</span>
+                <ion-icon *ngIf="filterPeriod === 'week'" name="checkmark"></ion-icon>
+              </button>
+              <button type="button" class="filter-option" [class.active]="filterPeriod === 'month'" (click)="selectFilter('month'); popover.dismiss()">
+                <span>Mois</span>
+                <ion-icon *ngIf="filterPeriod === 'month'" name="checkmark"></ion-icon>
+              </button>
+            </div>
+          </ng-template>
+        </ion-popover>
       </div>
     </header>
 
@@ -23,7 +48,7 @@
         <ion-icon name="checkmark-circle-outline"></ion-icon>
         <span>{{ stats.seancesCompletees }} réalisées</span>
       </div>
-      <div class="stat-chip stat-chip--success">
+      <div class="stat-chip stat-chip--stone">
         <ion-icon name="people-outline"></ion-icon>
         <span>{{ stats.seancesEmargees }} émargements</span>
       </div>
@@ -33,14 +58,9 @@
       </div>
     </div>
 
-    <!-- Filters Segment -->
-    <div class="filters-section animate-slide-up" style="--delay: 150ms">
-      <ion-segment [(ngModel)]="filterPeriod" (ionChange)="filterByPeriod()" class="custom-segment">
-        <ion-segment-button value="all"><ion-label>Tout</ion-label></ion-segment-button>
-        <ion-segment-button value="week"><ion-label>Semaine</ion-label></ion-segment-button>
-        <ion-segment-button value="month"><ion-label>Mois</ion-label></ion-segment-button>
-      </ion-segment>
+    <!-- Filters Segment removed -->
 
+    <!-- Filters Date Picker (Si période !== 'all') -->
       <div class="date-filter animate-fade-in" *ngIf="filterPeriod === 'all'">
         <div class="date-input-wrapper" id="open-month-picker">
           <ion-icon name="calendar-outline" class="input-icon"></ion-icon>
@@ -69,7 +89,6 @@
           </ng-template>
         </ion-modal>
       </div>
-    </div>
 
     <!-- Timeline -->
     <div class="timeline-section animate-slide-up" style="--delay: 200ms">

@@ -7,6 +7,11 @@
 
 -- Started on 2026-08-08 19:00:19
 
+-- Desactive temporairement les contraintes de cle etrangere pendant le chargement.
+-- Ce dump a des dependances circulaires (seance <-> fiche_progression) et des tables
+-- referencees avant leur parent ; sans cela, l'INSERT echoue en milieu de fichier.
+SET session_replication_role = replica;
+
 --
 -- TOC entry 5199 (class 0 OID 16390)
 -- Dependencies: 220
@@ -610,6 +615,9 @@ SELECT pg_catalog.setval('public.seance_id_seq', 113, true);
 --
 
 SELECT pg_catalog.setval('public.utilisateur_id_seq', 32, true);
+
+-- Reactive les contraintes de cle etrangere.
+SET session_replication_role = origin;
 
 
 -- Completed on 2026-08-08 19:00:19
