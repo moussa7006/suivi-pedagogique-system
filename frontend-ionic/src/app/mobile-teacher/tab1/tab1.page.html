@@ -1,10 +1,8 @@
 <ion-content [fullscreen]="true">
   <!-- ========================================= -->
-  <!-- DECORATIVE BACKGROUND ELEMENTS            -->
+  <!-- DECORATIVE BACKGROUND ELEMENTS (REMOVED)  -->
   <!-- ========================================= -->
   <div class="bg-decoration">
-    <div class="bg-circle bg-circle--1"></div>
-    <div class="bg-circle bg-circle--2"></div>
   </div>
 
   <!-- ========================================= -->
@@ -126,7 +124,7 @@
       <ion-icon name="school-outline"></ion-icon>
       <span>{{ totalSeances }} séances</span>
     </div>
-    <div class="stat-chip stat-chip--accent">
+    <div class="stat-chip stat-chip--stone">
       <ion-icon name="time-outline"></ion-icon>
       <span>{{ totalHeures }}h faites</span>
     </div>
@@ -145,25 +143,20 @@
       class="action-card action-card--progression"
       (click)="navigateTo('/mobile/cahier-textes')"
     >
-      <div class="action-card__bg action-card__bg--blue"></div>
-      <div class="action-card__icon action-card__icon--blue">
+      <div class="action-card__icon">
         <ion-icon name="book-outline"></ion-icon>
       </div>
       <span class="action-card__label">Fiche de Progression</span>
       <span class="action-card__desc">Remplir la fiche</span>
-      <ion-badge
-        *ngIf="!isCahierFait"
-        color="warning"
-        class="action-card__badge"
-      >
-        À faire
-      </ion-badge>
+      <!-- Badge personnalisé, on n'utilise plus ion-badge qui forçait ses couleurs -->
+      <div *ngIf="!isCahierFait" class="urgent-badge">
+        À FAIRE
+      </div>
     </div>
 
     <!-- TILE 2 - Scan QR -->
     <div class="action-card action-card--scan" (click)="navigateTo('/mobile/scan-qr')">
-      <div class="action-card__bg action-card__bg--purple"></div>
-      <div class="action-card__icon action-card__icon--purple">
+      <div class="action-card__icon">
         <ion-icon name="qr-code-outline"></ion-icon>
       </div>
       <span class="action-card__label">Scan QR</span>
@@ -175,12 +168,11 @@
       class="action-card action-card--planning"
       (click)="navigateTo('/mobile/planning')"
     >
-      <div class="action-card__bg action-card__bg--coral"></div>
-      <div class="action-card__icon action-card__icon--coral">
+      <div class="action-card__icon">
         <ion-icon name="calendar-outline"></ion-icon>
       </div>
       <span class="action-card__label">Planning</span>
-      <span class="action-card__desc">Voir mon emploi du temps</span>
+      <span class="action-card__desc">Mon emploi du temps</span>
     </div>
 
     <!-- TILE 4 - Honoraires -->
@@ -188,8 +180,7 @@
       class="action-card action-card--honoraires"
       (click)="navigateTo('/mobile/honoraires')"
     >
-      <div class="action-card__bg action-card__bg--green"></div>
-      <div class="action-card__icon action-card__icon--green">
+      <div class="action-card__icon">
         <ion-icon name="time-outline"></ion-icon>
       </div>
       <span class="action-card__label">Honoraires</span>

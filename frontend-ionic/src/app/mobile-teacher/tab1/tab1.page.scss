@@ -29,60 +29,36 @@
    BASE
    ============================================ */
 ion-content {
-  --background: #f8f9fa;
+  --background: #ffffff;
   --padding-start: 20px;
   --padding-end: 20px;
-  --padding-top: 16px;
+  --padding-top: 0; /* Retiré pour que le header touche le plafond */
   --padding-bottom: calc(132px + var(--ion-safe-area-bottom, 0px));
 }
 
 /* ============================================
-   DECORATIVE BACKGROUND
+   DECORATIVE BACKGROUND (REMOVED)
    ============================================ */
 .bg-decoration {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 300px;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 0;
-}
-
-.bg-circle {
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.07;
-
-  &--1 {
-    width: 400px;
-    height: 400px;
-    background: linear-gradient(135deg, #4361ee, #7c3aed);
-    top: -180px;
-    right: -100px;
-  }
-
-  &--2 {
-    width: 250px;
-    height: 250px;
-    background: linear-gradient(135deg, #f43f5e, #f59e0b);
-    top: -80px;
-    left: -60px;
-  }
+  display: none;
 }
 
 /* ============================================
-   DASHBOARD HEADER
+   HEADER STICKY
    ============================================ */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: relative;
-  z-index: 1;
-  padding-top: 8px;
-  margin-bottom: 20px;
+  position: sticky; /* Rendu collant */
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95); /* Fond blanc très légèrement transparent */
+  backdrop-filter: blur(10px); /* Effet de flou sur le fond quand on scroll */
+  -webkit-backdrop-filter: blur(10px);
+  padding: calc(16px + var(--ion-safe-area-top, 0px)) 20px 16px 20px;
+  margin: 0 -20px 20px -20px; /* S'étend sur les bords pour annuler le padding de ion-content */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Ombre douce pour séparer du contenu */
 }
 
 .header-left {
@@ -496,29 +472,28 @@ ion-content {
    ============================================ */
 .quick-stats {
   display: flex;
+  justify-content: space-between;
   gap: 8px;
   margin-bottom: 28px;
   position: relative;
   z-index: 1;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  width: 100%;
 }
 
 .stat-chip {
+  flex: 1; /* Permet aux 3 blocs de se partager l'espace équitablement */
   display: flex;
+  flex-direction: column; /* On empile l'icône au-dessus du texte pour gagner en largeur */
   align-items: center;
-  gap: 7px;
-  padding: 9px 15px;
-  border-radius: var(--chip-radius);
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-primary);
-  border: 1px solid rgba(226, 232, 240, 0.7);
-  white-space: nowrap;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 4px;
+  border-radius: 16px;
+  font-size: 11px; /* Texte légèrement plus petit pour s'assurer qu'il rentre */
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  border: 1px solid transparent;
   transition: all 0.2s ease;
 
   &:active {
@@ -526,34 +501,33 @@ ion-content {
   }
 
   ion-icon {
-    font-size: 17px;
+    font-size: 22px; /* Icône un peu plus grande puisqu'elle est toute seule en haut */
+    opacity: 0.9;
   }
 
+  /* Couleurs vives et bien visibles pour chaque bloc */
   &--primary {
-    color: #3b55d9;
-    background: linear-gradient(135deg, #eef2ff, #e0e7ff);
-    border-color: rgba(67, 97, 238, 0.16);
-    ion-icon {
-      color: #4361ee;
-    }
+    background: #0D9488; /* Teal vif */
+    color: #ffffff;
+    ion-icon { color: #ffffff; }
   }
 
-  &--accent {
-    color: #6d28d9;
-    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
-    border-color: rgba(124, 58, 237, 0.16);
-    ion-icon {
-      color: #7c3aed;
-    }
+  &--stone {
+    background: #57534E; /* Couleur Gris Pierre / Stone */
+    color: #ffffff;
+    ion-icon { color: #ffffff; }
   }
 
   &--success {
-    color: #059669;
-    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-    border-color: rgba(16, 185, 129, 0.16);
-    ion-icon {
-      color: #10b981;
-    }
+    background: #059669; /* Vert Franc / Succès */
+    color: #ffffff;
+    ion-icon { color: #ffffff; opacity: 1; }
+  }
+
+  &--accent {
+    background: #2563EB; /* Bleu franc et visible */
+    color: #ffffff;
+    ion-icon { color: #ffffff; opacity: 1; }
   }
 }
 
@@ -607,122 +581,102 @@ ion-content {
 }
 
 .action-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 28px;
   padding: 22px 18px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
-  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
   position: relative;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.35s var(--ease-spring);
   min-height: 160px;
   justify-content: flex-end;
+  border: none; /* On retire la bordure blanche du glassmorphism */
 
   &:active {
     transform: scale(0.95);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
   }
-}
 
-.action-card__bg {
-  position: absolute;
-  top: -30px;
-  right: -30px;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  opacity: 0.15;
-  transition: all 0.5s ease;
-  filter: blur(20px);
+  /* Couleurs unies distinctes pour chaque tuile */
+  &--progression {
+    background: #1E3A8A; /* Bleu profond unie */
+    .action-card__label, .action-card__desc { color: #ffffff; }
+    .action-card__icon { background: rgba(255,255,255,0.15); }
+  }
 
-  &--blue { background: #3b82f6; }
-  &--purple { background: #8b5cf6; }
-  &--coral { background: #f43f5e; }
-  &--green { background: #10b981; }
-}
+  &--scan {
+    background: #4C1D95; /* Violet profond unie */
+    .action-card__label, .action-card__desc { color: #ffffff; }
+    .action-card__icon { background: rgba(255,255,255,0.15); }
+  }
 
-.action-card:hover .action-card__bg {
-  transform: scale(1.5);
-  opacity: 0.25;
+  &--planning {
+    background: #BE123C; /* Rouge/Corail profond unie */
+    .action-card__label, .action-card__desc { color: #ffffff; }
+    .action-card__icon { background: rgba(255,255,255,0.15); }
+  }
+
+  &--honoraires {
+    background: #9A3412; /* Orange profond/Rouille unie */
+    .action-card__label, .action-card__desc { color: #ffffff; }
+    .action-card__icon { background: rgba(255,255,255,0.15); }
+  }
 }
 
 .action-card__icon {
   width: 48px;
   height: 48px;
-  border-radius: 18px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  margin-bottom: auto; /* Pushes text to bottom */
+  margin-bottom: auto; /* Pousse le texte vers le bas */
   position: relative;
   z-index: 2;
 
   ion-icon {
-    color: #ffffff;
-  }
-
-  &--blue {
-    background: linear-gradient(135deg, #4361ee, #60a5fa);
-    box-shadow: 0 8px 24px rgba(67, 97, 238, 0.35);
-  }
-
-  &--purple {
-    background: linear-gradient(135deg, #7c3aed, #a78bfa);
-    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
-  }
-
-  &--coral {
-    background: linear-gradient(135deg, #f43f5e, #fb7185);
-    box-shadow: 0 8px 24px rgba(244, 63, 94, 0.35);
-  }
-
-  &--green {
-    background: linear-gradient(135deg, #10b981, #34d399);
-    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
+    color: #ffffff; /* Icône blanche */
   }
 }
 
 .action-card__label {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1.2;
-  margin-bottom: 6px;
-  position: relative;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
   z-index: 2;
+  line-height: 1.2;
 }
 
 .action-card__desc {
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-weight: 600;
-  position: relative;
+  font-size: 13px;
+  opacity: 0.85; /* Légèrement transparent pour le contraste */
   z-index: 2;
 }
 
-.action-card__badge {
+/* NOUVEAU BADGE ULTRA VISIBLE */
+.urgent-badge {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  left: auto;
-  font-size: 9px;
-  font-weight: 800;
+  top: 12px;
+  right: 12px;
+  background-color: #FFD700; /* Jaune vif pur */
+  color: #000000; /* Noir pur */
+  font-size: 11px;
+  font-weight: 900; /* Très gras */
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 5px 10px;
-  border-radius: 10px;
-  --background: rgba(245, 158, 11, 0.15);
-  color: #d97706;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  z-index: 2;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 2px solid #ffffff; /* Bordure blanche pour contraster */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Ombre très marquée */
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ============================================
