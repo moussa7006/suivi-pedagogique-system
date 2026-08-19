@@ -53,10 +53,8 @@ ion-content {
   position: sticky; /* Rendu collant */
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.95); /* Fond blanc très légèrement transparent */
-  backdrop-filter: blur(10px); /* Effet de flou sur le fond quand on scroll */
-  -webkit-backdrop-filter: blur(10px);
-  padding: calc(16px + var(--ion-safe-area-top, 0px)) 20px 16px 20px;
+  background: #ffffff; /* Fond blanc opaque */
+  padding: var(--ion-safe-area-top, 0px) 20px 16px 20px;
   margin: 0 -20px 20px -20px; /* S'étend sur les bords pour annuler le padding de ion-content */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Ombre douce pour séparer du contenu */
 }
@@ -885,6 +883,10 @@ ion-content {
   line-height: 1.15;
   text-align: left;
   overflow-wrap: anywhere;
+}
+
+.stat-row__value--red {
+  color: #dc2626;
 }
 
 .stat-row__trend {

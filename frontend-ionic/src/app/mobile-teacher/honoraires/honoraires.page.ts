@@ -6,13 +6,11 @@ import {
   IonButton,
   IonContent,
   IonIcon,
-  IonLabel,
   IonRefresher,
   IonRefresherContent,
-  IonSegment,
-  IonSegmentButton,
   IonModal,
-  IonDatetime
+  IonDatetime,
+  IonPopover
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -23,7 +21,9 @@ import {
   timeOutline,
   walletOutline,
   arrowBackOutline,
-  closeCircle
+  closeCircle,
+  funnelOutline,
+  checkmark
 } from 'ionicons/icons';
 import { finalize } from 'rxjs';
 import { HonorairesCalcul } from '../../core/models/honoraires.model';
@@ -40,13 +40,11 @@ import { HonorairesService } from '../../core/services/honoraires.service';
     IonContent,
     IonIcon,
     IonButton,
-    IonLabel,
-    IonSegment,
-    IonSegmentButton,
     IonRefresher,
     IonRefresherContent,
     IonModal,
-    IonDatetime
+    IonDatetime,
+    IonPopover
   ],
 })
 export class HonorairesPage implements OnInit {
@@ -71,7 +69,9 @@ export class HonorairesPage implements OnInit {
       timeOutline,
       walletOutline,
       arrowBackOutline,
-      closeCircle
+      closeCircle,
+      funnelOutline,
+      checkmark
     });
   }
 
@@ -142,6 +142,11 @@ export class HonorairesPage implements OnInit {
       this.selectedDate = '';
     }
     this.cdr.detectChanges();
+  }
+
+  selectFilter(period: 'all' | 'current' | 'previous'): void {
+    this.filterPeriod = period;
+    this.onFilterPeriodChange();
   }
 
   get formattedSelectedMonth(): string {

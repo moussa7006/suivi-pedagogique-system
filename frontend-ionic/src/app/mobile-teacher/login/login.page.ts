@@ -10,27 +10,20 @@ import {
 } from '@angular/forms';
 import {
   IonContent,
-  IonItem,
   IonInput,
-  IonButton,
   IonIcon,
   IonSpinner,
-  IonCheckbox,
-  ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
-  logInOutline,
-  mailOutline,
-  lockClosedOutline,
-  eyeOutline,
-  eyeOffOutline,
-  schoolOutline,
+  mail,
+  lockClosed,
+  eye,
+  eyeOff,
   alertCircleOutline,
-  arrowForwardOutline,
-  playOutline,
-  helpCircleOutline,
-  logoGoogle,
+  school,
+  warningOutline,
+  serverOutline
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
@@ -48,12 +41,9 @@ import { finalize } from 'rxjs';
     ReactiveFormsModule,
     RouterLink,
     IonContent,
-    IonItem,
     IonInput,
-    IonButton,
     IonIcon,
     IonSpinner,
-    IonCheckbox,
   ],
 })
 export class LoginPage {
@@ -64,25 +54,23 @@ export class LoginPage {
   private apiConfig = inject(ApiConfigService);
   private serverDiscovery = inject(ServerDiscoveryService);
   private cdr = inject(ChangeDetectorRef);
-  private toastCtrl = inject(ToastController);
 
   loginForm: FormGroup;
   showPassword = false;
   isLoading = false;
+  serverError: string | null = null;
+  loginError: string | null = null;
 
   constructor() {
     addIcons({
-      logInOutline,
-      mailOutline,
-      lockClosedOutline,
-      eyeOutline,
-      eyeOffOutline,
-      schoolOutline,
+      mail,
+      lockClosed,
+      eye,
+      eyeOff,
       alertCircleOutline,
-      arrowForwardOutline,
-      playOutline,
-      helpCircleOutline,
-      logoGoogle,
+      school,
+      warningOutline,
+      serverOutline
     });
 
     this.loginForm = this.fb.group({
@@ -93,24 +81,14 @@ export class LoginPage {
 
   async ionViewWillEnter() {
     this.clearLoginFields();
-    
+
     if (!this.apiConfig.hasConfiguredBaseUrl()) {
       const found = await this.serverDiscovery.autoDetect();
-      if (!found) {
-         const toast = await this.toastCtrl.create({
-           message: "⚠️ Aucun serveur trouvé sur le Wi-Fi actuel.",
-           duration: 3000,
-           color: "danger"
-         });
-         await toast.present();
-      } else {
-         const toast = await this.toastCtrl.create({
-           message: "✅ Serveur connecté ! (" + found + ")",
-           duration: 2000,
-           color: "success"
-         });
-         await toast.present();
-      }
+      this.serverError = found
+        ? null
+        : 'Serveur introuvable sur le Wi-Fi actuel. Vérifiez que le backend est lancé.';
+    } else {
+      this.serverError = null;
     }
   }
 
@@ -138,6 +116,7 @@ export class LoginPage {
     }
 
     this.isLoading = true;
+    this.loginError = null;
 
     const credentials = {
       email: this.loginForm.value.email,
@@ -164,7 +143,10 @@ export class LoginPage {
           this.router.navigate(['/mobile/tabs']);
         },
         error: (err) => {
-          this.apiError.presentError(err, 'Email ou mot de passe incorrect.');
+          this.loginError = this.apiError.extractMessage(
+            err,
+            'Email ou mot de passe incorrect.',
+          );
           this.cdr.detectChanges();
         },
       });
@@ -172,6 +154,7 @@ export class LoginPage {
 
   private clearLoginFields(): void {
     this.showPassword = false;
+    this.loginError = null;
     this.loginForm.reset({ email: '', password: '' });
     this.loginForm.markAsPristine();
     this.loginForm.markAsUntouched();

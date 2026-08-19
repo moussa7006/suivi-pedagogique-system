@@ -12,8 +12,33 @@
         <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
       </ion-button>
       <div class="header-titles">
-        <h1 class="title">Mes honoraires</h1>
-        <p class="subtitle">Suivez vos heures et paiements</p>
+        <h1 class="title">Honoraires</h1>
+      </div>
+      <div class="header-filter">
+        <div class="modern-filter-btn" id="honoraires-filter-trigger">
+          <ion-icon name="funnel-outline"></ion-icon>
+          <div class="filter-indicator" *ngIf="filterPeriod !== 'all'"></div>
+        </div>
+
+        <ion-popover #popover trigger="honoraires-filter-trigger" triggerAction="click" side="bottom" alignment="end" class="filter-popover">
+          <ng-template>
+            <div class="filter-menu">
+              <div class="filter-menu__header">Filtrer les honoraires</div>
+              <button type="button" class="filter-option" [class.active]="filterPeriod === 'all'" (click)="selectFilter('all'); popover.dismiss()">
+                <span>Tous</span>
+                <ion-icon *ngIf="filterPeriod === 'all'" name="checkmark"></ion-icon>
+              </button>
+              <button type="button" class="filter-option" [class.active]="filterPeriod === 'current'" (click)="selectFilter('current'); popover.dismiss()">
+                <span>En cours</span>
+                <ion-icon *ngIf="filterPeriod === 'current'" name="checkmark"></ion-icon>
+              </button>
+              <button type="button" class="filter-option" [class.active]="filterPeriod === 'previous'" (click)="selectFilter('previous'); popover.dismiss()">
+                <span>Précédents</span>
+                <ion-icon *ngIf="filterPeriod === 'previous'" name="checkmark"></ion-icon>
+              </button>
+            </div>
+          </ng-template>
+        </ion-popover>
       </div>
     </header>
 
@@ -29,22 +54,13 @@
       </div>
       <div class="stat-chip stat-chip--accent">
         <ion-icon name="time-outline"></ion-icon>
-        <span>{{ totalHeures | number:'1.0-2' }} h cumulées</span>
+        <span>{{ totalHeures | number:'1.0-0' }} h cumulées</span>
       </div>
     </div>
 
-    <!-- Filtres -->
-    <div class="filters-section animate-slide-up" style="--delay: 150ms">
-      <ion-segment
-        [(ngModel)]="filterPeriod"
-        (ionChange)="onFilterPeriodChange()"
-        class="custom-segment"
-      >
-        <ion-segment-button value="all"><ion-label>Tous</ion-label></ion-segment-button>
-        <ion-segment-button value="current"><ion-label>En cours</ion-label></ion-segment-button>
-        <ion-segment-button value="previous"><ion-label>Précédents</ion-label></ion-segment-button>
-      </ion-segment>
+    <!-- Filtres enlevés d'ici -->
 
+    <!-- Empty State -->
       <div class="date-filter animate-fade-in" *ngIf="filterPeriod === 'all'">
         <div class="date-input-wrapper" id="open-h-month-picker">
           <ion-icon name="calendar-outline" class="input-icon"></ion-icon>
@@ -73,7 +89,6 @@
           </ng-template>
         </ion-modal>
       </div>
-    </div>
 
     <div *ngIf="loading" class="loading-state">
       <p>Chargement des honoraires...</p>
@@ -115,7 +130,7 @@
               <h3 class="card-title">{{ item.montantBrut || 0 | number:'1.0-0' }} FCFA</h3>
               <div class="course-time">
                 <ion-icon name="time-outline"></ion-icon>
-                <span>{{ item.totalHeures || 0 | number:'1.0-2' }} h pour {{ item.detailsHonoraires?.length || 0 }} séance(s)</span>
+                <span>{{ item.totalHeures || 0 | number:'1.0-0' }} h pour {{ item.detailsHonoraires?.length || 0 }} séance(s)</span>
               </div>
             </div>
 
@@ -131,7 +146,7 @@
               <div class="details-summary">
                 <div class="detail-summary-item">
                   <span class="label">Heures</span>
-                  <strong>{{ item.totalHeures || 0 | number:'1.0-2' }} h</strong>
+                  <strong>{{ item.totalHeures || 0 | number:'1.0-0' }} h</strong>
                 </div>
                 <div class="detail-summary-item" *ngIf="item.detailsHonoraires && item.detailsHonoraires[0]?.tauxHoraire">
                   <span class="label">Taux/h</span>

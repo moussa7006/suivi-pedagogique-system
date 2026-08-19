@@ -14,7 +14,7 @@
 
 ion-content {
   --background: var(--bg-light);
-  --padding-top: calc(16px + var(--ion-safe-area-top));
+  --padding-top: var(--ion-safe-area-top);
   --padding-bottom: calc(132px + var(--ion-safe-area-bottom, 0px));
 }
 
@@ -26,8 +26,14 @@ ion-content {
   align-items: center;
   gap: 16px;
   margin-bottom: 24px;
-  position: relative;
-  z-index: 1;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #ffffff;
+  padding: var(--ion-safe-area-top, 0px) 20px 16px 20px;
+  margin-left: -20px;
+  margin-right: -20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 
   .back-btn {
     --background: #ffffff !important;
@@ -432,17 +438,4 @@ ion-content {
       height: 12px;
     }
   }
-}
-
-/* ============================================
-   ANIMATIONS
-   ============================================ */
-
-
-
-
-.animate-fade-in {
-}
-
-.animate-slide-up {
 }

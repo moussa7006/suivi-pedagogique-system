@@ -12,8 +12,6 @@ import {
   IonIcon,
   IonInput,
   IonTextarea,
-  IonSelect,
-  IonSelectOption,
   IonBadge,
   IonSpinner,
   ToastController,
@@ -37,6 +35,8 @@ import {
   peopleOutline,
   schoolOutline,
   arrowBackOutline,
+  chevronUpOutline,
+  chevronDownOutline,
 } from 'ionicons/icons';
 import { catchError, finalize, forkJoin, of, timeout } from 'rxjs';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
@@ -62,8 +62,6 @@ import { ClasseService } from '../../core/services/classe.service';
     IonIcon,
     IonInput,
     IonTextarea,
-    IonSelect,
-    IonSelectOption,
     IonBadge,
     IonSpinner,
     RouterLink,
@@ -99,6 +97,7 @@ export class CahierTextesPage {
   matieres: Matiere[] = [];
   classes: Classe[] = [];
   openedFromScan = false;
+  expandedSeanceIds = new Set<number>();
 
   constructor() {
     addIcons({
@@ -118,6 +117,8 @@ export class CahierTextesPage {
       addOutline,
       checkmarkDoneOutline,
       arrowBackOutline,
+      chevronUpOutline,
+      chevronDownOutline,
     });
 
     this.seanceForm = this.fb.group({
@@ -143,6 +144,20 @@ export class CahierTextesPage {
   get getPendingCount(): number {
     return this.seancesDisponibles.filter((seance) => !!seance.emargementId)
       .length;
+  }
+
+  get validatedHours(): number {
+    return this.fichesProgression
+      .filter((fiche) => fiche.estValideAdmin)
+      .reduce(
+        (total, fiche) => total + this.extractDurationHours(fiche.heureSeance),
+        0,
+      );
+  }
+
+  get pendingHours(): number {
+    const pending = this.totalHeures - this.validatedHours;
+    return pending > 0 ? pending : 0;
   }
 
   get selectedSeance(): Seance | undefined {
@@ -282,6 +297,21 @@ export class CahierTextesPage {
     return seance.id ?? _index;
   }
 
+  toggleSeance(seance: { id?: number }): void {
+    if (seance.id === undefined) {
+      return;
+    }
+    if (this.expandedSeanceIds.has(seance.id)) {
+      this.expandedSeanceIds.delete(seance.id);
+    } else {
+      this.expandedSeanceIds.add(seance.id);
+    }
+  }
+
+  isSeanceExpanded(seance: { id?: number }): boolean {
+    return seance.id !== undefined && this.expandedSeanceIds.has(seance.id);
+  }
+
   formatSeanceLabel(seance: Seance): string {
     return `${seance.dateCours} • ${this.formatTime(seance.heureDebutReelle)} - ${this.formatTime(
       seance.heureFinReelle,
@@ -393,7 +423,7 @@ export class CahierTextesPage {
     return seanceDate.getTime() <= today.getTime();
   }
 
-  private getMatiereLabel(seance: Seance): string {
+  public getMatiereLabel(seance: Seance): string {
     const schedule = this.getScheduleForSeance(seance);
     const matiere = this.matieres.find(
       (item) => item.id === schedule?.matiereId,
@@ -402,7 +432,7 @@ export class CahierTextesPage {
     return matiere?.libelle || 'Matière non renseignée';
   }
 
-  private getClasseLabel(seance: Seance): string {
+  public getClasseLabel(seance: Seance): string {
     const classe = this.classes.find((item) => item.id === seance.classeId);
 
     return classe?.libelle || `Classe #${seance.classeId}`;
@@ -505,7 +535,7 @@ export class CahierTextesPage {
       : null;
   }
 
-  private formatTime(value?: string): string {
+  public formatTime(value?: string): string {
     return value ? value.substring(0, 5) : '--:--';
   }
 

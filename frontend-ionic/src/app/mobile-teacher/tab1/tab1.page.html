@@ -126,7 +126,7 @@
     </div>
     <div class="stat-chip stat-chip--stone">
       <ion-icon name="time-outline"></ion-icon>
-      <span>{{ totalHeures }}h faites</span>
+      <span>{{ totalHeures | number:'1.0-0' }}h faites</span>
     </div>
     <div class="stat-chip stat-chip--success">
       <ion-icon name="checkmark-circle-outline"></ion-icon>
@@ -147,23 +147,21 @@
         <ion-icon name="book-outline"></ion-icon>
       </div>
       <span class="action-card__label">Fiche de Progression</span>
-      <span class="action-card__desc">Remplir la fiche</span>
       <!-- Badge personnalisé, on n'utilise plus ion-badge qui forçait ses couleurs -->
       <div *ngIf="!isCahierFait" class="urgent-badge">
         À FAIRE
       </div>
     </div>
 
-    <!-- TILE 2 - Scan QR -->
+    <!-- TILE 2 - Émargement -->
     <div class="action-card action-card--scan" (click)="navigateTo('/mobile/scan-qr')">
       <div class="action-card__icon">
         <ion-icon name="qr-code-outline"></ion-icon>
       </div>
-      <span class="action-card__label">Scan QR</span>
-      <span class="action-card__desc">Emmarger une séance</span>
+      <span class="action-card__label">Émargement</span>
     </div>
 
-    <!-- TILE 3 - Planning -->
+    <!-- TILE 3 - Emploi du temps -->
     <div
       class="action-card action-card--planning"
       (click)="navigateTo('/mobile/planning')"
@@ -171,8 +169,7 @@
       <div class="action-card__icon">
         <ion-icon name="calendar-outline"></ion-icon>
       </div>
-      <span class="action-card__label">Planning</span>
-      <span class="action-card__desc">Mon emploi du temps</span>
+      <span class="action-card__label">Emploi du temps</span>
     </div>
 
     <!-- TILE 4 - Honoraires -->
@@ -181,10 +178,9 @@
       (click)="navigateTo('/mobile/honoraires')"
     >
       <div class="action-card__icon">
-        <ion-icon name="time-outline"></ion-icon>
+        <ion-icon name="cash-outline"></ion-icon>
       </div>
       <span class="action-card__label">Honoraires</span>
-      <span class="action-card__desc">Voir mes paiements</span>
     </div>
   </div>
 
@@ -193,7 +189,6 @@
   <!-- ========================================= -->
   <div class="section-header animate-slide-up" style="--delay: 300ms">
     <h2>Résumé pédagogique</h2>
-    <span class="section-subtitle">Vue d'ensemble de votre progression</span>
   </div>
 
   <!-- ========================================= -->
@@ -303,8 +298,9 @@
           </div>
           <div class="stat-row__info">
             <span class="stat-row__label">Heures faites/prévues</span>
-            <span class="stat-row__value"
-              >{{ totalHeures }}h / {{ scheduledHeures }}h</span
+            <span class="stat-row__value stat-row__value--red"
+              >{{ totalHeures | number:'1.0-0' }}h /
+              {{ scheduledHeures | number:'1.0-0' }}h</span
             >
           </div>
         </div>

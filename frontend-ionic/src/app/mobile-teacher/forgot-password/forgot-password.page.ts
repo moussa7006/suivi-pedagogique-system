@@ -3,16 +3,13 @@ import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
-  IonButton,
   IonContent,
   IonInput,
-  IonItem,
   IonIcon,
   IonSpinner,
-  ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { keyOutline, mailOutline, arrowBackOutline } from 'ionicons/icons';
+import { mail, arrowBack, alertCircleOutline, school } from 'ionicons/icons';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -26,23 +23,21 @@ import { AuthService } from '../../core/services/auth.service';
     FormsModule,
     RouterLink,
     IonContent,
-    IonItem,
     IonInput,
-    IonButton,
     IonIcon,
     IonSpinner,
   ],
 })
 export class ForgotPasswordPage {
   private authService = inject(AuthService);
-  private toastController = inject(ToastController);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   email = '';
   isLoading = false;
+  errorMessage: string | null = null;
 
   constructor() {
-    addIcons({ keyOutline, mailOutline, arrowBackOutline });
+    addIcons({ mail, arrowBack, alertCircleOutline, school });
   }
 
   goToLogin(): void {
@@ -51,6 +46,7 @@ export class ForgotPasswordPage {
 
   submit() {
     this.isLoading = true;
+    this.errorMessage = null;
     this.authService
       .forgotPassword(this.email)
       .pipe(
@@ -60,32 +56,16 @@ export class ForgotPasswordPage {
         }),
       )
       .subscribe({
-        next: async (res: any) => {
-          await this.toast(
-            res?.message || 'Si cet email existe, un code a été envoyé.',
-            'success',
-          );
+        next: () => {
           this.router.navigate(['/mobile/reset-password'], {
-            queryParams: { email: this.email },
+            queryParams: { email: this.email, sent: '1' },
           });
         },
-        error: async (err) => {
-          await this.toast(
-            err?.error?.error || "Impossible d'envoyer le code.",
-            'danger',
-          );
+        error: (err) => {
+          this.errorMessage =
+            err?.error?.error || "Impossible d'envoyer le code.";
           this.cdr.detectChanges();
         },
       });
-  }
-
-  private async toast(message: string, color: 'success' | 'danger') {
-    const toast = await this.toastController.create({
-      message,
-      color,
-      duration: 3000,
-      position: 'top',
-    });
-    await toast.present();
   }
 }

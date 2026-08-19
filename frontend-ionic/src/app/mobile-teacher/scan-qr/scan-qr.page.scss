@@ -54,31 +54,37 @@ ion-content {
 .page-wrapper {
   position: relative;
   z-index: 1;
-  padding-top: calc(16px + var(--ion-safe-area-top));
+  padding-top: 0;
 }
 
 /* ============================================
-   HEADER
+   HEADER (STICKY - SOLID WHITE)
    ============================================ */
 .page-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #ffffff;
+  padding: var(--ion-safe-area-top, 0px) 20px 16px 20px;
+  margin: 0 -20px 24px -20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 
   .back-btn {
-    --background: #ffffff;
-    --border-radius: 16px;
+    justify-self: start;
+    --background: transparent;
     --padding-start: 0;
     --padding-end: 0;
     width: 44px;
     height: 44px;
     margin: 0;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    box-shadow: none;
 
     ion-icon {
-      font-size: 20px;
-      color: var(--text-primary);
+      font-size: 24px;
+      color: #0a4d4a;
     }
 
     &:active {
@@ -87,25 +93,18 @@ ion-content {
   }
 
   .header-titles {
+    justify-self: center;
     display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 0;
+    align-items: center;
+    justify-content: center;
 
     .title {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--text-primary);
+      font-size: 16px;
+      font-weight: 900;
+      color: #0a4d4a;
       margin: 0;
-      letter-spacing: -0.03em;
-      line-height: 1.2;
-    }
-
-    .subtitle {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin: 2px 0 0 0;
-      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
   }
 }
@@ -200,160 +199,6 @@ ion-content {
     }
   }
 
-  .seance-selector {
-    text-align: left;
-    margin-bottom: var(--space-lg);
-
-    .field-label {
-      margin-bottom: 10px;
-    }
-
-    &.has-error {
-      .seance-card {
-        border-color: #f59e0b;
-        animation: seanceShake 0.4s ease;
-      }
-    }
-
-    .seance-card {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      width: 100%;
-      padding: 14px 16px;
-      margin-bottom: 10px;
-      background: #ffffff;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 18px;
-      cursor: pointer;
-      text-align: left;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
-
-      &:active {
-        transform: scale(0.98);
-      }
-
-      &.selected {
-        border-color: var(--accent-blue);
-        background: rgba(67, 97, 238, 0.06);
-        box-shadow: 0 6px 16px rgba(67, 97, 238, 0.14);
-
-        .seance-card__radio {
-          color: var(--accent-blue);
-        }
-      }
-
-      &__time {
-        display: flex;
-        align-items: baseline;
-        gap: 4px;
-        min-width: 86px;
-        flex-shrink: 0;
-
-        .time-start {
-          font-size: 20px;
-          font-weight: 800;
-          color: var(--text-primary);
-        }
-
-        .time-sep {
-          font-size: 13px;
-          color: var(--text-secondary);
-        }
-
-        .time-end {
-          font-size: 14px;
-          font-weight: 700;
-          color: var(--text-secondary);
-        }
-      }
-
-      &__info {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-        flex: 1;
-        min-width: 0;
-
-        .seance-card__status {
-          font-size: 11px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.02em;
-          padding: 3px 10px;
-          border-radius: 999px;
-
-          &.status-PREVUE {
-            background: rgba(37, 99, 235, 0.12);
-            color: #1d4ed8;
-          }
-
-          &.status-EN_COURS {
-            background: rgba(34, 197, 94, 0.15);
-            color: #15803d;
-          }
-
-          &.status-TERMINEE {
-            background: rgba(100, 116, 139, 0.14);
-            color: #475569;
-          }
-        }
-
-        .seance-card__cahier {
-          font-size: 11.5px;
-          font-weight: 600;
-          color: #16a34a;
-        }
-      }
-
-      &__radio {
-        font-size: 24px;
-        color: #cbd5e1;
-        flex-shrink: 0;
-      }
-    }
-  }
-
-  .seance-required-error {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    margin-bottom: var(--space-lg);
-    border-radius: 14px;
-    background: #fff7ed;
-    border: 1px solid #fed7aa;
-    border-left: 3px solid #f59e0b;
-    text-align: left;
-    animation: seanceErrorIn 0.26s ease;
-
-    ion-icon {
-      font-size: 20px;
-      color: #ea580c;
-      flex-shrink: 0;
-    }
-
-    .error-text {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-
-      strong {
-        font-size: 13px;
-        font-weight: 800;
-        color: #9a3412;
-      }
-
-      span {
-        font-size: 12.5px;
-        color: #c2410c;
-        line-height: 1.4;
-      }
-    }
-  }
-
   .camera-preview {
     width: 100%;
     overflow: hidden;
@@ -388,6 +233,270 @@ ion-content {
 
     &:active {
       transform: scale(0.97);
+    }
+  }
+}
+
+/* ============================================
+   LISTE DES SÉANCES (SÉLECTION)
+   ============================================ */
+.seance-list-section {
+  margin-bottom: var(--space-lg);
+
+  .section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    span {
+      display: block;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .seance-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: rgba(67, 97, 238, 0.1);
+      color: var(--accent-blue);
+      font-size: 13px;
+      font-weight: 800;
+    }
+  }
+
+  .seance-empty {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px;
+    border-radius: 16px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+
+    ion-icon {
+      font-size: 20px;
+      color: #94a3b8;
+      flex-shrink: 0;
+    }
+  }
+
+  .seance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .seance-list-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 14px 16px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 18px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    &.selected {
+      border-color: var(--accent-blue);
+      background: rgba(67, 97, 238, 0.06);
+      box-shadow: 0 6px 16px rgba(67, 97, 238, 0.14);
+
+      .radio {
+        color: var(--accent-blue);
+      }
+    }
+
+    &__time {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      min-width: 56px;
+      flex-shrink: 0;
+      padding: 8px 6px;
+      border-radius: 14px;
+      background: #f8fafc;
+
+      .time-start {
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1;
+      }
+
+      .time-divider {
+        width: 14px;
+        height: 2px;
+        border-radius: 2px;
+        background: #e2e8f0;
+      }
+
+      .time-end {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        line-height: 1;
+      }
+    }
+
+    &__body {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
+
+      .matiere {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 15px;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.01em;
+        overflow-wrap: anywhere;
+
+        ion-icon {
+          font-size: 17px;
+          color: var(--accent-blue);
+          flex-shrink: 0;
+        }
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+
+        .meta-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 3px 9px;
+          border-radius: 999px;
+          background: #f1f5f9;
+          color: #475569;
+          font-size: 11.5px;
+          font-weight: 600;
+
+          ion-icon {
+            font-size: 13px;
+            color: #64748b;
+          }
+        }
+      }
+
+      .status-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+
+        .status-badge {
+          font-size: 10.5px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          padding: 3px 9px;
+          border-radius: 999px;
+
+          &.status-PREVUE {
+            background: rgba(37, 99, 235, 0.12);
+            color: #1d4ed8;
+          }
+
+          &.status-EN_COURS {
+            background: rgba(34, 197, 94, 0.15);
+            color: #15803d;
+          }
+
+          &.status-TERMINEE {
+            background: rgba(100, 116, 139, 0.14);
+            color: #475569;
+          }
+        }
+
+        .fiche-badge {
+          font-size: 11px;
+          font-weight: 600;
+          color: #16a34a;
+        }
+      }
+    }
+
+    .radio {
+      font-size: 24px;
+      color: #cbd5e1;
+      flex-shrink: 0;
+    }
+  }
+}
+
+.seance-required-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: var(--space-lg);
+  border-radius: 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.08);
+  text-align: left;
+  animation: seanceErrorIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  ion-icon {
+    font-size: 24px;
+    color: #dc2626;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .error-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    strong {
+      font-size: 14px;
+      font-weight: 800;
+      color: #991b1b;
+      letter-spacing: -0.01em;
+    }
+
+    span {
+      font-size: 13px;
+      color: #b91c1c;
+      line-height: 1.4;
+      font-weight: 500;
     }
   }
 }

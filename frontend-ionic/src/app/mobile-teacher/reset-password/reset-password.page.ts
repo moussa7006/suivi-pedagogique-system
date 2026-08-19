@@ -3,20 +3,22 @@ import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
-  IonButton,
   IonContent,
   IonInput,
-  IonItem,
   IonIcon,
   IonSpinner,
-  ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
-  lockClosedOutline,
-  mailOutline,
-  keypadOutline,
-  arrowBackOutline,
+  lockClosed,
+  mail,
+  keypad,
+  arrowBack,
+  alertCircleOutline,
+  checkmarkCircleOutline,
+  eye,
+  eyeOff,
+  school
 } from 'ionicons/icons';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
@@ -31,9 +33,7 @@ import { AuthService } from '../../core/services/auth.service';
     FormsModule,
     RouterLink,
     IonContent,
-    IonItem,
     IonInput,
-    IonButton,
     IonIcon,
     IonSpinner,
   ],
@@ -42,13 +42,16 @@ export class ResetPasswordPage {
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private toastController = inject(ToastController);
   private cdr = inject(ChangeDetectorRef);
   email = this.route.snapshot.queryParamMap.get('email') || '';
   code = '';
   newPassword = '';
   confirmPassword = '';
   isLoading = false;
+  showPassword = false;
+  showConfirmPassword = false;
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
   private readonly passwordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{14,}$/;
   private readonly emailRegex =
@@ -56,38 +59,54 @@ export class ResetPasswordPage {
 
   constructor() {
     addIcons({
-      lockClosedOutline,
-      mailOutline,
-      keypadOutline,
-      arrowBackOutline,
+      lockClosed,
+      mail,
+      keypad,
+      arrowBack,
+      alertCircleOutline,
+      checkmarkCircleOutline,
+      eye,
+      eyeOff,
+      school
     });
+
+    if (this.route.snapshot.queryParamMap.get('sent') === '1') {
+      this.successMessage = 'Un code a été envoyé à votre email.';
+    }
   }
 
   goToLogin(): void {
     void this.router.navigateByUrl('/mobile/login', { replaceUrl: true });
   }
 
-  async submit() {
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+    this.cdr.detectChanges();
+  }
+
+  toggleConfirmPassword(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+    this.cdr.detectChanges();
+  }
+
+  submit() {
+    this.errorMessage = null;
+
     if (!this.emailRegex.test(this.email)) {
-      await this.toast('Veuillez renseigner un email valide.', 'danger');
+      this.errorMessage = 'Veuillez renseigner un email valide.';
       return;
     }
     if (!/^\d{6}$/.test(this.code)) {
-      await this.toast(
-        'Le code doit contenir exactement 6 chiffres.',
-        'danger',
-      );
+      this.errorMessage = 'Le code doit contenir exactement 6 chiffres.';
       return;
     }
     if (!this.passwordRegex.test(this.newPassword)) {
-      await this.toast(
-        'Le mot de passe doit contenir au moins 14 caractères, une majuscule, une minuscule, un chiffre et un symbole.',
-        'danger',
-      );
+      this.errorMessage =
+        'Le mot de passe doit contenir au moins 14 caractères, une majuscule, une minuscule, un chiffre et un symbole.';
       return;
     }
     if (this.newPassword !== this.confirmPassword) {
-      await this.toast('Les mots de passe ne correspondent pas.', 'danger');
+      this.errorMessage = 'Les mots de passe ne correspondent pas.';
       return;
     }
 
@@ -101,30 +120,14 @@ export class ResetPasswordPage {
         }),
       )
       .subscribe({
-        next: async () => {
-          await this.toast(
-            'Mot de passe réinitialisé. Vous pouvez vous connecter.',
-            'success',
-          );
+        next: () => {
           this.router.navigate(['/mobile/login']);
         },
-        error: async (err) => {
-          await this.toast(
-            err?.error?.error || 'Réinitialisation impossible.',
-            'danger',
-          );
+        error: (err) => {
+          this.errorMessage =
+            err?.error?.error || 'Réinitialisation impossible.';
           this.cdr.detectChanges();
         },
       });
-  }
-
-  private async toast(message: string, color: 'success' | 'danger') {
-    const toast = await this.toastController.create({
-      message,
-      color,
-      duration: 3000,
-      position: 'top',
-    });
-    await toast.present();
   }
 }

@@ -56,7 +56,7 @@ ion-content {
 .page-wrapper {
   position: relative;
   z-index: 1;
-  padding-top: calc(16px + var(--ion-safe-area-top));
+  padding-top: 0;
 }
 
 /* =========================================
@@ -69,10 +69,8 @@ ion-content {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: calc(16px + var(--ion-safe-area-top, 0px)) 20px 16px 20px;
+  background: #ffffff;
+  padding: var(--ion-safe-area-top, 0px) 20px 16px 20px;
   margin: 0 -20px 24px -20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 

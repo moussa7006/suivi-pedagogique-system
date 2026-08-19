@@ -18,10 +18,94 @@
       </ion-button>
       <div class="header-titles">
         <h1 class="title">Émargement</h1>
-        <p class="subtitle">Scannez le QR Code de la séance</p>
       </div>
     </header>
 
+    <!-- ========================================= -->
+    <!-- LISTE DES SÉANCES À SÉLECTIONNER          -->
+    <!-- ========================================= -->
+    <section
+      class="seance-list-section"
+      #seanceGroup
+      [class.has-error]="seanceRequiredError"
+    >
+      <div class="section-heading">
+        <div>
+          <h2>Séances du jour</h2>
+          <span>Sélectionnez la séance à émarger</span>
+        </div>
+        <span class="seance-count">{{ seances.length }}</span>
+      </div>
+
+      <div
+        class="seance-empty"
+        *ngIf="!isLoading && seances.length === 0"
+      >
+        <ion-icon name="calendar-outline"></ion-icon>
+        <span>Aucune séance n'est prévue pour aujourd'hui.</span>
+      </div>
+
+      <div
+        class="seance-list"
+        *ngIf="seances.length > 0"
+      >
+        <button
+          type="button"
+          class="seance-list-item"
+          *ngFor="let seance of seances"
+          [class.selected]="selectedSeanceId === seance.id"
+          (click)="selectSeance(seance.id)"
+        >
+          <div class="seance-list-item__time">
+            <span class="time-start">{{ formatTime(seance.heureDebutReelle) }}</span>
+            <span class="time-divider"></span>
+            <span class="time-end">{{ formatTime(seance.heureFinReelle) }}</span>
+          </div>
+
+          <div class="seance-list-item__body">
+            <span class="matiere">
+              <ion-icon name="book-outline"></ion-icon>
+              {{ seance.matiereLibelle || 'Matière' }}
+            </span>
+            <span class="meta">
+              <span class="meta-pill">
+                <ion-icon name="people-outline"></ion-icon>
+                {{ seance.classeLibelle || 'Classe' }}
+              </span>
+              <span class="meta-pill" *ngIf="seance.salleLibelle">
+                <ion-icon name="location-outline"></ion-icon>
+                {{ seance.salleLibelle }}
+              </span>
+            </span>
+            <span class="status-row">
+              <span class="status-badge" [class]="'status-' + seance.statut">
+                {{ statutLabel(seance.statut) }}
+              </span>
+              <span class="fiche-badge" *ngIf="hasCahierForSeance(seance)">
+                Fiche remplie
+              </span>
+            </span>
+          </div>
+
+          <ion-icon
+            class="radio"
+            [name]="selectedSeanceId === seance.id ? 'radio-button-on' : 'radio-button-off'"
+          ></ion-icon>
+        </button>
+      </div>
+
+      <div class="seance-required-error" *ngIf="seanceRequiredError">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <div class="error-text">
+          <strong>Séance requise</strong>
+          <span>Veuillez sélectionner une séance avant de scanner.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SCANNER                                   -->
+    <!-- ========================================= -->
     <div class="scanner-card animate-scale-in">
       <!-- Vue caméra : affichée en haut, immédiatement visible sans scroll -->
       <ng-container *ngIf="isCameraOpen">
@@ -39,66 +123,12 @@
         </ion-button>
       </ng-container>
 
-      <!-- Vue pré-scan : masquée pendant la caméra -->
+      <!-- Vue pré-scan -->
       <ng-container *ngIf="!isCameraOpen">
         <div class="scanner-icon-wrapper">
           <ion-icon name="scan-outline"></ion-icon>
         </div>
         <h2>Scanner pour émarger</h2>
-        <p>
-          Sélectionnez la séance, scannez le QR Code, puis remplissez
-          automatiquement la fiche de progression.
-        </p>
-
-        <div class="status-hint" *ngIf="!isLoading && seances.length === 0">
-          <ion-icon name="calendar-outline"></ion-icon>
-          <span>Aucune séance n'est prévue pour aujourd'hui.</span>
-        </div>
-
-        <div
-          class="seance-selector"
-          #seanceGroup
-          *ngIf="seances.length > 0"
-          [class.has-error]="seanceRequiredError"
-        >
-          <label class="field-label">Sélectionnez votre séance</label>
-
-          <button
-            type="button"
-            class="seance-card"
-            *ngFor="let seance of seances"
-            [class.selected]="selectedSeanceId === seance.id"
-            (click)="selectSeance(seance.id)"
-          >
-            <div class="seance-card__time">
-              <span class="time-start">{{ formatTime(seance.heureDebutReelle) }}</span>
-              <span class="time-sep">–</span>
-              <span class="time-end">{{ formatTime(seance.heureFinReelle) }}</span>
-            </div>
-
-            <div class="seance-card__info">
-              <span class="seance-card__status" [class]="'status-' + seance.statut">
-                {{ statutLabel(seance.statut) }}
-              </span>
-              <span class="seance-card__cahier" *ngIf="hasCahierForSeance(seance)">
-                Fiche déjà remplie
-              </span>
-            </div>
-
-            <ion-icon
-              class="seance-card__radio"
-              [name]="selectedSeanceId === seance.id ? 'radio-button-on' : 'radio-button-off'"
-            ></ion-icon>
-          </button>
-
-          <div class="seance-required-error" *ngIf="seanceRequiredError">
-            <ion-icon name="alert-circle-outline"></ion-icon>
-            <div class="error-text">
-              <strong>Séance requise</strong>
-              <span>Veuillez sélectionner une séance avant de scanner.</span>
-            </div>
-          </div>
-        </div>
 
         <p
           class="status-hint"
@@ -143,19 +173,6 @@
           </ion-button>
         </div>
       </ng-container>
-    </div>
-
-    <div class="info-card animate-slide-up" style="--delay: 100ms">
-      <div class="card-header">
-        <ion-icon name="checkmark-circle-outline"></ion-icon>
-        <h3>Instructions</h3>
-      </div>
-      <div class="card-content">
-        <p>
-          Le scan du QR Code est obligatoire. Après un scan valide, remplissez la
-          fiche de progression : l'émargement sera alors validé automatiquement.
-        </p>
-      </div>
     </div>
   </div>
 </ion-content>

@@ -1,206 +1,170 @@
 :host {
-    --primary-color: #2563eb; /* Bleu moderne et visible */
-    --bg-color: #f0f4f8; /* Fond clair, légèrement bleuté/gris */
-    --card-bg: #ffffff; /* Carte blanche pure */
-    --input-bg: #f1f5f9; /* Fond gris-bleu très clair pour les champs */
-    --text-main: #0f172a; /* Gris très foncé (presque noir) */
-    --text-muted: #64748b;
-  }
-  
-  .login-content {
-    --background: var(--bg-color);
-  }
-  
-  .page-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100%; /* Changed from height: 100% to allow scrolling */
-    box-sizing: border-box;
-  }
-  
-  /* ==============================
-     HEADER (LOGO + NOM)
-     ============================== */
-  .header-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 70px 20px 40px; 
-    flex-shrink: 0;
-  
-    .app-logo {
-      width: 80px;
-      height: 80px;
-      object-fit: contain;
-      margin-bottom: 16px;
-      border-radius: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-  
-    .brand-name {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--primary-color);
-      margin: 0;
-      letter-spacing: -0.5px;
-    }
-  }
-  
-  /* ==============================
-     CARTE DE CONNEXION BLANCHE
-     ============================== */
-  .login-card {
-    flex-grow: 1; /* Allow to grow without forcing a strict height */
-    background: var(--card-bg);
-    margin: 0 16px; /* Marges latérales (16px) */
-    border-radius: 40px 40px 0 0; /* Coins fortement arrondis en haut */
-    padding: 40px 24px 60px;
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.04); /* Douce ombre, détache du fond */
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .form-title {
-    text-align: center;
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--text-main);
-    margin: 0 0 32px;
-    line-height: 1.3;
-  }
-  
-  /* ==============================
-     CHAMPS DE SAISIE (PILLULES)
-     ============================== */
-  .input-group {
-    margin-bottom: 24px;
-    display: flex;
-    flex-direction: column;
-  
-    label {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-main);
-      margin-bottom: 8px;
-      padding-left: 4px;
-    }
-  }
-  
-  .pill-input {
-    display: flex;
-    align-items: center;
-    background: var(--input-bg);
-    height: 56px; /* Hauteur confortable tactile */
-    border-radius: 30px; /* Bords très arrondis */
-    padding: 0 20px;
-    border: 1px solid transparent;
-    transition: all 0.2s ease-in-out;
-  
-    &:focus-within {
-      background: #ffffff;
-      border-color: var(--primary-color); /* Highlight subtile */
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-    }
-  
-    ion-input {
-      --padding-start: 0;
-      --padding-end: 0;
-      --background: transparent;
-      font-size: 16px;
-      font-weight: 500;
-      --color: var(--text-main);
-      --placeholder-color: #94a3b8;
-      flex: 1;
-    }
-  
-    .eye-toggle {
-      font-size: 22px;
-      color: var(--text-muted);
-      margin-left: 10px;
-      padding: 4px;
-      cursor: pointer;
-  
-      &:active {
-        color: var(--primary-color);
-      }
-    }
-  }
-  
-  .error-msg {
-    color: #ef4444;
-    font-size: 12px;
-    font-weight: 500;
-    margin-top: 6px;
-    padding-left: 12px;
-  }
-  
-  /* ==============================
-     OPTIONS (CHECKBOX & LIEN)
-     ============================== */
-  .form-options {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 32px;
-    padding: 0 4px;
-    flex-wrap: wrap; /* Allows wrapping on very small screens */
+  --bg-blue: #0C4B8E; /* Blue background matching the top of the image */
+  --text-dark: #042C60; /* Dark navy for text and button */
+  --gold: #DBA53A; /* Gold color for line and link */
+  --card-bg: #F4F7FB; /* Very light gray/blue background for the card */
+  --field-bg: #FFFFFF; /* White background for inputs */
+  --muted: #A0ABBB; /* Light gray for icons and placeholders */
+}
 
-    .remember-me {
-      ion-checkbox {
-        --size: 18px;
-        --checkbox-background-checked: var(--primary-color);
-        --border-color: #cbd5e1;
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--text-muted);
-      }
-    }
-  
-    .forgot-link {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--primary-color);
-      text-decoration: none;
-  
-      &:active {
-        opacity: 0.7;
-      }
-    }
-  }
-  
-  /* ==============================
-     BOUTON DE CONNEXION
-     ============================== */
-  .action-container {
-    display: flex;
-    justify-content: center;
-  }
-  
-  .submit-btn {
-    width: 100%; /* Presque toute la largeur */
-    height: 56px; /* Confortable au doigt */
-    background: var(--primary-color);
-    color: #ffffff;
-    border: none;
-    border-radius: 30px; /* Forme fortement arrondie (pill) */
-    font-size: 17px;
-    font-weight: 600;
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25); /* Ombre très subtile */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.1s;
-  
-    &:active:not(:disabled) {
-      transform: scale(0.98);
-    }
-  
-    &:disabled {
-      background: #94a3b8;
-      box-shadow: none;
-      opacity: 0.7;
-    }
-  }
+.login-content {
+  --background: var(--bg-blue) !important;
+}
+
+.login-container {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-blue);
+}
+
+.header-section {
+  flex-shrink: 0;
+  padding: 14vh 32px 3vh;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  background: var(--bg-blue);
+}
+
+.header-logo {
+  position: absolute;
+  top: 4vh;
+  left: 32px;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  z-index: 10;
+}
+
+.hello-text {
+  font-size: 48px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: -1px;
+}
+
+.login-card {
+  flex: 1;
+  background: var(--card-bg);
+  border-radius: 40px 40px 0 0;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin: 0 0 40px;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.login-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 36px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--gold);
+}
+
+.field-group {
+  margin-bottom: 24px;
+}
+
+.group-password {
+  margin-bottom: 12px;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  background: var(--field-bg);
+  border-radius: 12px;
+  padding: 0 16px;
+  /* subtle shadow matching the image */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03); 
+}
+
+.field-icon {
+  font-size: 20px;
+  color: var(--muted);
+  margin-right: 12px;
+}
+
+.field ion-input {
+  --padding-start: 0;
+  --padding-end: 0;
+  --background: transparent;
+  font-size: 16px;
+  font-weight: 500;
+  --color: #1e293b;
+  --placeholder-color: var(--muted);
+  --placeholder-opacity: 1;
+  flex: 1;
+}
+
+.eye-toggle {
+  font-size: 20px;
+  color: var(--muted);
+  margin-left: 10px;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.error-msg {
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 6px 0 0 4px;
+}
+
+.forgot-link {
+  display: block;
+  text-align: right;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gold);
+  text-decoration: none;
+  margin: 0 0 32px;
+}
+
+.login-btn {
+  width: 100%;
+  height: 56px;
+  border: none;
+  border-radius: 12px;
+  background: var(--text-dark);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(4, 44, 96, 0.2);
+  transition: transform 0.1s;
+}
+
+.login-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  box-shadow: none;
+}

@@ -186,8 +186,8 @@
           <div class="item-content">
             <label>{{ 'Volume horaire effectué' }}</label>
             <p>
-              {{ teacher.volumeHoraire.effectue }} h / {{
-              teacher.volumeHoraire.total }} h
+              {{ teacher.volumeHoraire.effectue | number:'1.0-0' }} h /
+              {{ teacher.volumeHoraire.total | number:'1.0-0' }} h
             </p>
           </div>
         </div>
@@ -202,7 +202,7 @@
               [style.width.%]="getProgressPercent()"
             ></div>
           </div>
-          <p>Reste à effectuer : {{ teacher.volumeHoraire.restant }} h</p>
+          <p>Reste à effectuer : {{ teacher.volumeHoraire.restant | number:'1.0-0' }} h</p>
         </div>
       </div>
     </div>
@@ -236,7 +236,7 @@
           <span class="stat-label">{{ 'Émargées' }}</span>
         </div>
         <div class="stat-box secondary">
-          <span class="stat-value">{{ teacher.volumeHoraire.effectue }}h</span>
+          <span class="stat-value">{{ teacher.volumeHoraire.effectue | number:'1.0-0' }}h</span>
           <span class="stat-label">{{ 'Volume' }}</span>
         </div>
       </div>
@@ -274,8 +274,11 @@
           </div>
           <div class="item-content">
             <label>{{ 'Notifications' }}</label>
-            <p>{{ 'Activées' }}</p>
           </div>
+          <ion-toggle
+            [(ngModel)]="notificationsEnabled"
+            (ionChange)="onNotificationsToggle($event)"
+          ></ion-toggle>
         </div>
       </div>
     </div>

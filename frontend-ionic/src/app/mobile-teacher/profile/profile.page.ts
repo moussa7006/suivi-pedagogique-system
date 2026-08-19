@@ -8,6 +8,7 @@ import {
   IonIcon,
   IonModal,
   IonInput,
+  IonToggle,
   ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -62,6 +63,7 @@ import { FicheProgression } from '../../core/models/fiche-progression.model';
     IonIcon,
     IonModal,
     IonInput,
+    IonToggle,
   ],
 })
 export class ProfilePage implements OnInit {
@@ -74,6 +76,7 @@ export class ProfilePage implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   isPasswordModalOpen = false;
+  notificationsEnabled = true;
   showOldPassword = false;
   showNewPassword = false;
   showConfirmPassword = false;
@@ -318,6 +321,16 @@ export class ProfilePage implements OnInit {
     this.newPassword = '';
     this.confirmPassword = '';
     this.isPasswordModalOpen = true;
+  }
+
+  onNotificationsToggle(event: any) {
+    this.notificationsEnabled = event.detail.checked;
+    this.presentToast(
+      this.notificationsEnabled
+        ? 'Notifications activées'
+        : 'Notifications désactivées',
+      'success',
+    );
   }
 
   updatePassword() {

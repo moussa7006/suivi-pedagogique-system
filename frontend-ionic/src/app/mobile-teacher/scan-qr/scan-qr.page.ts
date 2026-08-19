@@ -29,6 +29,9 @@ import {
   calendarOutline,
   radioButtonOn,
   radioButtonOff,
+  bookOutline,
+  peopleOutline,
+  timeOutline,
 } from 'ionicons/icons';
 import { Geolocation } from '@capacitor/geolocation';
 import jsQR from 'jsqr';
@@ -36,9 +39,22 @@ import { forkJoin } from 'rxjs';
 import { EmargementService } from '../../core/services/emargement.service';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
 import { ScheduleService } from '../../core/services/schedule.service';
+import { MatiereService } from '../../core/services/matiere.service';
+import { ClasseService } from '../../core/services/classe.service';
+import { SalleService } from '../../core/services/salle.service';
 import { FicheProgression } from '../../core/models/fiche-progression.model';
 import { Seance } from '../../core/models/seance.model';
+import { EmploiDuTemps } from '../../core/models/schedule.model';
+import { Matiere } from '../../core/models/matiere.model';
+import { Classe } from '../../core/models/classe.model';
+import { Salle } from '../../core/models/salle.model';
 import { StatutSeance } from '../../core/models/enums';
+
+interface SeanceDisplay extends Seance {
+  matiereLibelle?: string;
+  classeLibelle?: string;
+  salleLibelle?: string;
+}
 
 @Component({
   selector: 'app-scan-qr',
@@ -62,6 +78,9 @@ export class ScanQRPage implements OnDestroy {
   private readonly emargementService = inject(EmargementService);
   private readonly ficheProgressionService = inject(FicheProgressionService);
   private readonly scheduleService = inject(ScheduleService);
+  private readonly matiereService = inject(MatiereService);
+  private readonly classeService = inject(ClasseService);
+  private readonly salleService = inject(SalleService);
   private readonly alertController = inject(AlertController);
   private readonly toastController = inject(ToastController);
   private readonly router = inject(Router);
@@ -73,7 +92,7 @@ export class ScanQRPage implements OnDestroy {
   isLoading = false;
   manualToken = '';
   selectedSeanceId: number | null = null;
-  seances: Seance[] = [];
+  seances: SeanceDisplay[] = [];
   fichesProgression: FicheProgression[] = [];
   cameraSupported = true;
   seanceRequiredError = false;
@@ -95,6 +114,9 @@ export class ScanQRPage implements OnDestroy {
       calendarOutline,
       radioButtonOn,
       radioButtonOff,
+      bookOutline,
+      peopleOutline,
+      timeOutline,
     });
 
     this.loadData();
@@ -104,7 +126,7 @@ export class ScanQRPage implements OnDestroy {
     this.stopCamera();
   }
 
-  get selectedSeance(): Seance | null {
+  get selectedSeance(): SeanceDisplay | null {
     return (
       this.seances.find((item) => item.id === Number(this.selectedSeanceId)) ||
       null
@@ -120,11 +142,17 @@ export class ScanQRPage implements OnDestroy {
     forkJoin({
       seances: this.scheduleService.getSeances(),
       fiches: this.ficheProgressionService.getFichesProgression(),
+      emplois: this.scheduleService.getEmploisDuTemps(),
+      matieres: this.matiereService.getAll(),
+      classes: this.classeService.getAll(),
+      salles: this.salleService.getAll(),
     }).subscribe({
-      next: ({ seances, fiches }) => {
-        this.seances = (seances || []).filter((seance) =>
-          this.isTodaySeance(seance),
-        );
+      next: ({ seances, fiches, emplois, matieres, classes, salles }) => {
+        this.seances = (seances || [])
+          .filter((seance) => this.isTodaySeance(seance))
+          .map((seance) =>
+            this.enrichSeance(seance, emplois, matieres, classes, salles),
+          );
         this.fichesProgression = fiches || [];
         this.selectedSeanceId = this.resolveInitialSeanceId(this.seances);
         this.isLoading = false;
@@ -141,7 +169,33 @@ export class ScanQRPage implements OnDestroy {
     });
   }
 
-  private resolveInitialSeanceId(seances: Seance[]): number | null {
+  private enrichSeance(
+    seance: Seance,
+    emplois: EmploiDuTemps[],
+    matieres: Matiere[],
+    classes: Classe[],
+    salles: Salle[],
+  ): SeanceDisplay {
+    const emploi = emplois.find((e) => e.id === seance.emploiDuTempsId);
+    const matiere = matieres.find((m) => m.id === emploi?.matiereId);
+    const classe = classes.find(
+      (c) => c.id === (seance.classeId ?? emploi?.classeId),
+    );
+    const salle = salles.find(
+      (s) => s.id === (seance.salleId ?? emploi?.salleId),
+    );
+
+    return {
+      ...seance,
+      matiereLibelle: matiere?.libelle,
+      classeLibelle: classe?.libelle,
+      salleLibelle: salle
+        ? `${salle.nom}${salle.batiment ? ' · ' + salle.batiment : ''}`
+        : undefined,
+    };
+  }
+
+  private resolveInitialSeanceId(seances: SeanceDisplay[]): number | null {
     const seanceIdFromRoute = Number(
       this.route.snapshot.queryParamMap.get('seanceId'),
     );
@@ -255,7 +309,7 @@ export class ScanQRPage implements OnDestroy {
     }
   }
 
-  hasCahierForSeance(seance: Seance | null): boolean {
+  hasCahierForSeance(seance: SeanceDisplay | null): boolean {
     if (!seance?.id) {
       return false;
     }
