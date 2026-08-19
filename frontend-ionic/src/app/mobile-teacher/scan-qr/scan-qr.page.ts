@@ -221,6 +221,10 @@ export class ScanQRPage implements OnDestroy {
       return;
     }
 
+    if (!(await this.ensureFicheRemplie())) {
+      return;
+    }
+
     if (!navigator.mediaDevices?.getUserMedia) {
       this.cameraSupported = false;
       this.cdr.detectChanges();
@@ -286,6 +290,10 @@ export class ScanQRPage implements OnDestroy {
       return;
     }
 
+    if (!(await this.ensureFicheRemplie())) {
+      return;
+    }
+
     const tokenQRCode = this.manualToken.trim();
     if (!tokenQRCode) {
       await this.presentAlert(
@@ -318,6 +326,18 @@ export class ScanQRPage implements OnDestroy {
       !!seance.ficheProgressionId ||
       this.fichesProgression.some((fiche) => fiche.seanceId === seance.id)
     );
+  }
+
+  private async ensureFicheRemplie(): Promise<boolean> {
+    if (this.hasCahierForSeance(this.selectedSeance)) {
+      return true;
+    }
+
+    await this.presentToast(
+      "Remplissez d'abord la fiche de progression avant de scanner.",
+      'warning',
+    );
+    return false;
   }
 
   private startQrDetection(video: HTMLVideoElement): void {
@@ -439,9 +459,9 @@ export class ScanQRPage implements OnDestroy {
             const toast = await this.toastController.create({
               message:
                 'Scan validé ✅ Remplissez maintenant la fiche de progression.',
-              duration: 2500,
+              duration: 3500,
               color: 'success',
-              position: 'top',
+              position: 'middle',
             });
             await toast.present();
             await this.router.navigate(['/mobile/cahier-textes'], {

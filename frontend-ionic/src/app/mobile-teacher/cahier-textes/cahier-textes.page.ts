@@ -146,20 +146,6 @@ export class CahierTextesPage {
       .length;
   }
 
-  get validatedHours(): number {
-    return this.fichesProgression
-      .filter((fiche) => fiche.estValideAdmin)
-      .reduce(
-        (total, fiche) => total + this.extractDurationHours(fiche.heureSeance),
-        0,
-      );
-  }
-
-  get pendingHours(): number {
-    const pending = this.totalHeures - this.validatedHours;
-    return pending > 0 ? pending : 0;
-  }
-
   get selectedSeance(): Seance | undefined {
     return this.seancesDisponibles.find(
       (item) => item.id === Number(this.seanceForm.value.seanceId),

@@ -22,43 +22,31 @@
 
   <!-- Quick Stats -->
   <div class="quick-stats animate-slide-up">
-    <div class="stat-card">
+    <div class="stat-card stat-card--blue">
       <div class="stat-icon blue">
         <ion-icon name="document-text-outline"></ion-icon>
       </div>
       <div class="stat-content">
         <span class="stat-value">{{ seances.length }}</span>
         <span class="stat-label">Séances</span>
-        <span class="stat-hours">
-          <ion-icon name="time-outline"></ion-icon>
-          {{ totalHeures | number:'1.0-0' }}h
-        </span>
       </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-card--green">
       <div class="stat-icon green">
         <ion-icon name="checkmark-done-outline"></ion-icon>
       </div>
       <div class="stat-content">
         <span class="stat-value">{{ getValidatedCount }}</span>
         <span class="stat-label">Validées</span>
-        <span class="stat-hours">
-          <ion-icon name="time-outline"></ion-icon>
-          {{ validatedHours | number:'1.0-0' }}h
-        </span>
       </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-card--orange">
       <div class="stat-icon orange">
         <ion-icon name="time-outline"></ion-icon>
       </div>
       <div class="stat-content">
         <span class="stat-value">{{ getPendingCount }}</span>
         <span class="stat-label">À finaliser</span>
-        <span class="stat-hours">
-          <ion-icon name="time-outline"></ion-icon>
-          {{ pendingHours | number:'1.0-0' }}h
-        </span>
       </div>
     </div>
   </div>

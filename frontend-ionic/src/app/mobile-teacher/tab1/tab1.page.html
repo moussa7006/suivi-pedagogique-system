@@ -55,10 +55,6 @@
     <div class="notif-panel__handle"></div>
     <div class="notif-panel__header">
       <div>
-        <span class="notif-panel__eyebrow">
-          <ion-icon name="sparkles-outline"></ion-icon>
-          Centre d'alertes
-        </span>
         <h2>Notifications</h2>
         <p>
           {{ notificationCount }} élément{{ notificationCount > 1 ? 's' : '' }}
@@ -161,7 +157,7 @@
       <span class="action-card__label">Émargement</span>
     </div>
 
-    <!-- TILE 3 - Emploi du temps -->
+    <!-- TILE 3 - Planning -->
     <div
       class="action-card action-card--planning"
       (click)="navigateTo('/mobile/planning')"
@@ -169,7 +165,7 @@
       <div class="action-card__icon">
         <ion-icon name="calendar-outline"></ion-icon>
       </div>
-      <span class="action-card__label">Emploi du temps</span>
+      <span class="action-card__label">Planning</span>
     </div>
 
     <!-- TILE 4 - Honoraires -->

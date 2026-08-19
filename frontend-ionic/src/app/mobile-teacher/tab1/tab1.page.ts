@@ -33,7 +33,6 @@ import {
   checkmarkCircleOutline,
   trendingUpOutline,
   closeOutline,
-  sparklesOutline,
   cashOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
@@ -135,7 +134,6 @@ export class Tab1Page implements OnInit, OnDestroy {
       checkmarkCircleOutline,
       trendingUpOutline,
       closeOutline,
-      sparklesOutline,
       cashOutline,
     });
   }

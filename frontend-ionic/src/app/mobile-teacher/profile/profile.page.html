@@ -62,14 +62,6 @@
         <ion-icon name="stats-chart-outline"></ion-icon>
         <span>{{ 'Stats' }}</span>
       </button>
-      <button
-        type="button"
-        [class.active]="activeSection === 'security'"
-        (click)="setActiveSection('security')"
-      >
-        <ion-icon name="shield-checkmark-outline"></ion-icon>
-        <span>{{ 'Sécurité' }}</span>
-      </button>
     </div>
 
     <div class="modern-card" *ngIf="activeSection === 'personal'">
@@ -154,6 +146,18 @@
             <label>{{ 'Spécialité' }}</label>
             <p class="breakable">{{ teacher.specialite || 'Non renseigné' }}</p>
           </div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="notifications-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>{{ 'Notifications' }}</label>
+          </div>
+          <ion-toggle
+            [(ngModel)]="notificationsEnabled"
+            (ionChange)="onNotificationsToggle($event)"
+          ></ion-toggle>
         </div>
       </div>
     </div>
@@ -242,48 +246,7 @@
       </div>
     </div>
 
-    <div class="modern-card" *ngIf="activeSection === 'security'">
-      <button
-        class="card-header card-header-button"
-        type="button"
-        (click)="setActiveSection('security')"
-      >
-        <ion-icon name="shield-checkmark-outline"></ion-icon>
-        <div>
-          <h3>{{ 'Sécurité & appli' }}</h3>
-          <p>{{ 'Gérez votre mot de passe et vos préférences.' }}</p>
-        </div>
-      </button>
-      <div class="info-list">
-        <button
-          class="security-action"
-          type="button"
-          (click)="openPasswordModal()"
-        >
-          <div class="icon-box">
-            <ion-icon name="lock-closed-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <label>{{ 'Mot de passe' }}</label>
-            <p>{{ '••••••••••••' }}</p>
-          </div>
-        </button>
-        <div class="info-row">
-          <div class="icon-box">
-            <ion-icon name="notifications-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <label>{{ 'Notifications' }}</label>
-          </div>
-          <ion-toggle
-            [(ngModel)]="notificationsEnabled"
-            (ionChange)="onNotificationsToggle($event)"
-          ></ion-toggle>
-        </div>
-      </div>
-    </div>
-  </div>
-
+    <div class="modern-card" *ngIf="activeSection === 'stats'">
   <div class="logout-section">
     <ion-button
       expand="block"
@@ -295,6 +258,7 @@
       <ion-icon slot="start" name="log-out-outline"></ion-icon>
       <span>{{ 'Déconnexion' }}</span>
     </ion-button>
+  </div>
   </div>
 
   <!-- Floating Photo Options Popup -->
@@ -337,79 +301,6 @@
       <button class="popup-cancel" (click)="closePhotoPopup()">Annuler</button>
     </div>
   </div>
+  </div>
 
-  <ion-modal
-    [isOpen]="isPasswordModalOpen"
-    (ionModalDidDismiss)="isPasswordModalOpen = false"
-    class="password-modal-compact"
-  >
-    <ng-template>
-      <div class="modal-compact-container">
-        <div class="drag-handle"></div>
-        <div class="modal-compact-header">
-          <h2>{{ 'Modifier le mot de passe' }}</h2>
-          <ion-button
-            fill="clear"
-            (click)="isPasswordModalOpen = false"
-            class="btn-close-compact"
-          >
-            <ion-icon name="close-outline"></ion-icon>
-          </ion-button>
-        </div>
-
-        <div class="compact-form">
-          <div class="compact-input-group">
-            <ion-icon name="lock-closed-outline" class="start-icon"></ion-icon>
-            <ion-input
-              [type]="showOldPassword ? 'text' : 'password'"
-              placeholder="Ancien mot de passe"
-              [(ngModel)]="oldPassword"
-            ></ion-input>
-            <ion-icon
-              [name]="showOldPassword ? 'eye-off-outline' : 'eye-outline'"
-              class="eye-icon"
-              (click)="showOldPassword = !showOldPassword"
-            ></ion-icon>
-          </div>
-          <div class="compact-input-group">
-            <ion-icon name="key-outline" class="start-icon"></ion-icon>
-            <ion-input
-              [type]="showNewPassword ? 'text' : 'password'"
-              placeholder="Nouveau mot de passe"
-              [(ngModel)]="newPassword"
-            ></ion-input>
-            <ion-icon
-              [name]="showNewPassword ? 'eye-off-outline' : 'eye-outline'"
-              class="eye-icon"
-              (click)="showNewPassword = !showNewPassword"
-            ></ion-icon>
-          </div>
-          <div class="compact-input-group">
-            <ion-icon
-              name="checkmark-circle-outline"
-              class="start-icon"
-            ></ion-icon>
-            <ion-input
-              [type]="showConfirmPassword ? 'text' : 'password'"
-              placeholder="Confirmer le mot de passe"
-              [(ngModel)]="confirmPassword"
-            ></ion-input>
-            <ion-icon
-              [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"
-              class="eye-icon"
-              (click)="showConfirmPassword = !showConfirmPassword"
-            ></ion-icon>
-          </div>
-
-          <ion-button
-            expand="block"
-            class="btn-save-compact"
-            (click)="updatePassword()"
-          >
-            {{ 'Enregistrer les modifications' }}
-          </ion-button>
-        </div>
-      </div>
-    </ng-template>
-  </ion-modal>
 </ion-content>

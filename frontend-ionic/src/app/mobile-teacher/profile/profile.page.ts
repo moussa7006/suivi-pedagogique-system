@@ -6,8 +6,6 @@ import {
   IonContent,
   IonButton,
   IonIcon,
-  IonModal,
-  IonInput,
   IonToggle,
   ToastController,
 } from '@ionic/angular/standalone';
@@ -20,23 +18,16 @@ import {
   businessOutline,
   bookOutline,
   timeOutline,
-  checkmarkCircleOutline,
   warningOutline,
   logOutOutline,
   statsChartOutline,
   arrowBackOutline,
   personCircleOutline,
-  shieldCheckmarkOutline,
-  lockClosedOutline,
   notificationsOutline,
   cameraOutline,
   imagesOutline,
   globeOutline,
-  closeOutline,
-  keyOutline,
   createOutline,
-  eyeOutline,
-  eyeOffOutline,
   trashOutline,
   schoolOutline,
   chevronForwardOutline,
@@ -46,7 +37,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { UtilisateurService } from '../../core/services/utilisateur.service';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
-import { catchError, finalize, forkJoin, of, switchMap } from 'rxjs';
+import { catchError, forkJoin, of, switchMap } from 'rxjs';
 import { Seance } from '../../core/models/seance.model';
 import { FicheProgression } from '../../core/models/fiche-progression.model';
 
@@ -61,8 +52,6 @@ import { FicheProgression } from '../../core/models/fiche-progression.model';
     IonContent,
     IonButton,
     IonIcon,
-    IonModal,
-    IonInput,
     IonToggle,
   ],
 })
@@ -75,18 +64,9 @@ export class ProfilePage implements OnInit {
   private ngZone = inject(NgZone);
   private cdr = inject(ChangeDetectorRef);
 
-  isPasswordModalOpen = false;
   notificationsEnabled = true;
-  showOldPassword = false;
-  showNewPassword = false;
-  showConfirmPassword = false;
-  isChangingPassword = false;
   showPhotoPopup = false;
-  activeSection: 'personal' | 'academic' | 'stats' | 'security' = 'personal';
-
-  oldPassword = '';
-  newPassword = '';
-  confirmPassword = '';
+  activeSection: 'personal' | 'academic' | 'stats' = 'personal';
 
   teacher = {
     id: 1,
@@ -124,24 +104,17 @@ export class ProfilePage implements OnInit {
       businessOutline,
       bookOutline,
       timeOutline,
-      checkmarkCircleOutline,
       warningOutline,
       logOutOutline,
       statsChartOutline,
       arrowBackOutline,
       personCircleOutline,
-      shieldCheckmarkOutline,
-      lockClosedOutline,
       notificationsOutline,
       cameraOutline,
       imagesOutline,
       trashOutline,
       globeOutline,
-      closeOutline,
-      keyOutline,
       createOutline,
-      eyeOutline,
-      eyeOffOutline,
       schoolOutline,
       chevronForwardOutline,
     });
@@ -296,7 +269,7 @@ export class ProfilePage implements OnInit {
   }
 
   setActiveSection(
-    section: 'personal' | 'academic' | 'stats' | 'security',
+    section: 'personal' | 'academic' | 'stats',
   ): void {
     this.activeSection =
       this.activeSection === section ? this.activeSection : section;
@@ -316,13 +289,6 @@ export class ProfilePage implements OnInit {
       : null;
   }
 
-  openPasswordModal() {
-    this.oldPassword = '';
-    this.newPassword = '';
-    this.confirmPassword = '';
-    this.isPasswordModalOpen = true;
-  }
-
   onNotificationsToggle(event: any) {
     this.notificationsEnabled = event.detail.checked;
     this.presentToast(
@@ -331,70 +297,6 @@ export class ProfilePage implements OnInit {
         : 'Notifications désactivées',
       'success',
     );
-  }
-
-  updatePassword() {
-    if (!this.oldPassword) {
-      this.presentToast("Veuillez renseigner l'ancien mot de passe.", 'danger');
-      return;
-    }
-
-    if (!this.newPassword || this.newPassword.length < 14) {
-      this.presentToast(
-        'Le mot de passe doit contenir au moins 14 caractères.',
-        'danger',
-      );
-      return;
-    }
-
-    if (
-      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{14,}$/.test(
-        this.newPassword,
-      )
-    ) {
-      this.presentToast(
-        'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un symbole.',
-        'danger',
-      );
-      return;
-    }
-
-    if (this.newPassword !== this.confirmPassword) {
-      this.presentToast('Les mots de passe ne correspondent pas.', 'danger');
-      return;
-    }
-
-    this.isChangingPassword = true;
-
-    this.authService
-      .changePassword(this.oldPassword, this.newPassword)
-      .pipe(finalize(() => (this.isChangingPassword = false)))
-      .subscribe({
-        next: async () => {
-          this.oldPassword = '';
-          this.newPassword = '';
-          this.confirmPassword = '';
-          this.isPasswordModalOpen = false;
-          const toast = await this.toastController.create({
-            message: 'Mot de passe modifié avec succès.',
-            duration: 3000,
-            color: 'success',
-            position: 'top',
-          });
-          await toast.present();
-        },
-        error: async (err) => {
-          const toast = await this.toastController.create({
-            message:
-              err?.error?.error ||
-              'Erreur lors de la modification du mot de passe.',
-            duration: 3000,
-            color: 'danger',
-            position: 'top',
-          });
-          await toast.present();
-        },
-      });
   }
 
   async changePhoto() {
