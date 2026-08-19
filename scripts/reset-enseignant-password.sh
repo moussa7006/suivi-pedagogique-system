@@ -3,19 +3,41 @@
 #  EduTrack - Reinitialisation du mot de passe enseignant
 #  Utilise le compte admin pour reinitialiser le mot de passe
 #
+<<<<<<< HEAD
 #  Usage: ./scripts/reset-enseignant-password.sh
 #         ./scripts/reset-enseignant-password.sh ayabourama4@gmail.com "NouveauMdp123!"
 #
 #  Par defaut, cible ayabourama4@gmail.com
+=======
+#  Usage: ./scripts/reset-enseignant-password.sh <email-enseignant> "NouveauMdp123!"
+#         ./scripts/reset-enseignant-password.sh ayabourama4@gmail.com "NouveauMdp123!"
+#
+#  Les identifiants admin se configurent via les variables d'environnement
+#  ADMIN_EMAIL et ADMIN_PASSWORD (aucun mot de passe par defaut).
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 # ============================================================
 set -e
 
 BACKEND_URL="${BACKEND_URL:-http://localhost:8099}"
+<<<<<<< HEAD
 ADMIN_EMAIL="${ADMIN_EMAIL:-admin@edutrack.local}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-Admin1234!}"
 
 ENSEIGNANT_EMAIL="${1:-ayabourama4@gmail.com}"
 NEW_PASSWORD="${2:-Boura_12345678911!}"
+=======
+ADMIN_EMAIL="${ADMIN_EMAIL:-}"
+ADMIN_PASSWORD="${ADMIN_PASSWORD:-}"
+
+ENSEIGNANT_EMAIL="${1:-}"
+NEW_PASSWORD="${2:-}"
+
+if [ -z "$ENSEIGNANT_EMAIL" ] || [ -z "$NEW_PASSWORD" ]; then
+  echo "Usage: $0 <email-enseignant> \"NouveauMotDePasse\"" >&2
+  echo "Exemple: $0 enseignant@example.com \"NouveauMdp123!\"" >&2
+  exit 2
+fi
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
 echo "============================================"
 echo "  EduTrack - Reset mot de passe enseignant"

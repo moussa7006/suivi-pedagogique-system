@@ -6,8 +6,12 @@ import {
   IonContent,
   IonButton,
   IonIcon,
+<<<<<<< HEAD
   IonModal,
   IonInput,
+=======
+  IonToggle,
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -19,23 +23,33 @@ import {
   businessOutline,
   bookOutline,
   timeOutline,
+<<<<<<< HEAD
   checkmarkCircleOutline,
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   warningOutline,
   logOutOutline,
   statsChartOutline,
   arrowBackOutline,
   personCircleOutline,
+<<<<<<< HEAD
   shieldCheckmarkOutline,
   lockClosedOutline,
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   notificationsOutline,
   cameraOutline,
   imagesOutline,
   globeOutline,
+<<<<<<< HEAD
   closeOutline,
   keyOutline,
   createOutline,
   eyeOutline,
   eyeOffOutline,
+=======
+  createOutline,
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   trashOutline,
   schoolOutline,
   chevronForwardOutline,
@@ -45,7 +59,11 @@ import { AuthService } from '../../core/services/auth.service';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { UtilisateurService } from '../../core/services/utilisateur.service';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
+<<<<<<< HEAD
 import { catchError, finalize, forkJoin, of, switchMap } from 'rxjs';
+=======
+import { catchError, forkJoin, of, switchMap } from 'rxjs';
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 import { Seance } from '../../core/models/seance.model';
 import { FicheProgression } from '../../core/models/fiche-progression.model';
 
@@ -60,8 +78,12 @@ import { FicheProgression } from '../../core/models/fiche-progression.model';
     IonContent,
     IonButton,
     IonIcon,
+<<<<<<< HEAD
     IonModal,
     IonInput,
+=======
+    IonToggle,
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   ],
 })
 export class ProfilePage implements OnInit {
@@ -73,6 +95,7 @@ export class ProfilePage implements OnInit {
   private ngZone = inject(NgZone);
   private cdr = inject(ChangeDetectorRef);
 
+<<<<<<< HEAD
   isPasswordModalOpen = false;
   showOldPassword = false;
   showNewPassword = false;
@@ -84,6 +107,11 @@ export class ProfilePage implements OnInit {
   oldPassword = '';
   newPassword = '';
   confirmPassword = '';
+=======
+  notificationsEnabled = true;
+  showPhotoPopup = false;
+  activeSection: 'personal' | 'academic' | 'stats' = 'personal';
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
   teacher = {
     id: 1,
@@ -121,24 +149,34 @@ export class ProfilePage implements OnInit {
       businessOutline,
       bookOutline,
       timeOutline,
+<<<<<<< HEAD
       checkmarkCircleOutline,
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       warningOutline,
       logOutOutline,
       statsChartOutline,
       arrowBackOutline,
       personCircleOutline,
+<<<<<<< HEAD
       shieldCheckmarkOutline,
       lockClosedOutline,
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       notificationsOutline,
       cameraOutline,
       imagesOutline,
       trashOutline,
       globeOutline,
+<<<<<<< HEAD
       closeOutline,
       keyOutline,
       createOutline,
       eyeOutline,
       eyeOffOutline,
+=======
+      createOutline,
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       schoolOutline,
       chevronForwardOutline,
     });
@@ -293,7 +331,11 @@ export class ProfilePage implements OnInit {
   }
 
   setActiveSection(
+<<<<<<< HEAD
     section: 'personal' | 'academic' | 'stats' | 'security',
+=======
+    section: 'personal' | 'academic' | 'stats',
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   ): void {
     this.activeSection =
       this.activeSection === section ? this.activeSection : section;
@@ -313,6 +355,7 @@ export class ProfilePage implements OnInit {
       : null;
   }
 
+<<<<<<< HEAD
   openPasswordModal() {
     this.oldPassword = '';
     this.newPassword = '';
@@ -382,6 +425,16 @@ export class ProfilePage implements OnInit {
           await toast.present();
         },
       });
+=======
+  onNotificationsToggle(event: any) {
+    this.notificationsEnabled = event.detail.checked;
+    this.presentToast(
+      this.notificationsEnabled
+        ? 'Notifications activées'
+        : 'Notifications désactivées',
+      'success',
+    );
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   }
 
   async changePhoto() {

@@ -12,8 +12,11 @@ import {
   IonIcon,
   IonInput,
   IonTextarea,
+<<<<<<< HEAD
   IonSelect,
   IonSelectOption,
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   IonBadge,
   IonSpinner,
   ToastController,
@@ -37,6 +40,11 @@ import {
   peopleOutline,
   schoolOutline,
   arrowBackOutline,
+<<<<<<< HEAD
+=======
+  chevronUpOutline,
+  chevronDownOutline,
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 } from 'ionicons/icons';
 import { catchError, finalize, forkJoin, of, timeout } from 'rxjs';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
@@ -62,8 +70,11 @@ import { ClasseService } from '../../core/services/classe.service';
     IonIcon,
     IonInput,
     IonTextarea,
+<<<<<<< HEAD
     IonSelect,
     IonSelectOption,
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     IonBadge,
     IonSpinner,
     RouterLink,
@@ -99,6 +110,10 @@ export class CahierTextesPage {
   matieres: Matiere[] = [];
   classes: Classe[] = [];
   openedFromScan = false;
+<<<<<<< HEAD
+=======
+  expandedSeanceIds = new Set<number>();
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
   constructor() {
     addIcons({
@@ -118,6 +133,11 @@ export class CahierTextesPage {
       addOutline,
       checkmarkDoneOutline,
       arrowBackOutline,
+<<<<<<< HEAD
+=======
+      chevronUpOutline,
+      chevronDownOutline,
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     });
 
     this.seanceForm = this.fb.group({
@@ -282,6 +302,24 @@ export class CahierTextesPage {
     return seance.id ?? _index;
   }
 
+<<<<<<< HEAD
+=======
+  toggleSeance(seance: { id?: number }): void {
+    if (seance.id === undefined) {
+      return;
+    }
+    if (this.expandedSeanceIds.has(seance.id)) {
+      this.expandedSeanceIds.delete(seance.id);
+    } else {
+      this.expandedSeanceIds.add(seance.id);
+    }
+  }
+
+  isSeanceExpanded(seance: { id?: number }): boolean {
+    return seance.id !== undefined && this.expandedSeanceIds.has(seance.id);
+  }
+
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   formatSeanceLabel(seance: Seance): string {
     return `${seance.dateCours} • ${this.formatTime(seance.heureDebutReelle)} - ${this.formatTime(
       seance.heureFinReelle,
@@ -393,7 +431,11 @@ export class CahierTextesPage {
     return seanceDate.getTime() <= today.getTime();
   }
 
+<<<<<<< HEAD
   private getMatiereLabel(seance: Seance): string {
+=======
+  public getMatiereLabel(seance: Seance): string {
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     const schedule = this.getScheduleForSeance(seance);
     const matiere = this.matieres.find(
       (item) => item.id === schedule?.matiereId,
@@ -402,7 +444,11 @@ export class CahierTextesPage {
     return matiere?.libelle || 'Matière non renseignée';
   }
 
+<<<<<<< HEAD
   private getClasseLabel(seance: Seance): string {
+=======
+  public getClasseLabel(seance: Seance): string {
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     const classe = this.classes.find((item) => item.id === seance.classeId);
 
     return classe?.libelle || `Classe #${seance.classeId}`;
@@ -505,7 +551,11 @@ export class CahierTextesPage {
       : null;
   }
 
+<<<<<<< HEAD
   private formatTime(value?: string): string {
+=======
+  public formatTime(value?: string): string {
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     return value ? value.substring(0, 5) : '--:--';
   }
 

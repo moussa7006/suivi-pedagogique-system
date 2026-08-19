@@ -14,8 +14,11 @@ import {
   IonButton,
   IonIcon,
   IonInput,
+<<<<<<< HEAD
   IonSelect,
   IonSelectOption,
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   ToastController,
   AlertController,
 } from '@ionic/angular/standalone';
@@ -29,6 +32,14 @@ import {
   arrowBackOutline,
   stopCircleOutline,
   calendarOutline,
+<<<<<<< HEAD
+=======
+  radioButtonOn,
+  radioButtonOff,
+  bookOutline,
+  peopleOutline,
+  timeOutline,
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 } from 'ionicons/icons';
 import { Geolocation } from '@capacitor/geolocation';
 import jsQR from 'jsqr';
@@ -36,8 +47,27 @@ import { forkJoin } from 'rxjs';
 import { EmargementService } from '../../core/services/emargement.service';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
 import { ScheduleService } from '../../core/services/schedule.service';
+<<<<<<< HEAD
 import { FicheProgression } from '../../core/models/fiche-progression.model';
 import { Seance } from '../../core/models/seance.model';
+=======
+import { MatiereService } from '../../core/services/matiere.service';
+import { ClasseService } from '../../core/services/classe.service';
+import { SalleService } from '../../core/services/salle.service';
+import { FicheProgression } from '../../core/models/fiche-progression.model';
+import { Seance } from '../../core/models/seance.model';
+import { EmploiDuTemps } from '../../core/models/schedule.model';
+import { Matiere } from '../../core/models/matiere.model';
+import { Classe } from '../../core/models/classe.model';
+import { Salle } from '../../core/models/salle.model';
+import { StatutSeance } from '../../core/models/enums';
+
+interface SeanceDisplay extends Seance {
+  matiereLibelle?: string;
+  classeLibelle?: string;
+  salleLibelle?: string;
+}
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
 @Component({
   selector: 'app-scan-qr',
@@ -52,16 +82,29 @@ import { Seance } from '../../core/models/seance.model';
     IonButton,
     IonIcon,
     IonInput,
+<<<<<<< HEAD
     IonSelect,
     IonSelectOption,
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   ],
 })
 export class ScanQRPage implements OnDestroy {
   @ViewChild('previewVideo') previewVideo?: ElementRef<HTMLVideoElement>;
+<<<<<<< HEAD
+=======
+  @ViewChild('seanceGroup') seanceGroup?: ElementRef<HTMLElement>;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
   private readonly emargementService = inject(EmargementService);
   private readonly ficheProgressionService = inject(FicheProgressionService);
   private readonly scheduleService = inject(ScheduleService);
+<<<<<<< HEAD
+=======
+  private readonly matiereService = inject(MatiereService);
+  private readonly classeService = inject(ClasseService);
+  private readonly salleService = inject(SalleService);
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   private readonly alertController = inject(AlertController);
   private readonly toastController = inject(ToastController);
   private readonly router = inject(Router);
@@ -73,9 +116,16 @@ export class ScanQRPage implements OnDestroy {
   isLoading = false;
   manualToken = '';
   selectedSeanceId: number | null = null;
+<<<<<<< HEAD
   seances: Seance[] = [];
   fichesProgression: FicheProgression[] = [];
   cameraSupported = true;
+=======
+  seances: SeanceDisplay[] = [];
+  fichesProgression: FicheProgression[] = [];
+  cameraSupported = true;
+  seanceRequiredError = false;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
   private mediaStream: MediaStream | null = null;
   private scanTimer: number | null = null;
@@ -92,6 +142,14 @@ export class ScanQRPage implements OnDestroy {
       arrowBackOutline,
       stopCircleOutline,
       calendarOutline,
+<<<<<<< HEAD
+=======
+      radioButtonOn,
+      radioButtonOff,
+      bookOutline,
+      peopleOutline,
+      timeOutline,
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     });
 
     this.loadData();
@@ -101,7 +159,11 @@ export class ScanQRPage implements OnDestroy {
     this.stopCamera();
   }
 
+<<<<<<< HEAD
   get selectedSeance(): Seance | null {
+=======
+  get selectedSeance(): SeanceDisplay | null {
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     return (
       this.seances.find((item) => item.id === Number(this.selectedSeanceId)) ||
       null
@@ -117,11 +179,25 @@ export class ScanQRPage implements OnDestroy {
     forkJoin({
       seances: this.scheduleService.getSeances(),
       fiches: this.ficheProgressionService.getFichesProgression(),
+<<<<<<< HEAD
     }).subscribe({
       next: ({ seances, fiches }) => {
         this.seances = (seances || []).filter((seance) =>
           this.isTodaySeance(seance),
         );
+=======
+      emplois: this.scheduleService.getEmploisDuTemps(),
+      matieres: this.matiereService.getAll(),
+      classes: this.classeService.getAll(),
+      salles: this.salleService.getAll(),
+    }).subscribe({
+      next: ({ seances, fiches, emplois, matieres, classes, salles }) => {
+        this.seances = (seances || [])
+          .filter((seance) => this.isTodaySeance(seance))
+          .map((seance) =>
+            this.enrichSeance(seance, emplois, matieres, classes, salles),
+          );
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
         this.fichesProgression = fiches || [];
         this.selectedSeanceId = this.resolveInitialSeanceId(this.seances);
         this.isLoading = false;
@@ -138,7 +214,37 @@ export class ScanQRPage implements OnDestroy {
     });
   }
 
+<<<<<<< HEAD
   private resolveInitialSeanceId(seances: Seance[]): number | null {
+=======
+  private enrichSeance(
+    seance: Seance,
+    emplois: EmploiDuTemps[],
+    matieres: Matiere[],
+    classes: Classe[],
+    salles: Salle[],
+  ): SeanceDisplay {
+    const emploi = emplois.find((e) => e.id === seance.emploiDuTempsId);
+    const matiere = matieres.find((m) => m.id === emploi?.matiereId);
+    const classe = classes.find(
+      (c) => c.id === (seance.classeId ?? emploi?.classeId),
+    );
+    const salle = salles.find(
+      (s) => s.id === (seance.salleId ?? emploi?.salleId),
+    );
+
+    return {
+      ...seance,
+      matiereLibelle: matiere?.libelle,
+      classeLibelle: classe?.libelle,
+      salleLibelle: salle
+        ? `${salle.nom}${salle.batiment ? ' · ' + salle.batiment : ''}`
+        : undefined,
+    };
+  }
+
+  private resolveInitialSeanceId(seances: SeanceDisplay[]): number | null {
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     const seanceIdFromRoute = Number(
       this.route.snapshot.queryParamMap.get('seanceId'),
     );
@@ -164,6 +270,13 @@ export class ScanQRPage implements OnDestroy {
       return;
     }
 
+<<<<<<< HEAD
+=======
+    if (!(await this.ensureFicheRemplie())) {
+      return;
+    }
+
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     if (!navigator.mediaDevices?.getUserMedia) {
       this.cameraSupported = false;
       this.cdr.detectChanges();
@@ -229,6 +342,13 @@ export class ScanQRPage implements OnDestroy {
       return;
     }
 
+<<<<<<< HEAD
+=======
+    if (!(await this.ensureFicheRemplie())) {
+      return;
+    }
+
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     const tokenQRCode = this.manualToken.trim();
     if (!tokenQRCode) {
       await this.presentAlert(
@@ -241,6 +361,7 @@ export class ScanQRPage implements OnDestroy {
     await this.submitToken(tokenQRCode);
   }
 
+<<<<<<< HEAD
   formatSeanceLabel(seance: Seance): string {
     return `${seance.dateCours} • ${this.formatTime(seance.heureDebutReelle)} - ${this.formatTime(
       seance.heureFinReelle,
@@ -248,6 +369,20 @@ export class ScanQRPage implements OnDestroy {
   }
 
   hasCahierForSeance(seance: Seance | null): boolean {
+=======
+  statutLabel(statut: StatutSeance): string {
+    switch (statut) {
+      case 'EN_COURS':
+        return 'En cours';
+      case 'TERMINEE':
+        return 'Terminée';
+      default:
+        return 'Prévue';
+    }
+  }
+
+  hasCahierForSeance(seance: SeanceDisplay | null): boolean {
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     if (!seance?.id) {
       return false;
     }
@@ -258,6 +393,21 @@ export class ScanQRPage implements OnDestroy {
     );
   }
 
+<<<<<<< HEAD
+=======
+  private async ensureFicheRemplie(): Promise<boolean> {
+    if (this.hasCahierForSeance(this.selectedSeance)) {
+      return true;
+    }
+
+    await this.presentToast(
+      "Remplissez d'abord la fiche de progression avant de scanner.",
+      'warning',
+    );
+    return false;
+  }
+
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   private startQrDetection(video: HTMLVideoElement): void {
     this.scanCanvas = document.createElement('canvas');
     this.scanContext = this.scanCanvas.getContext('2d', {
@@ -298,15 +448,68 @@ export class ScanQRPage implements OnDestroy {
   }
 
   private async ensureSelectedSeanceIsReady(): Promise<boolean> {
+<<<<<<< HEAD
     if (!this.selectedSeance) {
       await this.presentAlert(
         'Séance requise',
         'Veuillez sélectionner la séance concernée.',
+=======
+    if (this.selectedSeance) {
+      this.seanceRequiredError = false;
+      return true;
+    }
+
+    // Aucune séance aujourd'hui : pas de champ à mettre en évidence,
+    // on avertit simplement via un toast.
+    if (this.seances.length === 0) {
+      await this.presentToast(
+        "Aucune séance n'est prévue aujourd'hui.",
+        'warning',
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       );
       return false;
     }
 
+<<<<<<< HEAD
     return true;
+=======
+    this.triggerSeanceRequiredError();
+    return false;
+  }
+
+  private triggerSeanceRequiredError(): void {
+    this.seanceRequiredError = true;
+    this.cdr.detectChanges();
+    this.scrollToSeanceSelect();
+  }
+
+  private scrollToSeanceSelect(): void {
+    // Petit délai pour laisser la bannière d'erreur s'afficher avant de scroller.
+    window.setTimeout(() => {
+      this.seanceGroup?.nativeElement?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }, 80);
+  }
+
+  selectSeance(id: number | undefined): void {
+    this.selectedSeanceId = id ?? null;
+    this.seanceRequiredError = false;
+  }
+
+  private async presentToast(
+    message: string,
+    color: 'success' | 'warning' | 'danger' = 'danger',
+  ): Promise<void> {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2500,
+      color,
+      position: 'top',
+    });
+    await toast.present();
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   }
 
   private async submitToken(tokenQRCode: string): Promise<void> {
@@ -335,9 +538,15 @@ export class ScanQRPage implements OnDestroy {
             const toast = await this.toastController.create({
               message:
                 'Scan validé ✅ Remplissez maintenant la fiche de progression.',
+<<<<<<< HEAD
               duration: 2500,
               color: 'success',
               position: 'top',
+=======
+              duration: 3500,
+              color: 'success',
+              position: 'middle',
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
             });
             await toast.present();
             await this.router.navigate(['/mobile/cahier-textes'], {
@@ -372,10 +581,14 @@ export class ScanQRPage implements OnDestroy {
   ): Promise<boolean> {
     const selectedSeance = this.selectedSeance;
     if (!selectedSeance?.id) {
+<<<<<<< HEAD
       await this.presentAlert(
         'Séance requise',
         'Veuillez sélectionner la séance concernée.',
       );
+=======
+      this.triggerSeanceRequiredError();
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       return false;
     }
 
@@ -450,7 +663,11 @@ export class ScanQRPage implements OnDestroy {
     }
   }
 
+<<<<<<< HEAD
   private formatTime(value?: string): string {
+=======
+  formatTime(value?: string): string {
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     return value ? value.substring(0, 5) : '--:--';
   }
 

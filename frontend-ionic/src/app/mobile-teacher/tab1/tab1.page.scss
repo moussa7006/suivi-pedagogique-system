@@ -29,14 +29,22 @@
    BASE
    ============================================ */
 ion-content {
+<<<<<<< HEAD
   --background: #f8f9fa;
   --padding-start: 20px;
   --padding-end: 20px;
   --padding-top: 16px;
+=======
+  --background: #ffffff;
+  --padding-start: 20px;
+  --padding-end: 20px;
+  --padding-top: 0; /* Retiré pour que le header touche le plafond */
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   --padding-bottom: calc(132px + var(--ion-safe-area-bottom, 0px));
 }
 
 /* ============================================
+<<<<<<< HEAD
    DECORATIVE BACKGROUND
    ============================================ */
 .bg-decoration {
@@ -74,15 +82,35 @@ ion-content {
 
 /* ============================================
    DASHBOARD HEADER
+=======
+   DECORATIVE BACKGROUND (REMOVED)
+   ============================================ */
+.bg-decoration {
+  display: none;
+}
+
+/* ============================================
+   HEADER STICKY
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
    ============================================ */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+<<<<<<< HEAD
   position: relative;
   z-index: 1;
   padding-top: 8px;
   margin-bottom: 20px;
+=======
+  position: sticky; /* Rendu collant */
+  top: 0;
+  z-index: 100;
+  background: #ffffff; /* Fond blanc opaque */
+  padding: var(--ion-safe-area-top, 0px) 20px 16px 20px;
+  margin: 0 -20px 20px -20px; /* S'étend sur les bords pour annuler le padding de ion-content */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Ombre douce pour séparer du contenu */
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 }
 
 .header-left {
@@ -314,6 +342,7 @@ ion-content {
   }
 }
 
+<<<<<<< HEAD
 .notif-panel__eyebrow {
   display: inline-flex;
   align-items: center;
@@ -332,6 +361,8 @@ ion-content {
   }
 }
 
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 .notif-panel__close {
   --background: #f8fafc;
   --border-radius: 16px;
@@ -496,10 +527,15 @@ ion-content {
    ============================================ */
 .quick-stats {
   display: flex;
+<<<<<<< HEAD
+=======
+  justify-content: space-between;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   gap: 8px;
   margin-bottom: 28px;
   position: relative;
   z-index: 1;
+<<<<<<< HEAD
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -519,6 +555,25 @@ ion-content {
   color: var(--text-primary);
   border: 1px solid rgba(226, 232, 240, 0.7);
   white-space: nowrap;
+=======
+  width: 100%;
+}
+
+.stat-chip {
+  flex: 1; /* Permet aux 3 blocs de se partager l'espace équitablement */
+  display: flex;
+  flex-direction: column; /* On empile l'icône au-dessus du texte pour gagner en largeur */
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 4px;
+  border-radius: 16px;
+  font-size: 11px; /* Texte légèrement plus petit pour s'assurer qu'il rentre */
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  border: 1px solid transparent;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   transition: all 0.2s ease;
 
   &:active {
@@ -526,6 +581,7 @@ ion-content {
   }
 
   ion-icon {
+<<<<<<< HEAD
     font-size: 17px;
   }
 
@@ -554,6 +610,35 @@ ion-content {
     ion-icon {
       color: #10b981;
     }
+=======
+    font-size: 22px; /* Icône un peu plus grande puisqu'elle est toute seule en haut */
+    opacity: 0.9;
+  }
+
+  /* Couleurs vives et bien visibles pour chaque bloc */
+  &--primary {
+    background: #0D9488; /* Teal vif */
+    color: #ffffff;
+    ion-icon { color: #ffffff; }
+  }
+
+  &--stone {
+    background: #57534E; /* Couleur Gris Pierre / Stone */
+    color: #ffffff;
+    ion-icon { color: #ffffff; }
+  }
+
+  &--success {
+    background: #059669; /* Vert Franc / Succès */
+    color: #ffffff;
+    ion-icon { color: #ffffff; opacity: 1; }
+  }
+
+  &--accent {
+    background: #2563EB; /* Bleu franc et visible */
+    color: #ffffff;
+    ion-icon { color: #ffffff; opacity: 1; }
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   }
 }
 
@@ -607,23 +692,31 @@ ion-content {
 }
 
 .action-card {
+<<<<<<< HEAD
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.9);
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   border-radius: 28px;
   padding: 22px 18px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
+<<<<<<< HEAD
   box-shadow: 0 12px 36px rgba(15, 23, 42, 0.04);
+=======
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   position: relative;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.35s var(--ease-spring);
   min-height: 160px;
   justify-content: flex-end;
+<<<<<<< HEAD
 
   &:active {
     transform: scale(0.95);
@@ -651,21 +744,63 @@ ion-content {
 .action-card:hover .action-card__bg {
   transform: scale(1.5);
   opacity: 0.25;
+=======
+  border: none; /* On retire la bordure blanche du glassmorphism */
+
+  &:active {
+    transform: scale(0.95);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  }
+
+  /* Couleurs unies distinctes pour chaque tuile */
+  &--progression {
+    background: #1E3A8A; /* Bleu profond unie */
+    .action-card__label, .action-card__desc { color: #ffffff; }
+    .action-card__icon { background: rgba(255,255,255,0.15); }
+  }
+
+  &--scan {
+    background: #4C1D95; /* Violet profond unie */
+    .action-card__label, .action-card__desc { color: #ffffff; }
+    .action-card__icon { background: rgba(255,255,255,0.15); }
+  }
+
+  &--planning {
+    background: #BE123C; /* Rouge/Corail profond unie */
+    .action-card__label, .action-card__desc { color: #ffffff; }
+    .action-card__icon { background: rgba(255,255,255,0.15); }
+  }
+
+  &--honoraires {
+    background: #9A3412; /* Orange profond/Rouille unie */
+    .action-card__label, .action-card__desc { color: #ffffff; }
+    .action-card__icon { background: rgba(255,255,255,0.15); }
+  }
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 }
 
 .action-card__icon {
   width: 48px;
   height: 48px;
+<<<<<<< HEAD
   border-radius: 18px;
+=======
+  border-radius: 16px;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
+<<<<<<< HEAD
   margin-bottom: auto; /* Pushes text to bottom */
+=======
+  margin-bottom: auto; /* Pousse le texte vers le bas */
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   position: relative;
   z-index: 2;
 
   ion-icon {
+<<<<<<< HEAD
     color: #ffffff;
   }
 
@@ -687,10 +822,14 @@ ion-content {
   &--green {
     background: linear-gradient(135deg, #10b981, #34d399);
     box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
+=======
+    color: #ffffff; /* Icône blanche */
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   }
 }
 
 .action-card__label {
+<<<<<<< HEAD
   font-size: 15px;
   font-weight: 800;
   color: var(--text-primary);
@@ -723,6 +862,40 @@ ion-content {
   color: #d97706;
   border: 1px solid rgba(245, 158, 11, 0.3);
   z-index: 2;
+=======
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  z-index: 2;
+  line-height: 1.2;
+}
+
+.action-card__desc {
+  font-size: 13px;
+  opacity: 0.85; /* Légèrement transparent pour le contraste */
+  z-index: 2;
+}
+
+/* NOUVEAU BADGE ULTRA VISIBLE */
+.urgent-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: #FFD700; /* Jaune vif pur */
+  color: #000000; /* Noir pur */
+  font-size: 11px;
+  font-weight: 900; /* Très gras */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 2px solid #ffffff; /* Bordure blanche pour contraster */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Ombre très marquée */
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 }
 
 /* ============================================
@@ -933,6 +1106,13 @@ ion-content {
   overflow-wrap: anywhere;
 }
 
+<<<<<<< HEAD
+=======
+.stat-row__value--red {
+  color: #dc2626;
+}
+
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 .stat-row__trend {
   display: inline-flex;
   align-items: center;

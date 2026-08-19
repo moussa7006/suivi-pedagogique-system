@@ -10,6 +10,7 @@ import {
 } from '@angular/forms';
 import {
   IonContent,
+<<<<<<< HEAD
   IonItem,
   IonInput,
   IonButton,
@@ -30,6 +31,22 @@ import {
   playOutline,
   helpCircleOutline,
   logoGoogle,
+=======
+  IonInput,
+  IonIcon,
+  IonSpinner,
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import {
+  mail,
+  lockClosed,
+  eye,
+  eyeOff,
+  alertCircleOutline,
+  school,
+  warningOutline,
+  serverOutline
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiErrorService } from '../../core/services/api-error.service';
@@ -47,12 +64,18 @@ import { finalize } from 'rxjs';
     ReactiveFormsModule,
     RouterLink,
     IonContent,
+<<<<<<< HEAD
     IonItem,
     IonInput,
     IonButton,
     IonIcon,
     IonSpinner,
     IonCheckbox,
+=======
+    IonInput,
+    IonIcon,
+    IonSpinner,
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   ],
 })
 export class LoginPage {
@@ -67,6 +90,7 @@ export class LoginPage {
   loginForm: FormGroup;
   showPassword = false;
   isLoading = false;
+<<<<<<< HEAD
 
   constructor() {
     addIcons({
@@ -81,6 +105,21 @@ export class LoginPage {
       playOutline,
       helpCircleOutline,
       logoGoogle,
+=======
+  serverError: string | null = null;
+  loginError: string | null = null;
+
+  constructor() {
+    addIcons({
+      mail,
+      lockClosed,
+      eye,
+      eyeOff,
+      alertCircleOutline,
+      school,
+      warningOutline,
+      serverOutline
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     });
 
     this.loginForm = this.fb.group({
@@ -89,6 +128,7 @@ export class LoginPage {
     });
   }
 
+<<<<<<< HEAD
   ionViewWillEnter(): void {
     this.clearLoginFields();
     // Détection silencieuse du serveur : si l'app et le backend sont sur le
@@ -96,6 +136,18 @@ export class LoginPage {
     // n'a rien à configurer.
     if (!this.apiConfig.hasConfiguredBaseUrl()) {
       void this.serverDiscovery.autoDetect();
+=======
+  async ionViewWillEnter() {
+    this.clearLoginFields();
+
+    if (!this.apiConfig.hasConfiguredBaseUrl()) {
+      const found = await this.serverDiscovery.autoDetect();
+      this.serverError = found
+        ? null
+        : 'Serveur introuvable sur le Wi-Fi actuel. Vérifiez que le backend est lancé.';
+    } else {
+      this.serverError = null;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     }
   }
 
@@ -123,6 +175,10 @@ export class LoginPage {
     }
 
     this.isLoading = true;
+<<<<<<< HEAD
+=======
+    this.loginError = null;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
     const credentials = {
       email: this.loginForm.value.email,
@@ -149,7 +205,14 @@ export class LoginPage {
           this.router.navigate(['/mobile/tabs']);
         },
         error: (err) => {
+<<<<<<< HEAD
           this.apiError.presentError(err, 'Email ou mot de passe incorrect.');
+=======
+          this.loginError = this.apiError.extractMessage(
+            err,
+            'Email ou mot de passe incorrect.',
+          );
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
           this.cdr.detectChanges();
         },
       });
@@ -157,6 +220,10 @@ export class LoginPage {
 
   private clearLoginFields(): void {
     this.showPassword = false;
+<<<<<<< HEAD
+=======
+    this.loginError = null;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     this.loginForm.reset({ email: '', password: '' });
     this.loginForm.markAsPristine();
     this.loginForm.markAsUntouched();

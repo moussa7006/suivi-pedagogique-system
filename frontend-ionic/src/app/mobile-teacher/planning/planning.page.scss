@@ -14,7 +14,11 @@
 
 ion-content {
   --background: var(--bg-light);
+<<<<<<< HEAD
   --padding-top: calc(16px + var(--ion-safe-area-top));
+=======
+  --padding-top: var(--ion-safe-area-top);
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   --padding-bottom: calc(132px + var(--ion-safe-area-bottom, 0px));
 }
 
@@ -26,8 +30,19 @@ ion-content {
   align-items: center;
   gap: 16px;
   margin-bottom: 24px;
+<<<<<<< HEAD
   position: relative;
   z-index: 1;
+=======
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #ffffff;
+  padding: var(--ion-safe-area-top, 0px) 20px 16px 20px;
+  margin-left: -20px;
+  margin-right: -20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
   .back-btn {
     --background: #ffffff !important;
@@ -203,9 +218,12 @@ ion-content {
   gap: 16px;
   position: relative;
   padding-bottom: 20px;
+<<<<<<< HEAD
   animation: slideUp 0.5s ease-out;
   animation-delay: var(--delay, 0ms);
   animation-fill-mode: both;
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
   &:last-child {
     .timeline-connector {
@@ -250,18 +268,25 @@ ion-content {
         background: #fef3c7;
         color: var(--accent-warning);
         box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+<<<<<<< HEAD
         animation: pulse 2s infinite;
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       }
     }
 
     .timeline-connector {
       flex: 1;
       width: 2px;
+<<<<<<< HEAD
       background: linear-gradient(
         to bottom,
         var(--accent-blue) 0%,
         rgba(67, 97, 238, 0.1) 100%
       );
+=======
+      background: #2563eb;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       opacity: 0.2;
       margin-top: -4px;
       z-index: 1;
@@ -422,11 +447,18 @@ ion-content {
 
   .skeleton-line {
     height: 14px;
+<<<<<<< HEAD
     background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
     background-size: 200% 100%;
     border-radius: 8px;
     margin-bottom: 10px;
     animation: shimmer 1.5s infinite;
+=======
+    background: #2563eb;
+    background-size: 200% 100%;
+    border-radius: 8px;
+    margin-bottom: 10px;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
     &.skeleton-time {
       width: 80px;
@@ -442,6 +474,7 @@ ion-content {
     }
   }
 }
+<<<<<<< HEAD
 
 /* ============================================
    ANIMATIONS
@@ -496,3 +529,5 @@ ion-content {
   animation-delay: var(--delay, 0ms);
   animation-fill-mode: both;
 }
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d

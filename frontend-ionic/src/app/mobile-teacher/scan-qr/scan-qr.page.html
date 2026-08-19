@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <ion-content [fullscreen]="true" class="ion-padding">
   <ion-button
     fill="clear"
@@ -51,10 +52,56 @@
       </div>
 
       <div class="status-hint" *ngIf="!isLoading && seances.length === 0">
+=======
+2<ion-content [fullscreen]="true">
+  <!-- DECORATIVE BG -->
+  <div class="bg-decoration">
+    <div class="bg-circle bg-circle--1"></div>
+    <div class="bg-circle bg-circle--2"></div>
+  </div>
+
+  <div class="page-wrapper ion-padding">
+    <!-- Header -->
+    <header class="page-header animate-slide-up" style="--delay: 50ms">
+      <ion-button
+        fill="clear"
+        class="back-btn"
+        routerLink="/mobile/tabs/tabs/tab1"
+        [replaceUrl]="true"
+      >
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+      <div class="header-titles">
+        <h1 class="title">Émargement</h1>
+      </div>
+    </header>
+
+    <!-- ========================================= -->
+    <!-- LISTE DES SÉANCES À SÉLECTIONNER          -->
+    <!-- ========================================= -->
+    <section
+      class="seance-list-section"
+      #seanceGroup
+      [class.has-error]="seanceRequiredError"
+    >
+      <div class="section-heading">
+        <div>
+          <h2>Séances du jour</h2>
+          <span>Sélectionnez la séance à émarger</span>
+        </div>
+        <span class="seance-count">{{ seances.length }}</span>
+      </div>
+
+      <div
+        class="seance-empty"
+        *ngIf="!isLoading && seances.length === 0"
+      >
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
         <ion-icon name="calendar-outline"></ion-icon>
         <span>Aucune séance n'est prévue pour aujourd'hui.</span>
       </div>
 
+<<<<<<< HEAD
       <div class="form-group" *ngIf="seances.length > 0">
         <ion-select
           label="Séance"
@@ -123,6 +170,138 @@
         Le scan du QR Code est obligatoire. Après un scan valide, remplissez la
         fiche de progression : l'émargement sera alors validé automatiquement.
       </p>
+=======
+      <div
+        class="seance-list"
+        *ngIf="seances.length > 0"
+      >
+        <button
+          type="button"
+          class="seance-list-item"
+          *ngFor="let seance of seances"
+          [class.selected]="selectedSeanceId === seance.id"
+          (click)="selectSeance(seance.id)"
+        >
+          <div class="seance-list-item__time">
+            <span class="time-start">{{ formatTime(seance.heureDebutReelle) }}</span>
+            <span class="time-divider"></span>
+            <span class="time-end">{{ formatTime(seance.heureFinReelle) }}</span>
+          </div>
+
+          <div class="seance-list-item__body">
+            <span class="matiere">
+              <ion-icon name="book-outline"></ion-icon>
+              {{ seance.matiereLibelle || 'Matière' }}
+            </span>
+            <span class="meta">
+              <span class="meta-pill">
+                <ion-icon name="people-outline"></ion-icon>
+                {{ seance.classeLibelle || 'Classe' }}
+              </span>
+              <span class="meta-pill" *ngIf="seance.salleLibelle">
+                <ion-icon name="location-outline"></ion-icon>
+                {{ seance.salleLibelle }}
+              </span>
+            </span>
+            <span class="status-row">
+              <span class="status-badge" [class]="'status-' + seance.statut">
+                {{ statutLabel(seance.statut) }}
+              </span>
+              <span class="fiche-badge" *ngIf="hasCahierForSeance(seance)">
+                Fiche remplie
+              </span>
+            </span>
+          </div>
+
+          <ion-icon
+            class="radio"
+            [name]="selectedSeanceId === seance.id ? 'radio-button-on' : 'radio-button-off'"
+          ></ion-icon>
+        </button>
+      </div>
+
+      <div class="seance-required-error" *ngIf="seanceRequiredError">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <div class="error-text">
+          <strong>Séance requise</strong>
+          <span>Veuillez sélectionner une séance avant de scanner.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- SCANNER                                   -->
+    <!-- ========================================= -->
+    <div class="scanner-card animate-scale-in">
+      <!-- Vue caméra : affichée en haut, immédiatement visible sans scroll -->
+      <ng-container *ngIf="isCameraOpen">
+        <div class="camera-preview">
+          <video #previewVideo playsinline muted></video>
+        </div>
+        <ion-button
+          expand="block"
+          color="danger"
+          fill="outline"
+          (click)="stopCamera()"
+        >
+          <ion-icon slot="start" name="stop-circle-outline"></ion-icon>
+          Arrêter la caméra
+        </ion-button>
+      </ng-container>
+
+      <!-- Vue pré-scan -->
+      <ng-container *ngIf="!isCameraOpen">
+        <div class="scanner-icon-wrapper">
+          <ion-icon name="scan-outline"></ion-icon>
+        </div>
+        <h2>Scanner pour émarger</h2>
+
+        <p
+          class="status-hint"
+          *ngIf="selectedSeance && !hasCahierForSeance(selectedSeance)"
+        >
+          Remplissez d'abord la fiche de progression de cette séance avant de
+          pouvoir scanner.
+        </p>
+        <p
+          class="status-hint success"
+          *ngIf="selectedSeance && hasCahierForSeance(selectedSeance)"
+        >
+          Fiche de progression remplie. Vous pouvez scanner pour émarger.
+        </p>
+
+        <ion-button
+          expand="block"
+          class="scan-btn"
+          (click)="openScanner()"
+          [disabled]="isScanning || isLoading || (selectedSeance && !hasCahierForSeance(selectedSeance))"
+        >
+          <ion-icon slot="start" name="camera-outline"></ion-icon>
+          {{ isScanning ? 'Validation...' :
+             !selectedSeance ? 'Sélectionnez une séance' :
+             !hasCahierForSeance(selectedSeance) ? "Remplissez d'abord la fiche" :
+             'Scanner le QR Code' }}
+        </ion-button>
+
+        <div class="manual-fallback" *ngIf="canUseManualFallback">
+          <ion-input
+            class="token-input"
+            label="Token QR de secours"
+            label-placement="stacked"
+            placeholder="Collez temporairement le token QR"
+            [(ngModel)]="manualToken"
+          ></ion-input>
+          <ion-button
+            expand="block"
+            fill="outline"
+            (click)="submitManualToken()"
+            [disabled]="isScanning"
+          >
+            Valider le token de secours
+          </ion-button>
+        </div>
+      </ng-container>
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     </div>
   </div>
 </ion-content>

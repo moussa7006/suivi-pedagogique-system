@@ -62,6 +62,7 @@
         <ion-icon name="stats-chart-outline"></ion-icon>
         <span>{{ 'Stats' }}</span>
       </button>
+<<<<<<< HEAD
       <button
         type="button"
         [class.active]="activeSection === 'security'"
@@ -70,6 +71,8 @@
         <ion-icon name="shield-checkmark-outline"></ion-icon>
         <span>{{ 'Sécurité' }}</span>
       </button>
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     </div>
 
     <div class="modern-card" *ngIf="activeSection === 'personal'">
@@ -155,6 +158,21 @@
             <p class="breakable">{{ teacher.specialite || 'Non renseigné' }}</p>
           </div>
         </div>
+<<<<<<< HEAD
+=======
+        <div class="info-row">
+          <div class="icon-box">
+            <ion-icon name="notifications-outline"></ion-icon>
+          </div>
+          <div class="item-content">
+            <label>{{ 'Notifications' }}</label>
+          </div>
+          <ion-toggle
+            [(ngModel)]="notificationsEnabled"
+            (ionChange)="onNotificationsToggle($event)"
+          ></ion-toggle>
+        </div>
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       </div>
     </div>
 
@@ -186,8 +204,13 @@
           <div class="item-content">
             <label>{{ 'Volume horaire effectué' }}</label>
             <p>
+<<<<<<< HEAD
               {{ teacher.volumeHoraire.effectue }} h / {{
               teacher.volumeHoraire.total }} h
+=======
+              {{ teacher.volumeHoraire.effectue | number:'1.0-0' }} h /
+              {{ teacher.volumeHoraire.total | number:'1.0-0' }} h
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
             </p>
           </div>
         </div>
@@ -202,7 +225,11 @@
               [style.width.%]="getProgressPercent()"
             ></div>
           </div>
+<<<<<<< HEAD
           <p>Reste à effectuer : {{ teacher.volumeHoraire.restant }} h</p>
+=======
+          <p>Reste à effectuer : {{ teacher.volumeHoraire.restant | number:'1.0-0' }} h</p>
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
         </div>
       </div>
     </div>
@@ -236,12 +263,17 @@
           <span class="stat-label">{{ 'Émargées' }}</span>
         </div>
         <div class="stat-box secondary">
+<<<<<<< HEAD
           <span class="stat-value">{{ teacher.volumeHoraire.effectue }}h</span>
+=======
+          <span class="stat-value">{{ teacher.volumeHoraire.effectue | number:'1.0-0' }}h</span>
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
           <span class="stat-label">{{ 'Volume' }}</span>
         </div>
       </div>
     </div>
 
+<<<<<<< HEAD
     <div class="modern-card" *ngIf="activeSection === 'security'">
       <button
         class="card-header card-header-button"
@@ -281,6 +313,9 @@
     </div>
   </div>
 
+=======
+    <div class="modern-card" *ngIf="activeSection === 'stats'">
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   <div class="logout-section">
     <ion-button
       expand="block"
@@ -293,6 +328,10 @@
       <span>{{ 'Déconnexion' }}</span>
     </ion-button>
   </div>
+<<<<<<< HEAD
+=======
+  </div>
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
   <!-- Floating Photo Options Popup -->
   <div class="floating-popup-backdrop" *ngIf="showPhotoPopup" (click)="closePhotoPopup()">
@@ -334,6 +373,7 @@
       <button class="popup-cancel" (click)="closePhotoPopup()">Annuler</button>
     </div>
   </div>
+<<<<<<< HEAD
 
   <ion-modal
     [isOpen]="isPasswordModalOpen"
@@ -409,4 +449,8 @@
       </div>
     </ng-template>
   </ion-modal>
+=======
+  </div>
+
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 </ion-content>

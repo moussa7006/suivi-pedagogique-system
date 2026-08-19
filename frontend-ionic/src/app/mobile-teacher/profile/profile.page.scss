@@ -43,6 +43,7 @@ ion-content {
   padding: calc(84px + var(--ion-safe-area-top)) 18px 28px;
   border-radius: 0 0 34px 34px;
   color: #ffffff;
+<<<<<<< HEAD
   background:
     radial-gradient(
       circle at 15% 10%,
@@ -50,6 +51,9 @@ ion-content {
       transparent 30%
     ),
     linear-gradient(135deg, #4361ee 0%, #3a0ca3 55%, #111827 100%);
+=======
+  background: #2563eb;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   box-shadow: 0 18px 38px rgba(67, 97, 238, 0.24);
   display: flex;
   align-items: center;
@@ -68,6 +72,7 @@ ion-content {
 }
 
 .logout-btn-big {
+<<<<<<< HEAD
   --background: linear-gradient(135deg, #ef4444 0%, #dc2626 55%, #991b1b 100%);
   --background-hover: linear-gradient(
     135deg,
@@ -76,6 +81,11 @@ ion-content {
     #b91c1c 100%
   );
   --background-activated: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+=======
+  --background: #2563eb;
+  --background: #2563eb;
+  --background: #2563eb;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   --color: #ffffff;
   --border-radius: 18px;
   --box-shadow: 0 14px 34px rgba(220, 38, 38, 0.38);
@@ -115,6 +125,7 @@ ion-content {
   }
 }
 
+<<<<<<< HEAD
 @keyframes logoutPulse {
   0%,
   100% {
@@ -125,6 +136,8 @@ ion-content {
     box-shadow: 0 18px 44px rgba(239, 68, 68, 0.56);
   }
 }
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
 .avatar-shell {
   position: relative;
@@ -246,7 +259,11 @@ ion-content {
     &.active {
       color: #ffffff;
       border-color: transparent;
+<<<<<<< HEAD
       background: linear-gradient(135deg, #4361ee, #7c3aed);
+=======
+      background: #2563eb;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       box-shadow: 0 12px 26px rgba(67, 97, 238, 0.28);
     }
   }
@@ -275,7 +292,11 @@ ion-content {
   display: flex;
   align-items: center;
   justify-content: center;
+<<<<<<< HEAD
   background: linear-gradient(135deg, #4361ee, #7c3aed);
+=======
+  background: #2563eb;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   color: #ffffff;
   font-weight: 900;
   letter-spacing: 0.04em;
@@ -374,7 +395,11 @@ ion-content {
   .progress-fill {
     height: 100%;
     border-radius: inherit;
+<<<<<<< HEAD
     background: linear-gradient(90deg, #4361ee, #4cc9f0);
+=======
+    background: #2563eb;
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     transition: width 0.3s ease;
   }
 
@@ -392,8 +417,12 @@ ion-content {
   gap: 12px;
 }
 
+<<<<<<< HEAD
 .info-row,
 .security-action {
+=======
+.info-row {
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   display: flex;
   align-items: center;
   gap: 12px;
@@ -488,6 +517,7 @@ ion-content {
   }
 }
 
+<<<<<<< HEAD
 .security-action {
   border: none;
   padding: 12px;
@@ -597,6 +627,8 @@ ion-content {
   margin-top: 6px;
 }
 
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 @media (max-width: 380px) {
   :host {
     --profile-hero-height: 285px;
@@ -641,12 +673,15 @@ ion-content {
   }
 }
 
+<<<<<<< HEAD
 @media (max-height: 700px) {
   .password-modal-compact {
     align-items: flex-end;
   }
 }
 
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 /* ============================================
    FLOATING PHOTO POPUP - Modern Liquid Glass
    ============================================ */
@@ -660,6 +695,7 @@ ion-content {
   display: flex;
   align-items: flex-end;
   justify-content: center;
+<<<<<<< HEAD
   animation: fadeIn 0.22s ease;
   padding: 16px;
 }
@@ -673,6 +709,12 @@ ion-content {
   from { transform: translateY(100%) scale(0.96); opacity: 0; }
   to { transform: translateY(0) scale(1); opacity: 1; }
 }
+=======
+  padding: 16px;
+}
+
+
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
 .floating-popup {
   width: 100%;
@@ -687,7 +729,10 @@ ion-content {
     0 0 0 1px rgba(255, 255, 255, 0.4) inset,
     0 1px 0 rgba(255, 255, 255, 0.6) inset;
   overflow: hidden;
+<<<<<<< HEAD
   animation: slideUp 0.35s cubic-bezier(0.22, 1.0, 0.36, 1.0);
+=======
+>>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   padding-bottom: calc(12px + var(--ion-safe-area-bottom, 0px));
 }
 
