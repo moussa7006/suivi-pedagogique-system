@@ -39,7 +39,7 @@ interface HubTile {
   route: string;
   icon: string;
   color: string;
-  bg: string;
+  bgTint: string;
   indicator: string;
   gaugeValue: number;
   gaugeLabel: string;
@@ -119,20 +119,20 @@ type AxisChartOptions = {
             [routerLink]="tile.route"
             class="hub-tile"
             [style.--tile-color]="tile.color"
-            [style.--tile-bg]="tile.bg"
+            [style.--bg-tint]="tile.bgTint"
           >
             <div class="tile-top">
               <div class="tile-icon"><i [class]="tile.icon"></i></div>
-              <span class="tile-arrow"><i class="pi pi-arrow-right"></i></span>
+              <div class="tile-indicator">{{ tile.indicator }}</div>
             </div>
-            <div class="tile-content">
+            <div class="tile-body">
               <h3>{{ tile.label }}</h3>
-              <p>{{ tile.description }}</p>
-            </div>
-            <div class="tile-progress">
-              <span class="progress-track">
-                <span class="progress-fill" [style.width.%]="tile.gaugeValue"></span>
-              </span>
+              <div class="tile-footer">
+                <div class="tile-progress">
+                  <div class="tile-progress-bar" [style.width.%]="tile.gaugeValue"></div>
+                </div>
+                <i class="pi pi-arrow-right tile-arrow"></i>
+              </div>
             </div>
           </a>
         </div>
@@ -444,103 +444,106 @@ type AxisChartOptions = {
       }
 
       .hub-tile {
-        --tile-color: #10B981;
-        --tile-bg: #D9F7EC;
-        background: linear-gradient(
-          135deg,
-          var(--tile-bg) 0%,
-          color-mix(in srgb, var(--tile-bg) 55%, #ffffff) 100%
-        );
-        border: 1px solid color-mix(in srgb, var(--tile-color) 20%, #ffffff);
-        border-radius: 24px;
-        padding: 24px;
+        --tile-color: #6366f1;
+        --bg-tint: #ffffff;
+        background: linear-gradient(180deg, var(--bg-tint) 0%, #ffffff 80%);
+        border: 1px solid color-mix(in srgb, var(--tile-color) 8%, #ffffff);
+        border-radius: 16px;
+        padding: 20px;
         display: flex;
         flex-direction: column;
         gap: 16px;
-        min-height: 180px;
         text-decoration: none;
-        color: #1f2937;
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
-        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        color: inherit;
+        box-shadow: 0 2px 4px rgba(15, 23, 42, 0.02), 0 1px 2px rgba(15, 23, 42, 0.01);
+        transition: all 0.2s ease;
         position: relative;
         overflow: hidden;
       }
 
       .hub-tile:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
-        border-color: color-mix(in srgb, var(--tile-color) 42%, #ffffff);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.03), 0 4px 6px -2px rgba(15, 23, 42, 0.02);
+        border-color: color-mix(in srgb, var(--tile-color) 20%, #ffffff);
       }
 
       .tile-top {
         display: flex;
-        align-items: flex-start;
         justify-content: space-between;
+        align-items: flex-start;
       }
 
       .tile-icon {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 52px;
-        height: 52px;
-        border-radius: 16px;
-        background: color-mix(in srgb, var(--tile-color) 16%, #ffffff);
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: #ffffff;
         color: var(--tile-color);
-        font-size: 1.45rem;
-        flex-shrink: 0;
+        font-size: 1.3rem;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+      }
+
+      .tile-indicator {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--tile-color);
+        background: #ffffff;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid color-mix(in srgb, var(--tile-color) 10%, #ffffff);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+      }
+
+      .tile-body {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .tile-body h3 {
+        margin: 0;
+        color: #1f2937;
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        text-align: left;
+      }
+
+      .tile-footer {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .tile-progress {
+        flex: 1;
+        height: 4px;
+        background: color-mix(in srgb, var(--tile-color) 10%, #ffffff);
+        border-radius: 9999px;
+        overflow: hidden;
+      }
+
+      .tile-progress-bar {
+        height: 100%;
+        background: var(--tile-color);
+        border-radius: 9999px;
+        transition: width 1s ease-out;
       }
 
       .tile-arrow {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: color-mix(in srgb, var(--tile-color) 12%, #ffffff);
         color: var(--tile-color);
-        font-size: 0.95rem;
-        transition: transform 0.25s ease;
+        font-size: 1.1rem;
+        font-weight: bold;
+        transition: transform 0.2s ease;
       }
 
       .hub-tile:hover .tile-arrow {
         transform: translateX(4px);
-      }
-
-      .tile-content h3 {
-        margin: 0 0 8px;
-        color: #111827;
-        font-size: 1.15rem;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-      }
-
-      .tile-content p {
-        margin: 0;
-        color: #4b5563;
-        font-size: 0.85rem;
-        line-height: 1.4;
-      }
-
-      .tile-progress {
-        margin-top: auto;
-      }
-
-      .progress-track {
-        display: block;
-        height: 6px;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--tile-color) 12%, #ffffff);
-        overflow: hidden;
-      }
-
-      .progress-fill {
-        display: block;
-        height: 100%;
-        border-radius: 999px;
-        background: var(--tile-color);
-        transition: width 0.6s ease;
       }
 
       /* Bento Grid / Analysis */
@@ -788,7 +791,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       route: '/web/classes',
       icon: 'pi pi-building',
       color: '#3B82F6',
-      bg: '#F1F6FF',
+      bgTint: '#F2F6FD',
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Émargement',
@@ -800,7 +803,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       route: '/web/matieres',
       icon: 'pi pi-book',
       color: '#10B981',
-      bg: '#EFFBF6',
+      bgTint: '#F5FDF9',
       indicator: 'Gestion active',
       gaugeValue: 0,
       gaugeLabel: 'Émargement',
@@ -812,7 +815,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       route: '/web/teachers',
       icon: 'pi pi-id-card',
       color: '#F97316',
-      bg: '#FFF6EF',
+      bgTint: '#FFF9F5',
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Performance',
@@ -824,7 +827,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       route: '/web/schedule',
       icon: 'pi pi-calendar',
       color: '#06B6D4',
-      bg: '#EFFAFD',
+      bgTint: '#F1FAFC',
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Aujourd\'hui',
@@ -836,7 +839,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       route: '/web/qr-generator',
       icon: 'pi pi-qrcode',
       color: '#7C3AED',
-      bg: '#F6F2FF',
+      bgTint: '#F9F4FD',
       indicator: 'Accès rapide',
       gaugeValue: 0,
       gaugeLabel: 'En attente',
@@ -848,7 +851,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       route: '/web/attendance',
       icon: 'pi pi-chart-bar',
       color: '#EC4899',
-      bg: '#FDF1F7',
+      bgTint: '#FEF1F7',
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Assiduité',
@@ -1054,12 +1057,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return sortByAlpha(this.hubTiles, (tile) => tile.label);
   }
 
-  gaugeColor(value: number): string {
-    if (value >= 80) return '#16a34a';
-    if (value >= 60) return '#f59e0b';
-    if (value > 0) return '#dc2626';
-    return '#cbd5e1';
-  }
+
 
   ngOnInit(): void {
     this.loadAdminProfile();
