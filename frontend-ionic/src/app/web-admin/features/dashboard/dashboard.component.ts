@@ -435,10 +435,14 @@ type AxisChartOptions = {
 
       .hub-tile {
         --tile-color: #6366f1;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 24px;
-        padding: 24px;
+        background: linear-gradient(
+          140deg,
+          var(--tile-color) 0%,
+          color-mix(in srgb, var(--tile-color) 70%, #000000) 100%
+        );
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        border-radius: 20px;
+        padding: 22px;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
@@ -446,28 +450,16 @@ type AxisChartOptions = {
         gap: 16px;
         min-height: 180px;
         text-decoration: none;
-        color: #0f172a;
-        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        color: #ffffff;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
         position: relative;
         overflow: hidden;
       }
 
-      .hub-tile::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: var(--tile-color);
-        opacity: 0.85;
-      }
-
       .hub-tile:hover {
-        transform: translateY(-6px);
-        border-color: var(--tile-color);
-        box-shadow: 0 20px 44px rgba(15, 23, 42, 0.12);
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.24);
       }
 
       .tile-icon {
@@ -477,15 +469,15 @@ type AxisChartOptions = {
         width: 52px;
         height: 52px;
         border-radius: 16px;
-        background: color-mix(in srgb, var(--tile-color) 14%, #ffffff);
-        color: var(--tile-color);
-        font-size: 1.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        font-size: 1.45rem;
         flex-shrink: 0;
       }
 
       .tile-content h3 {
         margin: 0 0 8px;
-        color: #0f172a;
+        color: #ffffff;
         font-size: 1.15rem;
         font-weight: 800;
         letter-spacing: -0.02em;
@@ -493,7 +485,7 @@ type AxisChartOptions = {
 
       .tile-content p {
         margin: 0;
-        color: #64748b;
+        color: rgba(255, 255, 255, 0.92);
         font-size: 0.85rem;
         line-height: 1.4;
       }
@@ -742,7 +734,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Académique',
       route: '/web/classes',
       icon: 'pi pi-building',
-      color: '#3b82f6',
+      color: '#0875F5',
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Émargement',
@@ -753,7 +745,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Programme',
       route: '/web/matieres',
       icon: 'pi pi-book',
-      color: '#10b981',
+      color: '#00B956',
       indicator: 'Gestion active',
       gaugeValue: 0,
       gaugeLabel: 'Émargement',
@@ -764,7 +756,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Ressources',
       route: '/web/teachers',
       icon: 'pi pi-id-card',
-      color: '#f59e0b',
+      color: '#FF8500',
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Performance',
@@ -775,7 +767,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Logistique',
       route: '/web/schedule',
       icon: 'pi pi-calendar',
-      color: '#0ea5e9',
+      color: '#08B7C8',
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Aujourd\'hui',
@@ -786,7 +778,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Émargement',
       route: '/web/qr-generator',
       icon: 'pi pi-qrcode',
-      color: '#8b5cf6',
+      color: '#6D18E8',
       indicator: 'Accès rapide',
       gaugeValue: 0,
       gaugeLabel: 'En attente',
@@ -797,7 +789,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Analyse',
       route: '/web/attendance',
       icon: 'pi pi-chart-bar',
-      color: '#ec4899',
+      color: '#F51B68',
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Assiduité',

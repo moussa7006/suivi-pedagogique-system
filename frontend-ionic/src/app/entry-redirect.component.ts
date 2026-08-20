@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
 import { AuthService } from './core/services/auth.service';
+import { AuthService as WebAdminAuthService } from './web-admin/core/services/auth.service';
 
 @Component({
   selector: 'app-entry-redirect',
@@ -11,6 +12,7 @@ import { AuthService } from './core/services/auth.service';
 export class EntryRedirectComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly webAdminAuthService = inject(WebAdminAuthService);
 
   async ngOnInit(): Promise<void> {
     const isAuthenticated = await this.authService.isAuthenticated();
@@ -23,10 +25,13 @@ export class EntryRedirectComponent implements OnInit {
     }
 
     // Sur navigateur, l'interface web admin est l'entrée par défaut.
+    // On vérifie le token (présence + expiration) et le rôle admin.
     const webUser = this.getWebAdminUser();
     const webRole = (webUser?.role || webUser?.user?.role || '').toUpperCase();
+    const isWebAdmin =
+      webRole === 'ADMIN' || webRole === 'ADMINISTRATEUR';
 
-    if (webUser?.token && (webRole === 'ADMIN' || webRole === 'ADMINISTRATEUR')) {
+    if (isWebAdmin && this.webAdminAuthService.isLoggedIn()) {
       void this.router.navigateByUrl('/web/dashboard', { replaceUrl: true });
       return;
     }

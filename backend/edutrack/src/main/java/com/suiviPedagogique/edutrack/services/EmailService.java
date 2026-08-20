@@ -22,7 +22,7 @@ public class EmailService {
 
     public void sendPasswordResetCode(String to, String code) {
         if (fromAddress == null || fromAddress.isBlank() || mailPassword == null || mailPassword.isBlank()) {
-            System.out.println("[DEV] SMTP non configuré. Code de réinitialisation EduTrack pour " + to + " : " + code);
+            System.out.println("[DEV] SMTP non configuré (MAIL_USERNAME / MAIL_PASSWORD vides). Code de réinitialisation EduTrack pour " + to + " : " + code);
             return;
         }
 
@@ -36,6 +36,11 @@ public class EmailService {
                 + "Ce code expire dans 10 minutes.\n\n"
                 + "Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.\n\n"
                 + "EduTrack");
-        mailSender.send(message);
+        try {
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("[SMTP] Échec d'envoi de l'email de réinitialisation à " + to + " : " + e.getMessage());
+            System.err.println("[SMTP] Vérifiez MAIL_USERNAME (adresse Gmail) et MAIL_PASSWORD (mot de passe d'application, pas le mot de passe du compte).");
+        }
     }
 }

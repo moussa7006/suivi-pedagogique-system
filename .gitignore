@@ -18,6 +18,10 @@ target/
 hs_err_pid*
 replay_pid*
 
+### Configuration Spring Boot locale (contient des secrets) ###
+# Le fichier de reference est application.properties.example (committe).
+backend/edutrack/src/main/resources/application.properties
+
 ### Maven ###
 backend/edutrack/.mvn/wrapper/maven-wrapper.jar
 
@@ -62,3 +66,6 @@ versions/
 
 ### Vieux dossier de build mobile (artefacts seulement, pas de sources) ###
 mobile-ionic/
+
+### Sauvegarde corrompue (ne jamais committer) ###
+.git.corrupted-backup/
