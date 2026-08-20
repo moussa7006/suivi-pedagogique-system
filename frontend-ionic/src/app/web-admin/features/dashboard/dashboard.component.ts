@@ -39,6 +39,7 @@ interface HubTile {
   route: string;
   icon: string;
   color: string;
+  bg: string;
   indicator: string;
   gaugeValue: number;
   gaugeLabel: string;
@@ -118,11 +119,20 @@ type AxisChartOptions = {
             [routerLink]="tile.route"
             class="hub-tile"
             [style.--tile-color]="tile.color"
+            [style.--tile-bg]="tile.bg"
           >
-            <div class="tile-icon"><i [class]="tile.icon"></i></div>
+            <div class="tile-top">
+              <div class="tile-icon"><i [class]="tile.icon"></i></div>
+              <span class="tile-arrow"><i class="pi pi-arrow-right"></i></span>
+            </div>
             <div class="tile-content">
               <h3>{{ tile.label }}</h3>
               <p>{{ tile.description }}</p>
+            </div>
+            <div class="tile-progress">
+              <span class="progress-track">
+                <span class="progress-fill" [style.width.%]="tile.gaugeValue"></span>
+              </span>
             </div>
           </a>
         </div>
@@ -434,32 +444,38 @@ type AxisChartOptions = {
       }
 
       .hub-tile {
-        --tile-color: #6366f1;
+        --tile-color: #10B981;
+        --tile-bg: #D9F7EC;
         background: linear-gradient(
-          140deg,
-          var(--tile-color) 0%,
-          color-mix(in srgb, var(--tile-color) 70%, #000000) 100%
+          135deg,
+          var(--tile-bg) 0%,
+          color-mix(in srgb, var(--tile-bg) 55%, #ffffff) 100%
         );
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        border-radius: 20px;
-        padding: 22px;
+        border: 1px solid color-mix(in srgb, var(--tile-color) 20%, #ffffff);
+        border-radius: 24px;
+        padding: 24px;
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
-        justify-content: flex-end;
         gap: 16px;
         min-height: 180px;
         text-decoration: none;
-        color: #ffffff;
-        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        color: #1f2937;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
         position: relative;
         overflow: hidden;
       }
 
       .hub-tile:hover {
         transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.24);
+        box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+        border-color: color-mix(in srgb, var(--tile-color) 42%, #ffffff);
+      }
+
+      .tile-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
       }
 
       .tile-icon {
@@ -469,15 +485,32 @@ type AxisChartOptions = {
         width: 52px;
         height: 52px;
         border-radius: 16px;
-        background: rgba(255, 255, 255, 0.2);
-        color: #ffffff;
+        background: color-mix(in srgb, var(--tile-color) 16%, #ffffff);
+        color: var(--tile-color);
         font-size: 1.45rem;
         flex-shrink: 0;
       }
 
+      .tile-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--tile-color) 12%, #ffffff);
+        color: var(--tile-color);
+        font-size: 0.95rem;
+        transition: transform 0.25s ease;
+      }
+
+      .hub-tile:hover .tile-arrow {
+        transform: translateX(4px);
+      }
+
       .tile-content h3 {
         margin: 0 0 8px;
-        color: #ffffff;
+        color: #111827;
         font-size: 1.15rem;
         font-weight: 800;
         letter-spacing: -0.02em;
@@ -485,9 +518,29 @@ type AxisChartOptions = {
 
       .tile-content p {
         margin: 0;
-        color: rgba(255, 255, 255, 0.92);
+        color: #4b5563;
         font-size: 0.85rem;
         line-height: 1.4;
+      }
+
+      .tile-progress {
+        margin-top: auto;
+      }
+
+      .progress-track {
+        display: block;
+        height: 6px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--tile-color) 12%, #ffffff);
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        display: block;
+        height: 100%;
+        border-radius: 999px;
+        background: var(--tile-color);
+        transition: width 0.6s ease;
       }
 
       /* Bento Grid / Analysis */
@@ -734,7 +787,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Académique',
       route: '/web/classes',
       icon: 'pi pi-building',
-      color: '#0875F5',
+      color: '#3B82F6',
+      bg: '#E8EEFF',
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Émargement',
@@ -745,7 +799,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Programme',
       route: '/web/matieres',
       icon: 'pi pi-book',
-      color: '#00B956',
+      color: '#10B981',
+      bg: '#D9F7EC',
       indicator: 'Gestion active',
       gaugeValue: 0,
       gaugeLabel: 'Émargement',
@@ -756,7 +811,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Ressources',
       route: '/web/teachers',
       icon: 'pi pi-id-card',
-      color: '#FF8500',
+      color: '#F97316',
+      bg: '#FFF0E5',
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Performance',
@@ -767,7 +823,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Logistique',
       route: '/web/schedule',
       icon: 'pi pi-calendar',
-      color: '#08B7C8',
+      color: '#06B6D4',
+      bg: '#E3F6FC',
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Aujourd\'hui',
@@ -778,7 +835,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Émargement',
       route: '/web/qr-generator',
       icon: 'pi pi-qrcode',
-      color: '#6D18E8',
+      color: '#7C3AED',
+      bg: '#F0E9FF',
       indicator: 'Accès rapide',
       gaugeValue: 0,
       gaugeLabel: 'En attente',
@@ -789,7 +847,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Analyse',
       route: '/web/attendance',
       icon: 'pi pi-chart-bar',
-      color: '#F51B68',
+      color: '#EC4899',
+      bg: '#FCEAF3',
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Assiduité',
