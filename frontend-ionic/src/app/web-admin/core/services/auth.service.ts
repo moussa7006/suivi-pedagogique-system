@@ -76,6 +76,33 @@ export class AuthService {
       return false;
     }
 
+    // Vérifier l'expiration du token JWT côté client.
+    // Un token expiré (session stale) ne doit pas donner accès au dashboard.
+    if (this.isTokenExpired(currentUser.token)) {
+      localStorage.removeItem('user');
+      this.currentUserSubject.next(null);
+      return false;
+    }
+
     return true;
+  }
+
+  private isTokenExpired(token: string): boolean {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        return true;
+      }
+      const payload = JSON.parse(
+        atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')),
+      );
+      if (!payload || typeof payload.exp !== 'number') {
+        return true;
+      }
+      const nowSec = Math.floor(Date.now() / 1000);
+      return payload.exp <= nowSec + 10;
+    } catch {
+      return true;
+    }
   }
 }
