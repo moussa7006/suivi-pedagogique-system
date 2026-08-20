@@ -85,6 +85,7 @@ public class EmargementService {
             throw new RuntimeException("L'émargement doit se faire pendant les heures de la séance.");
         }
 
+
         if (geolocationEnabled) {
             if (request.getLatitude() == null || request.getLongitude() == null) {
                 throw new RuntimeException("Position GPS manquante. Activez la localisation et autorisez l'application.");
@@ -110,7 +111,7 @@ public class EmargementService {
         emargement.setLatitude(request.getLatitude());
         emargement.setLongitude(request.getLongitude());
         emargement.setAdresseApproximative(request.getAdresseApproximative() != null ? request.getAdresseApproximative() : "QR Code");
-        emargement.setStatut(StatutEmargement.EN_ATTENTE_FICHE);
+        emargement.setStatut(StatutEmargement.VALIDE);
         emargement.setEnseignant(seance.getEnseignant());
         emargement.setSeance(seance);
 

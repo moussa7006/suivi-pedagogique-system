@@ -20,4 +20,9 @@ export interface FicheProgressionRequest {
   contenuDetaille: string;
   objectifs: string;
   travaux: string;
+  tokenQRCode?: string;
+  latitude?: number;
+  longitude?: number;
+  adresseApproximative?: string;
 }
+

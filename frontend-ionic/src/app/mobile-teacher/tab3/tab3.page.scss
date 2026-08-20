@@ -71,15 +71,7 @@
    SESSION CARD
    ============================================ */
 .session-card {
-<<<<<<< HEAD
-  background: linear-gradient(
-    135deg,
-    var(--ion-color-primary) 0%,
-    var(--ion-color-secondary) 100%
-  );
-=======
   background: #2563eb;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   color: #ffffff;
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
@@ -126,10 +118,6 @@
       height: 8px;
       border-radius: var(--radius-full);
       background: #4cc9f0;
-<<<<<<< HEAD
-      animation: pulse 2s infinite;
-=======
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     }
 
     &.active {
@@ -140,18 +128,6 @@
   }
 }
 
-<<<<<<< HEAD
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-=======
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
 /* ============================================
    QR CODE CONTAINER

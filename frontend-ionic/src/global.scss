@@ -37,11 +37,8 @@
    DESIGN TOKENS - Système de design
    ============================================ */
 :root {
-<<<<<<< HEAD
-=======
   color-scheme: light;
 
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   /* Couleurs principales */
   --ion-color-primary: #4361ee;
   --ion-color-primary-rgb: 67, 97, 238;
@@ -716,8 +713,6 @@ html.dark .card .card-header h3 {
   }
 }
 
-<<<<<<< HEAD
-=======
 /* ============================================
    FILTER POPOVER (Liste de filtre moderne)
    ============================================ */
@@ -783,7 +778,6 @@ html.dark .card .card-header h3 {
   }
 }
 
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
 /* Web admin UI styles imported from frontend-web.
    Scoped to avoid changing the Ionic mobile teacher UI. */
@@ -1592,23 +1586,8 @@ app-dashboard {
     position: relative;
     overflow: hidden;
     text-decoration: none;
-<<<<<<< HEAD
-    color: inherit;
-    background:
-      radial-gradient(
-        circle at 85% 15%,
-        color-mix(in srgb, var(--tile-color, #4f46e5) 16%, white) 0%,
-        rgba(255, 255, 255, 0) 58%
-      ),
-      linear-gradient(
-        160deg,
-        color-mix(in srgb, var(--tile-color, #4f46e5) 10%, white) 0%,
-        #ffffff 55%
-      );
-=======
     background: var(--tile-color, #4f46e5);
     color: #ffffff;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     border-radius: 20px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     padding: 20px;
@@ -1618,11 +1597,7 @@ app-dashboard {
     transition:
       transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
       box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-<<<<<<< HEAD
-    border: 1px solid color-mix(in srgb, var(--tile-color, #4f46e5) 14%, white);
-=======
     border: none;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   }
 
   .hub-tile:hover {
@@ -1630,11 +1605,7 @@ app-dashboard {
     box-shadow: 0 20px 36px rgba(15, 23, 42, 0.14);
   }
   .hub-tile:focus-visible {
-<<<<<<< HEAD
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--tile-color, #4f46e5) 22%, white);
-=======
     box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.5);
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   }
 
   .tile-watermark {
@@ -1642,13 +1613,8 @@ app-dashboard {
     right: -20px;
     bottom: -20px;
     font-size: 150px;
-<<<<<<< HEAD
-    opacity: 0.04;
-    color: var(--tile-color, #4f46e5);
-=======
     opacity: 0.15;
     color: #ffffff;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     z-index: 1;
     transition: transform 0.3s ease;
     pointer-events: none;
@@ -1666,11 +1632,7 @@ app-dashboard {
     align-items: center;
     justify-content: center;
     color: var(--tile-color, #4f46e5);
-<<<<<<< HEAD
-    background: color-mix(in srgb, var(--tile-color, #4f46e5) 14%, white);
-=======
     background: #ffffff;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     font-size: 1.1rem;
     position: relative;
     z-index: 2;
@@ -1679,11 +1641,7 @@ app-dashboard {
   .hub-tile h3 {
     margin: 0;
     font-size: 0.95rem;
-<<<<<<< HEAD
-    color: color-mix(in srgb, var(--tile-color, #4f46e5) 78%, #111827);
-=======
     color: #ffffff;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     font-weight: 700;
     position: relative;
     z-index: 2;
@@ -1693,11 +1651,7 @@ app-dashboard {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-<<<<<<< HEAD
-    color: var(--tile-color, #4f46e5);
-=======
     color: #ffffff;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     font-size: 0.8rem;
     font-weight: 600;
     position: relative;

@@ -6,17 +6,9 @@ import {
   IonContent,
   IonButton,
   IonIcon,
-<<<<<<< HEAD
-  IonSegment,
-  IonSegmentButton,
-  IonLabel,
-  IonModal,
-  IonDatetime
-=======
   IonModal,
   IonDatetime,
   IonPopover
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -35,12 +27,8 @@ import {
   checkmark,
   ellipsisHorizontal,
   calendar,
-<<<<<<< HEAD
-  alertCircleOutline
-=======
   alertCircleOutline,
   funnelOutline
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 } from 'ionicons/icons';
 import { catchError, forkJoin, from, of, take, firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
@@ -77,17 +65,9 @@ interface HistoriqueItem {
     IonContent,
     IonButton,
     IonIcon,
-<<<<<<< HEAD
-    IonSegment,
-    IonSegmentButton,
-    IonLabel,
-    IonModal,
-    IonDatetime
-=======
     IonModal,
     IonDatetime,
     IonPopover
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   ],
 })
 export class HistoriquePage implements OnInit {
@@ -186,12 +166,8 @@ export class HistoriquePage implements OnInit {
       checkmark,
       ellipsisHorizontal,
       calendar,
-<<<<<<< HEAD
-      alertCircleOutline
-=======
       alertCircleOutline,
       funnelOutline
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     });
   }
 
@@ -211,14 +187,11 @@ export class HistoriquePage implements OnInit {
     this.cdr.detectChanges();
   }
 
-<<<<<<< HEAD
-=======
   selectFilter(period: 'all' | 'week' | 'month'): void {
     this.filterPeriod = period;
     this.filterByPeriod();
   }
 
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   private async loadHistorique(): Promise<void> {
     this.isLoading = true;
     this.errorMessage = '';

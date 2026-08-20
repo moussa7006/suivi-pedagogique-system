@@ -1,25 +1,3 @@
-<<<<<<< HEAD
-<ion-content class="login-content" scrollY="false" [fullscreen]="true">
-  <div class="page-container">
-
-    <!-- En-tête -->
-    <div class="header-section">
-      <img src="assets/logo_edutrack.png" alt="EduTrack Logo" class="app-logo" />
-      <h1 class="brand-name">EduTrack</h1>
-    </div>
-
-    <!-- Carte de connexion -->
-    <div class="login-card">
-      <h2 class="form-title">Bienvenue<br>Connectez-vous</h2>
-
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" autocomplete="off">
-        
-        <!-- Champ Email -->
-        <div class="input-group">
-          <label for="email">Identifiant / Email</label>
-          <div class="pill-input">
-            <ion-input id="email" formControlName="email" type="email" placeholder="Entrez votre email"></ion-input>
-=======
 <ion-content class="login-content" [fullscreen]="true">
   <div class="login-container">
 
@@ -54,7 +32,6 @@
           <div class="field">
             <ion-icon name="mail" class="field-icon"></ion-icon>
             <ion-input id="email" formControlName="email" type="email" placeholder="Email"></ion-input>
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
           </div>
           <div class="error-msg" *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.errors?.['required']">
             L'email est requis
@@ -62,44 +39,17 @@
         </div>
 
         <!-- Champ Mot de passe -->
-<<<<<<< HEAD
-        <div class="input-group">
-          <label for="password">Mot de passe</label>
-          <div class="pill-input">
-            <ion-input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Votre mot de passe"></ion-input>
-            <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" (click)="togglePassword()" class="eye-toggle"></ion-icon>
-=======
         <div class="field-group group-password">
           <div class="field">
             <ion-icon name="lock-closed" class="field-icon"></ion-icon>
             <ion-input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Mot de passe"></ion-input>
             <ion-icon class="eye-toggle" [name]="showPassword ? 'eye-off' : 'eye'" (click)="togglePassword()"></ion-icon>
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
           </div>
           <div class="error-msg" *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['required']">
             Le mot de passe est requis
           </div>
         </div>
 
-<<<<<<< HEAD
-        <!-- Options (Souvenir / Oublié) -->
-        <div class="form-options">
-          <div class="remember-me">
-            <ion-checkbox mode="md" [ngModel]="true" [ngModelOptions]="{standalone: true}">Se souvenir de moi</ion-checkbox>
-          </div>
-          <a routerLink="/mobile/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
-        </div>
-
-        <!-- Bouton Connexion -->
-        <div class="action-container">
-          <button type="submit" class="submit-btn" [disabled]="isLoading">
-            <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
-            <span *ngIf="!isLoading">Se connecter</span>
-          </button>
-        </div>
-
-      </form>
-=======
         <!-- Mot de passe oublié -->
         <a routerLink="/mobile/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
 
@@ -111,7 +61,6 @@
 
       </form>
 
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     </div>
 
   </div>

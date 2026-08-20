@@ -6,21 +6,11 @@ import {
   IonButton,
   IonContent,
   IonIcon,
-<<<<<<< HEAD
-  IonLabel,
-  IonRefresher,
-  IonRefresherContent,
-  IonSegment,
-  IonSegmentButton,
-  IonModal,
-  IonDatetime
-=======
   IonRefresher,
   IonRefresherContent,
   IonModal,
   IonDatetime,
   IonPopover
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -31,13 +21,9 @@ import {
   timeOutline,
   walletOutline,
   arrowBackOutline,
-<<<<<<< HEAD
-  closeCircle
-=======
   closeCircle,
   funnelOutline,
   checkmark
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 } from 'ionicons/icons';
 import { finalize } from 'rxjs';
 import { HonorairesCalcul } from '../../core/models/honoraires.model';
@@ -54,21 +40,11 @@ import { HonorairesService } from '../../core/services/honoraires.service';
     IonContent,
     IonIcon,
     IonButton,
-<<<<<<< HEAD
-    IonLabel,
-    IonSegment,
-    IonSegmentButton,
-    IonRefresher,
-    IonRefresherContent,
-    IonModal,
-    IonDatetime
-=======
     IonRefresher,
     IonRefresherContent,
     IonModal,
     IonDatetime,
     IonPopover
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   ],
 })
 export class HonorairesPage implements OnInit {
@@ -93,13 +69,9 @@ export class HonorairesPage implements OnInit {
       timeOutline,
       walletOutline,
       arrowBackOutline,
-<<<<<<< HEAD
-      closeCircle
-=======
       closeCircle,
       funnelOutline,
       checkmark
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     });
   }
 
@@ -172,14 +144,11 @@ export class HonorairesPage implements OnInit {
     this.cdr.detectChanges();
   }
 
-<<<<<<< HEAD
-=======
   selectFilter(period: 'all' | 'current' | 'previous'): void {
     this.filterPeriod = period;
     this.onFilterPeriodChange();
   }
 
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   get formattedSelectedMonth(): string {
     if (!this.selectedDate) return 'Sélectionner une date';
     const parts = this.selectedDate.split('-');

@@ -5,10 +5,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-<<<<<<< HEAD
-=======
 import org.springframework.core.annotation.Order;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -25,10 +22,7 @@ public class EdutrackApplication {
 	}
 
 	@Bean
-<<<<<<< HEAD
-=======
 	@Order(1)
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 	public CommandLineRunner initData(DataSource dataSource, JdbcTemplate jdbcTemplate,
 									  @Value("${app.init-db.enabled:true}") boolean initDbEnabled) {
 		return args -> {

@@ -1,16 +1,7 @@
 <ion-content [fullscreen]="true">
-  <!-- ========================================= -->
-<<<<<<< HEAD
-  <!-- DECORATIVE BACKGROUND ELEMENTS            -->
-  <!-- ========================================= -->
   <div class="bg-decoration">
     <div class="bg-circle bg-circle--1"></div>
     <div class="bg-circle bg-circle--2"></div>
-=======
-  <!-- DECORATIVE BACKGROUND ELEMENTS (REMOVED)  -->
-  <!-- ========================================= -->
-  <div class="bg-decoration">
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   </div>
 
   <!-- ========================================= -->
@@ -63,13 +54,6 @@
     <div class="notif-panel__handle"></div>
     <div class="notif-panel__header">
       <div>
-<<<<<<< HEAD
-        <span class="notif-panel__eyebrow">
-          <ion-icon name="sparkles-outline"></ion-icon>
-          Centre d'alertes
-        </span>
-=======
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
         <h2>Notifications</h2>
         <p>
           {{ notificationCount }} élément{{ notificationCount > 1 ? 's' : '' }}
@@ -135,15 +119,9 @@
       <ion-icon name="school-outline"></ion-icon>
       <span>{{ totalSeances }} séances</span>
     </div>
-<<<<<<< HEAD
-    <div class="stat-chip stat-chip--accent">
-      <ion-icon name="time-outline"></ion-icon>
-      <span>{{ totalHeures }}h faites</span>
-=======
     <div class="stat-chip stat-chip--stone">
       <ion-icon name="time-outline"></ion-icon>
       <span>{{ totalHeures | number:'1.0-0' }}h faites</span>
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     </div>
     <div class="stat-chip stat-chip--success">
       <ion-icon name="checkmark-circle-outline"></ion-icon>
@@ -160,31 +138,6 @@
       class="action-card action-card--progression"
       (click)="navigateTo('/mobile/cahier-textes')"
     >
-<<<<<<< HEAD
-      <div class="action-card__bg action-card__bg--blue"></div>
-      <div class="action-card__icon action-card__icon--blue">
-        <ion-icon name="book-outline"></ion-icon>
-      </div>
-      <span class="action-card__label">Fiche de Progression</span>
-      <span class="action-card__desc">Remplir la fiche</span>
-      <ion-badge
-        *ngIf="!isCahierFait"
-        color="warning"
-        class="action-card__badge"
-      >
-        À faire
-      </ion-badge>
-    </div>
-
-    <!-- TILE 2 - Scan QR -->
-    <div class="action-card action-card--scan" (click)="navigateTo('/mobile/scan-qr')">
-      <div class="action-card__bg action-card__bg--purple"></div>
-      <div class="action-card__icon action-card__icon--purple">
-        <ion-icon name="qr-code-outline"></ion-icon>
-      </div>
-      <span class="action-card__label">Scan QR</span>
-      <span class="action-card__desc">Emmarger une séance</span>
-=======
       <div class="action-card__icon">
         <ion-icon name="book-outline"></ion-icon>
       </div>
@@ -201,7 +154,6 @@
         <ion-icon name="qr-code-outline"></ion-icon>
       </div>
       <span class="action-card__label">Émargement</span>
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     </div>
 
     <!-- TILE 3 - Planning -->
@@ -209,19 +161,10 @@
       class="action-card action-card--planning"
       (click)="navigateTo('/mobile/planning')"
     >
-<<<<<<< HEAD
-      <div class="action-card__bg action-card__bg--coral"></div>
-      <div class="action-card__icon action-card__icon--coral">
-        <ion-icon name="calendar-outline"></ion-icon>
-      </div>
-      <span class="action-card__label">Planning</span>
-      <span class="action-card__desc">Voir mon emploi du temps</span>
-=======
       <div class="action-card__icon">
         <ion-icon name="calendar-outline"></ion-icon>
       </div>
       <span class="action-card__label">Planning</span>
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     </div>
 
     <!-- TILE 4 - Honoraires -->
@@ -229,19 +172,10 @@
       class="action-card action-card--honoraires"
       (click)="navigateTo('/mobile/honoraires')"
     >
-<<<<<<< HEAD
-      <div class="action-card__bg action-card__bg--green"></div>
-      <div class="action-card__icon action-card__icon--green">
-        <ion-icon name="time-outline"></ion-icon>
-      </div>
-      <span class="action-card__label">Honoraires</span>
-      <span class="action-card__desc">Voir mes paiements</span>
-=======
       <div class="action-card__icon">
         <ion-icon name="cash-outline"></ion-icon>
       </div>
       <span class="action-card__label">Honoraires</span>
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     </div>
   </div>
 
@@ -250,10 +184,6 @@
   <!-- ========================================= -->
   <div class="section-header animate-slide-up" style="--delay: 300ms">
     <h2>Résumé pédagogique</h2>
-<<<<<<< HEAD
-    <span class="section-subtitle">Vue d'ensemble de votre progression</span>
-=======
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   </div>
 
   <!-- ========================================= -->
@@ -363,14 +293,9 @@
           </div>
           <div class="stat-row__info">
             <span class="stat-row__label">Heures faites/prévues</span>
-<<<<<<< HEAD
-            <span class="stat-row__value"
-              >{{ totalHeures }}h / {{ scheduledHeures }}h</span
-=======
             <span class="stat-row__value stat-row__value--red"
               >{{ totalHeures | number:'1.0-0' }}h /
               {{ scheduledHeures | number:'1.0-0' }}h</span
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
             >
           </div>
         </div>

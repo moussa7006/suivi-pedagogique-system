@@ -2,6 +2,7 @@ package com.suiviPedagogique.edutrack.services;
 
 import com.suiviPedagogique.edutrack.Dto.FicheProgressionRequest;
 import com.suiviPedagogique.edutrack.Dto.FicheProgressionDto;
+import com.suiviPedagogique.edutrack.Dto.EmargementRequest;
 import com.suiviPedagogique.edutrack.Entities.FicheProgression;
 import com.suiviPedagogique.edutrack.Entities.Emargement;
 import com.suiviPedagogique.edutrack.Entities.Seance;
@@ -37,6 +38,9 @@ public class FicheProgressionService {
     private EmargementRepository emargementRepository;
 
     @Autowired
+    private EmargementService emargementService;
+
+    @Autowired
     private UtilisateurRepository utilisateurRepository;
 
     @Transactional
@@ -56,9 +60,17 @@ public class FicheProgressionService {
             throw new RuntimeException("Vous n'êtes pas l'enseignant assigné à cette séance.");
         }
 
-        Emargement emargement = seance.getEmargement();
-        if (emargement == null) {
-            throw new RuntimeException("Vous devez d'abord scanner le QR Code de la séance avant de remplir la fiche de progression.");
+        // Création de l'émargement couplé à la fiche
+        if (request.getTokenQRCode() != null) {
+            EmargementRequest emargementRequest = new EmargementRequest();
+            emargementRequest.setSeanceId(seanceId);
+            emargementRequest.setTokenQRCode(request.getTokenQRCode());
+            emargementRequest.setLatitude(request.getLatitude());
+            emargementRequest.setLongitude(request.getLongitude());
+            emargementRequest.setAdresseApproximative(request.getAdresseApproximative());
+            emargementService.faireEmargement(emargementRequest);
+        } else if (seance.getEmargement() == null) {
+            throw new RuntimeException("QR Code requis pour émarger et remplir la fiche.");
         }
 
         FicheProgression fiche = new FicheProgression();
@@ -75,9 +87,6 @@ public class FicheProgressionService {
 
         seance.setFicheProgression(fiche);
         seanceRepository.save(seance);
-
-        emargement.setStatut(StatutEmargement.VALIDE);
-        emargementRepository.save(emargement);
 
         return toDto(fiche);
     }

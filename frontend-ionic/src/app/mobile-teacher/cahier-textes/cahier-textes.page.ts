@@ -12,11 +12,8 @@ import {
   IonIcon,
   IonInput,
   IonTextarea,
-<<<<<<< HEAD
   IonSelect,
   IonSelectOption,
-=======
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   IonBadge,
   IonSpinner,
   ToastController,
@@ -40,11 +37,8 @@ import {
   peopleOutline,
   schoolOutline,
   arrowBackOutline,
-<<<<<<< HEAD
-=======
   chevronUpOutline,
   chevronDownOutline,
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 } from 'ionicons/icons';
 import { catchError, finalize, forkJoin, of, timeout } from 'rxjs';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
@@ -70,11 +64,8 @@ import { ClasseService } from '../../core/services/classe.service';
     IonIcon,
     IonInput,
     IonTextarea,
-<<<<<<< HEAD
     IonSelect,
     IonSelectOption,
-=======
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     IonBadge,
     IonSpinner,
     RouterLink,
@@ -110,10 +101,12 @@ export class CahierTextesPage {
   matieres: Matiere[] = [];
   classes: Classe[] = [];
   openedFromScan = false;
-<<<<<<< HEAD
-=======
   expandedSeanceIds = new Set<number>();
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
+  
+  scanTokenQRCode?: string;
+  scanLatitude?: number;
+  scanLongitude?: number;
+  scanAdresseApproximative?: string;
 
   constructor() {
     addIcons({
@@ -133,11 +126,8 @@ export class CahierTextesPage {
       addOutline,
       checkmarkDoneOutline,
       arrowBackOutline,
-<<<<<<< HEAD
-=======
       chevronUpOutline,
       chevronDownOutline,
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     });
 
     this.seanceForm = this.fb.group({
@@ -259,12 +249,19 @@ export class CahierTextesPage {
     }
 
     const seanceId = Number(this.seanceForm.value.seanceId);
-    const payload = {
+    const payload: any = {
       dateSaisie: new Date().toISOString().slice(0, 10),
       contenuDetaille: this.seanceForm.value.contenu,
       objectifs: this.seanceForm.value.objectifs,
       travaux: this.seanceForm.value.travaux || '',
     };
+
+    if (this.openedFromScan && this.scanTokenQRCode) {
+      payload.tokenQRCode = this.scanTokenQRCode;
+      payload.latitude = this.scanLatitude;
+      payload.longitude = this.scanLongitude;
+      payload.adresseApproximative = this.scanAdresseApproximative;
+    }
 
     this.isSubmitting = true;
     this.ficheProgressionService
@@ -302,8 +299,6 @@ export class CahierTextesPage {
     return seance.id ?? _index;
   }
 
-<<<<<<< HEAD
-=======
   toggleSeance(seance: { id?: number }): void {
     if (seance.id === undefined) {
       return;
@@ -318,8 +313,6 @@ export class CahierTextesPage {
   isSeanceExpanded(seance: { id?: number }): boolean {
     return seance.id !== undefined && this.expandedSeanceIds.has(seance.id);
   }
-
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   formatSeanceLabel(seance: Seance): string {
     return `${seance.dateCours} • ${this.formatTime(seance.heureDebutReelle)} - ${this.formatTime(
       seance.heureFinReelle,
@@ -333,6 +326,13 @@ export class CahierTextesPage {
     );
     this.openedFromScan =
       this.route.snapshot.queryParamMap.get('fromScan') === 'true';
+
+    this.scanTokenQRCode = this.route.snapshot.queryParamMap.get('tokenQRCode') || undefined;
+    const latStr = this.route.snapshot.queryParamMap.get('latitude');
+    this.scanLatitude = latStr ? parseFloat(latStr) : undefined;
+    const lonStr = this.route.snapshot.queryParamMap.get('longitude');
+    this.scanLongitude = lonStr ? parseFloat(lonStr) : undefined;
+    this.scanAdresseApproximative = this.route.snapshot.queryParamMap.get('adresseApproximative') || undefined;
 
     if (!this.openedFromScan || !seanceId) {
       return;
@@ -431,11 +431,7 @@ export class CahierTextesPage {
     return seanceDate.getTime() <= today.getTime();
   }
 
-<<<<<<< HEAD
-  private getMatiereLabel(seance: Seance): string {
-=======
   public getMatiereLabel(seance: Seance): string {
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     const schedule = this.getScheduleForSeance(seance);
     const matiere = this.matieres.find(
       (item) => item.id === schedule?.matiereId,
@@ -444,11 +440,7 @@ export class CahierTextesPage {
     return matiere?.libelle || 'Matière non renseignée';
   }
 
-<<<<<<< HEAD
-  private getClasseLabel(seance: Seance): string {
-=======
   public getClasseLabel(seance: Seance): string {
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     const classe = this.classes.find((item) => item.id === seance.classeId);
 
     return classe?.libelle || `Classe #${seance.classeId}`;
@@ -551,11 +543,7 @@ export class CahierTextesPage {
       : null;
   }
 
-<<<<<<< HEAD
-  private formatTime(value?: string): string {
-=======
   public formatTime(value?: string): string {
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     return value ? value.substring(0, 5) : '--:--';
   }
 

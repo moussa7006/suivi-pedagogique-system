@@ -62,17 +62,6 @@
         <ion-icon name="stats-chart-outline"></ion-icon>
         <span>{{ 'Stats' }}</span>
       </button>
-<<<<<<< HEAD
-      <button
-        type="button"
-        [class.active]="activeSection === 'security'"
-        (click)="setActiveSection('security')"
-      >
-        <ion-icon name="shield-checkmark-outline"></ion-icon>
-        <span>{{ 'Sécurité' }}</span>
-      </button>
-=======
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     </div>
 
     <div class="modern-card" *ngIf="activeSection === 'personal'">
@@ -158,8 +147,6 @@
             <p class="breakable">{{ teacher.specialite || 'Non renseigné' }}</p>
           </div>
         </div>
-<<<<<<< HEAD
-=======
         <div class="info-row">
           <div class="icon-box">
             <ion-icon name="notifications-outline"></ion-icon>
@@ -172,7 +159,6 @@
             (ionChange)="onNotificationsToggle($event)"
           ></ion-toggle>
         </div>
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       </div>
     </div>
 
@@ -204,13 +190,8 @@
           <div class="item-content">
             <label>{{ 'Volume horaire effectué' }}</label>
             <p>
-<<<<<<< HEAD
-              {{ teacher.volumeHoraire.effectue }} h / {{
-              teacher.volumeHoraire.total }} h
-=======
               {{ teacher.volumeHoraire.effectue | number:'1.0-0' }} h /
               {{ teacher.volumeHoraire.total | number:'1.0-0' }} h
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
             </p>
           </div>
         </div>
@@ -225,11 +206,7 @@
               [style.width.%]="getProgressPercent()"
             ></div>
           </div>
-<<<<<<< HEAD
-          <p>Reste à effectuer : {{ teacher.volumeHoraire.restant }} h</p>
-=======
           <p>Reste à effectuer : {{ teacher.volumeHoraire.restant | number:'1.0-0' }} h</p>
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
         </div>
       </div>
     </div>
@@ -263,59 +240,13 @@
           <span class="stat-label">{{ 'Émargées' }}</span>
         </div>
         <div class="stat-box secondary">
-<<<<<<< HEAD
-          <span class="stat-value">{{ teacher.volumeHoraire.effectue }}h</span>
-=======
           <span class="stat-value">{{ teacher.volumeHoraire.effectue | number:'1.0-0' }}h</span>
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
           <span class="stat-label">{{ 'Volume' }}</span>
         </div>
       </div>
     </div>
 
-<<<<<<< HEAD
-    <div class="modern-card" *ngIf="activeSection === 'security'">
-      <button
-        class="card-header card-header-button"
-        type="button"
-        (click)="setActiveSection('security')"
-      >
-        <ion-icon name="shield-checkmark-outline"></ion-icon>
-        <div>
-          <h3>{{ 'Sécurité & appli' }}</h3>
-          <p>{{ 'Gérez votre mot de passe et vos préférences.' }}</p>
-        </div>
-      </button>
-      <div class="info-list">
-        <button
-          class="security-action"
-          type="button"
-          (click)="openPasswordModal()"
-        >
-          <div class="icon-box">
-            <ion-icon name="lock-closed-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <label>{{ 'Mot de passe' }}</label>
-            <p>{{ '••••••••••••' }}</p>
-          </div>
-        </button>
-        <div class="info-row">
-          <div class="icon-box">
-            <ion-icon name="notifications-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <label>{{ 'Notifications' }}</label>
-            <p>{{ 'Activées' }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-=======
     <div class="modern-card" *ngIf="activeSection === 'stats'">
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   <div class="logout-section">
     <ion-button
       expand="block"
@@ -328,10 +259,7 @@
       <span>{{ 'Déconnexion' }}</span>
     </ion-button>
   </div>
-<<<<<<< HEAD
-=======
   </div>
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
   <!-- Floating Photo Options Popup -->
   <div class="floating-popup-backdrop" *ngIf="showPhotoPopup" (click)="closePhotoPopup()">
@@ -373,84 +301,6 @@
       <button class="popup-cancel" (click)="closePhotoPopup()">Annuler</button>
     </div>
   </div>
-<<<<<<< HEAD
-
-  <ion-modal
-    [isOpen]="isPasswordModalOpen"
-    (ionModalDidDismiss)="isPasswordModalOpen = false"
-    class="password-modal-compact"
-  >
-    <ng-template>
-      <div class="modal-compact-container">
-        <div class="drag-handle"></div>
-        <div class="modal-compact-header">
-          <h2>{{ 'Modifier le mot de passe' }}</h2>
-          <ion-button
-            fill="clear"
-            (click)="isPasswordModalOpen = false"
-            class="btn-close-compact"
-          >
-            <ion-icon name="close-outline"></ion-icon>
-          </ion-button>
-        </div>
-
-        <div class="compact-form">
-          <div class="compact-input-group">
-            <ion-icon name="lock-closed-outline" class="start-icon"></ion-icon>
-            <ion-input
-              [type]="showOldPassword ? 'text' : 'password'"
-              placeholder="Ancien mot de passe"
-              [(ngModel)]="oldPassword"
-            ></ion-input>
-            <ion-icon
-              [name]="showOldPassword ? 'eye-off-outline' : 'eye-outline'"
-              class="eye-icon"
-              (click)="showOldPassword = !showOldPassword"
-            ></ion-icon>
-          </div>
-          <div class="compact-input-group">
-            <ion-icon name="key-outline" class="start-icon"></ion-icon>
-            <ion-input
-              [type]="showNewPassword ? 'text' : 'password'"
-              placeholder="Nouveau mot de passe"
-              [(ngModel)]="newPassword"
-            ></ion-input>
-            <ion-icon
-              [name]="showNewPassword ? 'eye-off-outline' : 'eye-outline'"
-              class="eye-icon"
-              (click)="showNewPassword = !showNewPassword"
-            ></ion-icon>
-          </div>
-          <div class="compact-input-group">
-            <ion-icon
-              name="checkmark-circle-outline"
-              class="start-icon"
-            ></ion-icon>
-            <ion-input
-              [type]="showConfirmPassword ? 'text' : 'password'"
-              placeholder="Confirmer le mot de passe"
-              [(ngModel)]="confirmPassword"
-            ></ion-input>
-            <ion-icon
-              [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"
-              class="eye-icon"
-              (click)="showConfirmPassword = !showConfirmPassword"
-            ></ion-icon>
-          </div>
-
-          <ion-button
-            expand="block"
-            class="btn-save-compact"
-            (click)="updatePassword()"
-          >
-            {{ 'Enregistrer les modifications' }}
-          </ion-button>
-        </div>
-      </div>
-    </ng-template>
-  </ion-modal>
-=======
   </div>
 
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 </ion-content>

@@ -2,13 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { ApiConfigService } from './api-config.service';
 
 const DISCOVERY_PORT = 8099;
-<<<<<<< HEAD
-const PROBE_TIMEOUT_MS = 350;
-const CONCURRENCY = 24;
-=======
 const PROBE_TIMEOUT_MS = 600;
 const CONCURRENCY = 16;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
 /**
  * Sous-réseaux privés les plus courants, scannés pour trouver le backend
@@ -20,18 +15,11 @@ const CONCURRENCY = 16;
  *  - iPhone hotspot  : 172.20.10.x
  */
 const CANDIDATE_SUBNETS = [
-<<<<<<< HEAD
-  '192.168.43',
-  '192.168.1',
-  '192.168.0',
-  '172.20.10',
-=======
   '192.168.43', // Partage connexion Android
   '172.20.10',  // Partage connexion iPhone
   '10.62.103',  // Ton réseau Wi-Fi actuel !
   '192.168.1',
   '192.168.0',
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   '10.0.0',
   '10.0.1',
   '172.16.0',

@@ -1,13 +1,8 @@
 <ion-content [fullscreen]="true" class="ion-padding">
   <!-- Header -->
-<<<<<<< HEAD
-  <div class="header-section animate-fade-in">
-    <ion-button
-=======
   <header class="page-header animate-fade-in">
     <ion-button
       fill="clear"
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       class="back-btn"
       routerLink="/mobile/tabs/tabs/tab1"
       [replaceUrl]="true"
@@ -16,23 +11,6 @@
     >
       <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
     </ion-button>
-<<<<<<< HEAD
-    <div class="header-top">
-      <div>
-        <h1 class="page-title">Fiche de Progression</h1>
-        <p class="page-subtitle">Gérez vos contenus pédagogiques</p>
-      </div>
-      <div class="header-volume">
-        <ion-icon name="time-outline"></ion-icon>
-        <span>{{ totalHeures }}h</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Quick Stats -->
-  <div class="quick-stats animate-slide-up">
-    <div class="stat-card">
-=======
     <div class="header-titles">
       <h1 class="title">Cahier de Textes</h1>
     </div>
@@ -45,7 +23,6 @@
   <!-- Quick Stats -->
   <div class="quick-stats animate-slide-up">
     <div class="stat-card stat-card--blue">
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       <div class="stat-icon blue">
         <ion-icon name="document-text-outline"></ion-icon>
       </div>
@@ -54,11 +31,7 @@
         <span class="stat-label">Séances</span>
       </div>
     </div>
-<<<<<<< HEAD
-    <div class="stat-card">
-=======
     <div class="stat-card stat-card--green">
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       <div class="stat-icon green">
         <ion-icon name="checkmark-done-outline"></ion-icon>
       </div>
@@ -67,11 +40,7 @@
         <span class="stat-label">Validées</span>
       </div>
     </div>
-<<<<<<< HEAD
-    <div class="stat-card">
-=======
     <div class="stat-card stat-card--orange">
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       <div class="stat-icon orange">
         <ion-icon name="time-outline"></ion-icon>
       </div>
@@ -115,23 +84,6 @@
 
       <form [formGroup]="seanceForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
-<<<<<<< HEAD
-          <label>Séance concernée</label>
-          <div class="input-field" *ngIf="seancesDisponibles.length > 0">
-            <ion-icon name="calendar-outline"></ion-icon>
-            <ion-select
-              formControlName="seanceId"
-              placeholder="Sélectionnez une séance"
-            >
-              <ion-select-option
-                *ngFor="let seance of seancesDisponibles"
-                [value]="seance.id"
-              >
-                {{ formatSeanceLabel(seance) }}
-              </ion-select-option>
-            </ion-select>
-          </div>
-=======
           <label class="field-label">Séance concernée</label>
           
           <div class="custom-selector-container" *ngIf="seancesDisponibles.length > 0">
@@ -156,16 +108,11 @@
             </button>
           </div>
           
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
           <span
             class="error-msg"
             *ngIf="seanceForm.get('seanceId')?.invalid && seanceForm.get('seanceId')?.touched"
           >
-<<<<<<< HEAD
-            Veuillez sélectionner une séance réelle.
-=======
             Veuillez sélectionner une séance.
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
           </span>
           <div
             class="selected-seance-details"
@@ -273,13 +220,9 @@
     <div
       *ngFor="let seance of seances; let i = index; trackBy: trackBySeanceId"
       class="seance-card animate-slide-up"
-<<<<<<< HEAD
-      [style.--delay]="(i * 80) + 'ms'"
-=======
       [class.expanded]="isSeanceExpanded(seance)"
       [style.--delay]="(i * 80) + 'ms'"
       (click)="toggleSeance(seance)"
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     >
       <div class="seance-header">
         <div
@@ -310,17 +253,12 @@
         >
           {{ seance.status }}
         </ion-badge>
-<<<<<<< HEAD
-      </div>
-      <div class="seance-body">
-=======
         <ion-icon
           class="expand-icon"
           [name]="isSeanceExpanded(seance) ? 'chevron-up-outline' : 'chevron-down-outline'"
         ></ion-icon>
       </div>
       <div class="seance-body" *ngIf="isSeanceExpanded(seance)">
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
         <p>{{ seance.contenu }}</p>
       </div>
     </div>

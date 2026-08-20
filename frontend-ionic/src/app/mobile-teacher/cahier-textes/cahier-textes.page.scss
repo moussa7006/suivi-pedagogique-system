@@ -31,9 +31,7 @@
 }
 
 /* ============================================
-<<<<<<< HEAD
-   KEYFRAMES ANIMATIONS
-   ============================================ */
+===================================== */
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -73,8 +71,6 @@
 }
 
 /* ============================================
-=======
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
    ION CONTENT - GLOBAL
    ============================================ */
 ion-content {
@@ -84,9 +80,7 @@ ion-content {
 }
 
 /* ============================================
-<<<<<<< HEAD
-   HEADER SECTION
-   ============================================ */
+===================================== */
 .header-section {
   margin-bottom: 24px;
 
@@ -114,138 +108,17 @@ ion-content {
   }
 
   .header-volume {
-=======
-   HEADER (STICKY - SOLID WHITE)
-   ============================================ */
-.page-header {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: #ffffff;
-  padding: var(--ion-safe-area-top, 0px) 20px 16px 20px;
-  margin: 0 -20px 24px -20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-
-  .back-btn {
-    justify-self: start;
-    --background: transparent;
-    --padding-start: 0;
-    --padding-end: 0;
-    width: 44px;
-    height: 44px;
-    margin: 0;
-    box-shadow: none;
-
-    ion-icon {
-      font-size: 24px;
-      color: #0a4d4a;
-    }
-
-    &:active {
-      transform: scale(0.92);
-    }
-  }
-
-  .header-titles {
-    justify-self: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    .title {
-      font-size: 16px;
-      font-weight: 900;
-      color: #0a4d4a;
-      margin: 0;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-  }
-
-  .header-volume {
-    justify-self: end;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: rgba(247, 127, 0, 0.08);
-<<<<<<< HEAD
-    padding: 8px 16px;
-=======
-    padding: 8px 14px;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
-    border-radius: 20px;
-    color: var(--accent-orange);
-    font-size: 13px;
-    font-weight: 700;
-    white-space: nowrap;
-<<<<<<< HEAD
-    box-shadow: 0 2px 8px rgba(247, 127, 0, 0.04);
-=======
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
-
-    ion-icon {
-      font-size: 16px;
-    }
-<<<<<<< HEAD
-=======
-
-    &--red {
-      background: rgba(220, 38, 38, 0.1);
-      color: #dc2626;
-    }
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
+    gap: 8px;
   }
 }
-
-/* ============================================
-   QUICK STATS - GRILLE 3 COLONNES
-   ============================================ */
-.quick-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
-
-  .stat-card {
-<<<<<<< HEAD
-    background: var(--card-bg);
-    border-radius: var(--radius-card);
-    padding: 16px 12px;
-=======
-    position: relative;
-    overflow: hidden;
-    background: var(--card-bg);
-    border-radius: var(--radius-card);
-    padding: 20px 12px 16px;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
-    box-shadow: var(--shadow-soft);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 10px;
-    transition:
-      transform var(--transition-fast),
-      box-shadow var(--transition-fast);
-
-<<<<<<< HEAD
-=======
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-    }
-
-    &.stat-card--blue::before {
-      background: var(--accent-blue);
-    }
+ .stat-card {
+  
+  /* Il manquait la déclaration pour la carte bleue */
+  &.stat-card--blue::before {
+    background: var(--accent-blue);
+  }
     &.stat-card--green::before {
       background: var(--accent-green);
     }
@@ -253,34 +126,12 @@ ion-content {
       background: var(--accent-orange);
     }
 
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     &:hover {
       transform: translateY(-2px);
       box-shadow: var(--shadow-card);
     }
 
     .stat-icon {
-<<<<<<< HEAD
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      background: transparent;
-
-      &.blue {
-        background: rgba(67, 97, 238, 0.08);
-        color: var(--accent-blue);
-      }
-      &.green {
-        background: rgba(76, 201, 240, 0.08);
-        color: var(--accent-green);
-      }
-      &.orange {
-        background: rgba(247, 127, 0, 0.08);
-=======
       width: 50px;
       height: 50px;
       border-radius: 14px;
@@ -300,21 +151,11 @@ ion-content {
       }
       &.orange {
         background: rgba(247, 127, 0, 0.12);
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
         color: var(--accent-orange);
       }
     }
 
     .stat-content {
-<<<<<<< HEAD
-      .stat-value {
-        display: block;
-        font-size: 24px;
-        font-weight: 800;
-        color: var(--text-primary);
-        line-height: 1;
-        margin-bottom: 3px;
-=======
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -327,7 +168,6 @@ ion-content {
         font-weight: 800;
         color: var(--text-primary);
         line-height: 1;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       }
       .stat-label {
         font-size: 11px;
@@ -338,7 +178,7 @@ ion-content {
       }
     }
   }
-}
+
 
 /* ============================================
    ADD / TOGGLE BUTTON
@@ -393,15 +233,7 @@ ion-content {
     .form-icon {
       width: 52px;
       height: 52px;
-<<<<<<< HEAD
-      background: linear-gradient(
-        135deg,
-        rgba(67, 97, 238, 0.1),
-        rgba(63, 55, 201, 0.08)
-      );
-=======
       background: #2563eb;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       border-radius: 16px;
       display: flex;
       align-items: center;
@@ -503,11 +335,7 @@ ion-content {
       margin-top: 12px;
       padding: 14px;
       border-radius: 18px;
-<<<<<<< HEAD
-      background: linear-gradient(135deg, #ffffff, #f8fafc);
-=======
       background: #2563eb;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       border: 1px solid rgba(226, 232, 240, 0.95);
       box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
 
@@ -626,11 +454,7 @@ ion-content {
 }
 
 .submit-btn {
-<<<<<<< HEAD
-  --background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
-=======
   --background: #2563eb;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   --border-radius: var(--radius-btn);
   --box-shadow: 0 10px 24px rgba(67, 97, 238, 0.3);
   height: 58px;
@@ -700,10 +524,7 @@ ion-content {
     box-shadow: var(--shadow-soft);
     border: 1px solid rgba(0, 0, 0, 0.02);
     overflow: hidden;
-<<<<<<< HEAD
-=======
     cursor: pointer;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     transition:
       transform var(--transition-fast),
       box-shadow var(--transition-fast);
@@ -713,8 +534,6 @@ ion-content {
       box-shadow: var(--shadow-card);
     }
 
-<<<<<<< HEAD
-=======
     &:active {
       transform: scale(0.99);
     }
@@ -723,7 +542,6 @@ ion-content {
       border-color: rgba(67, 97, 238, 0.25);
     }
 
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     .seance-header {
       padding: 18px 18px 14px;
       display: flex;
@@ -809,8 +627,6 @@ ion-content {
           --ion-color-base: transparent;
         }
       }
-<<<<<<< HEAD
-=======
 
       .expand-icon {
         font-size: 20px;
@@ -819,7 +635,6 @@ ion-content {
         margin-top: 2px;
         align-self: center;
       }
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     }
 
     .seance-body {
@@ -913,14 +728,8 @@ ion-content {
   .skeleton-line {
     height: 14px;
     border-radius: 8px;
-<<<<<<< HEAD
-    background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite ease-in-out;
-=======
     background: #2563eb;
     background-size: 200% 100%;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     margin-bottom: 12px;
 
     &.short {
@@ -947,14 +756,8 @@ ion-content {
       width: 44px;
       height: 44px;
       border-radius: 50%;
-<<<<<<< HEAD
-      background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite ease-in-out;
-=======
       background: #2563eb;
       background-size: 200% 100%;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       flex-shrink: 0;
     }
 
@@ -975,23 +778,7 @@ ion-content {
    RESPONSIVE
    ============================================ */
 @media (max-width: 360px) {
-<<<<<<< HEAD
-  .header-section {
-    .header-top {
-      align-items: flex-start;
-    }
-
-    .page-title {
-      font-size: 24px;
-    }
-
-    .page-subtitle {
-      font-size: 13px;
-    }
-
-=======
   .page-header {
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
     .header-volume {
       padding: 7px 10px;
       font-size: 12px;
@@ -1062,13 +849,6 @@ ion-content {
     grid-template-columns: 1fr;
   }
 
-<<<<<<< HEAD
-  .header-section .header-top {
-    flex-direction: column;
-  }
-
-=======
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
   .seances-section .seance-card .seance-header {
     flex-wrap: wrap;
 
@@ -1120,8 +900,6 @@ ion-content {
 .back-btn:active {
   transform: scale(0.92);
 }
-<<<<<<< HEAD
-=======
 
 /* ============================================
    CUSTOM SEANCE SELECTOR
@@ -1210,4 +988,6 @@ ion-content {
     transition: color 0.2s ease;
   }
 }
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
+
+
+

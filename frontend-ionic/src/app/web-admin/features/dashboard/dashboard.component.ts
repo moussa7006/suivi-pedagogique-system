@@ -119,25 +119,11 @@ type AxisChartOptions = {
             class="hub-tile"
             [style.--tile-color]="tile.color"
           >
-<<<<<<< HEAD
-            <div class="tile-top">
-              <div class="tile-icon"><i [class]="tile.icon"></i></div>
-              <span class="tile-indicator">{{ tile.indicator }}</span>
-            </div>
-            <div class="tile-body">
-              <h3>{{ tile.label }}</h3>
-              <div class="tile-progress" [style.--gauge-color]="gaugeColor(tile.gaugeValue)">
-                <div class="tile-progress-bar" [style.width.%]="tile.gaugeValue"></div>
-              </div>
-            </div>
-            <i class="pi pi-arrow-right tile-arrow"></i>
-=======
             <div class="tile-icon"><i [class]="tile.icon"></i></div>
             <div class="tile-content">
               <h3>{{ tile.label }}</h3>
               <p>{{ tile.description }}</p>
             </div>
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
           </a>
         </div>
       </section>
@@ -370,31 +356,6 @@ type AxisChartOptions = {
         display: flex;
         align-items: center;
         gap: 14px;
-<<<<<<< HEAD
-        transition:
-          transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-          box-shadow 0.35s ease,
-          border-color 0.35s ease;
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
-        will-change: transform;
-
-        &::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            135deg,
-            color-mix(in srgb, var(--accent) 15%, transparent),
-            transparent
-          );
-          opacity: 0.5;
-        }
-
-        &:hover {
-          transform: translateY(-6px) scale(1.07);
-          border-color: var(--accent);
-          box-shadow: 0 26px 50px color-mix(in srgb, var(--accent) 28%, rgba(15, 23, 42, 0.18));
-=======
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 
@@ -402,31 +363,18 @@ type AxisChartOptions = {
           transform: translateY(-4px);
           border-color: var(--accent);
           box-shadow: 0 12px 24px rgba(15, 23, 42, 0.1);
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
         }
 
         .stat-icon {
           width: 52px;
           height: 52px;
           border-radius: 16px;
-<<<<<<< HEAD
-          background: linear-gradient(
-            135deg,
-            var(--accent),
-            color-mix(in srgb, var(--accent), black 20%)
-          );
-=======
           background: var(--accent);
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
           color: #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 1.4rem;
-<<<<<<< HEAD
-          box-shadow: 0 8px 16px color-mix(in srgb, var(--accent) 30%, transparent);
-=======
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
           position: relative;
           z-index: 1;
         }
@@ -487,21 +435,6 @@ type AxisChartOptions = {
 
       .hub-tile {
         --tile-color: #6366f1;
-<<<<<<< HEAD
-        --gauge-color: #16a34a;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 18px;
-        padding: 20px;
-        display: grid;
-        grid-template-columns: 1fr auto;
-        align-items: center;
-        gap: 16px;
-        text-decoration: none;
-        color: inherit;
-        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
-        transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
-=======
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 24px;
@@ -516,7 +449,6 @@ type AxisChartOptions = {
         color: #0f172a;
         box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
         transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
         position: relative;
         overflow: hidden;
       }
@@ -524,34 +456,6 @@ type AxisChartOptions = {
       .hub-tile::before {
         content: '';
         position: absolute;
-<<<<<<< HEAD
-        inset: 0;
-        background: linear-gradient(
-          135deg,
-          color-mix(in srgb, var(--tile-color) 6%, transparent),
-          transparent
-        );
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        pointer-events: none;
-      }
-
-      .hub-tile:hover {
-        transform: translateY(-3px);
-        border-color: color-mix(in srgb, var(--tile-color) 35%, #e2e8f0);
-        box-shadow: 0 16px 32px color-mix(in srgb, var(--tile-color) 12%, rgba(15, 23, 42, 0.08));
-      }
-
-      .hub-tile:hover::before {
-        opacity: 1;
-      }
-
-      .tile-top {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 10px;
-=======
         top: 0;
         left: 0;
         right: 0;
@@ -564,44 +468,12 @@ type AxisChartOptions = {
         transform: translateY(-6px);
         border-color: var(--tile-color);
         box-shadow: 0 20px 44px rgba(15, 23, 42, 0.12);
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       }
 
       .tile-icon {
         display: flex;
         align-items: center;
         justify-content: center;
-<<<<<<< HEAD
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        background: linear-gradient(
-          135deg,
-          var(--tile-color),
-          color-mix(in srgb, var(--tile-color), black 18%)
-        );
-        color: #ffffff;
-        font-size: 1.1rem;
-        box-shadow: 0 6px 12px color-mix(in srgb, var(--tile-color) 28%, transparent);
-        position: relative;
-        z-index: 1;
-        flex-shrink: 0;
-      }
-
-      .tile-indicator {
-        font-size: 0.78rem;
-        font-weight: 800;
-        color: var(--tile-color);
-        display: flex;
-        align-items: center;
-        gap: 4px;
-      }
-
-      .tile-body h3 {
-        margin: 0 0 8px;
-        color: #0f172a;
-        font-size: 1rem;
-=======
         width: 52px;
         height: 52px;
         border-radius: 16px;
@@ -615,43 +487,15 @@ type AxisChartOptions = {
         margin: 0 0 8px;
         color: #0f172a;
         font-size: 1.15rem;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
         font-weight: 800;
         letter-spacing: -0.02em;
       }
 
-<<<<<<< HEAD
-      .tile-progress {
-        height: 4px;
-        border-radius: 999px;
-        background: #f1f5f9;
-        overflow: hidden;
-      }
-
-      .tile-progress-bar {
-        height: 100%;
-        border-radius: inherit;
-        background: var(--gauge-color);
-        transition: width 0.5s cubic-bezier(0.22, 1.0, 0.36, 1.0);
-      }
-
-      .tile-arrow {
-        color: #cbd5e1;
-        font-size: 1rem;
-        font-weight: bold;
-        transition: transform 0.2s ease, color 0.2s ease;
-      }
-
-      .hub-tile:hover .tile-arrow {
-        color: #0f172a;
-        transform: translateX(3px);
-=======
       .tile-content p {
         margin: 0;
         color: #64748b;
         font-size: 0.85rem;
         line-height: 1.4;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       }
 
       /* Bento Grid / Analysis */
@@ -734,16 +578,9 @@ type AxisChartOptions = {
         height: 44px;
         flex: 0 0 auto;
         border-radius: 12px;
-<<<<<<< HEAD
-        background: linear-gradient(135deg, #6366f1, color-mix(in srgb, #6366f1, black 20%));
-        color: #ffffff;
-        font-size: 1.2rem;
-        box-shadow: 0 6px 12px color-mix(in srgb, #6366f1 30%, transparent);
-=======
         background: #1E3A8A; /* Solid navy instead of gradient */
         color: #ffffff;
         font-size: 1.2rem;
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       }
 
       .chart-wrapper {
@@ -904,13 +741,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       description: 'Classes, filières et niveaux d\'enseignement.',
       meta: 'Académique',
       route: '/web/classes',
-<<<<<<< HEAD
-      icon: 'pi pi-users',
-      color: '#2563eb',
-=======
       icon: 'pi pi-building',
       color: '#3b82f6',
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Émargement',
@@ -921,11 +753,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Programme',
       route: '/web/matieres',
       icon: 'pi pi-book',
-<<<<<<< HEAD
-      color: '#16a34a',
-=======
       color: '#10b981',
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       indicator: 'Gestion active',
       gaugeValue: 0,
       gaugeLabel: 'Émargement',
@@ -936,11 +764,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Ressources',
       route: '/web/teachers',
       icon: 'pi pi-id-card',
-<<<<<<< HEAD
-      color: '#f97316',
-=======
       color: '#f59e0b',
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       indicator: 'Chargement...',
       gaugeValue: 0,
       gaugeLabel: 'Performance',
@@ -962,11 +786,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Émargement',
       route: '/web/qr-generator',
       icon: 'pi pi-qrcode',
-<<<<<<< HEAD
-      color: '#7c3aed',
-=======
       color: '#8b5cf6',
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
       indicator: 'Accès rapide',
       gaugeValue: 0,
       gaugeLabel: 'En attente',
