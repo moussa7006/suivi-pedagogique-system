@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
 import { AuthService } from './core/services/auth.service';
 import { AuthService as WebAdminAuthService } from './web-admin/core/services/auth.service';
+import { ServerDiscoveryService } from './core/services/server-discovery.service';
 
 @Component({
   selector: 'app-entry-redirect',
@@ -13,14 +14,19 @@ export class EntryRedirectComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly webAdminAuthService = inject(WebAdminAuthService);
+  private readonly serverDiscovery = inject(ServerDiscoveryService);
 
   async ngOnInit(): Promise<void> {
     const isAuthenticated = await this.authService.isAuthenticated();
 
     // Sur plateforme native (APK mobile), on va toujours sur le mobile.
     if (Capacitor.isNativePlatform()) {
-      const target = isAuthenticated ? '/mobile/tabs/tabs/tab1' : '/mobile/login';
-      void this.router.navigateByUrl(target, { replaceUrl: true });
+      if (isAuthenticated) {
+        await this.serverDiscovery.autoDetect();
+        void this.router.navigateByUrl('/mobile/tabs/tabs/tab1', { replaceUrl: true });
+      } else {
+        void this.router.navigateByUrl('/mobile/login', { replaceUrl: true });
+      }
       return;
     }
 

@@ -37,6 +37,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { UtilisateurService } from '../../core/services/utilisateur.service';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
+import { Preferences } from '@capacitor/preferences';
 import { catchError, forkJoin, of, switchMap } from 'rxjs';
 import { Seance } from '../../core/models/seance.model';
 import { FicheProgression } from '../../core/models/fiche-progression.model';
@@ -121,11 +122,18 @@ export class ProfilePage implements OnInit {
   }
 
   ngOnInit() {
+    void this.loadPreferences();
     void this.loadUserProfile();
   }
 
   ionViewWillEnter(): void {
+    void this.loadPreferences();
     void this.loadUserProfile();
+  }
+
+  private async loadPreferences(): Promise<void> {
+    const { value } = await Preferences.get({ key: 'notificationsEnabled' });
+    this.notificationsEnabled = value !== 'false'; // Defaults to true
   }
 
   private async loadUserProfile(): Promise<void> {
@@ -289,8 +297,13 @@ export class ProfilePage implements OnInit {
       : null;
   }
 
-  onNotificationsToggle(event: any) {
+  async onNotificationsToggle(event: any) {
     this.notificationsEnabled = event.detail.checked;
+    await Preferences.set({
+      key: 'notificationsEnabled',
+      value: this.notificationsEnabled.toString()
+    });
+    
     this.presentToast(
       this.notificationsEnabled
         ? 'Notifications activées'
