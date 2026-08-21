@@ -76,12 +76,13 @@ import { FormsModule } from '@angular/forms';
                 <th>Enseignant</th>
                 <th>Salle</th>
                 <th>Classe</th>
+                <th>Fiche de Prog.</th>
                 <th>Statut / QR Code</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngIf="filteredSeances.length === 0">
-                <td colspan="5" class="text-center empty-state-cell">
+                <td colspan="6" class="text-center empty-state-cell">
                   Aucune séance trouvée pour les filtres actuels.
                 </td>
               </tr>
@@ -109,6 +110,12 @@ import { FormsModule } from '@angular/forms';
                 </td>
                 <td>
                   <span class="badge-classe">{{ getClasseLibelle(s) }}</span>
+                </td>
+                <td>
+                  <span class="fiche-badge" [ngClass]="s.ficheProgressionId ? 'fiche-badge--success' : 'fiche-badge--warning'">
+                    <i [class]="s.ficheProgressionId ? 'pi pi-file-check' : 'pi pi-file-edit'"></i>
+                    {{ s.ficheProgressionId ? 'Remplie' : 'À faire' }}
+                  </span>
                 </td>
                 <td>
                   <div class="status-group">
@@ -492,6 +499,27 @@ import { FormsModule } from '@angular/forms';
           color: #b91c1c;
           background: rgba(239, 68, 68, 0.1);
         }
+      }
+
+      .fiche-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.35rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+      .fiche-badge i {
+        font-size: 0.95rem;
+      }
+      .fiche-badge--success {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #059669;
+      }
+      .fiche-badge--warning {
+        background-color: rgba(245, 158, 11, 0.1);
+        color: #d97706;
       }
     `,
   ],
