@@ -366,14 +366,7 @@ type AxisChartOptions = {
         display: flex;
         align-items: center;
         gap: 14px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
-
-        &:hover {
-          transform: translateY(-4px);
-          border-color: var(--accent);
-          box-shadow: 0 12px 24px rgba(15, 23, 42, 0.1);
-        }
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 
         .stat-icon {
           width: 52px;
@@ -441,30 +434,30 @@ type AxisChartOptions = {
       /* Hub Tiles (Quick Access) */
       .hub-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
       }
 
       .hub-tile {
         --tile-color: #6366f1;
         --bg-tint: #ffffff;
-        background: linear-gradient(180deg, var(--bg-tint) 0%, #ffffff 80%);
-        border: 1px solid color-mix(in srgb, var(--tile-color) 8%, #ffffff);
-        border-radius: 16px;
-        padding: 20px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-left: 4px solid var(--tile-color);
+        border-radius: 12px;
+        padding: 24px;
         display: flex;
         flex-direction: column;
         gap: 16px;
         text-decoration: none;
         color: inherit;
-        box-shadow: 0 2px 4px rgba(15, 23, 42, 0.02), 0 1px 2px rgba(15, 23, 42, 0.01);
-        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        transition: box-shadow 0.2s ease;
         position: relative;
         overflow: hidden;
       }
 
       .hub-tile:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.03), 0 4px 6px -2px rgba(15, 23, 42, 0.02);
-        border-color: color-mix(in srgb, var(--tile-color) 20%, #ffffff);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
       }
 
       .tile-top {
@@ -477,26 +470,23 @@ type AxisChartOptions = {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 44px;
-        height: 44px;
+        width: 48px;
+        height: 48px;
         border-radius: 10px;
-        background: #ffffff;
+        background: var(--bg-tint);
         color: var(--tile-color);
-        font-size: 1.3rem;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+        font-size: 1.5rem;
       }
 
       .tile-indicator {
         font-size: 0.75rem;
         font-weight: 600;
-        color: var(--tile-color);
-        background: #ffffff;
         padding: 4px 10px;
-        border-radius: 9999px;
-        display: inline-flex;
+        border-radius: 6px;
+        background: #f3f4f6;
+        color: #4b5563;
+        display: flex;
         align-items: center;
-        border: 1px solid color-mix(in srgb, var(--tile-color) 10%, #ffffff);
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
       }
 
       .tile-body {
@@ -507,7 +497,7 @@ type AxisChartOptions = {
 
       .tile-body h3 {
         margin: 0;
-        color: #1f2937;
+        color: #172033;
         font-size: 1.05rem;
         font-weight: 700;
         letter-spacing: -0.01em;
@@ -522,8 +512,8 @@ type AxisChartOptions = {
 
       .tile-progress {
         flex: 1;
-        height: 4px;
-        background: color-mix(in srgb, var(--tile-color) 10%, #ffffff);
+        height: 6px;
+        background: #e5e7eb;
         border-radius: 9999px;
         overflow: hidden;
       }
@@ -574,18 +564,11 @@ type AxisChartOptions = {
         display: flex;
         flex-direction: column;
         min-height: 380px;
-        padding: 28px;
+        padding: 24px;
         background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 24px;
-        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
-        transition: all 0.3s ease;
-      }
-
-      .bento-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
-        border-color: #cbd5e1;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
       }
 
       .compact-chart {
@@ -599,7 +582,7 @@ type AxisChartOptions = {
         gap: 16px;
         margin-bottom: 20px;
         padding-bottom: 20px;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid #e5e7eb;
       }
 
       .card-header h3 {
