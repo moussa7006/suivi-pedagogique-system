@@ -496,6 +496,11 @@ import { FormsModule } from '@angular/forms';
         }
 
         &.completed {
+          color: #4b5563;
+          background: #f3f4f6;
+        }
+
+        &.missed {
           color: #b91c1c;
           background: rgba(239, 68, 68, 0.1);
         }
@@ -669,12 +674,15 @@ export class SeancesComponent implements OnInit, OnDestroy {
   }
 
   getQrStatusClass(s: Seance): string {
-    return this.isSeanceFinished(s) ? 'completed' : 'active';
+    if (this.isSeanceFinished(s)) {
+      return s.emargementId ? 'completed' : 'missed';
+    }
+    return s.emargementId ? 'completed' : 'active';
   }
 
   getQrStatusLabel(s: Seance): string {
     if (this.isSeanceFinished(s)) {
-      return s.emargementId ? 'Terminée avec émargement' : 'Séance terminée';
+      return s.emargementId ? 'Terminée avec émargement' : 'NON ÉMARGÉE';
     }
 
     return s.emargementId ? 'Émargement effectué' : 'Code généré';
