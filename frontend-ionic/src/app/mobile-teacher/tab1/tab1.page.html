@@ -133,49 +133,62 @@
   <!-- ACTION TILES GRID 2x2                     -->
   <!-- ========================================= -->
   <div class="action-grid animate-slide-up" style="--delay: 150ms">
-    <!-- TILE 1 - Fiche de Progression -->
+    <!-- TILE 1 - Émargement (principale) -->
     <div
-      class="action-card action-card--progression"
+      class="action-card action-card--primary action-card--emargement"
+      (click)="navigateTo('/mobile/scan-qr')"
+    >
+      <div class="action-card__top">
+        <div class="action-card__icon">
+          <ion-icon name="qr-code-outline"></ion-icon>
+        </div>
+        <ion-icon class="action-card__chevron" name="chevron-forward-outline"></ion-icon>
+      </div>
+      <div class="action-card__info">
+        <span class="action-card__label">Émargement</span>
+        <span class="action-card__desc">{{ nextSeanceLabel }}</span>
+      </div>
+    </div>
+
+    <!-- TILE 2 - Fiche de Progression (principale) -->
+    <div
+      class="action-card action-card--primary action-card--progression"
       (click)="navigateTo('/mobile/cahier-textes')"
     >
-      <div class="action-card__icon">
-        <ion-icon name="book-outline"></ion-icon>
+      <div class="action-card__top">
+        <div class="action-card__icon">
+          <ion-icon name="book-outline"></ion-icon>
+        </div>
+        <ion-icon class="action-card__chevron" name="chevron-forward-outline"></ion-icon>
       </div>
-      <span class="action-card__label">Fiche de Progression</span>
-      <!-- Badge personnalisé, on n'utilise plus ion-badge qui forçait ses couleurs -->
-      <div *ngIf="!isCahierFait" class="urgent-badge">
-        À FAIRE
+      <div class="action-card__info">
+        <span class="action-card__label">Fiche de Progression</span>
+        <span *ngIf="!isCahierFait" class="urgent-badge">À faire</span>
       </div>
     </div>
 
-    <!-- TILE 2 - Émargement -->
-    <div class="action-card action-card--scan" (click)="navigateTo('/mobile/scan-qr')">
-      <div class="action-card__icon">
-        <ion-icon name="qr-code-outline"></ion-icon>
-      </div>
-      <span class="action-card__label">Émargement</span>
-    </div>
-
-    <!-- TILE 3 - Planning -->
+    <!-- TILE 3 - Planning (secondaire, compacte) -->
     <div
-      class="action-card action-card--planning"
+      class="action-card action-card--compact action-card--planning"
       (click)="navigateTo('/mobile/planning')"
     >
       <div class="action-card__icon">
         <ion-icon name="calendar-outline"></ion-icon>
       </div>
       <span class="action-card__label">Planning</span>
+      <ion-icon class="action-card__chevron" name="chevron-forward-outline"></ion-icon>
     </div>
 
-    <!-- TILE 4 - Honoraires -->
+    <!-- TILE 4 - Honoraires (secondaire, compacte) -->
     <div
-      class="action-card action-card--honoraires"
+      class="action-card action-card--compact action-card--honoraires"
       (click)="navigateTo('/mobile/honoraires')"
     >
       <div class="action-card__icon">
         <ion-icon name="cash-outline"></ion-icon>
       </div>
       <span class="action-card__label">Honoraires</span>
+      <ion-icon class="action-card__chevron" name="chevron-forward-outline"></ion-icon>
     </div>
   </div>
 

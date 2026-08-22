@@ -7,14 +7,11 @@
 
 -- Started on 2026-08-08 19:00:19
 
-<<<<<<< HEAD
-=======
 -- Desactive temporairement les contraintes de cle etrangere pendant le chargement.
 -- Ce dump a des dependances circulaires (seance <-> fiche_progression) et des tables
 -- referencees avant leur parent ; sans cela, l'INSERT echoue en milieu de fichier.
 SET session_replication_role = replica;
 
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 --
 -- TOC entry 5199 (class 0 OID 16390)
 -- Dependencies: 220
@@ -106,11 +103,7 @@ INSERT INTO public.classe (id, libelle, annee_universitaire_id, filiere_id, nive
 -- Data for Name: utilisateur; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-<<<<<<< HEAD
 INSERT INTO public.utilisateur (id, actif, adresse, email, force_password_change, matricule, mot_de_passe, nom, photo_url, prenom, role, telephone) VALUES (25, true, 'Bamako', 'bouramaaya077@gmail.com', false, 'INTEC-ENS-5182', '$2a$10$vK4jpVHlrTia/OxkxyE8lONlEMVPi1O6ZjDxmli563mqj/MAiq8eq', 'AYA', '', 'Bourama', 'ENSEIGNANT', '92951242');
-=======
-INSERT INTO public.utilisateur (id, actif, adresse, email, force_password_change, matricule, mot_de_passe, nom, photo_url, prenom, role, telephone) VALUES (25, true, 'Bamako', 'redacted@example.com', false, 'INTEC-ENS-5182', '$2a$10$vK4jpVHlrTia/OxkxyE8lONlEMVPi1O6ZjDxmli563mqj/MAiq8eq', 'AYA', '', 'Bourama', 'ENSEIGNANT', '92951242');
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 INSERT INTO public.utilisateur (id, actif, adresse, email, force_password_change, matricule, mot_de_passe, nom, photo_url, prenom, role, telephone) VALUES (26, true, 'Bamako', 'mouhamou.dembele@hotmail.com', true, 'INTEC-ENS-2080', '$2a$10$KrcDpjCxA6XxzGscbHuzGOGPLnRClAoBJ93FjvckJiNwd3bqjlva.', 'DEMBELE', NULL, 'Mouhamoud', 'ENSEIGNANT', '79652476');
 INSERT INTO public.utilisateur (id, actif, adresse, email, force_password_change, matricule, mot_de_passe, nom, photo_url, prenom, role, telephone) VALUES (27, true, 'Bamako', 'Sidatykeita01@gmail.com', true, 'INTEC-ENS-1981', '$2a$10$KrcDpjCxA6XxzGscbHuzGOGPLnRClAoBJ93FjvckJiNwd3bqjlva.', 'KEITA', NULL, 'Sidaty', 'ENSEIGNANT', '79961428');
 INSERT INTO public.utilisateur (id, actif, adresse, email, force_password_change, matricule, mot_de_passe, nom, photo_url, prenom, role, telephone) VALUES (28, true, 'Bamako', 'fatoumatas97dem@gmail.com', true, 'INTEC-ENS-5817', '$2a$10$KrcDpjCxA6XxzGscbHuzGOGPLnRClAoBJ93FjvckJiNwd3bqjlva.', 'DEME', NULL, 'Fatoumata Sadio', 'ENSEIGNANT', '97972111');
@@ -623,12 +616,9 @@ SELECT pg_catalog.setval('public.seance_id_seq', 113, true);
 
 SELECT pg_catalog.setval('public.utilisateur_id_seq', 32, true);
 
-<<<<<<< HEAD
-=======
 -- Reactive les contraintes de cle etrangere.
 SET session_replication_role = origin;
 
->>>>>>> d6b8d3bf8fe91554ef39feb5f2aba44b33093b1d
 
 -- Completed on 2026-08-08 19:00:19
 

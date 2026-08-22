@@ -1586,42 +1586,33 @@ app-dashboard {
     position: relative;
     overflow: hidden;
     text-decoration: none;
-    background: var(--tile-color, #4f46e5);
-    color: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    background: linear-gradient(180deg, var(--bg-tint, #f8fafc) 0%, #ffffff 38%);
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    border-top: 3px solid var(--tile-color, #64748b);
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 14px;
-    transition:
-      transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
-      box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    border: none;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
   }
 
   .hub-tile:hover {
-    transform: translateY(-7px);
-    box-shadow: 0 20px 36px rgba(15, 23, 42, 0.14);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09);
   }
   .hub-tile:focus-visible {
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.5);
+    outline: 2px solid var(--tile-color, #64748b);
+    outline-offset: 2px;
   }
 
-  .tile-watermark {
-    position: absolute;
-    right: -20px;
-    bottom: -20px;
-    font-size: 150px;
-    opacity: 0.15;
-    color: #ffffff;
-    z-index: 1;
-    transition: transform 0.3s ease;
-    pointer-events: none;
-  }
-
-  .hub-tile:hover .tile-watermark {
-    transform: scale(1.1) rotate(-10deg);
+  .tile-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
   }
 
   .tile-icon {
@@ -1631,31 +1622,66 @@ app-dashboard {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--tile-color, #4f46e5);
-    background: #ffffff;
+    background: var(--bg-tint, #f1f5f9);
+    color: var(--tile-color, #64748b);
     font-size: 1.1rem;
-    position: relative;
-    z-index: 2;
   }
 
-  .hub-tile h3 {
-    margin: 0;
-    font-size: 0.95rem;
-    color: #ffffff;
+  .tile-indicator {
+    font-size: 0.72rem;
     font-weight: 700;
-    position: relative;
-    z-index: 2;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    background: var(--bg-tint, #f1f5f9);
+    color: var(--tile-color, #64748b);
+    white-space: nowrap;
   }
 
-  .tile-link {
-    display: inline-flex;
+  .tile-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .tile-body h3 {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .tile-footer {
+    display: flex;
     align-items: center;
-    gap: 8px;
-    color: #ffffff;
-    font-size: 0.8rem;
-    font-weight: 600;
-    position: relative;
-    z-index: 2;
+    gap: 12px;
+    margin-top: auto;
+  }
+
+  .tile-progress {
+    flex: 1;
+    height: 6px;
+    background: #e9edf3;
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+
+  .tile-progress-bar {
+    height: 100%;
+    background: var(--tile-color, #64748b);
+    border-radius: 9999px;
+    transition: width 1s ease-out;
+  }
+
+  .tile-arrow {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+  .hub-tile:hover .tile-arrow {
+    transform: translateX(4px);
+    color: var(--tile-color, #64748b);
   }
 
   .stats-grid {
@@ -1695,14 +1721,6 @@ app-dashboard {
     transform: scaleY(0);
     transform-origin: bottom;
     transition: transform 0.3s ease;
-  }
-
-  .stat-card:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 16px 32px rgba(2, 6, 23, 0.1);
-  }
-  .stat-card:hover::before {
-    transform: scaleY(1);
   }
 
   .stat-icon {

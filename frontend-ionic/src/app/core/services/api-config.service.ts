@@ -16,11 +16,19 @@ export class ApiConfigService {
       return this.memoryUrl;
     }
 
+    // Sur un appareil natif (Capacitor), window.location.hostname vaut "localhost"
+    // (l'appareil lui-meme). environment.apiBaseUrl pointerait donc vers le telephone
+    // au lieu du PC qui heberge le backend. On renvoie une chaine vide pour laisser
+    // le ServerDiscoveryService (ou une saisie manuelle) resoudre la bonne URL.
+    if (Capacitor.isNativePlatform()) {
+      return '';
+    }
+
     if (environment.apiBaseUrl) {
       return environment.apiBaseUrl;
     }
 
-    return Capacitor.isNativePlatform() ? '' : environment.apiUrl;
+    return environment.apiUrl;
   }
 
   hasConfiguredBaseUrl(): boolean {

@@ -1013,7 +1013,7 @@ export class HonorairesComponent implements OnInit {
 
   private getCurrentUserRole(): string {
     try {
-      const savedUser = localStorage.getItem('user');
+      const savedUser = sessionStorage.getItem('user');
       const user = savedUser ? JSON.parse(savedUser) : null;
       const role = String(user?.role || '')
         .replace(/^ROLE_/, '')

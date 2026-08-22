@@ -31,94 +31,127 @@
 }
 
 /* ============================================
-===================================== */
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.5s ease both;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.5s ease both;
-  animation-delay: var(--delay, 0ms);
-}
-
-/* ============================================
    ION CONTENT - GLOBAL
    ============================================ */
 ion-content {
   --background: var(--bg-page);
+  --padding-top: 0;
   --padding-bottom: calc(96px + var(--ion-safe-area-bottom));
   font-family: var(--font-family);
 }
 
 /* ============================================
-===================================== */
-.header-section {
-  margin-bottom: 24px;
+   HEADER (STICKY - SOLID WHITE)
+   ============================================ */
+.page-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #ffffff;
+  padding: var(--ion-safe-area-top, 0px) 20px 16px 20px;
+  margin: 0 -20px 24px -20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 
-  .header-top {
+  .back-btn {
+    justify-self: start;
+    --background: transparent;
+    --padding-start: 0;
+    --padding-end: 0;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    box-shadow: none;
+
+    ion-icon {
+      font-size: 24px;
+      color: #0a4d4a;
+    }
+
+    &:active {
+      transform: scale(0.92);
+    }
+  }
+
+  .header-titles {
+    justify-self: center;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
+    justify-content: center;
 
-  .page-title {
-    font-size: 32px;
-    font-weight: 800;
-    color: var(--text-primary);
-    margin: 0;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
-  }
-
-  .page-subtitle {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin: 4px 0 0 0;
-    font-weight: 500;
+    .title {
+      font-size: 16px;
+      font-weight: 900;
+      color: #0a4d4a;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
   }
 
   .header-volume {
+    justify-self: end;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    background: rgba(247, 127, 0, 0.08);
+    padding: 8px 14px;
+    border-radius: 20px;
+    color: var(--accent-orange);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    ion-icon {
+      font-size: 16px;
+    }
+
+    &--red {
+      background: rgba(220, 38, 38, 0.1);
+      color: #dc2626;
+    }
   }
 }
- .stat-card {
-  
-  /* Il manquait la déclaration pour la carte bleue */
-  &.stat-card--blue::before {
-    background: var(--accent-blue);
-  }
+
+/* ============================================
+   QUICK STATS - GRILLE 3 COLONNES
+   ============================================ */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+
+  .stat-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--card-bg);
+    border-radius: var(--radius-card);
+    padding: 20px 12px 16px;
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    transition:
+      transform var(--transition-fast),
+      box-shadow var(--transition-fast);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+
+    &.stat-card--blue::before {
+      background: var(--accent-blue);
+    }
     &.stat-card--green::before {
       background: var(--accent-green);
     }
@@ -178,7 +211,7 @@ ion-content {
       }
     }
   }
-
+}
 
 /* ============================================
    ADD / TOGGLE BUTTON
@@ -988,6 +1021,3 @@ ion-content {
     transition: color 0.2s ease;
   }
 }
-
-
-

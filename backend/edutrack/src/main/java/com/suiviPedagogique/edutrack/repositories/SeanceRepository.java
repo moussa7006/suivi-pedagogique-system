@@ -19,6 +19,8 @@ public interface SeanceRepository extends JpaRepository<Seance, Integer> {
 
     List<Seance> findByDateCours(LocalDate dateCours);
 
+    List<Seance> findTop8ByOrderByDateCoursDescHeureDebutReelleDesc();
+
     long countByDateCours(LocalDate dateCours);
 
     List<Seance> findByEnseignantIdAndDateCoursBetween(Integer enseignantId, LocalDate startDate, LocalDate endDate);

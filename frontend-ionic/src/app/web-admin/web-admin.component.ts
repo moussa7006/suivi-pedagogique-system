@@ -135,7 +135,7 @@ export class WebAdminComponent {
   }
 
   private getStoredUser(): any | null {
-    const savedUser = localStorage.getItem('user');
+    const savedUser = sessionStorage.getItem('user');
 
     if (!savedUser) {
       return null;

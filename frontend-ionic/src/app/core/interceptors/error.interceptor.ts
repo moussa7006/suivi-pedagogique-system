@@ -18,7 +18,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         void tokenStorage.clearToken();
 
         if (router.url.startsWith("/web")) {
-          localStorage.removeItem("user");
+          sessionStorage.removeItem("user");
           void router.navigate(["/web/login"]);
         } else {
           void router.navigate(["/mobile/login"]);

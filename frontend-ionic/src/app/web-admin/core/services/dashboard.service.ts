@@ -17,6 +17,7 @@ export interface DashboardData {
   topEnseignants: TopEnseignantRow[];
   matieresVolumetrie: MatiereVolumetrieRow[];
   classesEmargement: ClasseEmargementRow[];
+  recentSeances: RecentSeanceRow[];
 }
 
 export interface TopEnseignantRow {
@@ -48,6 +49,16 @@ export interface ClasseEmargementRow {
   emargementsValides: number;
   tauxValidation: number;
   statut: 'EXCELLENT' | 'MOYEN' | 'FAIBLE';
+}
+
+export interface RecentSeanceRow {
+  id: number;
+  dateCours: string;
+  heureDebut: string;
+  matiere: string;
+  classe: string;
+  enseignant: string;
+  statut: string;
 }
 
 @Injectable({

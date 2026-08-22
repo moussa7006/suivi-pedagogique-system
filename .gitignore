@@ -67,5 +67,11 @@ versions/
 ### Vieux dossier de build mobile (artefacts seulement, pas de sources) ###
 mobile-ionic/
 
+### Artefacts de build Android ###
+*.apk
+*.aab
+**/gradle-home/
+**/android/build/
+
 ### Sauvegarde corrompue (ne jamais committer) ###
 .git.corrupted-backup/

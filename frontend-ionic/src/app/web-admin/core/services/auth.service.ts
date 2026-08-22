@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
@@ -13,19 +13,25 @@ export class AuthService {
 
   private apiUrl = `${environment.apiUrl}/auth`;
 
+  // Clé utilisée pour stocker la session web-admin.
+  // sessionStorage (et non localStorage) : la session survit au refresh de la
+  // page mais est purgée à la fermeture du navigateur, ce qui exige une
+  // reconnexion à chaque nouvelle ouverture.
+  private static readonly STORAGE_KEY = 'user';
+
   constructor(private http: HttpClient) {
-    const savedUser = localStorage.getItem('user');
+    const savedUser = this.readStoredUser();
     if (savedUser) {
       try {
         const parsedUser = JSON.parse(savedUser);
         if (parsedUser?.token) {
           this.currentUserSubject.next(parsedUser);
         } else {
-          localStorage.removeItem('user');
+          this.clearStoredUser();
           this.currentUserSubject.next(null);
         }
       } catch {
-        localStorage.removeItem('user');
+        this.clearStoredUser();
         this.currentUserSubject.next(null);
       }
     }
@@ -40,7 +46,7 @@ export class AuthService {
         }
 
         // Enregistrement de l'utilisateur ou du token renvoyé par l'API
-        localStorage.setItem('user', JSON.stringify(user));
+        this.storeUser(user);
         this.currentUserSubject.next(user);
       }),
     );
@@ -59,12 +65,12 @@ export class AuthService {
   }
 
   logout() {
-    localStorage.removeItem('user');
+    this.clearStoredUser();
     this.currentUserSubject.next(null);
   }
 
   updateCurrentUser(user: any) {
-    localStorage.setItem('user', JSON.stringify(user));
+    this.storeUser(user);
     this.currentUserSubject.next(user);
   }
 
@@ -72,19 +78,62 @@ export class AuthService {
     const currentUser = this.currentUserSubject.value;
 
     if (!currentUser?.token) {
-      localStorage.removeItem('user');
+      this.clearStoredUser();
       return false;
     }
 
     // Vérifier l'expiration du token JWT côté client.
     // Un token expiré (session stale) ne doit pas donner accès au dashboard.
     if (this.isTokenExpired(currentUser.token)) {
-      localStorage.removeItem('user');
+      this.clearStoredUser();
       this.currentUserSubject.next(null);
       return false;
     }
 
     return true;
+  }
+
+  // --- Persistance session (sessionStorage) ---
+  private readStoredUser(): string | null {
+    return sessionStorage.getItem(AuthService.STORAGE_KEY);
+  }
+
+  private storeUser(user: any): void {
+    sessionStorage.setItem(AuthService.STORAGE_KEY, JSON.stringify(user));
+  }
+
+  private clearStoredUser(): void {
+    sessionStorage.removeItem(AuthService.STORAGE_KEY);
+  }
+
+  /**
+   * Valide la session auprès du backend (endpoint /auth/me) et renvoie
+   * l'utilisateur confirmé par le serveur (ou null si invalide). Contrairement à
+   * isLoggedIn() qui ne vérifie que le localStorage côté client, cette méthode
+   * vérifie que le token est réellement accepté par le serveur. Tout token
+   * invalide, révoqué, expiré ou fabriqué est rejeté et la session est purgée.
+   */
+  async validateSession(): Promise<any | null> {
+    const currentUser = this.currentUserSubject.value;
+
+    if (!currentUser?.token) {
+      this.logout();
+      return null;
+    }
+
+    if (this.isTokenExpired(currentUser.token)) {
+      this.logout();
+      return null;
+    }
+
+    try {
+      const user = await firstValueFrom(this.http.get<any>(`${this.apiUrl}/me`));
+      return user;
+    } catch {
+      // Token rejeté par le serveur (401/expiré/révoqué/fabriqué).
+      this.logout();
+      return null;
+    }
   }
 
   private isTokenExpired(token: string): boolean {

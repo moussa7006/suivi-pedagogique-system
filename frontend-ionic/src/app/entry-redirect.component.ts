@@ -46,11 +46,11 @@ export class EntryRedirectComponent implements OnInit {
   }
 
   private getWebAdminUser(): any | null {
-    if (typeof localStorage === 'undefined') {
+    if (typeof sessionStorage === 'undefined') {
       return null;
     }
 
-    const storedUser = localStorage.getItem('user');
+    const storedUser = sessionStorage.getItem('user');
     if (!storedUser) {
       return null;
     }
@@ -58,7 +58,7 @@ export class EntryRedirectComponent implements OnInit {
     try {
       return JSON.parse(storedUser);
     } catch {
-      localStorage.removeItem('user');
+      sessionStorage.removeItem('user');
       return null;
     }
   }

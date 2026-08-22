@@ -20,7 +20,7 @@ import {
   NgApexchartsModule,
 } from 'ng-apexcharts';
 import { sortByAlpha } from '../../core/utils/sort-utils';
-import { DashboardData, DashboardService } from '../../core/services/dashboard.service';
+import { DashboardData, DashboardService, RecentSeanceRow } from '../../core/services/dashboard.service';
 
 interface StatCard {
   label: string;
@@ -174,45 +174,21 @@ type AxisChartOptions = {
 
       <section class="analysis-section">
         <div class="section-heading">
-          <h2>Tableaux d’analyse</h2>
-          <span>Mesures en temps réel</span>
+          <h2>Émargements récents</h2>
+          <span>Activité du moment</span>
         </div>
 
-        <div class="bento-grid">
-          <article class="bento-card col-span-8">
+        <div class="bento-grid recent-grid">
+          <article class="bento-card taux-card col-span-4">
             <div class="card-header">
               <div>
-                <h3>Émargements récents</h3>
-                <p>Données réelles des 7 derniers jours</p>
+                <h3>Taux d'émargement</h3>
+                <p>Validation globale</p>
               </div>
-              <div class="header-icon"><i class="pi pi-chart-line"></i></div>
+              <div class="header-icon"><i class="pi pi-percentage"></i></div>
             </div>
-            <div class="chart-wrapper">
-              <apx-chart
-                [series]="sessionsTrendOptions.series"
-                [chart]="sessionsTrendOptions.chart"
-                [xaxis]="sessionsTrendOptions.xaxis"
-                [yaxis]="sessionsTrendOptions.yaxis"
-                [colors]="sessionsTrendOptions.colors"
-                [dataLabels]="sessionsTrendOptions.dataLabels"
-                [stroke]="sessionsTrendOptions.stroke"
-                [fill]="sessionsTrendOptions.fill"
-                [tooltip]="sessionsTrendOptions.tooltip"
-                [grid]="sessionsTrendOptions.grid"
-              ></apx-chart>
-            </div>
-          </article>
-
-          <div class="bento-column col-span-4">
-            <article class="bento-card compact-chart">
-              <div class="card-header">
-                <div>
-                  <h3>Taux d'émargement</h3>
-                  <p>{{ attendanceInsight }}</p>
-                </div>
-                <div class="header-icon"><i class="pi pi-verified"></i></div>
-              </div>
-              <div class="chart-wrapper gauge-wrapper">
+            <div class="taux-body">
+              <div class="taux-gauge">
                 <apx-chart
                   [series]="attendanceGaugeOptions.series"
                   [chart]="attendanceGaugeOptions.chart"
@@ -222,54 +198,34 @@ type AxisChartOptions = {
                   [stroke]="attendanceGaugeOptions.stroke"
                 ></apx-chart>
               </div>
-            </article>
+              <p class="taux-summary">
+                <strong>{{ emargementsValides }}</strong> émargés sur {{ totalSeances }} séances
+              </p>
+              <p class="taux-insight">{{ attendanceInsight }}</p>
+            </div>
+          </article>
 
-            <article class="bento-card compact-chart">
-              <div class="card-header">
-                <div>
-                  <h3>Performance par classe</h3>
-                  <p>Répartition de l'émargement</p>
-                </div>
-                <div class="header-icon"><i class="pi pi-chart-pie"></i></div>
-              </div>
-              <div class="chart-wrapper donut-wrapper">
-                <apx-chart
-                  [series]="classPerformanceOptions.series"
-                  [chart]="classPerformanceOptions.chart"
-                  [labels]="classPerformanceOptions.labels"
-                  [colors]="classPerformanceOptions.colors"
-                  [legend]="classPerformanceOptions.legend"
-                  [dataLabels]="classPerformanceOptions.dataLabels"
-                  [plotOptions]="classPerformanceOptions.plotOptions"
-                  [tooltip]="classPerformanceOptions.tooltip"
-                ></apx-chart>
-              </div>
-            </article>
-          </div>
-
-          <article class="bento-card col-span-12">
+          <article class="bento-card col-span-8">
             <div class="card-header">
               <div>
-                <h3>Performance Pédagogique</h3>
-                <p>Taux de validation des émargements par enseignant</p>
+                <h3>Dernières séances</h3>
+                <p>Les plus récentes de l'établissement</p>
               </div>
-              <div class="header-icon"><i class="pi pi-users"></i></div>
+              <div class="header-icon"><i class="pi pi-clock"></i></div>
             </div>
-            <div class="chart-wrapper">
-              <apx-chart
-                [series]="teacherHoursOptions.series"
-                [chart]="teacherHoursOptions.chart"
-                [xaxis]="teacherHoursOptions.xaxis"
-                [yaxis]="teacherHoursOptions.yaxis"
-                [colors]="teacherHoursOptions.colors"
-                [dataLabels]="teacherHoursOptions.dataLabels"
-                [plotOptions]="teacherHoursOptions.plotOptions"
-                [grid]="teacherHoursOptions.grid"
-                [tooltip]="teacherHoursOptions.tooltip"
-                [stroke]="teacherHoursOptions.stroke"
-                [fill]="teacherHoursOptions.fill"
-                [legend]="teacherHoursOptions.legend"
-              ></apx-chart>
+            <div class="recent-list">
+              <div class="recent-item" *ngFor="let s of recentSeances">
+                <div class="recent-date">
+                  <span class="recent-day">{{ formatDate(s.dateCours) }}</span>
+                  <span class="recent-hour">{{ s.heureDebut }}</span>
+                </div>
+                <div class="recent-mid">
+                  <div class="recent-main">{{ s.matiere }}</div>
+                  <div class="recent-sub">{{ s.classe }}{{ s.enseignant ? ' · ' + s.enseignant : '' }}</div>
+                </div>
+                <span class="status-badge" [style.--status]="statusColor(s.statut)">{{ s.statut }}</span>
+              </div>
+              <div class="table-empty" *ngIf="!recentSeances.length">Aucune séance pour le moment.</div>
             </div>
           </article>
         </div>
@@ -614,6 +570,204 @@ type AxisChartOptions = {
         font-size: 1.2rem;
       }
 
+      /* Data tables */
+      .data-tables .bento-card {
+        min-height: 0;
+      }
+
+      .table-wrap {
+        flex: 1;
+        overflow-x: auto;
+        margin: 0 -6px;
+        padding: 0 6px;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+      }
+
+      .data-table th {
+        text-align: left;
+        padding: 10px 8px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .data-table td {
+        padding: 10px 8px;
+        font-size: 0.88rem;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+      }
+
+      .data-table .nowrap {
+        white-space: nowrap;
+      }
+
+      .data-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .data-table th.num,
+      .data-table td.num {
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .recent-table th,
+      .recent-table td {
+        padding: 12px 10px;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 74px;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.76rem;
+        font-weight: 800;
+        color: var(--status);
+        background: color-mix(in srgb, var(--status) 12%, transparent);
+      }
+
+      .cell-main {
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1.3;
+      }
+
+      .cell-sub {
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: #94a3b8;
+        margin-top: 2px;
+      }
+
+      .table-empty {
+        padding: 28px 8px;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.88rem;
+        font-weight: 600;
+      }
+
+      /* Taux card */
+      .recent-grid {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+      }
+
+      .taux-card {
+        min-height: 0;
+        justify-content: flex-start;
+        align-self: start;
+      }
+
+      .taux-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        text-align: center;
+      }
+
+      .taux-gauge {
+        width: 100%;
+        max-width: 210px;
+        margin: 0 auto;
+      }
+
+      .taux-summary {
+        margin: 0;
+        font-size: 0.82rem;
+        color: #475569;
+        font-weight: 600;
+        line-height: 1.4;
+      }
+
+      .taux-summary strong {
+        color: #0f172a;
+        font-weight: 800;
+      }
+
+      .taux-insight {
+        margin: 0;
+        font-size: 0.76rem;
+        color: #64748b;
+        font-weight: 600;
+        line-height: 1.4;
+      }
+
+      /* Recent emargements list */
+      .recent-list {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .recent-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 6px;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      .recent-item:last-child {
+        border-bottom: none;
+      }
+
+      .recent-date {
+        flex: 0 0 56px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+      }
+
+      .recent-day {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #0f172a;
+      }
+
+      .recent-hour {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #94a3b8;
+      }
+
+      .recent-mid {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .recent-main {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 0.95rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .recent-sub {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #94a3b8;
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
       .chart-wrapper {
           flex: 1;
           min-height: 240px;
@@ -762,9 +916,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   adminInitials = 'AU';
   attendanceRate = 0;
   attendanceInsight = 'Aucune séance disponible pour le calcul.';
+  emargementsValides = 0;
+  totalSeances = 0;
 
   private refreshSubscription: Subscription | null = null;
   private isDashboardLoading = false;
+
+  // Données concrètes pour les tableaux de suivi
+  recentSeances: RecentSeanceRow[] = [];
 
   hubTiles: HubTile[] = [
     {
@@ -773,9 +932,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Académique',
       route: '/web/classes',
       icon: 'pi pi-building',
-      color: '#3B82F6',
-      bgTint: '#F2F6FD',
-      indicator: 'Chargement...',
+      color: '#6366f1',
+      bgTint: '#eef2ff',
+      indicator: 'Gestion active',
       gaugeValue: 0,
       gaugeLabel: 'Émargement',
     },
@@ -785,8 +944,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Programme',
       route: '/web/matieres',
       icon: 'pi pi-book',
-      color: '#10B981',
-      bgTint: '#F5FDF9',
+      color: '#059669',
+      bgTint: '#ecfdf5',
       indicator: 'Gestion active',
       gaugeValue: 0,
       gaugeLabel: 'Émargement',
@@ -797,9 +956,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Ressources',
       route: '/web/teachers',
       icon: 'pi pi-id-card',
-      color: '#F97316',
-      bgTint: '#FFF9F5',
-      indicator: 'Chargement...',
+      color: '#d97706',
+      bgTint: '#fffbeb',
+      indicator: 'Ressources',
       gaugeValue: 0,
       gaugeLabel: 'Performance',
     },
@@ -809,9 +968,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Logistique',
       route: '/web/schedule',
       icon: 'pi pi-calendar',
-      color: '#06B6D4',
-      bgTint: '#F1FAFC',
-      indicator: 'Chargement...',
+      color: '#0d9488',
+      bgTint: '#f0fdfa',
+      indicator: 'Logistique',
       gaugeValue: 0,
       gaugeLabel: 'Aujourd\'hui',
     },
@@ -821,8 +980,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Émargement',
       route: '/web/qr-generator',
       icon: 'pi pi-qrcode',
-      color: '#7C3AED',
-      bgTint: '#F9F4FD',
+      color: '#7c3aed',
+      bgTint: '#f5f3ff',
       indicator: 'Accès rapide',
       gaugeValue: 0,
       gaugeLabel: 'En attente',
@@ -833,9 +992,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       meta: 'Analyse',
       route: '/web/attendance',
       icon: 'pi pi-chart-bar',
-      color: '#EC4899',
-      bgTint: '#FEF1F7',
-      indicator: 'Chargement...',
+      color: '#be123c',
+      bgTint: '#fff1f2',
+      indicator: 'Analyse',
       gaugeValue: 0,
       gaugeLabel: 'Assiduité',
     },
@@ -882,7 +1041,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   attendanceGaugeOptions: RadialChartOptions = {
     series: [0],
-    chart: { type: 'radialBar', height: 280, sparkline: { enabled: true } },
+    chart: { type: 'radialBar', height: 190, sparkline: { enabled: true } },
     plotOptions: {
       radialBar: {
         startAngle: -120,
@@ -890,11 +1049,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         hollow: { size: '65%' },
         track: { background: '#e2e8f0', strokeWidth: '100%' },
         dataLabels: {
-          name: { show: true, offsetY: 26, color: '#64748b', fontSize: '13px', fontWeight: 800 },
+          name: { show: true, offsetY: 18, color: '#64748b', fontSize: '12px', fontWeight: 800 },
           value: {
-            offsetY: -12,
+            offsetY: -10,
             color: '#0f172a',
-            fontSize: '38px',
+            fontSize: '30px',
             fontWeight: 900,
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             formatter: (value: number) => `${Math.round(value)}%`,
@@ -1099,6 +1258,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const pendingEmargements = dashboardStats?.pendingEmargements ?? 0;
     const tauxGlobal = dashboardStats?.tauxValidationGlobal ?? 0;
 
+    // Conservés pour la carte Taux d'émargement
+    this.emargementsValides = emargementsValides;
+    this.totalSeances = totalSeances;
+
     this.stats[0].value = totalTeachers;
     this.stats[1].value = totalClasses;
     this.stats[2].value = totalMatieres;
@@ -1122,18 +1285,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.hubTiles[1].gaugeValue = avgMatiereTaux;
 
     const teachersRows = dashboardStats?.topEnseignants ?? [];
-    const avgTeacherTaux = teachersRows.length
-      ? Math.round(teachersRows.reduce((s, r) => s + (r.tauxValidation || 0), 0) / teachersRows.length)
+    // topEnseignants contient tous les enseignants ayant au moins une seance
+    // planifiee (actifs). On moyenne sur eux et on affiche ce nombre plutot
+    // que totalTeachers (qui inclut les enseignants sans aucune seance).
+    const activeTeachers = teachersRows.length;
+    const avgTeacherTaux = activeTeachers
+      ? Math.round(teachersRows.reduce((s, r) => s + (r.tauxValidation || 0), 0) / activeTeachers)
       : 0;
-    this.hubTiles[2].indicator = `${totalTeachers} enseignant${totalTeachers > 1 ? 's' : ''} · ${avgTeacherTaux}% performance`;
+    this.hubTiles[2].indicator = `${activeTeachers} enseignant${activeTeachers > 1 ? 's' : ''} actif${activeTeachers > 1 ? 's' : ''} · ${avgTeacherTaux}% performance`;
     this.hubTiles[2].gaugeValue = avgTeacherTaux;
 
     const planningPct = totalSeances > 0 ? Math.round((sessionsToday / totalSeances) * 100) : 0;
     this.hubTiles[3].indicator = `${totalSeances} séance${totalSeances > 1 ? 's' : ''} · ${sessionsToday} aujourd'hui`;
     this.hubTiles[3].gaugeValue = planningPct;
 
-    this.hubTiles[4].indicator = `${pendingEmargements} en attente`;
-    this.hubTiles[4].gaugeValue = pendingEmargements > 0 ? 35 : 100;
+    // QR : jauge = proportion de seances ou le QR a deja ete scanne (emarge).
+    // pendingEmargements = scanne mais en attente de fiche ; emargementsValides = scanne et valide.
+    const qrScanRate = totalSeances > 0
+      ? Math.round(((emargementsValides + pendingEmargements) / totalSeances) * 100)
+      : 0;
+    this.hubTiles[4].indicator = `${pendingEmargements} en attente · ${qrScanRate}% scannés`;
+    this.hubTiles[4].gaugeValue = qrScanRate;
 
     this.hubTiles[5].indicator = `${emargementsValides} émargement${emargementsValides > 1 ? 's' : ''} · ${Math.round(tauxGlobal)}% assiduité`;
     this.hubTiles[5].gaugeValue = Math.round(tauxGlobal);
@@ -1142,6 +1314,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private updateAnalytics(
     dashboardStats: DashboardData | null,
   ): void {
+    // Tableaux concrets du suivi
+    this.recentSeances = dashboardStats?.recentSeances ?? [];
+
     this.attendanceRate = Math.round(dashboardStats?.tauxValidationGlobal ?? 0);
     this.attendanceInsight =
       (dashboardStats?.totalSeances ?? 0) > 0
@@ -1343,7 +1518,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadAdminProfile(): void {
-    const savedUser = localStorage.getItem('user');
+    const savedUser = sessionStorage.getItem('user');
 
     if (!savedUser) {
       return;
@@ -1403,5 +1578,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     return role;
+  }
+
+  statusColor(statut: string): string {
+    switch ((statut || '').toLowerCase()) {
+      case 'validée':
+      case 'validee':
+        return '#16a34a';
+      case 'en cours':
+        return '#0284c7';
+      case 'prévue':
+      case 'prevue':
+        return '#d97706';
+      case 'terminée':
+      case 'terminee':
+        return '#64748b';
+      default:
+        return '#64748b';
+    }
+  }
+
+  formatDate(iso: string): string {
+    if (!iso) {
+      return '';
+    }
+    const parts = iso.split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}`;
+    }
+    return iso;
   }
 }
