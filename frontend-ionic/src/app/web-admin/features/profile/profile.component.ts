@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -37,10 +37,12 @@ interface ProfileEditForm {
   imports: [CommonModule, RouterLink, FormsModule],
   template: `
     <!-- Floating Toast -->
-    <div class="floating-toast" *ngIf="toastMessage" [ngClass]="toastType">
-      <i class="pi" [ngClass]="toastType === 'success' ? 'pi-check-circle' : 'pi-times-circle'"></i>
-      <span>{{ toastMessage }}</span>
-    </div>
+    @if (toastMessage) {
+      <div class="floating-toast" [ngClass]="toastType">
+        <i class="pi" [ngClass]="toastType === 'success' ? 'pi-check-circle' : 'pi-times-circle'"></i>
+        <span>{{ toastMessage }}</span>
+      </div>
+    }
 
     <div class="profile-page">
       <div class="profile-hero">
@@ -64,12 +66,11 @@ interface ProfileEditForm {
       <div class="profile-grid">
         <section class="profile-card identity-card">
           <div class="avatar-ring">
-            <ng-container *ngIf="profile.photoUrl; else initialsAvatar">
+            @if (profile.photoUrl) {
               <img class="avatar-photo" [src]="profile.photoUrl" alt="Photo de profil" />
-            </ng-container>
-            <ng-template #initialsAvatar>
+            } @else {
               <div class="avatar">{{ profile.initials }}</div>
-            </ng-template>
+            }
           </div>
 
           <div class="photo-actions">
@@ -86,15 +87,16 @@ interface ProfileEditForm {
               Changer la photo
             </button>
 
-            <button
-              class="photo-btn danger"
-              type="button"
-              *ngIf="profile.photoUrl"
-              (click)="removeProfilePhoto()"
-            >
-              <i class="pi pi-times"></i>
-              Retirer
-            </button>
+            @if (profile.photoUrl) {
+              <button
+                class="photo-btn danger"
+                type="button"
+                (click)="removeProfilePhoto()"
+              >
+                <i class="pi pi-times"></i>
+                Retirer
+              </button>
+            }
           </div>
 
           <div class="identity-info">
@@ -214,7 +216,8 @@ interface ProfileEditForm {
             </button>
           </div>
 
-          <form class="profile-edit-form" *ngIf="isEditFormOpen" (ngSubmit)="submitProfileUpdate()">
+          @if (isEditFormOpen) {
+            <form class="profile-edit-form" (ngSubmit)="submitProfileUpdate()">
             <div class="form-grid">
               <div class="form-group">
                 <label for="prenom">Prénom</label>
@@ -288,15 +291,19 @@ interface ProfileEditForm {
               />
             </div>
 
-            <p class="form-message success" *ngIf="profileSuccessMessage">
-              <i class="pi pi-check-circle"></i>
-              {{ profileSuccessMessage }}
-            </p>
+            @if (profileSuccessMessage) {
+              <p class="form-message success">
+                <i class="pi pi-check-circle"></i>
+                {{ profileSuccessMessage }}
+              </p>
+            }
 
-            <p class="form-message error" *ngIf="profileErrorMessage">
-              <i class="pi pi-exclamation-triangle"></i>
-              {{ profileErrorMessage }}
-            </p>
+            @if (profileErrorMessage) {
+              <p class="form-message error">
+                <i class="pi pi-exclamation-triangle"></i>
+                {{ profileErrorMessage }}
+              </p>
+            }
 
             <button class="submit-password" type="submit" [disabled]="isUpdatingProfile">
               <i
@@ -308,12 +315,13 @@ interface ProfileEditForm {
               {{ isUpdatingProfile ? 'Enregistrement...' : 'Enregistrer le profil' }}
             </button>
           </form>
+          }
 
-          <form
-            class="password-form"
-            *ngIf="isPasswordFormOpen"
-            (ngSubmit)="submitPasswordChange()"
-          >
+          @if (isPasswordFormOpen) {
+            <form
+              class="password-form"
+              (ngSubmit)="submitPasswordChange()"
+            >
             <div class="form-group">
               <label for="currentPassword">Ancien mot de passe</label>
               <input
@@ -352,15 +360,19 @@ interface ProfileEditForm {
               />
             </div>
 
-            <p class="form-message success" *ngIf="passwordSuccessMessage">
-              <i class="pi pi-check-circle"></i>
-              {{ passwordSuccessMessage }}
-            </p>
+            @if (passwordSuccessMessage) {
+              <p class="form-message success">
+                <i class="pi pi-check-circle"></i>
+                {{ passwordSuccessMessage }}
+              </p>
+            }
 
-            <p class="form-message error" *ngIf="passwordErrorMessage">
-              <i class="pi pi-exclamation-triangle"></i>
-              {{ passwordErrorMessage }}
-            </p>
+            @if (passwordErrorMessage) {
+              <p class="form-message error">
+                <i class="pi pi-exclamation-triangle"></i>
+                {{ passwordErrorMessage }}
+              </p>
+            }
 
             <button class="submit-password" type="submit" [disabled]="isChangingPassword">
               <i
@@ -372,6 +384,7 @@ interface ProfileEditForm {
               {{ isChangingPassword ? 'Modification...' : 'Enregistrer le nouveau mot de passe' }}
             </button>
           </form>
+          }
         </section>
       </div>
     </div>
@@ -995,13 +1008,10 @@ export class ProfileComponent implements OnInit {
   passwordSuccessMessage = '';
   passwordErrorMessage = '';
 
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private http: HttpClient,
-  
-    private readonly cdr: ChangeDetectorRef,
-  ) {}
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     const savedUser = sessionStorage.getItem('user');

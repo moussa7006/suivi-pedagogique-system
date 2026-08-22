@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
@@ -74,8 +74,28 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
         </div>
       </div>
 
+      <div class="filters-bar">
+        <div class="search-input-wrapper">
+          <i class="pi pi-search"></i>
+          <input
+            type="text"
+            placeholder="Rechercher un enseignant..."
+            [value]="searchText"
+            (input)="onSearchInput($event)"
+          />
+        </div>
+        <div class="date-input-wrapper">
+          <i class="pi pi-calendar"></i>
+          <input
+            type="date"
+            [value]="filterDate"
+            (input)="onDateInput($event)"
+          />
+        </div>
+      </div>
+
       <div class="logs-list">
-        @for (log of lessonLogs; track log.id) {
+        @for (log of filteredLogs; track log.id) {
           <div class="log-card" [ngClass]="getStatusClass(log.estValideAdmin)">
             <div class="log-header">
               <div class="teacher-info">
@@ -99,22 +119,28 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
                 </div>
                 <p class="content-text">{{ log.contenuDetaille }}</p>
 
-                <div class="extra-fields" *ngIf="log.objectifs || log.travaux">
-                  <div class="extra-field" *ngIf="log.objectifs">
-                    <div class="field-label">
-                      <i class="pi pi-flag"></i>
-                      <span>Objectifs</span>
-                    </div>
-                    <p class="field-value">{{ log.objectifs }}</p>
+                @if (log.objectifs || log.travaux) {
+                  <div class="extra-fields">
+                    @if (log.objectifs) {
+                      <div class="extra-field">
+                        <div class="field-label">
+                          <i class="pi pi-flag"></i>
+                          <span>Objectifs</span>
+                        </div>
+                        <p class="field-value">{{ log.objectifs }}</p>
+                      </div>
+                    }
+                    @if (log.travaux) {
+                      <div class="extra-field">
+                        <div class="field-label">
+                          <i class="pi pi-wrench"></i>
+                          <span>Travaux</span>
+                        </div>
+                        <p class="field-value">{{ log.travaux }}</p>
+                      </div>
+                    }
                   </div>
-                  <div class="extra-field" *ngIf="log.travaux">
-                    <div class="field-label">
-                      <i class="pi pi-wrench"></i>
-                      <span>Travaux</span>
-                    </div>
-                    <p class="field-value">{{ log.travaux }}</p>
-                  </div>
-                </div>
+                }
 
                 <div class="meta-info">
                   <span class="meta-item">
@@ -125,17 +151,15 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
                     <i class="pi pi-calendar"></i>
                     <span>{{ log.dateSeance }}</span>
                   </span>
-                  <span class="meta-item" *ngIf="log.dateValidation">
-                    <i class="pi pi-check-circle"></i>
-                    <span>Émargé le {{ log.dateValidation }}</span>
-                  </span>
+                  @if (log.dateValidation) {
+                    <span class="meta-item">
+                      <i class="pi pi-check-circle"></i>
+                      <span>Émargé le {{ log.dateValidation }}</span>
+                    </span>
+                  }
                 </div>
               </div>
 
-              <div class="validated-label" [ngClass]="getStatusClass(log.estValideAdmin)">
-                <i class="pi pi-check-circle"></i>
-                <span>{{ getStatutLabel(log.estValideAdmin) }}</span>
-              </div>
             </div>
           </div>
         }
@@ -638,6 +662,41 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
           }
         }
       }
+
+      .filters-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 0 0 20px;
+
+        .search-input-wrapper,
+        .date-input-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 14px;
+          background: #fff;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+
+          i {
+            color: #6b7280;
+          }
+
+          input {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 0.9rem;
+            color: #111827;
+            min-width: 220px;
+
+            &::placeholder {
+              color: #9ca3af;
+            }
+          }
+        }
+      }
     `,
   ],
 })
@@ -646,13 +705,12 @@ export class PedagogyComponent implements OnInit {
   seances: Seance[] = [];
   exportingExcel = false;
   loading = false;
+  searchText = '';
+  filterDate = '';
 
-  constructor(
-    private pedagogyService: PedagogyService,
-    private scheduleService: ScheduleService,
-  
-    private readonly cdr: ChangeDetectorRef,
-  ) {}
+  private readonly pedagogyService = inject(PedagogyService);
+  private readonly scheduleService = inject(ScheduleService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     this.loadLogs();
@@ -752,6 +810,29 @@ export class PedagogyComponent implements OnInit {
 
   getValidatedCount(): number {
     return this.lessonLogs.filter((log) => log.estValideAdmin === true).length;
+  }
+
+  get filteredLogs(): FicheProgression[] {
+    return this.lessonLogs.filter((log) => {
+      const matchesSearch =
+        !this.searchText ||
+        (log.enseignantNomPrenom || '')
+          .toLowerCase()
+          .includes(this.searchText.toLowerCase());
+
+      const matchesDate =
+        !this.filterDate || (log.dateSeance || '').startsWith(this.filterDate);
+
+      return matchesSearch && matchesDate;
+    });
+  }
+
+  onSearchInput(event: Event): void {
+    this.searchText = (event.target as HTMLInputElement).value;
+  }
+
+  onDateInput(event: Event): void {
+    this.filterDate = (event.target as HTMLInputElement).value;
   }
 
   getStatutLabel(estValideAdmin: boolean | null | undefined): string {

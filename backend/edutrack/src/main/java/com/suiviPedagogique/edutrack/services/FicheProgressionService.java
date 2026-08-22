@@ -41,6 +41,9 @@ public class FicheProgressionService {
     private EmargementService emargementService;
 
     @Autowired
+    private HonorairesService honorairesService;
+
+    @Autowired
     private UtilisateurRepository utilisateurRepository;
 
     @Transactional
@@ -87,6 +90,9 @@ public class FicheProgressionService {
 
         seance.setFicheProgression(fiche);
         seanceRepository.save(seance);
+
+        // La séance est désormais payable : ajout automatique aux honoraires du mois.
+        honorairesService.ajouterSeanceAuxHonoraires(seance);
 
         return toDto(fiche);
     }

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { catchError, interval, of, startWith, Subscription, switchMap } from 'rxjs';
@@ -43,33 +43,35 @@ interface SalleDisplayInfo {
           </div>
         </div>
 
-        <main *ngIf="qr; else emptyState" class="qr-layout">
-          <div class="qr-card">
-            <qrcode
-              [qrdata]="qr.qrCodeToken"
-              [width]="qrWidth"
-              [errorCorrectionLevel]="'M'"
-            ></qrcode>
-          </div>
-
-          <div class="session-info">
-            <p class="label">Séance en cours</p>
-            <h2>{{ qr.classeLibelle || 'Classe non renseignée' }}</h2>
-            <p class="teacher">{{ qr.enseignantNomPrenom || 'Enseignant non renseigné' }}</p>
-            <div class="expiration">
-              Valable jusqu’à <strong>{{ qr.dateHeureExpiration | date: 'HH:mm' }}</strong>
+        @if (qr) {
+          <main class="qr-layout">
+            <div class="qr-card">
+              <qrcode
+                [qrdata]="qr.qrCodeToken"
+                [width]="qrWidth"
+                [errorCorrectionLevel]="'M'"
+              ></qrcode>
             </div>
-          </div>
-        </main>
 
-        <ng-template #emptyState>
+            <div class="session-info">
+              <p class="label">Séance en cours</p>
+              <h2>{{ qr.classeLibelle || 'Classe non renseignée' }}</h2>
+              <p class="teacher">{{ qr.enseignantNomPrenom || 'Enseignant non renseigné' }}</p>
+              <div class="expiration">
+                Valable jusqu’à <strong>{{ qr.dateHeureExpiration | date: 'HH:mm' }}</strong>
+              </div>
+            </div>
+          </main>
+        } @else {
           <div class="empty-state">
             <div class="empty-icon">QR</div>
             <h2>Aucun QR code actif</h2>
             <p>Le QR code apparaîtra automatiquement lorsqu’il sera généré pour cette salle.</p>
-            <small *ngIf="lastError">{{ lastError }}</small>
+            @if (lastError) {
+              <small>{{ lastError }}</small>
+            }
           </div>
-        </ng-template>
+        }
       </section>
     </div>
   `,
@@ -377,12 +379,10 @@ export class SalleDisplayComponent implements OnInit, OnDestroy {
   qrWidth = 420;
   private subscription?: Subscription;
 
-  constructor(
-    private route: ActivatedRoute,
-    private http: HttpClient,
-    private apiConfig: ApiConfigService,
-    private readonly cdr: ChangeDetectorRef,
-  ) {}
+  private readonly route = inject(ActivatedRoute);
+  private readonly http = inject(HttpClient);
+  private readonly apiConfig = inject(ApiConfigService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.updateQrWidth();

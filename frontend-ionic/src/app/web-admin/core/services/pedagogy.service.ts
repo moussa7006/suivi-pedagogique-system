@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -10,7 +10,7 @@ import { FicheProgression, FicheProgressionRequest } from '../models/lesson-log.
 export class PedagogyService {
   private apiUrl = `${environment.apiUrl}/fiche-progression`;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getFicheProgressions(): Observable<FicheProgression[]> {
     return this.http.get<FicheProgression[]>(this.apiUrl);
