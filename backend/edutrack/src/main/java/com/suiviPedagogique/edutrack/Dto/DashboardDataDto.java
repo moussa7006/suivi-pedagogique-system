@@ -20,6 +20,7 @@ public class DashboardDataDto {
     private List<Map<String, Object>> topEnseignants;
     private List<Map<String, Object>> matieresVolumetrie;
     private List<Map<String, Object>> classesEmargement;
+    private List<Map<String, Object>> recentSeances;
 
     public DashboardDataDto() {}
 
@@ -125,5 +126,13 @@ public class DashboardDataDto {
 
     public void setClassesEmargement(List<Map<String, Object>> classesEmargement) {
         this.classesEmargement = classesEmargement;
+    }
+
+    public List<Map<String, Object>> getRecentSeances() {
+        return recentSeances;
+    }
+
+    public void setRecentSeances(List<Map<String, Object>> recentSeances) {
+        this.recentSeances = recentSeances;
     }
 }

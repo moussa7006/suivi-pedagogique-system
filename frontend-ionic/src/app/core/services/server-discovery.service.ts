@@ -1,23 +1,23 @@
 import { Injectable, inject } from '@angular/core';
+import { CapacitorWifi } from '@capgo/capacitor-wifi';
 import { ApiConfigService } from './api-config.service';
 
 const DISCOVERY_PORT = 8099;
-const PROBE_TIMEOUT_MS = 600;
-const CONCURRENCY = 16;
+const PROBE_TIMEOUT_MS = 400;
+const CONCURRENCY = 32;
 
 /**
- * Sous-réseaux privés les plus courants, scannés pour trouver le backend
- * EduTrack sur le même réseau local (LAN). L'utilisateur n'a plus besoin
- * de saisir manuellement l'IP du PC qui exécute le backend.
+ * Sous-réseaux privés les plus courants, utilisés uniquement en secours
+ * lorsque l'on ne peut pas déduire le sous-réseau depuis l'IP du téléphone
+ * (ex: navigateur web, permission Wi-Fi refusée, aucune IP récupérée).
  *
- * Les hotspots mobiles (souvent utilisés en soutenance) sont en premier :
- *  - Android hotspot : 192.168.43.x / 192.168.x
- *  - iPhone hotspot  : 172.20.10.x
+ * La détection principale dérive désormais le sous-réseau de l'IP locale
+ * de l'appareil via @capgo/capacitor-wifi, ce qui est beaucoup plus rapide
+ * et ne dépend plus d'une liste figée.
  */
-const CANDIDATE_SUBNETS = [
+const FALLBACK_SUBNETS = [
   '192.168.43', // Partage connexion Android
-  '172.20.10',  // Partage connexion iPhone
-  '10.62.103',  // Ton réseau Wi-Fi actuel !
+  '172.20.10', // Partage connexion iPhone
   '192.168.1',
   '192.168.0',
   '10.0.0',
@@ -35,13 +35,48 @@ export class ServerDiscoveryService {
    * ou null si aucun serveur n'a été trouvé.
    */
   async autoDetect(): Promise<string | null> {
-    for (const subnet of CANDIDATE_SUBNETS) {
+    // 1) On essaie de déduire le sous-réseau exact depuis l'IP du téléphone.
+    const deviceSubnet = await this.getDeviceSubnet();
+
+    if (deviceSubnet) {
+      const found = await this.scanSubnet(deviceSubnet);
+      if (found) {
+        return found;
+      }
+    }
+
+    // 2) Sinon (ou si rien trouvé), on retombe sur les sous-réseaux courants.
+    const subnets = this.uniqueSubnets([
+      ...(deviceSubnet ? [deviceSubnet] : []),
+      ...FALLBACK_SUBNETS,
+    ]);
+
+    for (const subnet of subnets) {
       const found = await this.scanSubnet(subnet);
       if (found) {
         return found;
       }
     }
+
     return null;
+  }
+
+  /**
+   * Récupère l'IP locale de l'appareil et en extrait les 3 premiers octets
+   * (le préfixe /24). Ex: "192.168.1.42" -> "192.168.1".
+   * Retourne null si indisponible (navigateur, permission refusée, IPv6...).
+   */
+  private async getDeviceSubnet(): Promise<string | null> {
+    try {
+      const { ipAddress } = await CapacitorWifi.getIpAddress();
+      return extractSubnet(ipAddress);
+    } catch {
+      return null;
+    }
+  }
+
+  private uniqueSubnets(subnets: string[]): string[] {
+    return Array.from(new Set(subnets));
   }
 
   private async scanSubnet(subnet: string): Promise<string | null> {
@@ -81,4 +116,28 @@ export class ServerDiscoveryService {
       clearTimeout(timer);
     }
   }
+}
+
+/**
+ * Extrait le préfixe /24 d'une adresse IPv4 valide.
+ * Ex: "192.168.1.42" -> "192.168.1". Retourne null sinon.
+ */
+function extractSubnet(ipAddress: string | undefined | null): string | null {
+  if (!ipAddress) {
+    return null;
+  }
+
+  const match = ipAddress.trim().match(
+    /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.\d{1,3}$/,
+  );
+  if (!match) {
+    return null;
+  }
+
+  const octets = match.slice(1).map(Number);
+  if (octets.some((octet) => octet < 0 || octet > 255)) {
+    return null;
+  }
+
+  return `${octets[0]}.${octets[1]}.${octets[2]}`;
 }

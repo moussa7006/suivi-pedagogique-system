@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
-import { Observable, from, map, switchMap } from 'rxjs';
+import { Observable, firstValueFrom, from, map, switchMap } from 'rxjs';
 import { ApiConfigService } from './api-config.service';
 import { LoginRequest, LoginResponse } from '../models/auth.models';
 import { TokenStorageService } from './token-storage.service';
@@ -65,7 +65,7 @@ export class AuthService {
     return this.http.get<any>(this.apiConfig.buildUrl('auth/me'));
   }
 
-  async isAuthenticated(): Promise<boolean> {
+  async isAuthenticated(validateAgainstServer = false): Promise<boolean> {
     const token = await this.tokenStorage.getToken();
     if (!token) {
       return false;
@@ -79,6 +79,20 @@ export class AuthService {
       await this.tokenStorage.clearToken();
       await Preferences.remove({ key: this.userKey });
       return false;
+    }
+
+    // Validation serveur facultative : le token doit être réellement accepté
+    // par /auth/me. Empêche l'accès avec une session trafiquée, révoquée ou
+    // fabriquée côté client.
+    if (validateAgainstServer) {
+      try {
+        await firstValueFrom(this.getMe());
+        return true;
+      } catch {
+        await this.tokenStorage.clearToken();
+        await Preferences.remove({ key: this.userKey });
+        return false;
+      }
     }
 
     return true;

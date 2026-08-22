@@ -2,7 +2,7 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const user = localStorage.getItem('user');
+  const user = sessionStorage.getItem('user');
   const isAuthEndpoint =
     req.url.includes('/auth/login') ||
     req.url.includes('/auth/forgot-password') ||

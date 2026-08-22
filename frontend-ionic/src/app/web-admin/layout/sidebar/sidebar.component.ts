@@ -425,7 +425,7 @@ export class SidebarComponent implements OnInit {
   }
 
   private loadAdminProfile(): void {
-    const savedUser = localStorage.getItem('user');
+    const savedUser = sessionStorage.getItem('user');
 
     if (!savedUser) {
       return;

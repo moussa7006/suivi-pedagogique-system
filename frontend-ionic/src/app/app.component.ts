@@ -1,4 +1,4 @@
-import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   IonApp,
@@ -16,8 +16,10 @@ import { AuthService } from './core/services/auth.service';
   imports: [IonApp, IonRouterOutlet],
 })
 export class AppComponent implements OnInit, OnDestroy {
+  hasScrolled = false;
   private backButtonListener?: PluginListenerHandle;
   private lastLoginBackPress = 0;
+  
 
   constructor(
     private readonly ngZone: NgZone,
@@ -25,6 +27,11 @@ export class AppComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly toastController: ToastController,
   ) {}
+
+  @HostListener('window:scroll')
+onWindowScroll(): void {
+  this.hasScrolled = window.scrollY > 0;
+}
 
   ngOnInit(): void {
     void this.configureStatusBar();

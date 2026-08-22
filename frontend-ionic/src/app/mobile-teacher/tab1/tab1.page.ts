@@ -34,6 +34,7 @@ import {
   trendingUpOutline,
   closeOutline,
   cashOutline,
+  chevronForwardOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { ScheduleService } from '../../core/services/schedule.service';
@@ -83,6 +84,7 @@ export class Tab1Page implements OnInit, OnDestroy {
   totalHeures = 0;
   scheduledHeures = 0;
   completionRate = 0;
+  private seances: Seance[] = [];
 
   // Notifications
   notificationCount = 0;
@@ -104,6 +106,30 @@ export class Tab1Page implements OnInit, OnDestroy {
     if (hour < 12) return 'Bonjour';
     if (hour < 18) return 'Bon après-midi';
     return 'Bonsoir';
+  }
+
+  get nextSeanceLabel(): string {
+    const now = new Date();
+    const upcoming = this.seances
+      .map((seance) => {
+        const start = this.combineDateAndTime(
+          seance.dateCours,
+          seance.heureDebutReelle,
+        );
+        return start ? { seance, start } : null;
+      })
+      .filter((item): item is { seance: Seance; start: Date } => item !== null)
+      .filter((item) => item.start >= now)
+      .sort((a, b) => a.start.getTime() - b.start.getTime())[0];
+
+    if (!upcoming) {
+      return 'Aucune séance à venir';
+    }
+    const time = upcoming.start.toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return `Prochaine séance à ${time}`;
   }
 
   get todayLabel(): string {
@@ -135,6 +161,7 @@ export class Tab1Page implements OnInit, OnDestroy {
       trendingUpOutline,
       closeOutline,
       cashOutline,
+      chevronForwardOutline,
     });
   }
 
@@ -214,6 +241,7 @@ export class Tab1Page implements OnInit, OnDestroy {
         );
 
         this.totalSeances = safeSeances.length;
+        this.seances = safeSeances;
         this.completedSeances = safeSeances.filter((seance) =>
           this.hasFicheProgression(seance, ficheSeanceIds),
         ).length;

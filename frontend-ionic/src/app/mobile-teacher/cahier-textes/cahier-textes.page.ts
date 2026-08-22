@@ -412,7 +412,6 @@ export class CahierTextesPage {
 
   private isSelectableSeance(seance: Seance): boolean {
     return (
-      !!seance.emargementId &&
       !this.hasFicheProgression(seance) &&
       this.isTodayOrPast(seance.dateCours)
     );

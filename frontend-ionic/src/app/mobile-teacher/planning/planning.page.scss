@@ -14,8 +14,14 @@
 
 ion-content {
   --background: var(--bg-light);
-  --padding-top: var(--ion-safe-area-top);
+  --padding-top: 0;
   --padding-bottom: calc(132px + var(--ion-safe-area-bottom, 0px));
+}
+
+.page-wrapper {
+  position: relative;
+  z-index: 1;
+  padding-top: 0;
 }
 
 /* ============================================

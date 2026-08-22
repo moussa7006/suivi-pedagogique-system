@@ -102,6 +102,10 @@ public class DashboardService {
         // Tableau 3: Taux d'émargement par classe
         dto.setClassesEmargement(buildClassesEmargement(allSeances));
 
+        // Dernières séances (activité récente du tableau de bord)
+        dto.setRecentSeances(buildRecentSeances(
+                seanceRepository.findTop8ByOrderByDateCoursDescHeureDebutReelleDesc()));
+
         return dto;
     }
 
@@ -285,5 +289,23 @@ public class DashboardService {
                 })
                 .sorted((a, b) -> Long.compare((long) b.get("seancesPlanifiees"), (long) a.get("seancesPlanifiees")))
                 .collect(Collectors.toList());
+    }
+
+    private List<Map<String, Object>> buildRecentSeances(List<Seance> seances) {
+        return seances.stream().map(s -> {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("id", s.getId());
+            row.put("dateCours", s.getDateCours() != null ? s.getDateCours().toString() : "");
+            row.put("heureDebut", s.getHeureDebutReelle() != null ? s.getHeureDebutReelle().toString() : "");
+            row.put("matiere", s.getEmploiDuTemps() != null && s.getEmploiDuTemps().getMatiere() != null
+                    ? s.getEmploiDuTemps().getMatiere().getLibelle() : "N/A");
+            row.put("classe", s.getClasse() != null ? s.getClasse().getLibelle() : "N/A");
+            row.put("enseignant", s.getEnseignant() != null
+                    ? ((s.getEnseignant().getPrenom() == null ? "" : s.getEnseignant().getPrenom()) + " "
+                    + (s.getEnseignant().getNom() == null ? "" : s.getEnseignant().getNom())).trim()
+                    : "N/A");
+            row.put("statut", getStatutAffichage(s));
+            return row;
+        }).collect(Collectors.toList());
     }
 }

@@ -58,38 +58,34 @@
         >
           <div class="seance-list-item__time">
             <span class="time-start">{{ formatTime(seance.heureDebutReelle) }}</span>
-            <span class="time-divider"></span>
             <span class="time-end">{{ formatTime(seance.heureFinReelle) }}</span>
           </div>
 
           <div class="seance-list-item__body">
-            <span class="matiere">
-              <ion-icon name="book-outline"></ion-icon>
-              {{ seance.matiereLibelle || 'Matière' }}
-            </span>
-            <span class="meta">
-              <span class="meta-pill">
+            <div class="top-line">
+              <span class="matiere">{{ seance.matiereLibelle || 'Matière' }}</span>
+              <span class="status-badge" [class]="'status-' + seance.statut">
+                {{ statutLabel(seance.statut) }}
+              </span>
+            </div>
+            <div class="meta-line">
+              <span class="meta-chip">
                 <ion-icon name="people-outline"></ion-icon>
                 {{ seance.classeLibelle || 'Classe' }}
               </span>
-              <span class="meta-pill" *ngIf="seance.salleLibelle">
+              <span class="meta-chip" *ngIf="seance.salleLibelle">
                 <ion-icon name="location-outline"></ion-icon>
                 {{ seance.salleLibelle }}
-              </span>
-            </span>
-            <span class="status-row">
-              <span class="status-badge" [class]="'status-' + seance.statut">
-                {{ statutLabel(seance.statut) }}
               </span>
               <span class="fiche-badge" *ngIf="hasCahierForSeance(seance)">
                 Fiche remplie
               </span>
-            </span>
+            </div>
           </div>
 
           <ion-icon
             class="radio"
-            [name]="selectedSeanceId === seance.id ? 'radio-button-on' : 'radio-button-off'"
+            [name]="selectedSeanceId === seance.id ? 'checkmark-circle' : 'ellipse-outline'"
           ></ion-icon>
         </button>
       </div>
