@@ -14,8 +14,6 @@ import {
   IonButton,
   IonIcon,
   IonInput,
-  IonSelect,
-  IonSelectOption,
   ToastController,
   AlertController,
 } from '@ionic/angular/standalone';
@@ -73,8 +71,6 @@ interface SeanceDisplay extends Seance {
     IonButton,
     IonIcon,
     IonInput,
-    IonSelect,
-    IonSelectOption,
   ],
 })
 export class ScanQRPage implements OnDestroy {
@@ -437,26 +433,43 @@ export class ScanQRPage implements OnDestroy {
 
     try {
       const position = await this.getCurrentPosition();
-      this.isScanning = false;
-      this.manualToken = '';
-      this.cdr.detectChanges();
-      const toast = await this.toastController.create({
-        message: 'QR Code validé ✅ Remplissez maintenant la fiche de progression.',
-        duration: 2500,
-        color: 'success',
-        position: 'top',
-      });
-      await toast.present();
-      await this.router.navigate(['/mobile/cahier-textes'], {
-        queryParams: {
-          seanceId: this.selectedSeance!.id,
-          tokenQRCode: tokenQRCode,
+      this.emargementService
+        .scanQRCode({
+          seanceId: this.selectedSeance!.id!,
+          tokenQRCode,
           latitude: position.latitude,
           longitude: position.longitude,
           adresseApproximative: position.adresseApproximative,
-          fromScan: true,
-        },
-      });
+        })
+        .subscribe({
+          next: async (response) => {
+            this.isScanning = false;
+            this.manualToken = '';
+            this.cdr.detectChanges();
+            const toast = await this.toastController.create({
+              message: 'Émargement validé ✅ Vous pouvez maintenant remplir la fiche de progression.',
+              duration: 2500,
+              color: 'success',
+              position: 'top',
+            });
+            await toast.present();
+            await this.router.navigate(['/mobile/cahier-textes'], {
+              queryParams: {
+                seanceId: response.seanceId || this.selectedSeanceId,
+                emargementId: response.emargementId,
+                fromScan: true,
+              },
+            });
+          },
+          error: async (error) => {
+            this.isScanning = false;
+            this.cdr.detectChanges();
+            await this.presentAlert(
+              "Échec de l'émargement",
+              this.getScanErrorMessage(error),
+            );
+          },
+        });
     } catch (error: any) {
       this.isScanning = false;
       this.cdr.detectChanges();

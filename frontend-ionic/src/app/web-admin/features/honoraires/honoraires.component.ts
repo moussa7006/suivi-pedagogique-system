@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -42,11 +42,14 @@ import { SelectModule } from 'primeng/select';
         <div class="field">
           <label>Mois</label>
           <select [(ngModel)]="mois" (ngModelChange)="onFilterChange()">
-            <option *ngFor="let m of moisOptions" [ngValue]="m.value">{{ m.label }}</option>
+            @for (m of moisOptions; track m.value) {
+              <option [ngValue]="m.value">{{ m.label }}</option>
+            }
           </select>
         </div>
-        <div class="field teacher-field" *ngIf="isAdmin">
-          <label>Enseignant pour le calcul</label>
+        @if (isAdmin) {
+          <div class="field teacher-field">
+            <label>Enseignant pour le calcul</label>
           <p-select
             [options]="dropdownOptions"
             [(ngModel)]="selectedTeacherId"
@@ -71,75 +74,83 @@ import { SelectModule } from 'primeng/select';
             }"
           >
             <ng-template pTemplate="selectedItem">
-              <div class="teacher-dropdown-item" *ngIf="selectedTeacherData">
-                <img
-                  *ngIf="selectedTeacherData.photoUrl"
-                  [src]="selectedTeacherData.photoUrl"
-                  class="teacher-dropdown-avatar"
-                />
-                <div
-                  *ngIf="
+              @if (selectedTeacherData) {
+                <div class="teacher-dropdown-item">
+                  @if (selectedTeacherData.photoUrl) {
+                    <img
+                      [src]="selectedTeacherData.photoUrl"
+                      class="teacher-dropdown-avatar"
+                    />
+                  }
+                  @if (
                     !selectedTeacherData.photoUrl &&
                     selectedTeacherData.id !== -1 &&
                     selectedTeacherData.id !== null
-                  "
-                  class="teacher-dropdown-initials"
-                >
-                  {{ getInitials(selectedTeacherData.prenom + ' ' + selectedTeacherData.nom) }}
+                  ) {
+                    <div class="teacher-dropdown-initials">
+                      {{ getInitials(selectedTeacherData.prenom + ' ' + selectedTeacherData.nom) }}
+                    </div>
+                  }
+                  <div class="teacher-dropdown-info">
+                    <span>{{ selectedTeacherData.label }}</span>
+                    @if (selectedTeacherData.matricule) {
+                      <small style="color:#64748b; margin-left: 5px;"
+                        >- {{ selectedTeacherData.matricule }}</small
+                      >
+                    }
+                  </div>
                 </div>
-                <div class="teacher-dropdown-info">
-                  <span>{{ selectedTeacherData.label }}</span>
-                  <small
-                    *ngIf="selectedTeacherData.matricule"
-                    style="color:#64748b; margin-left: 5px;"
-                    >- {{ selectedTeacherData.matricule }}</small
-                  >
-                </div>
-              </div>
-              <div *ngIf="!selectedTeacherData">Sélectionner un enseignant</div>
+              } @else {
+                <div>Sélectionner un enseignant</div>
+              }
             </ng-template>
 
             <ng-template pTemplate="item" let-item>
               <div class="teacher-dropdown-item">
-                <img *ngIf="item.photoUrl" [src]="item.photoUrl" class="teacher-dropdown-avatar" />
-                <div *ngIf="!item.photoUrl && item.value !== -1" class="teacher-dropdown-initials">
-                  {{ getInitials(item.prenom + ' ' + item.nom) }}
-                </div>
-                <div *ngIf="item.value === -1" class="teacher-dropdown-icon">
-                  <i class="pi pi-users"></i>
-                </div>
+                @if (item.photoUrl) {
+                  <img [src]="item.photoUrl" class="teacher-dropdown-avatar" />
+                }
+                @if (!item.photoUrl && item.value !== -1) {
+                  <div class="teacher-dropdown-initials">
+                    {{ getInitials(item.prenom + ' ' + item.nom) }}
+                  </div>
+                }
+                @if (item.value === -1) {
+                  <div class="teacher-dropdown-icon">
+                    <i class="pi pi-users"></i>
+                  </div>
+                }
                 <div class="teacher-dropdown-info">
                   <span>{{ item.label }}</span>
-                  <small
-                    *ngIf="item.matricule"
-                    style="display:block; color:#64748b; font-size: 0.8em;"
-                    >{{ item.matricule }}</small
-                  >
+                  @if (item.matricule) {
+                    <small
+                      style="display:block; color:#64748b; font-size: 0.8em;"
+                      >{{ item.matricule }}</small
+                    >
+                  }
                 </div>
               </div>
             </ng-template>
           </p-select>
+          </div>
+          }
+          @if (isAdmin && honoraires.length > 0) {
+            <button
+              class="btn btn-secondary"
+              (click)="exportExcel()"
+              [disabled]="exportingExcel"
+            >
+              <i class="pi pi-file-excel"></i> Export Excel
+            </button>
+          }
         </div>
-        <button
-          *ngIf="isAdmin"
-          class="btn btn-primary"
-          (click)="calculer()"
-          [disabled]="loading || !selectedTeacherId"
-        >
-          <i class="pi pi-calculator"></i> Calculer
-        </button>
-        <button
-          *ngIf="isAdmin && honoraires.length > 0"
-          class="btn btn-secondary"
-          (click)="exportExcel()"
-          [disabled]="exportingExcel"
-        >
-          <i class="pi pi-file-excel"></i> Export Excel
-        </button>
-      </div>
 
-      <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
-      <div class="alert success" *ngIf="successMessage">{{ successMessage }}</div>
+        @if (errorMessage) {
+          <div class="alert error">{{ errorMessage }}</div>
+        }
+        @if (successMessage) {
+          <div class="alert success">{{ successMessage }}</div>
+        }
 
       <div class="stats-row">
         <div class="stat-card">
@@ -175,10 +186,13 @@ import { SelectModule } from 'primeng/select';
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="!loading && honoraires.length === 0">
-                <td colspan="6" class="empty-cell">Aucun honoraire trouvé pour cette période.</td>
-              </tr>
-              <tr *ngFor="let item of honoraires">
+              @if (!loading && honoraires.length === 0) {
+                <tr>
+                  <td colspan="6" class="empty-cell">Aucun honoraire trouvé pour cette période.</td>
+                </tr>
+              }
+              @for (item of honoraires; track item.id) {
+                <tr>
                 <td>
                   <div class="teacher-cell">
                     <div class="avatar">{{ getInitials(item.enseignantNomPrenom) }}</div>
@@ -206,23 +220,25 @@ import { SelectModule } from 'primeng/select';
                         [ngClass]="selected?.id === item.id ? 'pi-eye-slash' : 'pi-eye'"
                       ></i>
                     </button>
-                    <button
-                      *ngIf="isAdmin"
-                      class="icon-btn validate"
-                      (click)="valider(item)"
-                      [disabled]="item.statut !== 'BROUILLON'"
-                    >
-                      <i class="pi pi-check"></i>
-                    </button>
-                    <button
-                      *ngIf="isAdmin"
-                      class="icon-btn pay"
-                      (click)="payer(item)"
-                      [disabled]="item.statut !== 'VALIDE'"
-                      title="Marquer comme payé"
-                    >
-                      <i class="pi pi-money-bill"></i>
-                    </button>
+                    @if (isAdmin) {
+                      <button
+                        class="icon-btn validate"
+                        (click)="valider(item)"
+                        [disabled]="item.statut !== 'BROUILLON'"
+                      >
+                        <i class="pi pi-check"></i>
+                      </button>
+                    }
+                    @if (isAdmin) {
+                      <button
+                        class="icon-btn pay"
+                        (click)="payer(item)"
+                        [disabled]="item.statut !== 'VALIDE'"
+                        title="Marquer comme payé"
+                      >
+                        <i class="pi pi-money-bill"></i>
+                      </button>
+                    }
                     <button
                       class="icon-btn"
                       (click)="exportPdf(item)"
@@ -236,47 +252,54 @@ import { SelectModule } from 'primeng/select';
                     </button>
                   </div>
                 </td>
-              </tr>
+                </tr>
+              }
             </tbody>
           </table>
         </div>
       </div>
 
-      <div class="details-card" *ngIf="selected">
-        <div class="table-header">
-          <h3>Détails - {{ selected.enseignantNomPrenom }}</h3>
-          <button class="btn btn-outline" (click)="selected = null">Fermer</button>
+      @if (selected) {
+        <div class="details-card">
+          <div class="table-header">
+            <h3>Détails - {{ selected.enseignantNomPrenom }}</h3>
+            <button class="btn btn-outline" (click)="selected = null">Fermer</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Matière</th>
+                  <th>Classe</th>
+                  <th>Horaire</th>
+                  <th>Heures</th>
+                  <th>Taux</th>
+                  <th>Montant</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (detail of selected.detailsHonoraires || []; track $index) {
+                  <tr>
+                    <td>{{ detail.dateCours | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ detail.matiereLibelle || '-' }}</td>
+                    <td>{{ detail.classeLibelle || '-' }}</td>
+                    <td>{{ formatTime(detail.heureDebut) }} - {{ formatTime(detail.heureFin) }}</td>
+                    <td>{{ detail.nombreHeures || 0 | number: '1.0-2' }}</td>
+                    <td>{{ detail.tauxHoraire || 0 | number: '1.0-0' }} FCFA</td>
+                    <td>{{ detail.montant || 0 | number: '1.0-0' }} FCFA</td>
+                  </tr>
+                }
+                @if (!selected.detailsHonoraires?.length) {
+                  <tr>
+                    <td colspan="7" class="empty-cell">Aucun détail disponible.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Matière</th>
-                <th>Classe</th>
-                <th>Horaire</th>
-                <th>Heures</th>
-                <th>Taux</th>
-                <th>Montant</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let detail of selected.detailsHonoraires || []">
-                <td>{{ detail.dateCours | date: 'dd/MM/yyyy' }}</td>
-                <td>{{ detail.matiereLibelle || '-' }}</td>
-                <td>{{ detail.classeLibelle || '-' }}</td>
-                <td>{{ formatTime(detail.heureDebut) }} - {{ formatTime(detail.heureFin) }}</td>
-                <td>{{ detail.nombreHeures || 0 | number: '1.0-2' }}</td>
-                <td>{{ detail.tauxHoraire || 0 | number: '1.0-0' }} FCFA</td>
-                <td>{{ detail.montant || 0 | number: '1.0-0' }} FCFA</td>
-              </tr>
-              <tr *ngIf="!selected.detailsHonoraires?.length">
-                <td colspan="7" class="empty-cell">Aucun détail disponible.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      }
     </div>
   `,
   styles: [
@@ -606,12 +629,9 @@ export class HonorairesComponent implements OnInit {
     { value: 12, label: 'Décembre' },
   ];
 
-  constructor(
-    private honorairesService: HonorairesService,
-    private teacherService: TeacherService,
-  
-    private readonly cdr: ChangeDetectorRef,
-  ) {}
+  private readonly honorairesService = inject(HonorairesService);
+  private readonly teacherService = inject(TeacherService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   get totalHeures(): number {
     return this.honoraires.reduce((sum, item) => sum + (item.totalHeures || 0), 0);
@@ -729,93 +749,6 @@ export class HonorairesComponent implements OnInit {
   private isNoPayableSessionError(error: any): boolean {
     const message = String(error?.error?.error || error?.error?.message || '');
     return message.toLowerCase().includes('aucune séance payable');
-  }
-
-  calculer(): void {
-    if (!this.isAdmin) {
-      this.errorMessage = 'Seul l’administrateur peut calculer les honoraires.';
-      return;
-    }
-    // "Tous les enseignants" option corresponds to selectedTeacherId === -1
-    if (this.selectedTeacherId === null) return;
-
-    this.clearMessages();
-    this.loading = true;
-
-    if (this.selectedTeacherId === -1) {
-      // Calculate for all teachers
-      if (!this.teachers || this.teachers.length === 0) {
-        this.errorMessage = 'Aucun enseignant trouvé.';
-        this.loading = false;
-        return;
-      }
-
-      let successCount = 0;
-      let errorCount = 0;
-      let completedRequests = 0;
-
-      this.teachers.forEach((teacher) => {
-        this.honorairesService
-          .calculer({ enseignantId: teacher.id!, annee: this.annee, mois: this.mois })
-          .subscribe({
-            next: () => {
-              successCount++;
-              checkCompletion();
-        this.cdr.detectChanges();
-            },
-            error: (err) => {
-              // Ignore "Aucune nouvelle séance payable" errors for batch processing
-              if (!this.isNoPayableSessionError(err)) {
-                errorCount++;
-              }
-              checkCompletion();
-        this.cdr.detectChanges();
-            },
-          });
-      });
-
-      const checkCompletion = () => {
-        completedRequests++;
-        if (completedRequests === this.teachers.length) {
-          this.loading = false;
-          if (successCount > 0) {
-            this.successMessage = `Honoraires calculés avec succès pour ${successCount} enseignant(s).`;
-            if (errorCount > 0) {
-              this.errorMessage = `Échec du calcul pour ${errorCount} enseignant(s).`;
-            }
-          } else if (errorCount > 0) {
-            this.errorMessage = `Erreur pendant le calcul des honoraires.`;
-          } else {
-            this.successMessage = `Aucune nouvelle séance payable n'a été trouvée pour les enseignants ce mois-ci.`;
-          }
-          this.loadHonoraires();
-        }
-      };
-    } else {
-      // Calculate for a single teacher
-      this.honorairesService
-        .calculer({ enseignantId: this.selectedTeacherId, annee: this.annee, mois: this.mois })
-        .pipe(finalize(() => (this.loading = false)))
-        .subscribe({
-          next: () => {
-            this.successMessage = 'Honoraires calculés avec succès.';
-            this.loadHonoraires();
-        this.cdr.detectChanges();
-          },
-          error: (error) => {
-            if (this.isNoPayableSessionError(error)) {
-              this.errorMessage =
-                'Aucune nouvelle séance payable trouvée pour cet enseignant sur ce mois.';
-            } else {
-              this.errorMessage = this.extractError(
-                error,
-                'Erreur pendant le calcul des honoraires.',
-              );
-            }
-        this.cdr.detectChanges();
-          },
-        });
-    }
   }
 
   valider(item: HonorairesCalcul): void {

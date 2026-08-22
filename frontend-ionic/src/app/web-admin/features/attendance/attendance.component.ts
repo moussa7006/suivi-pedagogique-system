@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -119,11 +119,13 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="filteredLogs.length === 0">
-                <td colspan="4" class="text-center empty-state-cell">
-                  Aucun enregistrement trouvé.
-                </td>
-              </tr>
+              @if (filteredLogs.length === 0) {
+                <tr>
+                  <td colspan="4" class="text-center empty-state-cell">
+                    Aucun enregistrement trouvé.
+                  </td>
+                </tr>
+              }
               @for (log of filteredLogs; track log.id) {
                 <tr>
                   <td>
@@ -647,9 +649,8 @@ export class AttendanceComponent implements OnInit {
   exportingExcel = false;
   loading = false;
 
-  constructor(private attendanceService: AttendanceService,
-    private readonly cdr: ChangeDetectorRef,
-  ) {}
+  private readonly attendanceService = inject(AttendanceService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     this.refreshAll();

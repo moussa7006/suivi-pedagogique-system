@@ -12,8 +12,6 @@ import {
   IonIcon,
   IonInput,
   IonTextarea,
-  IonSelect,
-  IonSelectOption,
   IonBadge,
   IonSpinner,
   ToastController,
@@ -64,8 +62,6 @@ import { ClasseService } from '../../core/services/classe.service';
     IonIcon,
     IonInput,
     IonTextarea,
-    IonSelect,
-    IonSelectOption,
     IonBadge,
     IonSpinner,
     RouterLink,
@@ -103,10 +99,7 @@ export class CahierTextesPage {
   openedFromScan = false;
   expandedSeanceIds = new Set<number>();
   
-  scanTokenQRCode?: string;
-  scanLatitude?: number;
-  scanLongitude?: number;
-  scanAdresseApproximative?: string;
+
 
   constructor() {
     addIcons({
@@ -249,19 +242,12 @@ export class CahierTextesPage {
     }
 
     const seanceId = Number(this.seanceForm.value.seanceId);
-    const payload: any = {
+    const payload = {
       dateSaisie: new Date().toISOString().slice(0, 10),
       contenuDetaille: this.seanceForm.value.contenu,
       objectifs: this.seanceForm.value.objectifs,
       travaux: this.seanceForm.value.travaux || '',
     };
-
-    if (this.openedFromScan && this.scanTokenQRCode) {
-      payload.tokenQRCode = this.scanTokenQRCode;
-      payload.latitude = this.scanLatitude;
-      payload.longitude = this.scanLongitude;
-      payload.adresseApproximative = this.scanAdresseApproximative;
-    }
 
     this.isSubmitting = true;
     this.ficheProgressionService
@@ -326,13 +312,6 @@ export class CahierTextesPage {
     );
     this.openedFromScan =
       this.route.snapshot.queryParamMap.get('fromScan') === 'true';
-
-    this.scanTokenQRCode = this.route.snapshot.queryParamMap.get('tokenQRCode') || undefined;
-    const latStr = this.route.snapshot.queryParamMap.get('latitude');
-    this.scanLatitude = latStr ? parseFloat(latStr) : undefined;
-    const lonStr = this.route.snapshot.queryParamMap.get('longitude');
-    this.scanLongitude = lonStr ? parseFloat(lonStr) : undefined;
-    this.scanAdresseApproximative = this.route.snapshot.queryParamMap.get('adresseApproximative') || undefined;
 
     if (!this.openedFromScan || !seanceId) {
       return;
@@ -412,6 +391,7 @@ export class CahierTextesPage {
 
   private isSelectableSeance(seance: Seance): boolean {
     return (
+      !!seance.emargementId &&
       !this.hasFicheProgression(seance) &&
       this.isTodayOrPast(seance.dateCours)
     );

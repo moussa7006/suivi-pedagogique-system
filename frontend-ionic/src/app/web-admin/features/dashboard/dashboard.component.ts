@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { interval, of, Subscription } from 'rxjs';
@@ -90,51 +90,54 @@ type AxisChartOptions = {
   template: `
     <div class="dashboard-shell">
       <section class="stats-overview" aria-label="Indicateurs clés">
-        <div class="stat-card" *ngFor="let stat of stats" [style.--accent]="stat.color">
-          <div class="stat-icon">
-            <i [class]="stat.icon"></i>
-          </div>
-          <div class="stat-details">
-            <span class="stat-label">{{ stat.label }}</span>
-            <div class="stat-value-row">
-              <span class="stat-number">{{ stat.value }}{{ stat.suffix }}</span>
-              <span class="stat-badge" [class]="stat.trendClass">
-                <i
-                  class="pi"
-                  [class.pi-arrow-up]="stat.trendClass === 'positive'"
-                  [class.pi-arrow-down]="stat.trendClass === 'negative'"
-                  [class.pi-minus]="stat.trendClass === 'neutral'"
-                ></i>
-                {{ stat.trend }}
-              </span>
+        @for (stat of stats; track $index) {
+          <div class="stat-card" [style.--accent]="stat.color">
+            <div class="stat-icon">
+              <i [class]="stat.icon"></i>
+            </div>
+            <div class="stat-details">
+              <span class="stat-label">{{ stat.label }}</span>
+              <div class="stat-value-row">
+                <span class="stat-number">{{ stat.value }}{{ stat.suffix }}</span>
+                <span class="stat-badge" [class]="stat.trendClass">
+                  <i
+                    class="pi"
+                    [class.pi-arrow-up]="stat.trendClass === 'positive'"
+                    [class.pi-arrow-down]="stat.trendClass === 'negative'"
+                    [class.pi-minus]="stat.trendClass === 'neutral'"
+                  ></i>
+                  {{ stat.trend }}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        }
       </section>
 
       <section class="quick-access">
         <div class="hub-grid">
-          <a
-            *ngFor="let tile of sortedHubTiles"
-            [routerLink]="tile.route"
-            class="hub-tile"
-            [style.--tile-color]="tile.color"
-            [style.--bg-tint]="tile.bgTint"
-          >
-            <div class="tile-top">
-              <div class="tile-icon"><i [class]="tile.icon"></i></div>
-              <div class="tile-indicator">{{ tile.indicator }}</div>
-            </div>
-            <div class="tile-body">
-              <h3>{{ tile.label }}</h3>
-              <div class="tile-footer">
-                <div class="tile-progress">
-                  <div class="tile-progress-bar" [style.width.%]="tile.gaugeValue"></div>
-                </div>
-                <i class="pi pi-arrow-right tile-arrow"></i>
+          @for (tile of sortedHubTiles; track $index) {
+            <a
+              [routerLink]="tile.route"
+              class="hub-tile"
+              [style.--tile-color]="tile.color"
+              [style.--bg-tint]="tile.bgTint"
+            >
+              <div class="tile-top">
+                <div class="tile-icon"><i [class]="tile.icon"></i></div>
+                <div class="tile-indicator">{{ tile.indicator }}</div>
               </div>
-            </div>
-          </a>
+              <div class="tile-body">
+                <h3>{{ tile.label }}</h3>
+                <div class="tile-footer">
+                  <div class="tile-progress">
+                    <div class="tile-progress-bar" [style.width.%]="tile.gaugeValue"></div>
+                  </div>
+                  <i class="pi pi-arrow-right tile-arrow"></i>
+                </div>
+              </div>
+            </a>
+          }
         </div>
       </section>
 
@@ -160,14 +163,16 @@ type AxisChartOptions = {
             ></apx-chart>
           </div>
           <div class="cycle-legend">
-            <div class="legend-item" *ngFor="let seg of cycleLegend; let i = index">
-              <span class="legend-dot" [style.background]="seg.color"></span>
-              <div class="legend-text">
-                <strong>{{ seg.label }}</strong>
-                <span>{{ seg.count }} séance{{ seg.count > 1 ? 's' : '' }} · {{ seg.pct }}%</span>
-                <p>{{ seg.desc }}</p>
+            @for (seg of cycleLegend; track $index) {
+              <div class="legend-item">
+                <span class="legend-dot" [style.background]="seg.color"></span>
+                <div class="legend-text">
+                  <strong>{{ seg.label }}</strong>
+                  <span>{{ seg.count }} séance{{ seg.count > 1 ? 's' : '' }} · {{ seg.pct }}%</span>
+                  <p>{{ seg.desc }}</p>
+                </div>
               </div>
-            </div>
+            }
           </div>
         </div>
       </section>
@@ -214,18 +219,22 @@ type AxisChartOptions = {
               <div class="header-icon"><i class="pi pi-clock"></i></div>
             </div>
             <div class="recent-list">
-              <div class="recent-item" *ngFor="let s of recentSeances">
-                <div class="recent-date">
-                  <span class="recent-day">{{ formatDate(s.dateCours) }}</span>
-                  <span class="recent-hour">{{ s.heureDebut }}</span>
+              @for (s of recentSeances; track $index) {
+                <div class="recent-item">
+                  <div class="recent-date">
+                    <span class="recent-day">{{ formatDate(s.dateCours) }}</span>
+                    <span class="recent-hour">{{ s.heureDebut }}</span>
+                  </div>
+                  <div class="recent-mid">
+                    <div class="recent-main">{{ s.matiere }}</div>
+                    <div class="recent-sub">{{ s.classe }}{{ s.enseignant ? ' · ' + s.enseignant : '' }}</div>
+                  </div>
+                  <span class="status-badge" [style.--status]="statusColor(s.statut)">{{ s.statut }}</span>
                 </div>
-                <div class="recent-mid">
-                  <div class="recent-main">{{ s.matiere }}</div>
-                  <div class="recent-sub">{{ s.classe }}{{ s.enseignant ? ' · ' + s.enseignant : '' }}</div>
-                </div>
-                <span class="status-badge" [style.--status]="statusColor(s.statut)">{{ s.statut }}</span>
-              </div>
-              <div class="table-empty" *ngIf="!recentSeances.length">Aucune séance pour le moment.</div>
+              }
+              @if (!recentSeances.length) {
+                <div class="table-empty">Aucune séance pour le moment.</div>
+              }
             </div>
           </article>
         </div>
@@ -1190,10 +1199,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     legend: { show: true, position: 'top', fontWeight: 800, fontSize: '13px' },
   };
 
-  constructor(
-    private dashboardService: DashboardService,
-    private cdr: ChangeDetectorRef,
-  ) {}
+  private readonly dashboardService = inject(DashboardService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   get sortedHubTiles(): HubTile[] {
     return sortByAlpha(this.hubTiles, (tile) => tile.label);

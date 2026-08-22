@@ -132,7 +132,16 @@ export class LoginPage {
         }),
       )
       .subscribe({
-        next: (user) => {
+        next: async (user) => {
+          // Seuls les enseignants sont autorisés sur l'application mobile.
+          if (user?.role !== 'ENSEIGNANT') {
+            await this.authService.logout();
+            this.loginError =
+              'Accès refusé. Cette application est réservée aux enseignants.';
+            this.cdr.detectChanges();
+            return;
+          }
+
           this.clearLoginFields();
           if (user?.forcePasswordChange) {
             this.router.navigate(['/mobile/change-password'], {

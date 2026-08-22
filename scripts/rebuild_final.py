@@ -2,13 +2,12 @@
 REBUILD FINAL from backup with ALL modifications applied.
 Slide 1 and Slide 5 stay ORIGINAL from backup.
 """
+# pyright: reportAttributeAccessIssue=false, reportArgumentType=false, reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false, reportPrivateUsage=false, reportOperatorIssue=false, reportUnusedCallResult=false
 import os
-import copy
-from lxml import etree
 from pptx import Presentation
-from pptx.util import Emu
 from pptx.dml.color import RGBColor
 from pptx.oxml.ns import qn
+from pptx.util import Emu
 
 BASE = r'C:\Users\boura\OneDrive\Documents\suivi-pedagogique-system\MEMOIRE'
 INPUT = os.path.join(BASE, 'La finalisima present_backup.pptx')
@@ -220,7 +219,7 @@ for i, slide in enumerate(prs.slides):
                             p.text = f'{slide_num} / {len(prs.slides)}'
                             for run in p.runs:
                                 run.font.color.rgb = RGBColor(0x94, 0xA3, 0xB8)
-                except:
+                except Exception:
                     pass
 
 print(f"\nUpdated slide numbers to /{len(prs.slides)}")
