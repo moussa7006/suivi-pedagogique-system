@@ -682,7 +682,7 @@ export class SeancesComponent implements OnInit, OnDestroy {
 
   getQrStatusLabel(s: Seance): string {
     if (this.isSeanceFinished(s)) {
-      return s.emargementId ? 'Terminée avec émargement' : 'NON ÉMARGÉE';
+      return s.emargementId ? 'Émargée' : 'NON ÉMARGÉE';
     }
 
     return s.emargementId ? 'Émargement effectué' : 'Code généré';

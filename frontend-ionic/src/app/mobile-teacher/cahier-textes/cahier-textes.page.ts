@@ -41,7 +41,7 @@ import {
 import { catchError, finalize, forkJoin, of, timeout } from 'rxjs';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
 import { ScheduleService } from '../../core/services/schedule.service';
-import { FicheProgression } from '../../core/models/fiche-progression.model';
+import { FicheProgression, FicheProgressionRequest } from '../../core/models/fiche-progression.model';
 import { Seance } from '../../core/models/seance.model';
 import { EmploiDuTemps } from '../../core/models/schedule.model';
 import { Matiere } from '../../core/models/matiere.model';
@@ -98,6 +98,10 @@ export class CahierTextesPage {
   classes: Classe[] = [];
   openedFromScan = false;
   expandedSeanceIds = new Set<number>();
+  private pendingTokenQRCode: string | null = null;
+  private pendingLatitude: number | null = null;
+  private pendingLongitude: number | null = null;
+  private pendingAdresse: string | null = null;
   
 
 
@@ -242,12 +246,27 @@ export class CahierTextesPage {
     }
 
     const seanceId = Number(this.seanceForm.value.seanceId);
-    const payload = {
+    const payload: FicheProgressionRequest = {
       dateSaisie: new Date().toISOString().slice(0, 10),
       contenuDetaille: this.seanceForm.value.contenu,
       objectifs: this.seanceForm.value.objectifs,
       travaux: this.seanceForm.value.travaux || '',
     };
+
+    // Couplage avec l'émargement : on transmet le token QR + la position
+    // scannés afin que le backend crée l'émargement en même temps que la fiche.
+    if (this.pendingTokenQRCode) {
+      payload.tokenQRCode = this.pendingTokenQRCode;
+    }
+    if (this.pendingLatitude !== null) {
+      payload.latitude = this.pendingLatitude;
+    }
+    if (this.pendingLongitude !== null) {
+      payload.longitude = this.pendingLongitude;
+    }
+    if (this.pendingAdresse) {
+      payload.adresseApproximative = this.pendingAdresse;
+    }
 
     this.isSubmitting = true;
     this.ficheProgressionService
@@ -267,6 +286,10 @@ export class CahierTextesPage {
           this.seanceForm.reset();
           this.showForm = false;
           this.openedFromScan = false;
+          this.pendingTokenQRCode = null;
+          this.pendingLatitude = null;
+          this.pendingLongitude = null;
+          this.pendingAdresse = null;
           this.loadData();
         },
         error: (error) => {
@@ -312,6 +335,16 @@ export class CahierTextesPage {
     );
     this.openedFromScan =
       this.route.snapshot.queryParamMap.get('fromScan') === 'true';
+
+    // Récupération du token QR + position pour le couplage émargement/fiche.
+    this.pendingTokenQRCode =
+      this.route.snapshot.queryParamMap.get('tokenQRCode') || null;
+    const lat = this.route.snapshot.queryParamMap.get('latitude');
+    const lng = this.route.snapshot.queryParamMap.get('longitude');
+    this.pendingLatitude = lat ? Number(lat) : null;
+    this.pendingLongitude = lng ? Number(lng) : null;
+    this.pendingAdresse =
+      this.route.snapshot.queryParamMap.get('adresseApproximative') || null;
 
     if (!this.openedFromScan || !seanceId) {
       return;

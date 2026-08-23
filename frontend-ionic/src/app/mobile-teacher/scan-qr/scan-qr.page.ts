@@ -38,7 +38,6 @@ import {
 import { Geolocation } from '@capacitor/geolocation';
 import jsQR from 'jsqr';
 import { forkJoin } from 'rxjs';
-import { EmargementService } from '../../core/services/emargement.service';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { MatiereService } from '../../core/services/matiere.service';
@@ -77,7 +76,6 @@ export class ScanQRPage implements OnDestroy {
   @ViewChild('previewVideo') previewVideo?: ElementRef<HTMLVideoElement>;
   @ViewChild('seanceGroup') seanceGroup?: ElementRef<HTMLElement>;
 
-  private readonly emargementService = inject(EmargementService);
   private readonly ficheProgressionService = inject(FicheProgressionService);
   private readonly scheduleService = inject(ScheduleService);
   private readonly matiereService = inject(MatiereService);
@@ -433,43 +431,22 @@ export class ScanQRPage implements OnDestroy {
 
     try {
       const position = await this.getCurrentPosition();
-      this.emargementService
-        .scanQRCode({
-          seanceId: this.selectedSeance!.id!,
+      this.isScanning = false;
+      this.manualToken = '';
+      this.cdr.detectChanges();
+
+      // L'émargement n'est pas envoyé ici : il sera couplé à la fiche de
+      // progression. On transmet le token + la position à la page fiche.
+      await this.router.navigate(['/mobile/cahier-textes'], {
+        queryParams: {
+          seanceId: this.selectedSeanceId,
           tokenQRCode,
           latitude: position.latitude,
           longitude: position.longitude,
           adresseApproximative: position.adresseApproximative,
-        })
-        .subscribe({
-          next: async (response) => {
-            this.isScanning = false;
-            this.manualToken = '';
-            this.cdr.detectChanges();
-            const toast = await this.toastController.create({
-              message: 'Émargement validé ✅ Vous pouvez maintenant remplir la fiche de progression.',
-              duration: 2500,
-              color: 'success',
-              position: 'top',
-            });
-            await toast.present();
-            await this.router.navigate(['/mobile/cahier-textes'], {
-              queryParams: {
-                seanceId: response.seanceId || this.selectedSeanceId,
-                emargementId: response.emargementId,
-                fromScan: true,
-              },
-            });
-          },
-          error: async (error) => {
-            this.isScanning = false;
-            this.cdr.detectChanges();
-            await this.presentAlert(
-              "Échec de l'émargement",
-              this.getScanErrorMessage(error),
-            );
-          },
-        });
+          fromScan: true,
+        },
+      });
     } catch (error: any) {
       this.isScanning = false;
       this.cdr.detectChanges();
@@ -501,30 +478,6 @@ export class ScanQRPage implements OnDestroy {
     }
 
     return true;
-  }
-
-  private getScanErrorMessage(error: any): string {
-    if (typeof error?.error === 'string') {
-      return error.error;
-    }
-
-    if (error.status === 400) {
-      return (
-        error?.error?.error || 'QR Code invalide, expiré ou séance non trouvée.'
-      );
-    }
-    if (error.status === 409) {
-      return 'Vous avez déjà émargé pour cette séance.';
-    }
-    if (error.status === 403) {
-      return "Émargement non autorisé.";
-    }
-
-    return (
-      error?.error?.error ||
-      error?.error?.message ||
-      "Erreur lors de l'émargement."
-    );
   }
 
   private async getCurrentPosition(): Promise<{

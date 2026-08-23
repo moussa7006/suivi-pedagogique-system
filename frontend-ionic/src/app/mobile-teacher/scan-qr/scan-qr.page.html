@@ -130,26 +130,25 @@
           class="status-hint"
           *ngIf="selectedSeance && !hasCahierForSeance(selectedSeance)"
         >
-          Remplissez d'abord la fiche de progression de cette séance avant de
-          pouvoir scanner.
+          Scannez le QR Code pour démarrer l'émargement, puis remplissez la
+          fiche de progression.
         </p>
         <p
           class="status-hint success"
           *ngIf="selectedSeance && hasCahierForSeance(selectedSeance)"
         >
-          Fiche de progression remplie. Vous pouvez scanner pour émarger.
+          Fiche de progression remplie pour cette séance.
         </p>
 
         <ion-button
           expand="block"
           class="scan-btn"
           (click)="openScanner()"
-          [disabled]="isScanning || isLoading || (selectedSeance && !hasCahierForSeance(selectedSeance))"
+          [disabled]="isScanning || isLoading || !selectedSeance"
         >
           <ion-icon slot="start" name="camera-outline"></ion-icon>
           {{ isScanning ? 'Validation...' :
              !selectedSeance ? 'Sélectionnez une séance' :
-             !hasCahierForSeance(selectedSeance) ? "Remplissez d'abord la fiche" :
              'Scanner le QR Code' }}
         </ion-button>
 
