@@ -181,6 +181,40 @@ public class HonorairesService {
         return toDto(honorairesCalculsRepository.save(calcul), true);
     }
 
+    /**
+     * Validation automatique des honoraires en fin de mois.
+     * Passe tous les calculs encore en BROUILLON dont le mois est terminé
+     * (le dernier jour du mois inclus) au statut VALIDE, sans intervention
+     * manuelle de l'administrateur. Idempotent.
+     */
+    @Transactional
+    public void validerHonorairesTerminesAutomatiquement() {
+        LocalDate today = LocalDate.now();
+        List<HonorairesCalculs> brouillons = honorairesCalculsRepository.findByStatut(StatutHonoraire.BROUILLON);
+        int validatedCount = 0;
+
+        for (HonorairesCalculs calcul : brouillons) {
+            if (calcul.getMois() == null) {
+                continue;
+            }
+
+            LocalDate dernierJour = calcul.getMois().withDayOfMonth(calcul.getMois().lengthOfMonth());
+            if (today.isBefore(dernierJour)) {
+                // Le mois n'est pas encore terminé : on attend la fin du mois.
+                continue;
+            }
+
+            calcul.setStatut(StatutHonoraire.VALIDE);
+            calcul.setDateValidation(LocalDateTime.now());
+            honorairesCalculsRepository.save(calcul);
+            validatedCount++;
+        }
+
+        if (validatedCount > 0) {
+            System.out.println("[HONORAIRES AUTO] Validation automatique : " + validatedCount + " honoraire(s) validé(s).");
+        }
+    }
+
     @Transactional
     public HonorairesCalculDto marquerCommePaye(Integer calculId) {
         verifyAdmin();

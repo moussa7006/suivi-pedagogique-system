@@ -1,6 +1,7 @@
 package com.suiviPedagogique.edutrack.repositories;
 
 import com.suiviPedagogique.edutrack.Entities.HonorairesCalculs;
+import com.suiviPedagogique.edutrack.Entities.enums.StatutHonoraire;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -19,4 +20,6 @@ public interface HonorairesCalculsRepository extends JpaRepository<HonorairesCal
 
     @EntityGraph(attributePaths = {"detailsHonoraires"})
     List<HonorairesCalculs> findByEnseignantIdOrderByMoisDesc(Integer enseignantId);
+
+    List<HonorairesCalculs> findByStatut(StatutHonoraire statut);
 }

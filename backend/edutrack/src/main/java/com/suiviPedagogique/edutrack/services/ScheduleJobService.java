@@ -42,6 +42,9 @@ public class ScheduleJobService {
     @Autowired
     private AnneeUniversitaireRepository anneeUniversitaireRepository;
 
+    @Autowired
+    private HonorairesService honorairesService;
+
     /**
      * S'exécute tous les jours à 00:01
      * Génère les séances (Seance) du jour ET des 6 jours suivants
@@ -70,6 +73,7 @@ public class ScheduleJobService {
             System.out.println("[Startup] Rattrapage de la génération des séances du jour...");
             generateDailySeances();
             updateAnneeUniversitaireStatus();
+            honorairesService.validerHonorairesTerminesAutomatiquement();
         } catch (Exception e) {
             System.err.println("[Startup] Echec du rattrapage : " + e.getMessage());
         }
@@ -211,5 +215,15 @@ public class ScheduleJobService {
                 System.out.println("Année universitaire '" + annee.getLibelle() + "' mise à jour: active = " + shouldBeActive);
             }
         }
+    }
+
+    /**
+     * S'exécute le dernier jour de chaque mois à 23:00.
+     * Valide automatiquement les honoraires encore en BROUILLON du mois qui
+     * se termine, sans intervention manuelle de l'administrateur.
+     */
+    @Scheduled(cron = "0 0 23 L * ?")
+    public void validerHonorairesFinDeMois() {
+        honorairesService.validerHonorairesTerminesAutomatiquement();
     }
 }

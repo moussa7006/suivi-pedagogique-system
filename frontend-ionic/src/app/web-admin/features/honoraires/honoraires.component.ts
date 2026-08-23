@@ -23,7 +23,7 @@ import { SelectModule } from 'primeng/select';
           </a>
           <div>
             <h1>Honoraires enseignants</h1>
-            <p>Calculez, validez et suivez les paiements mensuels des enseignants.</p>
+            <p>Suivez les honoraires mensuels des enseignants, validés automatiquement en fin de mois.</p>
           </div>
         </div>
       </div>
@@ -220,15 +220,6 @@ import { SelectModule } from 'primeng/select';
                         [ngClass]="selected?.id === item.id ? 'pi-eye-slash' : 'pi-eye'"
                       ></i>
                     </button>
-                    @if (isAdmin) {
-                      <button
-                        class="icon-btn validate"
-                        (click)="valider(item)"
-                        [disabled]="item.statut !== 'BROUILLON'"
-                      >
-                        <i class="pi pi-check"></i>
-                      </button>
-                    }
                     @if (isAdmin) {
                       <button
                         class="icon-btn pay"
@@ -749,22 +740,6 @@ export class HonorairesComponent implements OnInit {
   private isNoPayableSessionError(error: any): boolean {
     const message = String(error?.error?.error || error?.error?.message || '');
     return message.toLowerCase().includes('aucune séance payable');
-  }
-
-  valider(item: HonorairesCalcul): void {
-    if (!this.isAdmin) {
-      this.errorMessage = 'Seul l’administrateur peut valider les honoraires.';
-      return;
-    }
-    if (!item.id) return;
-    this.honorairesService.valider(item.id).subscribe({
-      next: () => {
-        this.successMessage = 'Honoraires validés.';
-        this.loadHonoraires();
-        this.cdr.detectChanges();
-      },
-      error: (error) => (this.errorMessage = this.extractError(error, 'Validation impossible.')),
-    });
   }
 
   payer(item: HonorairesCalcul): void {
