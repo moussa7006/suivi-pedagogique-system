@@ -208,9 +208,7 @@ export class HonorairesPage implements OnInit {
 
   getStatutLabel(statut?: string): string {
     const labels: Record<string, string> = {
-      BROUILLON: 'EN ATTENTE',
       VALIDE: 'VALIDÉ',
-      PAYE: 'PAYÉ',
     };
     return statut ? labels[statut] || statut : '-';
   }

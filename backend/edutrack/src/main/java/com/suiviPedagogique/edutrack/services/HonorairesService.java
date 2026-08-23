@@ -69,16 +69,13 @@ public class HonorairesService {
                     HonorairesCalculs c = new HonorairesCalculs();
                     c.setMois(moisCalcul);
                     c.setEnseignant(enseignant);
-                    c.setStatut(StatutHonoraire.BROUILLON);
+                    c.setStatut(StatutHonoraire.VALIDE);
                     c.setDateCalcul(LocalDateTime.now());
+                    c.setDateValidation(LocalDateTime.now());
                     c.setTotalHeures(0F);
                     c.setMontantBrut(0F);
                     return honorairesCalculsRepository.save(c);
                 });
-
-        if (calcul.getStatut() == StatutHonoraire.PAYE) {
-            throw new HonorairesBusinessException("Les honoraires de ce mois ont déjà été payés. Impossible d'ajouter de nouvelles séances.");
-        }
 
         List<Seance> seancesPayables = getSeancesPayables(enseignantId, moisCalcul);
         if (seancesPayables.isEmpty()) {
@@ -101,8 +98,9 @@ public class HonorairesService {
 
         calcul.setTotalHeures(totalHeures);
         calcul.setMontantBrut(montantBrut);
-        calcul.setStatut(StatutHonoraire.BROUILLON);
+        calcul.setStatut(StatutHonoraire.VALIDE);
         calcul.setDateCalcul(LocalDateTime.now());
+        calcul.setDateValidation(LocalDateTime.now());
 
         HonorairesCalculs savedCalcul = honorairesCalculsRepository.save(calcul);
         return toDto(honorairesCalculsRepository.findById(savedCalcul.getId()).get(), true);
@@ -112,8 +110,8 @@ public class HonorairesService {
      * Ajoute automatiquement une séance devenue payable aux honoraires du mois
      * correspondant. Appelé après la validation de l'émargement et le
      * remplissage de la fiche de progression. Idempotent : n'ajoute jamais
-     * deux fois la même séance. Le calcul reste en BROUILLON, l'admin conserve
-     * le contrôle de la validation finale en fin de mois.
+     * deux fois la même séance. Le calcul est directement enregistré au statut
+     * VALIDE, sans étape de brouillon ni de validation manuelle.
      */
     public void ajouterSeanceAuxHonoraires(Seance seance) {
         if (seance == null || !seance.isPayable()) {
@@ -138,17 +136,13 @@ public class HonorairesService {
                         HonorairesCalculs c = new HonorairesCalculs();
                         c.setMois(moisCalcul);
                         c.setEnseignant(enseignant);
-                        c.setStatut(StatutHonoraire.BROUILLON);
+                        c.setStatut(StatutHonoraire.VALIDE);
                         c.setDateCalcul(LocalDateTime.now());
+                        c.setDateValidation(LocalDateTime.now());
                         c.setTotalHeures(0F);
                         c.setMontantBrut(0F);
                         return honorairesCalculsRepository.save(c);
                     });
-
-            if (calcul.getStatut() == StatutHonoraire.PAYE) {
-                // Un mois déjà payé ne doit plus être modifié.
-                return;
-            }
 
             DetailHonoraire detail = buildDetail(calcul, seance);
             detailHonoraireRepository.save(detail);
@@ -157,8 +151,9 @@ public class HonorairesService {
             float montantBrut = calcul.getMontantBrut() == null ? 0F : calcul.getMontantBrut();
             calcul.setTotalHeures(totalHeures + detail.getNombreHeures());
             calcul.setMontantBrut(montantBrut + detail.getMontant());
-            calcul.setStatut(StatutHonoraire.BROUILLON);
+            calcul.setStatut(StatutHonoraire.VALIDE);
             calcul.setDateCalcul(LocalDateTime.now());
+            calcul.setDateValidation(LocalDateTime.now());
             honorairesCalculsRepository.save(calcul);
         } catch (Exception e) {
             System.err.println("[HONORAIRES AUTO] Échec de l'ajout automatique pour la séance "
@@ -167,69 +162,6 @@ public class HonorairesService {
     }
 
     @Transactional
-    public HonorairesCalculDto validerHonoraires(Integer calculId) {
-        verifyAdmin();
-        HonorairesCalculs calcul = honorairesCalculsRepository.findById(calculId)
-                .orElseThrow(() -> new HonorairesBusinessException("Calcul d'honoraires introuvable."));
-
-        if (calcul.getStatut() == StatutHonoraire.PAYE) {
-            throw new HonorairesBusinessException("Impossible de modifier un calcul déjà payé.");
-        }
-
-        calcul.setStatut(StatutHonoraire.VALIDE);
-        calcul.setDateValidation(LocalDateTime.now());
-        return toDto(honorairesCalculsRepository.save(calcul), true);
-    }
-
-    /**
-     * Validation automatique des honoraires en fin de mois.
-     * Passe tous les calculs encore en BROUILLON dont le mois est terminé
-     * (le dernier jour du mois inclus) au statut VALIDE, sans intervention
-     * manuelle de l'administrateur. Idempotent.
-     */
-    @Transactional
-    public void validerHonorairesTerminesAutomatiquement() {
-        LocalDate today = LocalDate.now();
-        List<HonorairesCalculs> brouillons = honorairesCalculsRepository.findByStatut(StatutHonoraire.BROUILLON);
-        int validatedCount = 0;
-
-        for (HonorairesCalculs calcul : brouillons) {
-            if (calcul.getMois() == null) {
-                continue;
-            }
-
-            LocalDate dernierJour = calcul.getMois().withDayOfMonth(calcul.getMois().lengthOfMonth());
-            if (today.isBefore(dernierJour)) {
-                // Le mois n'est pas encore terminé : on attend la fin du mois.
-                continue;
-            }
-
-            calcul.setStatut(StatutHonoraire.VALIDE);
-            calcul.setDateValidation(LocalDateTime.now());
-            honorairesCalculsRepository.save(calcul);
-            validatedCount++;
-        }
-
-        if (validatedCount > 0) {
-            System.out.println("[HONORAIRES AUTO] Validation automatique : " + validatedCount + " honoraire(s) validé(s).");
-        }
-    }
-
-    @Transactional
-    public HonorairesCalculDto marquerCommePaye(Integer calculId) {
-        verifyAdmin();
-        HonorairesCalculs calcul = honorairesCalculsRepository.findById(calculId)
-                .orElseThrow(() -> new HonorairesBusinessException("Calcul d'honoraires introuvable."));
-
-        if (calcul.getStatut() != StatutHonoraire.VALIDE) {
-            throw new HonorairesBusinessException("Seuls les honoraires validés peuvent être marqués comme payés.");
-        }
-
-        calcul.setStatut(StatutHonoraire.PAYE);
-        return toDto(honorairesCalculsRepository.save(calcul), true);
-    }
-
-    @Transactional(readOnly = true)
     public HonorairesCalculDto getHonorairesById(Integer id) {
         HonorairesCalculs calcul = honorairesCalculsRepository.findById(id)
                 .orElseThrow(() -> new HonorairesBusinessException("Calcul d'honoraires introuvable."));
@@ -296,7 +228,7 @@ public class HonorairesService {
         dto.setEnseignantNomPrenom(formatEnseignant(enseignant));
         dto.setTotalHeures(totalHeures);
         dto.setMontantBrut(montantBrut);
-        dto.setStatut(StatutHonoraire.BROUILLON);
+        dto.setStatut(StatutHonoraire.VALIDE);
         dto.setDetailsHonoraires(details);
         return dto;
     }

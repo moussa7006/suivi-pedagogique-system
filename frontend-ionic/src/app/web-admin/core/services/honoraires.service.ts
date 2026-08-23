@@ -44,13 +44,6 @@ export class HonorairesService {
     return this.http.get<HonorairesCalcul>(`${this.apiUrl}/${id}`);
   }
 
-  valider(id: number): Observable<HonorairesCalcul> {
-    return this.http.patch<HonorairesCalcul>(`${this.apiUrl}/${id}/valider`, {});
-  }
-
-  payer(id: number): Observable<HonorairesCalcul> {
-    return this.http.patch<HonorairesCalcul>(`${this.apiUrl}/${id}/payer`, {});
-  }
 
   exportHonorairesExcel(annee: number, mois: number): Observable<Blob> {
     const params = new HttpParams().set('annee', annee).set('mois', mois);

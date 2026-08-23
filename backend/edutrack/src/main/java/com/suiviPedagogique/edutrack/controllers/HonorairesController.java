@@ -65,14 +65,4 @@ public class HonorairesController {
     public ResponseEntity<HonorairesCalculDto> getHonorairesById(@PathVariable Integer id) {
         return ResponseEntity.ok(honorairesService.getHonorairesById(id));
     }
-
-    @PatchMapping("/{id}/valider")
-    public ResponseEntity<HonorairesCalculDto> validerHonoraires(@PathVariable Integer id) {
-        return ResponseEntity.ok(honorairesService.validerHonoraires(id));
-    }
-
-    @PatchMapping("/{id}/payer")
-    public ResponseEntity<HonorairesCalculDto> marquerCommePaye(@PathVariable Integer id) {
-        return ResponseEntity.ok(honorairesService.marquerCommePaye(id));
-    }
 }
