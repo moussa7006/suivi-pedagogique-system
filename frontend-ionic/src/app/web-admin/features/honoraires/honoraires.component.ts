@@ -23,7 +23,7 @@ import { SelectModule } from 'primeng/select';
           </a>
           <div>
             <h1>Honoraires enseignants</h1>
-            <p>Calculez, validez et suivez les paiements mensuels des enseignants.</p>
+            <p>Les honoraires sont calculés et validés automatiquement pour chaque séance.</p>
           </div>
         </div>
       </div>
@@ -220,25 +220,6 @@ import { SelectModule } from 'primeng/select';
                         [ngClass]="selected?.id === item.id ? 'pi-eye-slash' : 'pi-eye'"
                       ></i>
                     </button>
-                    @if (isAdmin) {
-                      <button
-                        class="icon-btn validate"
-                        (click)="valider(item)"
-                        [disabled]="item.statut !== 'BROUILLON'"
-                      >
-                        <i class="pi pi-check"></i>
-                      </button>
-                    }
-                    @if (isAdmin) {
-                      <button
-                        class="icon-btn pay"
-                        (click)="payer(item)"
-                        [disabled]="item.statut !== 'VALIDE'"
-                        title="Marquer comme payé"
-                      >
-                        <i class="pi pi-money-bill"></i>
-                      </button>
-                    }
                     <button
                       class="icon-btn"
                       (click)="exportPdf(item)"
@@ -751,38 +732,6 @@ export class HonorairesComponent implements OnInit {
     return message.toLowerCase().includes('aucune séance payable');
   }
 
-  valider(item: HonorairesCalcul): void {
-    if (!this.isAdmin) {
-      this.errorMessage = 'Seul l’administrateur peut valider les honoraires.';
-      return;
-    }
-    if (!item.id) return;
-    this.honorairesService.valider(item.id).subscribe({
-      next: () => {
-        this.successMessage = 'Honoraires validés.';
-        this.loadHonoraires();
-        this.cdr.detectChanges();
-      },
-      error: (error) => (this.errorMessage = this.extractError(error, 'Validation impossible.')),
-    });
-  }
-
-  payer(item: HonorairesCalcul): void {
-    if (!this.isAdmin) {
-      this.errorMessage = 'Seul l’administrateur peut marquer les honoraires comme payés.';
-      return;
-    }
-    if (!item.id) return;
-    this.honorairesService.payer(item.id).subscribe({
-      next: () => {
-        this.successMessage = 'Honoraires marqués comme payés.';
-        this.loadHonoraires();
-        this.cdr.detectChanges();
-      },
-      error: (error) => (this.errorMessage = this.extractError(error, 'Paiement impossible.')),
-    });
-  }
-
   toggleDetails(item: HonorairesCalcul): void {
     this.selected = this.selected?.id === item.id ? null : item;
   }
@@ -886,9 +835,7 @@ export class HonorairesComponent implements OnInit {
 
   getStatutLabel(statut?: string): string {
     const labels: Record<string, string> = {
-      BROUILLON: 'EN ATTENTE',
       VALIDE: 'VALIDÉ',
-      PAYE: 'PAYÉ',
     };
     return statut ? labels[statut] || statut : '-';
   }

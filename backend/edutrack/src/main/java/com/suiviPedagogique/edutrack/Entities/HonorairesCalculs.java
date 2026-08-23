@@ -32,7 +32,7 @@ public class HonorairesCalculs {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StatutHonoraire statut = StatutHonoraire.BROUILLON;
+    private StatutHonoraire statut = StatutHonoraire.VALIDE;
 
     @Column(nullable = false)
     private LocalDateTime dateCalcul = LocalDateTime.now();
