@@ -115,17 +115,13 @@
   <!-- QUICK STATS ROW                           -->
   <!-- ========================================= -->
   <div class="quick-stats animate-slide-up" style="--delay: 100ms">
-    <div class="stat-chip stat-chip--primary">
+    <div class="stat-chip stat-chip--stone">
       <ion-icon name="school-outline"></ion-icon>
       <span>{{ totalSeances }} séances</span>
     </div>
-    <div class="stat-chip stat-chip--stone">
-      <ion-icon name="time-outline"></ion-icon>
-      <span>{{ totalHeures | number:'1.0-0' }}h faites</span>
-    </div>
     <div class="stat-chip stat-chip--success">
       <ion-icon name="checkmark-circle-outline"></ion-icon>
-      <span>{{ completedSeances }} faites</span>
+      <span>{{ completedSeances }} validées</span>
     </div>
   </div>
 
@@ -142,7 +138,6 @@
         <div class="action-card__icon">
           <ion-icon name="qr-code-outline"></ion-icon>
         </div>
-        <ion-icon class="action-card__chevron" name="chevron-forward-outline"></ion-icon>
       </div>
       <div class="action-card__info">
         <span class="action-card__label">Émargement</span>
@@ -159,7 +154,6 @@
         <div class="action-card__icon">
           <ion-icon name="book-outline"></ion-icon>
         </div>
-        <ion-icon class="action-card__chevron" name="chevron-forward-outline"></ion-icon>
       </div>
       <div class="action-card__info">
         <span class="action-card__label">Fiche de Progression</span>
@@ -176,7 +170,6 @@
         <ion-icon name="calendar-outline"></ion-icon>
       </div>
       <span class="action-card__label">Planning</span>
-      <ion-icon class="action-card__chevron" name="chevron-forward-outline"></ion-icon>
     </div>
 
     <!-- TILE 4 - Honoraires (secondaire, compacte) -->
@@ -188,7 +181,6 @@
         <ion-icon name="cash-outline"></ion-icon>
       </div>
       <span class="action-card__label">Honoraires</span>
-      <ion-icon class="action-card__chevron" name="chevron-forward-outline"></ion-icon>
     </div>
   </div>
 
@@ -297,19 +289,6 @@
           <div class="stat-row__info">
             <span class="stat-row__label">Séances effectuées</span>
             <span class="stat-row__value">{{ completedSeances }}</span>
-          </div>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-row">
-          <div class="stat-row__icon stat-row__icon--amber">
-            <ion-icon name="time-outline"></ion-icon>
-          </div>
-          <div class="stat-row__info">
-            <span class="stat-row__label">Heures faites/prévues</span>
-            <span class="stat-row__value stat-row__value--red"
-              >{{ totalHeures | number:'1.0-0' }}h /
-              {{ scheduledHeures | number:'1.0-0' }}h</span
-            >
           </div>
         </div>
       </div>
