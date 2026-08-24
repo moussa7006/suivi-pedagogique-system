@@ -30,7 +30,7 @@
       <p class="eyebrow">{{ 'Profil enseignant' }}</p>
       <h1>{{ teacher.firstName }} {{ teacher.lastName }}</h1>
       <div class="hero-badges">
-        <span *ngIf="teacher.matricule">ID: {{ teacher.matricule }}</span>
+        <span *ngIf="teacher.matricule">Matricule: {{ teacher.matricule }}</span>
         <span>{{ teacher.status }}</span>
       </div>
     </div>
@@ -172,8 +172,7 @@
         <div>
           <h3>{{ 'Informations académiques' }}</h3>
           <p>
-            {{ 'Matières enseignées et volume horaire calculés depuis les
-            séances.' }}
+            {{ 'Matières enseignées et informations académiques du compte.' }}
           </p>
         </div>
       </button>
@@ -185,29 +184,7 @@
             <p class="breakable">{{ getMatieresLabel() }}</p>
           </div>
         </div>
-        <div class="info-row">
-          <div class="icon-box"><ion-icon name="time-outline"></ion-icon></div>
-          <div class="item-content">
-            <label>{{ 'Volume horaire effectué' }}</label>
-            <p>
-              {{ teacher.volumeHoraire.effectue | number:'1.0-0' }} h /
-              {{ teacher.volumeHoraire.total | number:'1.0-0' }} h
-            </p>
-          </div>
-        </div>
-        <div class="progress-card">
-          <div class="progress-head">
-            <span>{{ 'Progression horaire' }}</span>
-            <strong>{{ getProgressPercent() | number:'1.0-0' }}%</strong>
-          </div>
-          <div class="progress-track">
-            <div
-              class="progress-fill"
-              [style.width.%]="getProgressPercent()"
-            ></div>
-          </div>
-          <p>Reste à effectuer : {{ teacher.volumeHoraire.restant | number:'1.0-0' }} h</p>
-        </div>
+
       </div>
     </div>
 
@@ -240,8 +217,8 @@
           <span class="stat-label">{{ 'Émargées' }}</span>
         </div>
         <div class="stat-box secondary">
-          <span class="stat-value">{{ teacher.volumeHoraire.effectue | number:'1.0-0' }}h</span>
-          <span class="stat-label">{{ 'Volume' }}</span>
+          <span class="stat-value">{{ teacher.matieres.length }}</span>
+          <span class="stat-label">{{ 'Matières' }}</span>
         </div>
       </div>
     </div>

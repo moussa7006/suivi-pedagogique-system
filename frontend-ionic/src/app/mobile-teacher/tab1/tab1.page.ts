@@ -81,8 +81,6 @@ export class Tab1Page implements OnInit, OnDestroy {
   totalSeances = 0;
   completedSeances = 0;
   pendingSeances = 0;
-  totalHeures = 0;
-  scheduledHeures = 0;
   completionRate = 0;
   private seances: Seance[] = [];
 
@@ -110,26 +108,61 @@ export class Tab1Page implements OnInit, OnDestroy {
 
   get nextSeanceLabel(): string {
     const now = new Date();
-    const upcoming = this.seances
+    const todayKey = this.todayKey();
+    const sessions = this.seances
+      .filter(
+        (seance) => (seance.dateCours || '').substring(0, 10) === todayKey,
+      )
       .map((seance) => {
         const start = this.combineDateAndTime(
           seance.dateCours,
           seance.heureDebutReelle,
         );
-        return start ? { seance, start } : null;
+        const end = this.combineDateAndTime(
+          seance.dateCours,
+          seance.heureFinReelle,
+        );
+        return start && end ? { seance, start, end } : null;
       })
-      .filter((item): item is { seance: Seance; start: Date } => item !== null)
-      .filter((item) => item.start >= now)
+      .filter(
+        (item): item is { seance: Seance; start: Date; end: Date } =>
+          item !== null,
+      );
+
+    // 1. Séance en cours
+    const enCours = sessions.find(
+      (item) => item.start <= now && item.end >= now,
+    );
+    if (enCours) {
+      const end = this.formatTime(enCours.end);
+      return `Séance en cours · jusqu'à ${end}`;
+    }
+
+    // 2. Prochaine séance du jour
+    const upcoming = sessions
+      .filter((item) => item.start > now)
       .sort((a, b) => a.start.getTime() - b.start.getTime())[0];
 
     if (!upcoming) {
-      return 'Aucune séance à venir';
+      return "Aucune séance aujourd'hui";
     }
-    const time = upcoming.start.toLocaleTimeString('fr-FR', {
+    const time = this.formatTime(upcoming.start);
+    return `Prochaine séance à ${time}`;
+  }
+
+  private formatTime(date: Date): string {
+    return date.toLocaleTimeString('fr-FR', {
       hour: '2-digit',
       minute: '2-digit',
     });
-    return `Prochaine séance à ${time}`;
+  }
+
+  private todayKey(): string {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      '0',
+    )}-${String(now.getDate()).padStart(2, '0')}`;
   }
 
   get todayLabel(): string {
@@ -256,22 +289,6 @@ export class Tab1Page implements OnInit, OnDestroy {
           safeFiches,
         );
 
-        this.scheduledHeures = this.roundHours(
-          safeSeances.reduce(
-            (total, seance) => total + this.getDurationMinutes(seance),
-            0,
-          ),
-        );
-        this.totalHeures = this.roundHours(
-          safeSeances
-            .filter((seance) =>
-              this.hasFicheProgression(seance, ficheSeanceIds),
-            )
-            .reduce(
-              (total, seance) => total + this.getDurationMinutes(seance),
-              0,
-            ),
-        );
         this.updateNotifications();
         this.cdr.detectChanges();
       },
@@ -332,12 +349,6 @@ export class Tab1Page implements OnInit, OnDestroy {
     );
   }
 
-  private getDurationMinutes(seance: Seance): number {
-    const start = this.toMinutes(seance.heureDebutReelle);
-    const end = this.toMinutes(seance.heureFinReelle);
-    return start !== null && end !== null && end > start ? end - start : 0;
-  }
-
   private toMinutes(timeValue?: string): number | null {
     if (!timeValue) {
       return null;
@@ -347,10 +358,6 @@ export class Tab1Page implements OnInit, OnDestroy {
     return Number.isFinite(hours) && Number.isFinite(minutes)
       ? hours * 60 + minutes
       : null;
-  }
-
-  private roundHours(minutes: number): number {
-    return Math.round((minutes / 60) * 10) / 10;
   }
 
   private combineDateAndTime(

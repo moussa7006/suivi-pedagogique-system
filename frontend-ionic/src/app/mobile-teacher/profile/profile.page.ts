@@ -70,7 +70,7 @@ export class ProfilePage implements OnInit {
   activeSection: 'personal' | 'academic' | 'stats' = 'personal';
 
   teacher = {
-    id: 1,
+    id: null as number | null,
     firstName: 'Enseignant',
     lastName: '',
     matricule: '',
@@ -84,11 +84,7 @@ export class ProfilePage implements OnInit {
     subjects: [] as string[],
     status: 'Actif',
     avatar: 'https://i.pravatar.cc/150?u=default',
-    volumeHoraire: {
-      total: 0,
-      effectue: 0,
-      restant: 0,
-    },
+
     statistiques: {
       totalSeances: 0,
       tauxPresence: 0,
@@ -153,7 +149,7 @@ export class ProfilePage implements OnInit {
             this.cdr.detectChanges();
           }
 
-          const userId = user?.id || storedUser?.id || this.teacher.id;
+          const userId = user?.id ?? storedUser?.id ?? this.teacher.id;
           return forkJoin({
             fullUser: userId
               ? this.utilisateurService
@@ -190,7 +186,7 @@ export class ProfilePage implements OnInit {
     const avatar = this.getSafeAvatar(user);
     this.teacher = {
       ...this.teacher,
-      id: user?.id || this.teacher.id,
+      id: user?.id ?? this.teacher.id,
       firstName: user?.prenom || this.teacher.firstName || 'Enseignant',
       lastName: user?.nom || this.teacher.lastName || '',
       matricule: user?.matricule || this.teacher.matricule || '',
@@ -214,40 +210,23 @@ export class ProfilePage implements OnInit {
   }
 
   private filterTeacherSeances(seances: Seance[]): Seance[] {
-    if (!this.teacher.id) return seances;
-    return seances.filter(
-      (seance) =>
-        !seance.enseignantId || seance.enseignantId === this.teacher.id,
-    );
+    if (!this.teacher.id) return [];
+    return seances.filter((seance) => seance.enseignantId === this.teacher.id);
   }
 
   private applySeanceStats(seances: Seance[]): void {
-    const effectueMinutes = seances.reduce(
-      (total, seance) =>
-        total +
-        this.calculerDureeMinutes(
-          seance.heureDebutReelle,
-          seance.heureFinReelle,
-        ),
-      0,
-    );
-    const effectueHeures = Math.round((effectueMinutes / 60) * 10) / 10;
+
     const emargees = seances.filter((seance) => !!seance.emargementId).length;
     const tauxPresence = seances.length
       ? Math.round((emargees / seances.length) * 100)
       : 0;
-    const totalHeures = Math.max(effectueHeures, 120);
 
     this.teacher.statistiques = {
       ...this.teacher.statistiques,
       totalSeances: seances.length,
       tauxPresence,
     };
-    this.teacher.volumeHoraire = {
-      total: totalHeures,
-      effectue: effectueHeures,
-      restant: Math.max(totalHeures - effectueHeures, 0),
-    };
+
   }
 
   private applyMatieres(fiches: FicheProgression[], seances: Seance[]): void {
@@ -283,19 +262,6 @@ export class ProfilePage implements OnInit {
       this.activeSection === section ? this.activeSection : section;
   }
 
-  private calculerDureeMinutes(debut?: string, fin?: string): number {
-    const start = this.toMinutes(debut);
-    const end = this.toMinutes(fin);
-    return start !== null && end !== null && end > start ? end - start : 0;
-  }
-
-  private toMinutes(value?: string): number | null {
-    if (!value) return null;
-    const [hours, minutes] = value.split(':').map(Number);
-    return Number.isFinite(hours) && Number.isFinite(minutes)
-      ? hours * 60 + minutes
-      : null;
-  }
 
   async onNotificationsToggle(event: any) {
     this.notificationsEnabled = event.detail.checked;
@@ -476,15 +442,6 @@ export class ProfilePage implements OnInit {
     await toast.present();
   }
 
-  getProgressPercent() {
-    if (this.teacher.volumeHoraire.total === 0) {
-      return 0;
-    }
-    return (
-      (this.teacher.volumeHoraire.effectue / this.teacher.volumeHoraire.total) *
-      100
-    );
-  }
 
   logout() {
     void this.authService.logout();

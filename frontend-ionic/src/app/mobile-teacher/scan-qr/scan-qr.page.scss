@@ -148,6 +148,121 @@ ion-content {
 }
 
 /* ============================================
+   QR ERROR STATE
+   ============================================ */
+.qr-mismatch-alert {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 0 0 var(--space-lg);
+  padding: 18px;
+  overflow: hidden;
+  border: 1px solid #fecdd3;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #fff1f2 0%, #fff7ed 100%);
+  box-shadow: 0 12px 26px rgba(190, 24, 93, 0.1);
+  text-align: left;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: #e11d48;
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border-radius: 14px;
+    background: #ffe4e6;
+    color: #be123c;
+
+    ion-icon {
+      font-size: 25px;
+    }
+  }
+
+  &__content {
+    min-width: 0;
+    padding-right: 18px;
+
+    .qr-mismatch-alert__eyebrow {
+      display: block;
+      margin-bottom: 3px;
+      color: #be123c;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 0 0 7px;
+      color: #881337;
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    p {
+      margin: 0;
+      color: #9f1239;
+      font-size: 13px;
+      line-height: 1.5;
+
+      strong {
+        font-weight: 900;
+      }
+    }
+  }
+
+  &__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 13px;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 11px;
+    background: #be123c;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 800;
+
+    ion-icon {
+      font-size: 15px;
+    }
+  }
+
+  &__close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #be123c;
+
+    ion-icon {
+      font-size: 20px;
+    }
+  }
+}
+
+/* ============================================
    SCANNER CARD
    ============================================ */
 .scanner-card {

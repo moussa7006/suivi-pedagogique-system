@@ -109,56 +109,50 @@ public class HonorairesService {
     /**
      * Ajoute automatiquement une séance devenue payable aux honoraires du mois
      * correspondant. Appelé après la validation de l'émargement et le
-     * remplissage de la fiche de progression. Idempotent : n'ajoute jamais
-     * deux fois la même séance. Le calcul est directement enregistré au statut
-     * VALIDE, sans étape de brouillon ni de validation manuelle.
+     * validation de l'émargement. Idempotent : n'ajoute jamais deux fois
+     * la même séance. Le calcul reste BROUILLON jusqu'à la clôture automatique
+     * du mois.
      */
+    @Transactional
     public void ajouterSeanceAuxHonoraires(Seance seance) {
         if (seance == null || !seance.isPayable()) {
             return;
         }
 
-        try {
-            Enseignant enseignant = seance.getEnseignant();
-            if (enseignant == null) {
-                return;
-            }
+        Enseignant enseignant = seance.getEnseignant();
+        if (enseignant == null) {
+            return;
+        }
 
-            LocalDate moisCalcul = seance.getDateCours().withDayOfMonth(1);
+        LocalDate moisCalcul = seance.getDateCours().withDayOfMonth(1);
 
-            if (detailHonoraireRepository.existsBySeanceId(seance.getId())) {
-                return;
-            }
+        if (detailHonoraireRepository.existsBySeanceId(seance.getId())) {
+            return;
+        }
 
-            HonorairesCalculs calcul = honorairesCalculsRepository
+        HonorairesCalculs calcul = honorairesCalculsRepository
                     .findByEnseignantIdAndMois(enseignant.getId(), moisCalcul)
                     .orElseGet(() -> {
                         HonorairesCalculs c = new HonorairesCalculs();
                         c.setMois(moisCalcul);
                         c.setEnseignant(enseignant);
-                        c.setStatut(StatutHonoraire.VALIDE);
+                        c.setStatut(StatutHonoraire.BROUILLON);
                         c.setDateCalcul(LocalDateTime.now());
-                        c.setDateValidation(LocalDateTime.now());
                         c.setTotalHeures(0F);
                         c.setMontantBrut(0F);
                         return honorairesCalculsRepository.save(c);
                     });
 
-            DetailHonoraire detail = buildDetail(calcul, seance);
-            detailHonoraireRepository.save(detail);
+        DetailHonoraire detail = buildDetail(calcul, seance);
+        detailHonoraireRepository.save(detail);
 
-            float totalHeures = calcul.getTotalHeures() == null ? 0F : calcul.getTotalHeures();
-            float montantBrut = calcul.getMontantBrut() == null ? 0F : calcul.getMontantBrut();
-            calcul.setTotalHeures(totalHeures + detail.getNombreHeures());
-            calcul.setMontantBrut(montantBrut + detail.getMontant());
-            calcul.setStatut(StatutHonoraire.VALIDE);
-            calcul.setDateCalcul(LocalDateTime.now());
-            calcul.setDateValidation(LocalDateTime.now());
-            honorairesCalculsRepository.save(calcul);
-        } catch (Exception e) {
-            System.err.println("[HONORAIRES AUTO] Échec de l'ajout automatique pour la séance "
-                    + (seance.getId() != null ? seance.getId() : "?") + " : " + e.getMessage());
-        }
+        float totalHeures = calcul.getTotalHeures() == null ? 0F : calcul.getTotalHeures();
+        float montantBrut = calcul.getMontantBrut() == null ? 0F : calcul.getMontantBrut();
+        calcul.setTotalHeures(totalHeures + detail.getNombreHeures());
+        calcul.setMontantBrut(montantBrut + detail.getMontant());
+        calcul.setStatut(StatutHonoraire.BROUILLON);
+        calcul.setDateCalcul(LocalDateTime.now());
+        honorairesCalculsRepository.save(calcul);
     }
 
     @Transactional

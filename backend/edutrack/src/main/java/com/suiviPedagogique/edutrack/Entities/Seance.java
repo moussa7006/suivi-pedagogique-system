@@ -67,8 +67,6 @@ public class Seance {
     public boolean isPayable() {
         return this.emargement != null
                 && this.emargement.getStatut() == com.suiviPedagogique.edutrack.Entities.enums.StatutEmargement.VALIDE
-                && this.ficheProgression != null
-                && Boolean.TRUE.equals(this.ficheProgression.getEstValideAdmin())
                 && this.heureDebutReelle != null
                 && this.heureFinReelle != null
                 && this.classe != null

@@ -34,11 +34,13 @@ import {
   bookOutline,
   peopleOutline,
   timeOutline,
+  closeCircle,
 } from 'ionicons/icons';
 import { Geolocation } from '@capacitor/geolocation';
 import jsQR from 'jsqr';
 import { forkJoin } from 'rxjs';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { MatiereService } from '../../core/services/matiere.service';
 import { ClasseService } from '../../core/services/classe.service';
@@ -86,6 +88,7 @@ export class ScanQRPage implements OnDestroy {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly authService = inject(AuthService);
 
   isScanning = false;
   isCameraOpen = false;
@@ -96,11 +99,13 @@ export class ScanQRPage implements OnDestroy {
   fichesProgression: FicheProgression[] = [];
   cameraSupported = true;
   seanceRequiredError = false;
+  qrMismatchError = false;
 
   private mediaStream: MediaStream | null = null;
   private scanTimer: number | null = null;
   private scanCanvas?: HTMLCanvasElement;
   private scanContext?: CanvasRenderingContext2D | null;
+  private currentUserId: number | null = null;
 
   constructor() {
     addIcons({
@@ -119,6 +124,7 @@ export class ScanQRPage implements OnDestroy {
       bookOutline,
       peopleOutline,
       timeOutline,
+      closeCircle,
     });
 
     this.loadData();
@@ -139,8 +145,10 @@ export class ScanQRPage implements OnDestroy {
     return !this.cameraSupported;
   }
 
-  loadData(): void {
+  async loadData(): Promise<void> {
     this.isLoading = true;
+    const user = await this.authService.getUser();
+    this.currentUserId = user?.id ?? null;
     forkJoin({
       seances: this.scheduleService.getSeances(),
       fiches: this.ficheProgressionService.getFichesProgression(),
@@ -151,10 +159,11 @@ export class ScanQRPage implements OnDestroy {
     }).subscribe({
       next: ({ seances, fiches, emplois, matieres, classes, salles }) => {
         this.seances = (seances || [])
-          .filter((seance) => this.isTodaySeance(seance))
+          .filter((seance) => this.isSelectableSeance(seance))
           .map((seance) =>
             this.enrichSeance(seance, emplois, matieres, classes, salles),
-          );
+          )
+          .sort((a, b) => this.sessionSortKey(a) - this.sessionSortKey(b));
         this.fichesProgression = fiches || [];
         this.selectedSeanceId = this.resolveInitialSeanceId(this.seances);
         this.isLoading = false;
@@ -210,9 +219,9 @@ export class ScanQRPage implements OnDestroy {
       return this.selectedSeanceId;
     }
 
-    const todaysSeanceWithQr = seances.find((seance) => !!seance.qrCodeId);
-    if (todaysSeanceWithQr?.id) {
-      return todaysSeanceWithQr.id;
+    const currentSeance = seances.find((seance) => this.isInProgress(seance));
+    if (currentSeance?.id) {
+      return currentSeance.id;
     }
 
     return seances.length === 1 && seances[0].id ? seances[0].id : null;
@@ -406,6 +415,11 @@ export class ScanQRPage implements OnDestroy {
   selectSeance(id: number | undefined): void {
     this.selectedSeanceId = id ?? null;
     this.seanceRequiredError = false;
+    this.qrMismatchError = false;
+  }
+
+  dismissQrMismatchError(): void {
+    this.qrMismatchError = false;
   }
 
   private async presentToast(
@@ -470,10 +484,8 @@ export class ScanQRPage implements OnDestroy {
       selectedSeance.qrCodeToken &&
       selectedSeance.qrCodeToken.trim() !== tokenQRCode.trim()
     ) {
-      await this.presentAlert(
-        'QR Code non correspondant',
-        "Le QR Code scanné n'appartient pas à la séance sélectionnée. Veuillez sélectionner la bonne séance ou scanner le QR Code correspondant.",
-      );
+      this.qrMismatchError = true;
+      this.cdr.detectChanges();
       return false;
     }
 
@@ -517,10 +529,44 @@ export class ScanQRPage implements OnDestroy {
     return value ? value.substring(0, 5) : '--:--';
   }
 
+  private isSelectableSeance(seance: Seance): boolean {
+    if (!seance.id || this.currentUserId == null) {
+      return false;
+    }
+    if (seance.enseignantId !== this.currentUserId || !this.isTodaySeance(seance)) {
+      return false;
+    }
+    if (seance.emargementId) {
+      return false;
+    }
+    const now = new Date();
+    const end = this.combineTodayTime(seance.heureFinReelle);
+    return !!end && now <= end;
+  }
+
   private isTodaySeance(seance: Seance): boolean {
-    return (
-      this.toDateKeyFromValue(seance.dateCours) === this.toDateKey(new Date())
-    );
+    return this.toDateKeyFromValue(seance.dateCours) === this.toDateKey(new Date());
+  }
+
+  private isInProgress(seance: Seance): boolean {
+    const start = this.combineTodayTime(seance.heureDebutReelle);
+    const end = this.combineTodayTime(seance.heureFinReelle);
+    const now = new Date();
+    return !!start && !!end && now >= start && now <= end;
+  }
+
+  private sessionSortKey(seance: Seance): number {
+    const start = this.combineTodayTime(seance.heureDebutReelle);
+    return start?.getTime() ?? Number.MAX_SAFE_INTEGER;
+  }
+
+  private combineTodayTime(value?: string): Date | null {
+    if (!value) return null;
+    const [hours, minutes] = value.split(':').map(Number);
+    if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+    const date = new Date();
+    date.setHours(hours, minutes, 0, 0);
+    return date;
   }
 
   private toDateKeyFromValue(value: unknown): string {

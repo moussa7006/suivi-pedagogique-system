@@ -105,6 +105,39 @@ ion-content {
 }
 
 /* ============================================
+   WEEK NAVIGATION
+   ============================================ */
+.week-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 6px 8px;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+
+  ion-button {
+    --color: var(--text-primary);
+    --padding-start: 8px;
+    --padding-end: 8px;
+    margin: 0;
+  }
+
+  .today-button {
+    border: 0;
+    border-radius: 10px;
+    background: rgba(67, 97, 238, 0.1);
+    color: var(--accent-blue);
+    padding: 9px 16px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+}
+
+/* ============================================
    WEEK SELECTOR
    ============================================ */
 .week-selector {
@@ -150,12 +183,22 @@ ion-content {
     }
 
     .day-indicator {
-      position: absolute;
-      bottom: 6px;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--accent-blue);
+      min-width: 16px;
+      min-height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      padding: 0 4px;
+      border-radius: 999px;
+      background: rgba(67, 97, 238, 0.1);
+      color: var(--accent-blue);
+      font-size: 9px;
+      font-weight: 800;
+
+      &:empty {
+        visibility: hidden;
+      }
     }
 
     &.active {
@@ -327,6 +370,25 @@ ion-content {
           --padding-top: 4px;
           --padding-bottom: 4px;
           border-radius: 8px;
+        }
+      }
+
+      .source-badge {
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        color: var(--text-secondary);
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+
+        &--real {
+          background: #dcfce7;
+          color: #047857;
         }
       }
 

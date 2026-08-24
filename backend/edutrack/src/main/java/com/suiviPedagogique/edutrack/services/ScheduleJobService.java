@@ -7,11 +7,13 @@ import com.suiviPedagogique.edutrack.Entities.QRCode;
 import com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence;
 import com.suiviPedagogique.edutrack.Entities.enums.StatutSeance;
 import com.suiviPedagogique.edutrack.Entities.enums.StatutEmargement;
+import com.suiviPedagogique.edutrack.Entities.enums.StatutHonoraire;
 import com.suiviPedagogique.edutrack.Entities.enums.JourSemaine;
 import com.suiviPedagogique.edutrack.repositories.EmploiDuTempsRepository;
 import com.suiviPedagogique.edutrack.repositories.SeanceRepository;
 import com.suiviPedagogique.edutrack.repositories.QRCodeRepository;
 import com.suiviPedagogique.edutrack.repositories.AnneeUniversitaireRepository;
+import com.suiviPedagogique.edutrack.repositories.HonorairesCalculsRepository;
 import com.suiviPedagogique.edutrack.Entities.AnneeUniversitaire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -41,6 +43,9 @@ public class ScheduleJobService {
 
     @Autowired
     private AnneeUniversitaireRepository anneeUniversitaireRepository;
+
+    @Autowired
+    private HonorairesCalculsRepository honorairesCalculsRepository;
 
     /**
      * S'exécute tous les jours à 00:01
@@ -173,7 +178,10 @@ public class ScheduleJobService {
         for (Seance seance : seancesWithoutToken) {
             if (seance.getHeureDebutReelle() != null) {
                 // Si l'heure actuelle est à moins de 15 minutes du début (ou déjà commencée mais pas de QR)
-                if (now.isAfter(seance.getHeureDebutReelle().minusMinutes(15))) {
+                LocalTime end = seance.getHeureFinReelle();
+                if (end != null
+                        && now.isBefore(end)
+                        && !now.isBefore(seance.getHeureDebutReelle().minusMinutes(15))) {
                     if (hasActiveQrOverlapForTeacher(seance)) {
                         System.out.println("QR Code non généré pour la séance " + seance.getId() + " : enseignant déjà associé à un QR actif sur un cours simultané.");
                         continue;
@@ -192,6 +200,24 @@ public class ScheduleJobService {
                 }
             }
         }
+    }
+
+    /**
+     * Clôture automatiquement les honoraires du mois précédent à 00:10.
+     * Les lignes ont déjà été ajoutées au fil des émargements ; ce job ne fait
+     * que valider la période terminée, de manière idempotente.
+     */
+    @Scheduled(cron = "0 10 0 * * ?")
+    @Transactional
+    public void cloturerMoisPrecedent() {
+        LocalDate moisPrecedent = LocalDate.now().minusMonths(1).withDayOfMonth(1);
+        honorairesCalculsRepository.findByMois(moisPrecedent).forEach(calcul -> {
+            if (calcul.getStatut() == StatutHonoraire.BROUILLON) {
+                calcul.setStatut(StatutHonoraire.VALIDE);
+                calcul.setDateValidation(LocalDateTime.now());
+                honorairesCalculsRepository.save(calcul);
+            }
+        });
     }
 
     /**

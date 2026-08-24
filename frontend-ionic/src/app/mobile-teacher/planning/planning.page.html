@@ -12,13 +12,23 @@
         <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
       </ion-button>
       <div class="header-titles">
-        <h1 class="title">Mon Planning</h1>
-        <p class="subtitle">{{ today | date:'EEEE d MMMM y' }}</p>
+        <h1 class="title">Mon planning</h1>
+        <p class="subtitle">{{ selectedDateLabel }}</p>
       </div>
       <ion-button fill="clear" class="refresh-btn" (click)="refreshPlanning()">
         <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
       </ion-button>
     </header>
+
+    <div class="week-navigation animate-slide-up" style="--delay: 75ms">
+      <ion-button fill="clear" (click)="goToPreviousWeek()" aria-label="Semaine précédente">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+      <button type="button" class="today-button" (click)="goToCurrentWeek()">Aujourd'hui</button>
+      <ion-button fill="clear" (click)="goToNextWeek()" aria-label="Semaine suivante">
+        <ion-icon slot="icon-only" name="arrow-forward-outline"></ion-icon>
+      </ion-button>
+    </div>
 
     <!-- Sélecteur de jour -->
     <div class="week-selector animate-slide-up" style="--delay: 100ms">
@@ -30,7 +40,9 @@
       >
         <span class="day-name">{{ day.name }}</span>
         <span class="day-number">{{ day.number }}</span>
-        <div class="day-indicator" *ngIf="i === selectedDayIndex"></div>
+        <span class="day-indicator">
+          {{ i === selectedDayIndex && emploisDuTemps.length ? emploisDuTemps.length : '' }}
+        </span>
       </div>
     </div>
 
@@ -38,7 +50,7 @@
     <div class="day-summary animate-fade-in">
       <div class="summary-badge">
         <ion-icon name="calendar-outline"></ion-icon>
-        <span>{{ emploisDuTemps.length }} séance{{ emploisDuTemps.length > 1 ? 's' : '' }} aujourd'hui</span>
+        <span>{{ emploisDuTemps.length }} séance{{ emploisDuTemps.length > 1 ? 's' : '' }} pour ce jour</span>
       </div>
     </div>
 
@@ -87,11 +99,14 @@
             <h3 class="card-title">{{ cours.matiere }}</h3>
 
             <div class="course-meta">
+              <span class="source-badge" [class.source-badge--real]="cours.source === 'real'">
+                {{ cours.source === 'real' ? 'Séance confirmée' : 'Créneau planifié' }}
+              </span>
               <div class="meta-item">
                 <ion-icon name="location-outline"></ion-icon>
                 <span>{{ cours.salle }}</span>
               </div>
-              <div class="meta-item" *ngIf="cours.enseignant">
+              <div class="meta-item" *ngIf="cours.enseignant && cours.source === 'planned'">
                 <ion-icon name="person-outline"></ion-icon>
                 <span>{{ cours.enseignant }}</span>
               </div>
@@ -125,8 +140,10 @@
       <div class="empty-illustration">
         <ion-icon name="calendar-clear-outline"></ion-icon>
       </div>
-      <h3>Aucun cours programmé</h3>
-      <p>Profitez de votre journée ! Aucune séance n'est prévue pour aujourd'hui.</p>
+      <h3>Aucune séance ce jour</h3>
+      <p>
+        Votre planning est vide pour cette date. Utilisez les flèches pour consulter une autre semaine.
+      </p>
     </div>
 
     <div class="bottom-spacer"></div>

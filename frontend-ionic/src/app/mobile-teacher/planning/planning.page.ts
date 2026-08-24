@@ -21,6 +21,7 @@ import {
   refreshOutline,
   scanOutline,
   arrowBackOutline,
+  arrowForwardOutline,
   checkmark,
   calendar,
   calendarClearOutline
@@ -41,6 +42,7 @@ interface PlanningCourse {
   horaire: string;
   type: string;
   status: 'completed' | 'in-progress' | 'upcoming';
+  source: 'real' | 'planned';
   statusLabel: string;
   enseignant: string;
   seanceId?: number;
@@ -74,6 +76,7 @@ export class PlanningPage implements OnInit {
   private matieres: Matiere[] = [];
   private currentUserId: number | null = null;
   private currentUserLabel = '';
+  private weekOffset = 0;
 
   constructor() {
     addIcons({
@@ -89,6 +92,7 @@ export class PlanningPage implements OnInit {
       refreshOutline,
       scanOutline,
       arrowBackOutline,
+      arrowForwardOutline,
       checkmark,
       calendar,
       calendarClearOutline
@@ -124,28 +128,54 @@ export class PlanningPage implements OnInit {
     this.cdr.detectChanges();
   }
 
+  get selectedDate(): Date {
+    return this.weekDays[this.selectedDayIndex]?.date || new Date();
+  }
+
+  get selectedDateLabel(): string {
+    return this.selectedDate.toLocaleDateString('fr-FR', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    });
+  }
+
+  goToPreviousWeek(): void {
+    this.weekOffset -= 1;
+    this.generateWeekDays();
+    this.buildPlanningForSelectedDay();
+  }
+
+  goToNextWeek(): void {
+    this.weekOffset += 1;
+    this.generateWeekDays();
+    this.buildPlanningForSelectedDay();
+  }
+
+  goToCurrentWeek(): void {
+    this.weekOffset = 0;
+    this.generateWeekDays();
+    this.buildPlanningForSelectedDay();
+  }
+
   refreshPlanning(): void {
     this.loadEmploisDuTemps();
   }
 
   private generateWeekDays(): void {
-    const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    const dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
     const today = new Date();
-    const currentDay = today.getDay();
+    const mondayOffset = (today.getDay() + 6) % 7;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - mondayOffset + this.weekOffset * 7);
+    monday.setHours(0, 0, 0, 0);
 
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - currentDay + i);
-      this.weekDays.push({
-        name: dayNames[date.getDay()],
-        number: date.getDate(),
-        date,
-      });
+    this.weekDays = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      return { name: dayNames[index], number: date.getDate(), date };
+    });
 
-      if (this.isSameDate(date, today)) {
-        this.selectedDayIndex = i;
-      }
-    }
+    const todayIndex = this.weekDays.findIndex((day) => this.isSameDate(day.date, today));
+    this.selectedDayIndex = todayIndex >= 0 ? todayIndex : 0;
   }
 
   private loadEmploisDuTemps(): void {
@@ -164,8 +194,8 @@ export class PlanningPage implements OnInit {
       )
       .subscribe({
         next: ({ schedules, seances, salles, matieres }) => {
-          this.allSchedules = schedules || [];
-          this.allSeances = seances || [];
+          this.allSchedules = (schedules || []).filter((schedule) => schedule.enseignantId === this.currentUserId);
+          this.allSeances = (seances || []).filter((seance) => seance.enseignantId === this.currentUserId);
           this.salles = salles || [];
           this.matieres = matieres || [];
           this.buildPlanningForSelectedDay();
@@ -222,7 +252,8 @@ export class PlanningPage implements OnInit {
       statusLabel: this.getStatusLabel(status),
       enseignant: this.getEnseignantLabel(seance.enseignantId),
       seanceId: seance.id,
-      hasQrCode: !!seance.qrCodeId,
+      hasQrCode: !!seance.qrCodeId && status !== 'completed',
+      source: 'real',
     };
   }
 
@@ -241,6 +272,7 @@ export class PlanningPage implements OnInit {
       statusLabel: this.getStatusLabel(status),
       enseignant: this.getEnseignantLabel(edt.enseignantId),
       hasQrCode: false,
+      source: 'planned',
     };
   }
 
