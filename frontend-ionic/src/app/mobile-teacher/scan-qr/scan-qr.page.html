@@ -32,7 +32,7 @@
       <div class="section-heading">
         <div>
           <h2>Séances du jour</h2>
-          <span>Sélectionnez la séance à émarger</span>
+          <span>Seules vos séances encore ouvertes sont affichées</span>
         </div>
         <span class="seance-count">{{ seances.length }}</span>
       </div>
@@ -42,7 +42,7 @@
         *ngIf="!isLoading && seances.length === 0"
       >
         <ion-icon name="calendar-outline"></ion-icon>
-        <span>Aucune séance n'est prévue pour aujourd'hui.</span>
+        <span>Aucune de vos séances n'est ouverte à l'émargement aujourd'hui.</span>
       </div>
 
       <div
@@ -77,9 +77,7 @@
                 <ion-icon name="location-outline"></ion-icon>
                 {{ seance.salleLibelle }}
               </span>
-              <span class="fiche-badge" *ngIf="hasCahierForSeance(seance)">
-                Fiche remplie
-              </span>
+
             </div>
           </div>
 
@@ -97,6 +95,36 @@
           <span>Veuillez sélectionner une séance avant de scanner.</span>
         </div>
       </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- ERREUR QR : SÉANCE INCOMPATIBLE          -->
+    <!-- ========================================= -->
+    <section class="qr-mismatch-alert animate-fade-in" *ngIf="qrMismatchError" role="alert">
+      <div class="qr-mismatch-alert__icon">
+        <ion-icon name="close-circle"></ion-icon>
+      </div>
+      <div class="qr-mismatch-alert__content">
+        <span class="qr-mismatch-alert__eyebrow">QR Code refusé</span>
+        <h2>Ce QR Code ne correspond pas à cette séance</h2>
+        <p>
+          Vous avez sélectionné
+          <strong>{{ selectedSeance?.matiereLibelle || 'cette séance' }}</strong>.
+          Sélectionnez la séance affichée sur l’écran, puis scannez son QR Code.
+        </p>
+        <button type="button" class="qr-mismatch-alert__action" (click)="dismissQrMismatchError()">
+          <ion-icon name="calendar-outline"></ion-icon>
+          Choisir une autre séance
+        </button>
+      </div>
+      <button
+        type="button"
+        class="qr-mismatch-alert__close"
+        aria-label="Fermer le message"
+        (click)="dismissQrMismatchError()"
+      >
+        <ion-icon name="close-circle"></ion-icon>
+      </button>
     </section>
 
     <!-- ========================================= -->

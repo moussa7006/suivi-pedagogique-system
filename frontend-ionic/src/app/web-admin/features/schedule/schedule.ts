@@ -19,6 +19,7 @@ import { Filiere } from '../../core/models/filiere.model';
 import { NotificationService } from '../../shared/notification/notification.service';
 import { ConfirmationService } from '../../shared/confirmation/confirmation.service';
 import { sortByAlpha } from '../../core/utils/sort-utils';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-schedule',
@@ -359,9 +360,11 @@ export class Schedule implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadData();
+    // Les données de planning changent rarement : 60 secondes suffisent
+    // et évitent de recharger tous les référentiels en boucle.
     this.refreshInterval = setInterval(() => {
-      this.loadData();
-    }, 10000); // 10 seconds auto-refresh
+      this.loadSchedules();
+    }, 60000);
   }
 
   ngOnDestroy() {
@@ -371,40 +374,54 @@ export class Schedule implements OnInit, OnDestroy {
   }
 
   loadData() {
-    this.scheduleService.getAllSchedules().subscribe({
-      next: (s) => {
-        this.schedules = sortByAlpha(s, (schedule) => schedule.titre);
-        this.filterSchedules();
+    forkJoin({
+      schedules: this.scheduleService.getAllSchedules(),
+      classes: this.classeService.getAll(),
+      matieres: this.matiereService.getAll(),
+      filieres: this.filiereService.getAll(),
+      teachers: this.teacherService.getTeachers(),
+      salles: this.salleService.getAll(),
+      annees: this.anneeUniversitaireService.getAll(),
+    }).subscribe({
+      next: ({ schedules, classes, matieres, filieres, teachers, salles, annees }) => {
+        this.applySchedules(schedules);
+        this.classes = sortByAlpha(classes || [], (classe) => classe.libelle);
+        this.matieres = sortByAlpha(matieres || [], (matiere) => matiere.libelle);
+        this.filieres = sortByAlpha(filieres || [], (filiere) => filiere.libelle);
+        this.teachers = sortByAlpha(
+          teachers || [],
+          (teacher) => `${teacher.nom || ''} ${teacher.prenom || ''}`,
+        );
+        this.salles = sortByAlpha(
+          salles || [],
+          (salle) => `${salle.nom || ''} ${salle.batiment || ''}`,
+        );
+        this.anneesUniversitaires = sortByAlpha(
+          annees || [],
+          (annee) => annee.libelle,
+          'desc',
+        );
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Erreur chargement emplois du temps:', err);
+        console.error('Erreur chargement des données du planning:', err);
       },
     });
-    this.classeService.getAll().subscribe((c) => {
-      this.classes = sortByAlpha(c, (classe) => classe.libelle);
-      this.cdr.detectChanges();
+  }
+
+  private loadSchedules(): void {
+    this.scheduleService.getAllSchedules().subscribe({
+      next: (schedules) => {
+        this.applySchedules(schedules);
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Erreur chargement emplois du temps:', err),
     });
-    this.matiereService.getAll().subscribe((m) => {
-      this.matieres = sortByAlpha(m, (matiere) => matiere.libelle);
-      this.cdr.detectChanges();
-    });
-    this.filiereService.getAll().subscribe((f) => {
-      this.filieres = sortByAlpha(f, (filiere) => filiere.libelle);
-      this.cdr.detectChanges();
-    });
-    this.teacherService.getTeachers().subscribe((t) => {
-      this.teachers = sortByAlpha(t, (teacher) => `${teacher.nom || ''} ${teacher.prenom || ''}`);
-      this.cdr.detectChanges();
-    });
-    this.salleService.getAll().subscribe((s) => {
-      this.salles = sortByAlpha(s, (salle) => `${salle.nom || ''} ${salle.batiment || ''}`);
-      this.cdr.detectChanges();
-    });
-    this.anneeUniversitaireService.getAll().subscribe((a) => {
-      this.anneesUniversitaires = sortByAlpha(a, (annee) => annee.libelle, 'desc');
-      this.cdr.detectChanges();
-    });
+  }
+
+  private applySchedules(schedules: EmploiDuTemps[] | null | undefined): void {
+    this.schedules = sortByAlpha(schedules || [], (schedule) => schedule.titre);
+    this.filterSchedules();
   }
 
   filterSchedules() {

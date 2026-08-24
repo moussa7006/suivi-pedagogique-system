@@ -8,8 +8,6 @@ import {
   IonIcon,
   IonRefresher,
   IonRefresherContent,
-  IonModal,
-  IonDatetime,
   IonPopover
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -42,8 +40,6 @@ import { HonorairesService } from '../../core/services/honoraires.service';
     IonButton,
     IonRefresher,
     IonRefresherContent,
-    IonModal,
-    IonDatetime,
     IonPopover
   ],
 })
@@ -58,7 +54,7 @@ export class HonorairesPage implements OnInit {
 
   // Filtre par periode : 'all' | 'current' | 'previous'
   filterPeriod: 'all' | 'current' | 'previous' = 'all';
-  selectedDate = '';
+
 
   constructor() {
     addIcons({
@@ -75,19 +71,6 @@ export class HonorairesPage implements OnInit {
     });
   }
 
-  get totalMontant(): number {
-    return this.filteredHonoraires.reduce(
-      (sum, item) => sum + (item.montantBrut || 0),
-      0,
-    );
-  }
-
-  get totalHeures(): number {
-    return this.filteredHonoraires.reduce(
-      (sum, item) => sum + (item.totalHeures || 0),
-      0,
-    );
-  }
 
   /**
    * Retourne les honoraires filtrés selon la periode choisie.
@@ -97,9 +80,7 @@ export class HonorairesPage implements OnInit {
    */
   get filteredHonoraires(): HonorairesCalcul[] {
     if (this.filterPeriod === 'all') {
-      return this.selectedDate
-        ? this.filterHonorairesByDate(this.honoraires, this.selectedDate)
-        : this.honoraires;
+      return this.honoraires;
     }
     const currentMonth = this.currentMonthKey();
     const result =
@@ -138,9 +119,6 @@ export class HonorairesPage implements OnInit {
   }
 
   onFilterPeriodChange(): void {
-    if (this.filterPeriod !== 'all') {
-      this.selectedDate = '';
-    }
     this.cdr.detectChanges();
   }
 
@@ -149,30 +127,6 @@ export class HonorairesPage implements OnInit {
     this.onFilterPeriodChange();
   }
 
-  get formattedSelectedMonth(): string {
-    if (!this.selectedDate) return 'Sélectionner une date';
-    const parts = this.selectedDate.split('-');
-    if (parts.length < 3) return 'Sélectionner une date';
-    const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-  }
-
-  get selectedDatetime(): string | undefined {
-    return this.selectedDate ? `${this.selectedDate}T00:00:00` : undefined;
-  }
-
-  onMonthSelect(event: any): void {
-    const val = event.detail.value;
-    if (val) {
-      this.selectedDate = typeof val === 'string' ? val.substring(0, 10) : val[0].substring(0, 10);
-      this.cdr.detectChanges();
-    }
-  }
-
-  clearSelectedMonth(): void {
-    this.selectedDate = '';
-    this.cdr.detectChanges();
-  }
 
   loadHonoraires(event?: CustomEvent): void {
     this.loading = !event;
@@ -232,33 +186,6 @@ export class HonorairesPage implements OnInit {
     return new Intl.DateTimeFormat('fr-FR').format(new Date(value));
   }
 
-  private filterHonorairesByDate(
-    items: HonorairesCalcul[],
-    selectedDate: string,
-  ): HonorairesCalcul[] {
-    return items
-      .map((item) => {
-        const details = (item.detailsHonoraires || []).filter(
-          (detail) =>
-            (detail.dateCours || '').substring(0, 10) === selectedDate,
-        );
-        const totalHeures = details.reduce(
-          (sum, detail) => sum + (detail.nombreHeures || 0),
-          0,
-        );
-        const montantBrut = details.reduce(
-          (sum, detail) => sum + (detail.montant || 0),
-          0,
-        );
-        return {
-          ...item,
-          detailsHonoraires: details,
-          totalHeures,
-          montantBrut,
-        };
-      })
-      .filter((item) => (item.detailsHonoraires || []).length > 0);
-  }
 
   private sortHonoraires(items: HonorairesCalcul[]): HonorairesCalcul[] {
     return [...items]

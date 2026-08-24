@@ -63,8 +63,9 @@ public class FicheProgressionService {
             throw new RuntimeException("Vous n'êtes pas l'enseignant assigné à cette séance.");
         }
 
-        // Création de l'émargement couplé à la fiche
-        if (request.getTokenQRCode() != null) {
+        // Le scan peut avoir déjà validé l'émargement avant l'ouverture de la fiche.
+        // Dans ce cas, ne pas tenter un second scan avec le même QR.
+        if (seance.getEmargement() == null && request.getTokenQRCode() != null) {
             EmargementRequest emargementRequest = new EmargementRequest();
             emargementRequest.setSeanceId(seanceId);
             emargementRequest.setTokenQRCode(request.getTokenQRCode());
@@ -81,8 +82,8 @@ public class FicheProgressionService {
         fiche.setObjectifs(request.getObjectifs());
         fiche.setTravaux(request.getTravaux());
         fiche.setDateSaisie(LocalDate.now());
-        fiche.setEstValideAdmin(true);
-        fiche.setDateValidation(LocalDate.now());
+        // La saisie de l'enseignant ne constitue pas une validation administrative.
+        // La fiche reste disponible pour validation depuis l'interface web.
         fiche.setEnseignant(seance.getEnseignant());
         fiche.setSeance(seance);
 
@@ -91,8 +92,6 @@ public class FicheProgressionService {
         seance.setFicheProgression(fiche);
         seanceRepository.save(seance);
 
-        // La séance est désormais payable : ajout automatique aux honoraires du mois.
-        honorairesService.ajouterSeanceAuxHonoraires(seance);
 
         return toDto(fiche);
     }

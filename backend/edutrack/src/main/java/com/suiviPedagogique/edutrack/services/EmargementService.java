@@ -9,6 +9,7 @@ import com.suiviPedagogique.edutrack.Entities.enums.StatutEmargement;
 import com.suiviPedagogique.edutrack.repositories.EmargementRepository;
 import com.suiviPedagogique.edutrack.repositories.SeanceRepository;
 import com.suiviPedagogique.edutrack.repositories.UtilisateurRepository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
@@ -47,6 +48,10 @@ public class EmargementService {
     @Value("${emargement.geolocation.max-distance-km:0.5}")
     private double maxDistanceKm;
 
+    @Autowired
+    private HonorairesService honorairesService;
+
+    @Transactional
     public Emargement faireEmargement(EmargementRequest request) {
         if (request.getSeanceId() == null) {
             throw new RuntimeException("Séance sélectionnée manquante pour l'émargement.");
@@ -62,7 +67,8 @@ public class EmargementService {
         if (seance.getQrCode() == null || Boolean.FALSE.equals(seance.getQrCode().getEstValide())) {
             throw new RuntimeException("QR Code expiré ou désactivé.");
         }
-        if (seance.getQrCode().getDateHeureExpiration().isBefore(LocalDateTime.now())) {
+        if (seance.getQrCode().getDateHeureExpiration() == null
+                || !seance.getQrCode().getDateHeureExpiration().isAfter(LocalDateTime.now())) {
             seance.getQrCode().setEstValide(false);
             throw new RuntimeException("QR Code expiré.");
         }
@@ -118,6 +124,10 @@ public class EmargementService {
         emargementRepository.save(emargement);
         seance.setEmargement(emargement);
         seanceRepository.save(seance);
+
+        // La rémunération est créée immédiatement après un émargement valide.
+        // La clôture mensuelle, exécutée automatiquement, passera ensuite le calcul à VALIDE.
+        honorairesService.ajouterSeanceAuxHonoraires(seance);
 
         return emargement;
     }

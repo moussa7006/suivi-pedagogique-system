@@ -203,6 +203,15 @@ public class SeanceService {
         Seance seance = seanceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Séance non trouvée"));
 
+        if (seance.getDateCours() == null || seance.getHeureFinReelle() == null) {
+            throw new RuntimeException("Les horaires de la séance sont incomplets");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiration = LocalDateTime.of(seance.getDateCours(), seance.getHeureFinReelle());
+        if (!expiration.isAfter(now)) {
+            throw new RuntimeException("Impossible de générer un QR code pour une séance terminée");
+        }
+
         validateNoActiveQrOverlapForTeacher(seance);
 
         QRCode qrCode = seance.getQrCode();
@@ -212,7 +221,7 @@ public class SeanceService {
 
         qrCode.setCode(UUID.randomUUID().toString());
         qrCode.setDateHeureCreation(LocalDateTime.now());
-        qrCode.setDateHeureExpiration(LocalDateTime.of(seance.getDateCours(), seance.getHeureFinReelle()));
+        qrCode.setDateHeureExpiration(expiration);
         qrCode.setEstValide(true);
 
         qrCodeRepository.save(qrCode);
