@@ -111,8 +111,8 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
         <div class="ref-card" *ngFor="let annee of filteredAnnees">
           <div class="card-accent"></div>
           <div class="card-body">
-            <span [class]="annee.active ? 'badge-active' : 'badge-inactive'">{{
-              annee.active ? 'Active' : 'Inactive'
+            <span [class]="annee.archivee ? 'badge-archived' : (annee.active ? 'badge-active' : 'badge-inactive')">{{
+              annee.archivee ? 'Archivée' : (annee.active ? 'Active' : 'Inactive')
             }}</span>
             <div class="card-title">{{ annee.libelle }}</div>
             <div class="detail-item">
@@ -125,10 +125,10 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
             </div>
           </div>
           <div class="card-actions">
-            <button class="btn-icon-sm edit" (click)="showEditForm(annee)">
+            <button class="btn-icon-sm edit" (click)="showEditForm(annee)" [disabled]="annee.archivee" [title]="annee.archivee ? 'Année archivée' : 'Modifier'">
               <i class="pi pi-pencil"></i>
             </button>
-            <button class="btn-icon-sm delete" (click)="delete(annee.id!)">
+            <button class="btn-icon-sm delete" (click)="delete(annee.id!)" [disabled]="annee.archivee" [title]="annee.archivee ? 'Année archivée' : 'Supprimer'">
               <i class="pi pi-trash"></i>
             </button>
           </div>
@@ -197,11 +197,14 @@ export class AnneesUniversitairesComponent implements OnInit {
   showAddForm(): void {
     this.editingId = null;
     this.errorMessage = '';
-    this.currentAnnee = { libelle: '', dateDebut: '', dateFin: '' };
+    this.currentAnnee = { libelle: '', dateDebut: '', dateFin: '', archivee: false };
     this.displayForm = true;
   }
 
   showEditForm(annee: AnneeUniversitaire): void {
+    if (annee.archivee) {
+      return;
+    }
     this.editingId = annee.id!;
     this.errorMessage = '';
     this.currentAnnee = { ...annee };

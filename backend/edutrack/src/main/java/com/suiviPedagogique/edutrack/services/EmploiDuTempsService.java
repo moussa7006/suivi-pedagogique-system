@@ -92,6 +92,11 @@ public class EmploiDuTempsService {
 
         EmploiDuTemps emploi = emploiDuTempsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Emploi du temps non trouvé"));
+        if (emploi.getAnneeUniversitaire() != null
+                && (Boolean.TRUE.equals(emploi.getAnneeUniversitaire().getArchivee())
+                || LocalDate.now().isAfter(emploi.getAnneeUniversitaire().getDateFin()))) {
+            throw new IllegalStateException("Impossible de supprimer un planning appartenant à une année universitaire archivée.");
+        }
         seanceRepository.deleteAll(seanceRepository.findByEmploiDuTempsId(id));
         emploiDuTempsRepository.delete(emploi);
     }
@@ -116,6 +121,15 @@ public class EmploiDuTempsService {
     }
 
     private void hydrateEntity(EmploiDuTemps emploi, EmploiDuTempsDto dto, Integer emploiId) {
+        if (dto.getAnneeUniversitaireId() == null) {
+            throw new IllegalArgumentException("L'année universitaire est obligatoire.");
+        }
+        AnneeUniversitaire annee = anneeUniversitaireRepository.findById(dto.getAnneeUniversitaireId())
+                .orElseThrow(() -> new RuntimeException("Année universitaire non trouvée"));
+        if (Boolean.TRUE.equals(annee.getArchivee()) || LocalDate.now().isAfter(annee.getDateFin())) {
+            throw new IllegalStateException("Impossible de planifier dans une année universitaire archivée ou terminée.");
+        }
+
         emploi.setTitre(dto.getTitre());
         emploi.setTypeRecurrence(dto.getTypeRecurrence());
         emploi.setDateDebutValidite(dto.getDateDebutValidite());
@@ -149,11 +163,7 @@ public class EmploiDuTempsService {
                     .orElseThrow(() -> new RuntimeException("Matière non trouvée"));
             emploi.setMatiere(matiere);
         }
-        if (dto.getAnneeUniversitaireId() != null) {
-            AnneeUniversitaire annee = anneeUniversitaireRepository.findById(dto.getAnneeUniversitaireId())
-                    .orElseThrow(() -> new RuntimeException("Année universitaire non trouvée"));
-            emploi.setAnneeUniversitaire(annee);
-        }
+        emploi.setAnneeUniversitaire(annee);
     }
 
     private EmploiDuTempsDto convertToDto(EmploiDuTemps emploi) {
@@ -264,8 +274,18 @@ public class EmploiDuTempsService {
         if (getStartDate(dto) == null || getEndDate(dto) == null) {
             throw new RuntimeException("Les dates de validité de la planification sont obligatoires.");
         }
+
+        if (dto.getAnneeUniversitaireId() == null) {
+            throw new RuntimeException("L'année universitaire est obligatoire.");
+        }
         if (getStartDate(dto).isAfter(getEndDate(dto))) {
             throw new RuntimeException("La date de début de validité doit être antérieure ou égale à la date de fin.");
+        }
+        AnneeUniversitaire annee = anneeUniversitaireRepository.findById(dto.getAnneeUniversitaireId())
+                .orElseThrow(() -> new RuntimeException("Année universitaire non trouvée"));
+        if (getStartDate(dto).isBefore(annee.getDateDebut())
+                || getEndDate(dto).isAfter(annee.getDateFin())) {
+            throw new IllegalArgumentException("Les dates de planification doivent être comprises entre le début et la fin de l'année universitaire.");
         }
         if (dto.getTypeRecurrence() == com.suiviPedagogique.edutrack.Entities.enums.TypeRecurrence.HEBDOMADAIRE && dto.getJourSemaine() == null) {
             throw new RuntimeException("Le jour de la semaine est obligatoire pour une planification hebdomadaire.");

@@ -84,6 +84,7 @@ public class FicheProgressionService {
         fiche.setDateSaisie(LocalDate.now());
         // La saisie de l'enseignant ne constitue pas une validation administrative.
         // La fiche reste disponible pour validation depuis l'interface web.
+        fiche.setEstValideAdmin(false);
         fiche.setEnseignant(seance.getEnseignant());
         fiche.setSeance(seance);
 
