@@ -7,7 +7,11 @@ DB_URL=jdbc:postgresql://localhost:5432/db_suivipedago
 DB_USERNAME=postgres
 DB_PASSWORD=change-me
 
+# Pour le developpement local uniquement. Utiliser validate avec des migrations en production.
 JPA_DDL_AUTO=update
+
+# Desactive par defaut ; n'activer qu'avec un jeu de donnees anonymise de developpement.
+APP_INIT_DB_ENABLED=false
 JPA_SHOW_SQL=true
 JPA_FORMAT_SQL=true
 
@@ -18,8 +22,9 @@ APP_CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:8100
 # (WebView Capacitor sur port aléatoire ex: http://localhost:39341). Mettre false en production.
 APP_CORS_ALLOW_LOCALHOST_DEV=true
 
-APP_SEED_ADMIN_ENABLED=true
-APP_SEED_ADMIN_RESET_EXISTING=true
+# Activer uniquement pour initialiser un environnement de developpement vide.
+APP_SEED_ADMIN_ENABLED=false
+APP_SEED_ADMIN_RESET_EXISTING=false
 APP_SEED_ADMIN_EMAIL=admin@edutrack.local
 APP_SEED_ADMIN_PASSWORD=ChangeMe123456!
 APP_SEED_ADMIN_NOM=ADMIN
@@ -29,12 +34,16 @@ APP_SEED_ADMIN_TELEPHONE=
 APP_SEED_ADMIN_ADRESSE=
 
 # Minimum 32 octets. Remplacer impérativement en production.
-APP_JWT_SECRET=replace_with_a_strong_32_bytes_minimum_secret
+APP_JWT_SECRET=replace_with_a_unique_strong_32_bytes_minimum_secret
 APP_JWT_EXPIRATION_MS=86400000
 
 # Email SMTP (Gmail) pour l'envoi des codes de réinitialisation.
 MAIL_USERNAME=
 MAIL_PASSWORD=
+
+# Obligatoire pour l'import d'enseignants. Generer une valeur temporaire unique,
+# la communiquer par un canal securise et demander sa modification a la premiere connexion.
+APP_IMPORT_TEACHER_INITIAL_PASSWORD=
 
 # Géolocalisation de l'émargement.
 EMARGEMENT_GEO_ENABLED=false

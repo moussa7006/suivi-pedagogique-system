@@ -59,8 +59,8 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
             <i class="pi pi-clock"></i>
           </div>
           <div class="stat-content">
-            <span class="value">{{ getPendingCount() }}</span>
-            <span class="label">À finaliser</span>
+            <span class="value">{{ getFichesToCompleteCount() }}</span>
+            <span class="label">Fiches à renseigner</span>
           </div>
         </div>
         <div class="summary-card success">
@@ -795,7 +795,7 @@ export class PedagogyComponent implements OnInit {
     document.body.removeChild(a);
   }
 
-  getPendingCount(): number {
+  getFichesToCompleteCount(): number {
     const ficheSeanceIds = new Set(
       this.lessonLogs.map((log) => log.seanceId).filter((id): id is number => Number.isFinite(id)),
     );
@@ -809,7 +809,7 @@ export class PedagogyComponent implements OnInit {
   }
 
   getValidatedCount(): number {
-    return this.lessonLogs.filter((log) => log.estValideAdmin === true).length;
+    return this.lessonLogs.length;
   }
 
   get filteredLogs(): FicheProgression[] {
@@ -835,18 +835,12 @@ export class PedagogyComponent implements OnInit {
     this.filterDate = (event.target as HTMLInputElement).value;
   }
 
-  getStatutLabel(estValideAdmin: boolean | null | undefined): string {
-    if (estValideAdmin === true) {
-      return 'Émargée';
-    }
-    return 'À finaliser';
+  getStatutLabel(_estValideAdmin: boolean | null | undefined): string {
+    return 'Enregistrée';
   }
 
-  getStatusClass(estValideAdmin: boolean | null | undefined): string {
-    if (estValideAdmin === true) {
-      return 'approved';
-    }
-    return 'pending';
+  getStatusClass(_estValideAdmin: boolean | null | undefined): string {
+    return 'approved';
   }
 
   getInitials(name: string): string {

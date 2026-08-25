@@ -1,223 +1,91 @@
-2<ion-content [fullscreen]="true">
-  <!-- DECORATIVE BG -->
-  <div class="bg-decoration">
-    <div class="bg-circle bg-circle--1"></div>
-    <div class="bg-circle bg-circle--2"></div>
-  </div>
-
+<ion-content [fullscreen]="true">
   <div class="page-wrapper ion-padding">
-    <!-- Header -->
-    <header class="page-header animate-slide-up" style="--delay: 50ms">
-      <ion-button
-        fill="clear"
-        class="back-btn"
-        routerLink="/mobile/tabs/tabs/tab1"
-        [replaceUrl]="true"
-      >
+    <header class="page-header">
+      <ion-button fill="clear" class="back-btn" routerLink="/mobile/tabs/tabs/tab1" [replaceUrl]="true" aria-label="Retour au menu">
         <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
       </ion-button>
-      <div class="header-titles">
-        <h1 class="title">Émargement</h1>
-      </div>
+      <div class="header-titles"><p>Présence</p><h1>Émargement</h1></div>
+      <span class="header-step">QR</span>
     </header>
 
-    <!-- ========================================= -->
-    <!-- LISTE DES SÉANCES À SÉLECTIONNER          -->
-    <!-- ========================================= -->
-    <section
-      class="seance-list-section"
-      #seanceGroup
-      [class.has-error]="seanceRequiredError"
-    >
-      <div class="section-heading">
+    <section class="scanner-stage" [class.camera-open]="isCameraOpen">
+      <div class="scanner-stage__glow"></div>
+      <div class="scanner-stage__head">
+        <div class="scanner-mark"><ion-icon name="scan-outline"></ion-icon></div>
         <div>
-          <h2>Séances du jour</h2>
-          <span>Seules vos séances encore ouvertes sont affichées</span>
-        </div>
-        <span class="seance-count">{{ seances.length }}</span>
-      </div>
-
-      <div class="seance-tools" *ngIf="seances.length > 0">
-        <ion-input
-          class="seance-search"
-          fill="outline"
-          placeholder="Rechercher une matière, classe ou salle"
-          [(ngModel)]="searchTerm"
-          [clearInput]="true"
-        ></ion-input>
-        <div class="seance-filters" role="tablist" aria-label="Filtrer les séances">
-          <button type="button" [class.active]="activeSeanceFilter === 'TOUTES'" (click)="setSeanceFilter('TOUTES')">Toutes</button>
-          <button type="button" [class.active]="activeSeanceFilter === 'EN_COURS'" (click)="setSeanceFilter('EN_COURS')">En cours</button>
-          <button type="button" [class.active]="activeSeanceFilter === 'A_VENIR'" (click)="setSeanceFilter('A_VENIR')">À venir</button>
+          <span>Émargement sécurisé</span>
+          <h2>{{ isCameraOpen ? 'Cadrez le QR code' : 'Prêt à scanner' }}</h2>
         </div>
       </div>
 
-      <div
-        class="seance-empty"
-        *ngIf="!isLoading && seances.length === 0"
-      >
-        <ion-icon name="calendar-outline"></ion-icon>
-        <span>Aucune de vos séances n'est ouverte à l'émargement aujourd'hui.</span>
-      </div>
-
-      <div class="seance-empty seance-empty--filtered" *ngIf="seances.length > 0 && filteredSeances.length === 0">
-        <ion-icon name="search-outline"></ion-icon>
-        <span>Aucune séance ne correspond à votre recherche.</span>
-      </div>
-
-      <div
-        class="seance-list"
-        *ngIf="filteredSeances.length > 0"
-      >
-        <button
-          type="button"
-          class="seance-list-item"
-          *ngFor="let seance of filteredSeances"
-          [class.selected]="selectedSeanceId === seance.id"
-          (click)="selectSeance(seance.id)"
-        >
-          <div class="seance-list-item__time">
-            <span class="time-start">{{ formatTime(seance.heureDebutReelle) }}</span>
-            <span class="time-end">{{ formatTime(seance.heureFinReelle) }}</span>
-          </div>
-
-          <div class="seance-list-item__body">
-            <div class="top-line">
-              <span class="matiere">{{ seance.matiereLibelle || 'Matière' }}</span>
-              <span class="status-badge" [class]="'status-' + displayStatus(seance)">
-                {{ statutLabel(displayStatus(seance)) }}
-              </span>
-            </div>
-            <div class="meta-line">
-              <span class="meta-chip">
-                <ion-icon name="people-outline"></ion-icon>
-                {{ seance.classeLibelle || 'Classe' }}
-              </span>
-              <span class="meta-chip" *ngIf="seance.salleLibelle">
-                <ion-icon name="location-outline"></ion-icon>
-                {{ seance.salleLibelle }}
-              </span>
-
-            </div>
-          </div>
-
-          <ion-icon
-            class="radio"
-            [name]="selectedSeanceId === seance.id ? 'checkmark-circle' : 'ellipse-outline'"
-          ></ion-icon>
-        </button>
-      </div>
-
-      <div class="seance-required-error" *ngIf="seanceRequiredError">
-        <ion-icon name="alert-circle-outline"></ion-icon>
-        <div class="error-text">
-          <strong>Séance requise</strong>
-          <span>Veuillez sélectionner une séance avant de scanner.</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========================================= -->
-    <!-- ERREUR QR : SÉANCE INCOMPATIBLE          -->
-    <!-- ========================================= -->
-    <section class="qr-mismatch-alert animate-fade-in" *ngIf="qrMismatchError" role="alert">
-      <div class="qr-mismatch-alert__icon">
-        <ion-icon name="close-circle"></ion-icon>
-      </div>
-      <div class="qr-mismatch-alert__content">
-        <span class="qr-mismatch-alert__eyebrow">QR Code refusé</span>
-        <h2>Ce QR Code ne correspond pas à cette séance</h2>
-        <p>
-          Vous avez sélectionné
-          <strong>{{ selectedSeance?.matiereLibelle || 'cette séance' }}</strong>.
-          Sélectionnez la séance affichée sur l’écran, puis scannez son QR Code.
-        </p>
-        <button type="button" class="qr-mismatch-alert__action" (click)="dismissQrMismatchError()">
-          <ion-icon name="calendar-outline"></ion-icon>
-          Choisir une autre séance
-        </button>
-      </div>
-      <button
-        type="button"
-        class="qr-mismatch-alert__close"
-        aria-label="Fermer le message"
-        (click)="dismissQrMismatchError()"
-      >
-        <ion-icon name="close-circle"></ion-icon>
-      </button>
-    </section>
-
-    <!-- ========================================= -->
-    <!-- SCANNER                                   -->
-    <!-- ========================================= -->
-    <div class="scanner-card animate-scale-in">
-      <!-- Vue caméra : affichée en haut, immédiatement visible sans scroll -->
       <ng-container *ngIf="isCameraOpen">
         <div class="camera-preview">
           <video #previewVideo playsinline muted></video>
+          <div class="scan-frame"><i></i><i></i><i></i><i></i></div>
         </div>
-        <ion-button
-          expand="block"
-          color="danger"
-          fill="outline"
-          (click)="stopCamera()"
-        >
-          <ion-icon slot="start" name="stop-circle-outline"></ion-icon>
-          Arrêter la caméra
+        <ion-button expand="block" color="light" fill="solid" (click)="stopCamera()">
+          <ion-icon slot="start" name="stop-circle-outline"></ion-icon> Arrêter la caméra
         </ion-button>
       </ng-container>
 
-      <!-- Vue pré-scan -->
       <ng-container *ngIf="!isCameraOpen">
-        <div class="scanner-icon-wrapper">
-          <ion-icon name="scan-outline"></ion-icon>
+        <div class="selected-session" *ngIf="selectedSeance; else noSelection">
+          <div class="selected-session__check"><ion-icon name="checkmark-circle-outline"></ion-icon></div>
+          <div><span>Séance sélectionnée</span><strong>{{ selectedSeance.matiereLibelle || 'Matière' }}</strong><small>{{ selectedSeance.classeLibelle || 'Classe' }} · {{ formatTime(selectedSeance.heureDebutReelle) }}</small></div>
         </div>
-        <h2>Scanner pour émarger</h2>
+        <ng-template #noSelection>
+          <div class="no-selection"><ion-icon name="calendar-outline"></ion-icon><span>Choisissez une séance pour activer le scanner.</span></div>
+        </ng-template>
 
-        <p
-          class="status-hint"
-          *ngIf="selectedSeance && !hasCahierForSeance(selectedSeance)"
-        >
-          Scannez le QR Code pour démarrer l'émargement, puis remplissez la
-          fiche de progression.
-        </p>
-        <p
-          class="status-hint success"
-          *ngIf="selectedSeance && hasCahierForSeance(selectedSeance)"
-        >
-          Fiche de progression remplie pour cette séance.
-        </p>
-
-        <ion-button
-          expand="block"
-          class="scan-btn"
-          (click)="openScanner()"
-          [disabled]="isScanning || isLoading || !selectedSeance"
-        >
-          <ion-icon slot="start" name="camera-outline"></ion-icon>
-          {{ isScanning ? 'Validation...' :
-             !selectedSeance ? 'Sélectionnez une séance' :
-             'Scanner le QR Code' }}
+        <ion-button expand="block" class="scan-btn" (click)="openScanner()" [disabled]="isScanning || isLoading || !selectedSeance">
+          <ion-icon slot="start" name="scan-outline"></ion-icon>
+          {{ isScanning ? 'Validation...' : !selectedSeance ? 'Choisissez une séance' : 'Scanner maintenant' }}
         </ion-button>
-
-        <div class="manual-fallback" *ngIf="canUseManualFallback">
-          <ion-input
-            class="token-input"
-            label="Token QR de secours"
-            label-placement="stacked"
-            placeholder="Collez temporairement le token QR"
-            [(ngModel)]="manualToken"
-          ></ion-input>
-          <ion-button
-            expand="block"
-            fill="outline"
-            (click)="submitManualToken()"
-            [disabled]="isScanning"
-          >
-            Valider le token de secours
-          </ion-button>
-        </div>
       </ng-container>
+    </section>
+
+    <section class="session-picker" #seanceGroup [class.open]="showSeancePicker" [class.has-error]="seanceRequiredError">
+      <button type="button" class="picker-toggle" (click)="toggleSeancePicker()" [attr.aria-expanded]="showSeancePicker">
+        <span class="picker-toggle__icon"><ion-icon name="calendar-outline"></ion-icon></span>
+        <span class="picker-toggle__text"><small>Étape 1</small><strong>{{ selectedSeance ? 'Changer de séance' : 'Choisir une séance' }}</strong></span>
+        <span class="picker-toggle__count">{{ seances.length }}</span>
+        <ion-icon class="picker-toggle__arrow" [name]="showSeancePicker ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+      </button>
+
+      <div class="picker-content" *ngIf="showSeancePicker">
+        <div class="seance-tools" *ngIf="seances.length > 0">
+          <ion-input class="seance-search" fill="outline" placeholder="Rechercher une séance" [(ngModel)]="searchTerm" [clearInput]="true"></ion-input>
+          <div class="seance-filters" role="tablist" aria-label="Filtrer les séances">
+            <button type="button" [class.active]="activeSeanceFilter === 'TOUTES'" (click)="setSeanceFilter('TOUTES')">Toutes</button>
+            <button type="button" [class.active]="activeSeanceFilter === 'EN_COURS'" (click)="setSeanceFilter('EN_COURS')">En cours</button>
+            <button type="button" [class.active]="activeSeanceFilter === 'A_VENIR'" (click)="setSeanceFilter('A_VENIR')">À venir</button>
+          </div>
+        </div>
+
+        <div class="seance-empty" *ngIf="!isLoading && seances.length === 0"><ion-icon name="calendar-outline"></ion-icon><span>Aucune séance n'est ouverte à l'émargement aujourd'hui.</span></div>
+        <div class="seance-empty" *ngIf="seances.length > 0 && filteredSeances.length === 0"><ion-icon name="search-outline"></ion-icon><span>Aucune séance ne correspond à votre recherche.</span></div>
+
+        <div class="seance-list" *ngIf="filteredSeances.length > 0">
+          <button type="button" class="seance-list-item" *ngFor="let seance of filteredSeances" [class.selected]="selectedSeanceId === seance.id" (click)="selectSeance(seance.id)">
+            <div class="seance-list-item__time"><span>{{ formatTime(seance.heureDebutReelle) }}</span><small>{{ formatTime(seance.heureFinReelle) }}</small></div>
+            <div class="seance-list-item__body"><strong>{{ seance.matiereLibelle || 'Matière' }}</strong><span>{{ seance.classeLibelle || 'Classe' }}<b *ngIf="seance.salleLibelle"> · {{ seance.salleLibelle }}</b></span></div>
+            <span class="status-badge" [class]="'status-' + displayStatus(seance)">{{ statutLabel(displayStatus(seance)) }}</span>
+            <ion-icon class="radio" [name]="selectedSeanceId === seance.id ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="seance-required-error" *ngIf="seanceRequiredError"><ion-icon name="alert-circle-outline"></ion-icon><span>Choisissez une séance avant de scanner.</span></div>
+    </section>
+
+    <section class="qr-mismatch-alert" *ngIf="qrMismatchError" role="alert">
+      <ion-icon name="close-circle"></ion-icon><div><strong>QR code non reconnu</strong><p>Le code ne correspond pas à la séance choisie.</p><button type="button" (click)="dismissQrMismatchError()">Modifier la séance</button></div>
+    </section>
+
+    <div class="manual-fallback" *ngIf="canUseManualFallback">
+      <span>Caméra indisponible ?</span>
+      <ion-input class="token-input" label="Token QR de secours" label-placement="stacked" placeholder="Collez le token QR" [(ngModel)]="manualToken"></ion-input>
+      <ion-button expand="block" fill="outline" (click)="submitManualToken()" [disabled]="isScanning">Valider le token</ion-button>
     </div>
   </div>
 </ion-content>

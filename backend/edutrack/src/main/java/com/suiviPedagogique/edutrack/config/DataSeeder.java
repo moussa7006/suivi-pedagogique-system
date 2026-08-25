@@ -33,6 +33,10 @@ public class DataSeeder {
                 return;
             }
 
+            if (adminPassword == null || adminPassword.isBlank()) {
+                throw new IllegalStateException("APP_SEED_ADMIN_PASSWORD doit être défini lorsque le seed administrateur est activé.");
+            }
+
             Optional<Utilisateur> existingAdmin = utilisateurRepository.findByEmail(adminEmail);
             if (existingAdmin.isEmpty()) {
                 existingAdmin = utilisateurRepository.findByMatricule(adminMatricule);

@@ -3,6 +3,7 @@ package com.suiviPedagogique.edutrack.controllers;
 import com.suiviPedagogique.edutrack.Dto.SalleDto;
 import com.suiviPedagogique.edutrack.services.SalleService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,16 +29,19 @@ public class SalleController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<SalleDto> create(@RequestBody SalleDto dto) {
         return ResponseEntity.status(201).body(salleService.create(dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<SalleDto> update(@PathVariable Integer id, @RequestBody SalleDto dto) {
         return ResponseEntity.ok(salleService.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         salleService.delete(id);
         return ResponseEntity.noContent().build();

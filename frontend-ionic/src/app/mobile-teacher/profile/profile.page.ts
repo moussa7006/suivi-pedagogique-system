@@ -1,12 +1,12 @@
 import { ChangeDetectorRef, Component, OnInit, NgZone, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { RouterLink } from '@angular/router';
 import {
   IonContent,
   IonButton,
   IonIcon,
-  IonToggle,
   ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -23,7 +23,6 @@ import {
   statsChartOutline,
   arrowBackOutline,
   personCircleOutline,
-  notificationsOutline,
   cameraOutline,
   imagesOutline,
   globeOutline,
@@ -37,7 +36,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { UtilisateurService } from '../../core/services/utilisateur.service';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
-import { Preferences } from '@capacitor/preferences';
+
 import { catchError, forkJoin, of, switchMap } from 'rxjs';
 import { Seance } from '../../core/models/seance.model';
 import { FicheProgression } from '../../core/models/fiche-progression.model';
@@ -48,12 +47,11 @@ import { FicheProgression } from '../../core/models/fiche-progression.model';
   styleUrls: ['profile.page.scss'],
   imports: [
     CommonModule,
-    FormsModule,
     RouterLink,
     IonContent,
     IonButton,
     IonIcon,
-    IonToggle,
+    FormsModule,
   ],
 })
 export class ProfilePage implements OnInit {
@@ -65,9 +63,15 @@ export class ProfilePage implements OnInit {
   private ngZone = inject(NgZone);
   private cdr = inject(ChangeDetectorRef);
 
-  notificationsEnabled = true;
-  showPhotoPopup = false;
-  activeSection: 'personal' | 'academic' | 'stats' = 'personal';
+
+  isEditingProfile = false;
+  editProfile = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    telephone: '',
+    adresse: '',
+  };
 
   teacher = {
     id: null as number | null,
@@ -106,7 +110,6 @@ export class ProfilePage implements OnInit {
       statsChartOutline,
       arrowBackOutline,
       personCircleOutline,
-      notificationsOutline,
       cameraOutline,
       imagesOutline,
       trashOutline,
@@ -118,18 +121,11 @@ export class ProfilePage implements OnInit {
   }
 
   ngOnInit() {
-    void this.loadPreferences();
     void this.loadUserProfile();
   }
 
   ionViewWillEnter(): void {
-    void this.loadPreferences();
     void this.loadUserProfile();
-  }
-
-  private async loadPreferences(): Promise<void> {
-    const { value } = await Preferences.get({ key: 'notificationsEnabled' });
-    this.notificationsEnabled = value !== 'false'; // Defaults to true
   }
 
   private async loadUserProfile(): Promise<void> {
@@ -255,39 +251,55 @@ export class ProfilePage implements OnInit {
     this.teacher.subjects = matieres;
   }
 
-  setActiveSection(
-    section: 'personal' | 'academic' | 'stats',
-  ): void {
-    this.activeSection =
-      this.activeSection === section ? this.activeSection : section;
+  startProfileEditing(): void {
+    this.editProfile = {
+      firstName: this.teacher.firstName,
+      lastName: this.teacher.lastName,
+      email: this.teacher.email,
+      telephone: this.teacher.telephone,
+      adresse: this.teacher.adresse,
+    };
+    this.isEditingProfile = true;
   }
 
+  cancelProfileEditing(): void {
+    this.isEditingProfile = false;
+  }
 
-  async onNotificationsToggle(event: any) {
-    this.notificationsEnabled = event.detail.checked;
-    await Preferences.set({
-      key: 'notificationsEnabled',
-      value: this.notificationsEnabled.toString()
+  saveProfileChanges(): void {
+    if (!this.teacher.id) {
+      void this.presentToast('Impossible de retrouver le compte connecté.');
+      return;
+    }
+
+    const changes = {
+      prenom: this.editProfile.firstName.trim(),
+      nom: this.editProfile.lastName.trim(),
+      email: this.editProfile.email.trim(),
+      telephone: this.editProfile.telephone.trim(),
+      adresse: this.editProfile.adresse.trim(),
+    };
+
+    this.utilisateurService.modifier(this.teacher.id, changes).subscribe({
+      next: async (updatedUser) => {
+        this.applyUserToTeacher(updatedUser);
+        const currentUser = await this.authService.getUser();
+        if (currentUser) {
+          await this.authService.setUser({ ...currentUser, ...updatedUser });
+        }
+        this.isEditingProfile = false;
+        this.cdr.detectChanges();
+        await this.presentToast('Profil mis à jour.', 'success');
+      },
+      error: () => void this.presentToast('Impossible de mettre à jour le profil.'),
     });
-    
-    this.presentToast(
-      this.notificationsEnabled
-        ? 'Notifications activées'
-        : 'Notifications désactivées',
-      'success',
-    );
   }
 
-  async changePhoto() {
-    this.showPhotoPopup = true;
-  }
-
-  closePhotoPopup() {
-    this.showPhotoPopup = false;
+  changePhoto(): void {
+    this.startProfileEditing();
   }
 
   onPhotoOption(option: 'camera' | 'gallery' | 'delete') {
-    this.showPhotoPopup = false;
     if (option === 'delete') {
       void this.saveProfilePhoto('');
     } else {

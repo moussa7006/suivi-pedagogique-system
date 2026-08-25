@@ -3,6 +3,7 @@ package com.suiviPedagogique.edutrack.controllers;
 import com.suiviPedagogique.edutrack.Dto.NiveauEnseignementDto;
 import com.suiviPedagogique.edutrack.services.NiveauEnseignementService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,16 +29,19 @@ public class NiveauEnseignementController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<NiveauEnseignementDto> createNiveau(@RequestBody NiveauEnseignementDto dto) {
         return ResponseEntity.status(201).body(niveauEnseignementService.createNiveau(dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<NiveauEnseignementDto> updateNiveau(@PathVariable Integer id, @RequestBody NiveauEnseignementDto dto) {
         return ResponseEntity.ok(niveauEnseignementService.updateNiveau(id, dto));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<Void> deleteNiveau(@PathVariable Integer id) {
         niveauEnseignementService.deleteNiveau(id);
         return ResponseEntity.noContent().build();

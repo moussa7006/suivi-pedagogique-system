@@ -104,38 +104,6 @@ ion-content {
   }
 }
 
-/* ============================================
-   WEEK NAVIGATION
-   ============================================ */
-.week-navigation {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0 0 16px;
-  padding: 6px 8px;
-  background: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  border-radius: 16px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
-
-  ion-button {
-    --color: var(--text-primary);
-    --padding-start: 8px;
-    --padding-end: 8px;
-    margin: 0;
-  }
-
-  .today-button {
-    border: 0;
-    border-radius: 10px;
-    background: rgba(67, 97, 238, 0.1);
-    color: var(--accent-blue);
-    padding: 9px 16px;
-    font-size: 12px;
-    font-weight: 800;
-  }
-}
 
 /* ============================================
    WEEK SELECTOR
@@ -220,28 +188,6 @@ ion-content {
   }
 }
 
-/* ============================================
-   DAY SUMMARY
-   ============================================ */
-.day-summary {
-  margin-bottom: 20px;
-
-  .summary-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(67, 97, 238, 0.08);
-    padding: 8px 16px;
-    border-radius: 20px;
-    color: var(--accent-blue);
-    font-size: 13px;
-    font-weight: 700;
-
-    ion-icon {
-      font-size: 16px;
-    }
-  }
-}
 
 /* ============================================
    TIMELINE - VUE PLANNING
@@ -372,6 +318,7 @@ ion-content {
         margin-bottom: 10px;
 
         h3 {
+          min-width: 0;
           font-size: 17px;
           font-weight: 800;
           color: var(--text-primary);
@@ -380,6 +327,8 @@ ion-content {
         }
 
         .status-badge {
+          flex: 0 0 auto;
+          white-space: nowrap;
           font-size: 9px;
           font-weight: 800;
           text-transform: uppercase;

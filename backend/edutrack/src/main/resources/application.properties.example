@@ -10,11 +10,10 @@ spring.datasource.password=${DB_PASSWORD:change-me}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # --- JPA / Hibernate ---
-# "update" pratique en dev ; passer a "validate" ou utiliser Flyway/Liquibase en production.
-spring.jpa.hibernate.ddl-auto=${JPA_DDL_AUTO:update}
+# En production, utiliser validate avec des migrations Flyway/Liquibase. La valeur update
+# doit etre definie explicitement pour un environnement de developpement local.
+spring.jpa.hibernate.ddl-auto=${JPA_DDL_AUTO:validate}
 
-# --- Initialisation de la base de donnees via CommandLineRunner ---
-app.init-db.enabled=${APP_INIT_DB_ENABLED:true}
 
 spring.jpa.open-in-view=false
 spring.jpa.show-sql=${JPA_SHOW_SQL:true}
@@ -34,16 +33,17 @@ app.cors.allowed-origins=${APP_CORS_ALLOWED_ORIGINS:http://localhost:4200,http:/
 app.cors.allow-localhost-dev=${APP_CORS_ALLOW_LOCALHOST_DEV:true}
 
 # --- JWT ---
-# IMPORTANT : en production, definir APP_JWT_SECRET avec une valeur forte (>= 32 octets).
-app.jwt.secret=${APP_JWT_SECRET:change-me-please-32-bytes-minimum-0000000000000}
+# Obligatoire : definir APP_JWT_SECRET avec une valeur forte (>= 32 octets).
+# L'application refuse de demarrer si la valeur est absente ou trop courte.
+app.jwt.secret=${APP_JWT_SECRET:}
 app.jwt.expiration-ms=${APP_JWT_EXPIRATION_MS:86400000}
 
 # --- Compte administrateur initial (seed) ---
-# Activer via APP_SEED_ADMIN_ENABLED=true ; desactive par defaut pour la production.
-app.seed-admin.enabled=${APP_SEED_ADMIN_ENABLED:true}
+# Activer explicitement en developpement uniquement, avec des identifiants non reutilisables.
+app.seed-admin.enabled=${APP_SEED_ADMIN_ENABLED:false}
 app.seed-admin.reset-existing=${APP_SEED_ADMIN_RESET_EXISTING:false}
 app.seed-admin.email=${APP_SEED_ADMIN_EMAIL:admin@edutrack.local}
-app.seed-admin.password=${APP_SEED_ADMIN_PASSWORD:change-me}
+app.seed-admin.password=${APP_SEED_ADMIN_PASSWORD:}
 app.seed-admin.nom=${APP_SEED_ADMIN_NOM:Administrateur}
 app.seed-admin.prenom=${APP_SEED_ADMIN_PRENOM:EduTrack}
 app.seed-admin.matricule=${APP_SEED_ADMIN_MATRICULE:ADMIN-001}
@@ -66,6 +66,10 @@ spring.mail.properties.mail.smtp.ssl.trust=smtp.gmail.com
 spring.mail.properties.mail.smtp.connectiontimeout=5000
 spring.mail.properties.mail.smtp.timeout=5000
 spring.mail.properties.mail.smtp.writetimeout=5000
+
+# Mot de passe temporaire unique applique aux enseignants crees par import Excel.
+# Obligatoire pour importer ; ne jamais utiliser une valeur commune previsible.
+app.import.teacher-initial-password=${APP_IMPORT_TEACHER_INITIAL_PASSWORD:}
 
 # --- Geolocalisation de l'emargement ---
 # En dev, le controle de distance est desactive tant que les coordonnees exactes

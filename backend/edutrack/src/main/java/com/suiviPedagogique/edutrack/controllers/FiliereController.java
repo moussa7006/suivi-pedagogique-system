@@ -3,6 +3,7 @@ package com.suiviPedagogique.edutrack.controllers;
 import com.suiviPedagogique.edutrack.Dto.FiliereDto;
 import com.suiviPedagogique.edutrack.services.FiliereService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,16 +29,19 @@ public class FiliereController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<FiliereDto> createFiliere(@RequestBody FiliereDto dto) {
         return ResponseEntity.status(201).body(filiereService.createFiliere(dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<FiliereDto> updateFiliere(@PathVariable Integer id, @RequestBody FiliereDto dto) {
         return ResponseEntity.ok(filiereService.updateFiliere(id, dto));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<Void> deleteFiliere(@PathVariable Integer id) {
         filiereService.deleteFiliere(id);
         return ResponseEntity.noContent().build();

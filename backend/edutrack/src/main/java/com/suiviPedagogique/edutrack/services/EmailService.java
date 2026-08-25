@@ -5,8 +5,13 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 @Service
 public class EmailService {
+
+    private static final Logger LOGGER = Logger.getLogger(EmailService.class.getName());
 
     private final JavaMailSender mailSender;
 
@@ -22,8 +27,7 @@ public class EmailService {
 
     public void sendPasswordResetCode(String to, String code) {
         if (fromAddress == null || fromAddress.isBlank() || mailPassword == null || mailPassword.isBlank()) {
-            System.out.println("[DEV] SMTP non configuré (MAIL_USERNAME / MAIL_PASSWORD vides). Code de réinitialisation EduTrack pour " + to + " : " + code);
-            return;
+            throw new IllegalStateException("La réinitialisation du mot de passe est indisponible : SMTP n'est pas configuré.");
         }
 
         SimpleMailMessage message = new SimpleMailMessage();
@@ -39,8 +43,8 @@ public class EmailService {
         try {
             mailSender.send(message);
         } catch (Exception e) {
-            System.err.println("[SMTP] Échec d'envoi de l'email de réinitialisation à " + to + " : " + e.getMessage());
-            System.err.println("[SMTP] Vérifiez MAIL_USERNAME (adresse Gmail) et MAIL_PASSWORD (mot de passe d'application, pas le mot de passe du compte).");
+            LOGGER.log(Level.WARNING, "Échec d'envoi de l'email de réinitialisation.", e);
+            throw new IllegalStateException("L'envoi du code de réinitialisation a échoué. Réessayez plus tard.");
         }
     }
 }

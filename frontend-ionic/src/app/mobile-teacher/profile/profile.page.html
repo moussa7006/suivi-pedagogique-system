@@ -1,20 +1,31 @@
 <ion-content [fullscreen]="true">
-  <ion-button
-    fill="clear"
-    class="back-btn"
-    routerLink="/mobile/tabs/tabs/tab1"
-    [replaceUrl]="true"
-    aria-label="Retour au menu"
-  >
-    <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
-  </ion-button>
+  <header class="profile-hero">
+    <div class="hero-orb hero-orb-one"></div>
+    <div class="hero-orb hero-orb-two"></div>
 
-  <div class="profile-hero">
+    <ion-button
+      fill="clear"
+      class="back-btn"
+      routerLink="/mobile/tabs/tabs/tab1"
+      [replaceUrl]="true"
+      aria-label="Retour au menu"
+    >
+      <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+
+    <div class="hero-copy">
+      <p>Mon espace</p>
+      <h1>Profil enseignant</h1>
+      <span class="connection-state">
+        <i></i>
+        Compte {{ teacher.status | lowercase }}
+      </span>
+    </div>
+
     <div class="avatar-shell">
-      <div
-        class="profile-avatar"
-        [style.background-image]="'url(' + teacher.avatar + ')'"
-      ></div>
+      <div class="profile-avatar">
+        <img [src]="teacher.avatar" alt="Photo de profil de {{ teacher.firstName }} {{ teacher.lastName }}" />
+      </div>
       <button
         class="edit-photo-btn"
         type="button"
@@ -23,259 +34,134 @@
       >
         <ion-icon name="camera-outline"></ion-icon>
       </button>
-      <div class="online-dot"></div>
     </div>
+  </header>
 
-    <div class="hero-text">
-      <p class="eyebrow">{{ 'Profil enseignant' }}</p>
-      <h1>{{ teacher.firstName }} {{ teacher.lastName }}</h1>
-      <div class="hero-badges">
-        <span *ngIf="teacher.matricule">Matricule: {{ teacher.matricule }}</span>
-        <span>{{ teacher.status }}</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="profile-section">
-    <div class="section-tabs" aria-label="Sections du profil">
-      <button
-        type="button"
-        [class.active]="activeSection === 'personal'"
-        (click)="setActiveSection('personal')"
-      >
-        <ion-icon name="person-circle-outline"></ion-icon>
-        <span>{{ 'Informations' }}</span>
-      </button>
-      <button
-        type="button"
-        [class.active]="activeSection === 'academic'"
-        (click)="setActiveSection('academic')"
-      >
-        <ion-icon name="school-outline"></ion-icon>
-        <span>{{ 'Académique' }}</span>
-      </button>
-      <button
-        type="button"
-        [class.active]="activeSection === 'stats'"
-        (click)="setActiveSection('stats')"
-      >
-        <ion-icon name="stats-chart-outline"></ion-icon>
-        <span>{{ 'Stats' }}</span>
-      </button>
-    </div>
-
-    <div class="modern-card" *ngIf="activeSection === 'personal'">
-      <button
-        class="card-header card-header-button"
-        type="button"
-        (click)="setActiveSection('personal')"
-      >
-        <ion-icon name="person-circle-outline"></ion-icon>
-        <div>
-          <h3>{{ 'Informations personnelles' }}</h3>
-          <p>
-            {{ 'Données récupérées depuis le compte enseignant connecté.' }}
-          </p>
-        </div>
-      </button>
-      <div class="info-list">
-        <div class="info-row">
-          <div class="icon-box">
-            <ion-icon name="person-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <label>{{ 'Nom complet' }}</label>
-            <p>{{ teacher.firstName }} {{ teacher.lastName }}</p>
-          </div>
-        </div>
-        <div class="info-row">
-          <div class="icon-box">
-            <ion-icon name="person-circle-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <label>{{ 'Matricule' }}</label>
-            <p>{{ teacher.matricule || 'Non renseigné' }}</p>
-          </div>
-        </div>
-        <div class="info-row">
-          <div class="icon-box"><ion-icon name="mail-outline"></ion-icon></div>
-          <div class="item-content">
-            <label>{{ 'Email' }}</label>
-            <p class="breakable">{{ teacher.email || 'Non renseigné' }}</p>
-          </div>
-        </div>
-        <div class="info-row">
-          <div class="icon-box"><ion-icon name="call-outline"></ion-icon></div>
-          <div class="item-content">
-            <label>{{ 'Téléphone' }}</label>
-            <p>{{ teacher.telephone || 'Non renseigné' }}</p>
-          </div>
-        </div>
-        <div class="info-row">
-          <div class="icon-box">
-            <ion-icon name="location-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <label>{{ 'Adresse / quartier' }}</label>
-            <p class="breakable">{{ teacher.adresse || 'Non renseigné' }}</p>
-          </div>
-        </div>
-        <div class="info-row">
-          <div class="icon-box">
-            <ion-icon name="business-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <label>{{ 'Rôle' }}</label>
-            <p>{{ teacher.role || 'Non renseigné' }}</p>
-          </div>
-        </div>
-        <div class="info-row">
-          <div class="icon-box">
-            <ion-icon name="school-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <label>{{ 'Grade' }}</label>
-            <p>{{ teacher.grade || 'Non renseigné' }}</p>
-          </div>
-        </div>
-        <div class="info-row">
-          <div class="icon-box">
-            <ion-icon name="book-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <label>{{ 'Spécialité' }}</label>
-            <p class="breakable">{{ teacher.specialite || 'Non renseigné' }}</p>
-          </div>
-        </div>
-        <div class="info-row">
-          <div class="icon-box">
-            <ion-icon name="notifications-outline"></ion-icon>
-          </div>
-          <div class="item-content">
-            <label>{{ 'Notifications' }}</label>
-          </div>
-          <ion-toggle
-            [(ngModel)]="notificationsEnabled"
-            (ionChange)="onNotificationsToggle($event)"
-          ></ion-toggle>
+  <main class="profile-page">
+    <section class="identity-card" aria-label="Identité de l'enseignant">
+      <div>
+        <p class="identity-label">Bienvenue</p>
+        <h2>{{ teacher.firstName }} {{ teacher.lastName }}</h2>
+        <div class="identity-meta">
+          <span *ngIf="teacher.matricule"><ion-icon name="person-circle-outline"></ion-icon>{{ teacher.matricule }}</span>
+          <span *ngIf="teacher.role"><ion-icon name="business-outline"></ion-icon>{{ teacher.role }}</span>
         </div>
       </div>
-    </div>
-
-    <div class="modern-card" *ngIf="activeSection === 'academic'">
-      <button
-        class="card-header card-header-button"
-        type="button"
-        (click)="setActiveSection('academic')"
-      >
-        <ion-icon name="school-outline"></ion-icon>
-        <div>
-          <h3>{{ 'Informations académiques' }}</h3>
-          <p>
-            {{ 'Matières enseignées et informations académiques du compte.' }}
-          </p>
-        </div>
+      <button type="button" class="edit-profile-btn" (click)="startProfileEditing()" aria-label="Modifier mon profil">
+        <ion-icon name="create-outline"></ion-icon><span>Modifier</span>
       </button>
+    </section>
+
+    <section class="content-card">
+      <div class="section-heading">
+        <div class="heading-icon personal-icon"><ion-icon name="person-outline"></ion-icon></div>
+        <div><p>Coordonnées</p><h3>Informations personnelles</h3></div>
+      </div>
       <div class="info-list">
+        <div class="info-row"><div class="icon-box"><ion-icon name="person-outline"></ion-icon></div><div class="item-content"><label>Nom complet</label><p>{{ teacher.firstName }} {{ teacher.lastName }}</p></div></div>
+        <div class="info-row"><div class="icon-box"><ion-icon name="mail-outline"></ion-icon></div><div class="item-content"><label>Adresse e-mail</label><p class="breakable">{{ teacher.email || 'Non renseigné' }}</p></div></div>
+        <div class="info-row"><div class="icon-box"><ion-icon name="call-outline"></ion-icon></div><div class="item-content"><label>Téléphone</label><p>{{ teacher.telephone || 'Non renseigné' }}</p></div></div>
+        <div class="info-row"><div class="icon-box"><ion-icon name="location-outline"></ion-icon></div><div class="item-content"><label>Adresse / quartier</label><p class="breakable">{{ teacher.adresse || 'Non renseigné' }}</p></div></div>
+      </div>
+    </section>
+
+    <section class="content-card">
+      <div class="section-heading">
+        <div class="heading-icon academic-icon">
+          <ion-icon name="school-outline"></ion-icon>
+        </div>
+        <div>
+          <p>Parcours professionnel</p>
+          <h3>Informations académiques</h3>
+        </div>
+      </div>
+
+      <div class="info-list">
+        <div class="info-row">
+          <div class="icon-box"><ion-icon name="business-outline"></ion-icon></div>
+          <div class="item-content"><label>Rôle</label><p>{{ teacher.role || 'Non renseigné' }}</p></div>
+        </div>
+        <div class="info-row">
+          <div class="icon-box"><ion-icon name="school-outline"></ion-icon></div>
+          <div class="item-content"><label>Grade</label><p>{{ teacher.grade || 'Non renseigné' }}</p></div>
+        </div>
         <div class="info-row">
           <div class="icon-box"><ion-icon name="book-outline"></ion-icon></div>
-          <div class="item-content">
-            <label>{{ 'Matière(s)' }}</label>
-            <p class="breakable">{{ getMatieresLabel() }}</p>
-          </div>
+          <div class="item-content"><label>Spécialité</label><p class="breakable">{{ teacher.specialite || 'Non renseigné' }}</p></div>
         </div>
-
       </div>
-    </div>
 
-    <div class="modern-card" *ngIf="activeSection === 'stats'">
-      <button
-        class="card-header card-header-button"
-        type="button"
-        (click)="setActiveSection('stats')"
-      >
-        <ion-icon name="stats-chart-outline"></ion-icon>
+      <div class="subjects-panel">
+        <div class="subjects-title">
+          <ion-icon name="book-outline"></ion-icon>
+          <span>Matières enseignées</span>
+        </div>
+        <p>{{ getMatieresLabel() }}</p>
+      </div>
+    </section>
+
+    <section class="content-card stats-card">
+      <div class="section-heading">
+        <div class="heading-icon stats-icon">
+          <ion-icon name="stats-chart-outline"></ion-icon>
+        </div>
         <div>
-          <h3>{{ 'Statistiques pédagogiques' }}</h3>
-          <p>
-            {{ 'Indicateurs calculés à partir des vraies séances de
-            l’enseignant.' }}
-          </p>
-        </div>
-      </button>
-      <div class="stats-row">
-        <div class="stat-box">
-          <span class="stat-value"
-            >{{ teacher.statistiques.totalSeances }}</span
-          >
-          <span class="stat-label">{{ 'Séances' }}</span>
-        </div>
-        <div class="stat-box success">
-          <span class="stat-value"
-            >{{ teacher.statistiques.tauxPresence }}%</span
-          >
-          <span class="stat-label">{{ 'Émargées' }}</span>
-        </div>
-        <div class="stat-box secondary">
-          <span class="stat-value">{{ teacher.matieres.length }}</span>
-          <span class="stat-label">{{ 'Matières' }}</span>
+          <p>Vue d'ensemble</p>
+          <h3>Activité pédagogique</h3>
         </div>
       </div>
-    </div>
 
-  <div class="logout-section">
-    <ion-button
-      expand="block"
-      fill="solid"
-      color="danger"
-      (click)="logout()"
-      class="logout-btn-big"
-    >
-      <ion-icon slot="start" name="log-out-outline"></ion-icon>
-      <span>{{ 'Déconnexion' }}</span>
-    </ion-button>
-  </div>
+      <div class="stats-grid">
+        <article class="stat-box sessions">
+          <ion-icon name="time-outline"></ion-icon>
+          <strong>{{ teacher.statistiques.totalSeances }}</strong>
+          <span>Séances réalisées</span>
+        </article>
+        <article class="stat-box attendance">
+          <ion-icon name="person-circle-outline"></ion-icon>
+          <strong>{{ teacher.statistiques.tauxPresence }}%</strong>
+          <span>Séances émargées</span>
+        </article>
+        <article class="stat-box subjects">
+          <ion-icon name="book-outline"></ion-icon>
+          <strong>{{ teacher.matieres.length }}</strong>
+          <span>Matières suivies</span>
+        </article>
+      </div>
 
-  <!-- Floating Photo Options Popup -->
-  <div class="floating-popup-backdrop" *ngIf="showPhotoPopup" (click)="closePhotoPopup()">
-    <div class="floating-popup" (click)="$event.stopPropagation()">
+      <div class="stats-note">
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        <p>Ces indicateurs sont calculés à partir de vos séances enregistrées.</p>
+      </div>
+    </section>
+
+    <section class="logout-section">
+      <p>Vous souhaitez changer de compte ?</p>
+      <ion-button expand="block" fill="outline" color="danger" (click)="logout()" class="logout-btn">
+        <ion-icon slot="start" name="log-out-outline"></ion-icon>
+        Déconnexion
+      </ion-button>
+    </section>
+  </main>
+
+
+  <div class="profile-editor-backdrop" *ngIf="isEditingProfile" (click)="cancelProfileEditing()">
+    <form class="profile-editor" (submit)="saveProfileChanges(); $event.preventDefault()" (click)="$event.stopPropagation()">
       <div class="popup-drag-handle"></div>
-      <h3 class="popup-title">Photo de profil</h3>
-      <div class="popup-options">
-        <button class="popup-option" (click)="onPhotoOption('camera')">
-          <div class="popup-icon camera">
-            <ion-icon name="camera-outline"></ion-icon>
-          </div>
-          <div class="popup-text">
-            <strong>Prendre une photo</strong>
-            <span>Utiliser l'appareil photo</span>
-          </div>
-          <ion-icon name="chevron-forward-outline" class="popup-chevron"></ion-icon>
-        </button>
-        <button class="popup-option" (click)="onPhotoOption('gallery')">
-          <div class="popup-icon gallery">
-            <ion-icon name="images-outline"></ion-icon>
-          </div>
-          <div class="popup-text">
-            <strong>Choisir depuis la galerie</strong>
-            <span>Parcourir vos photos</span>
-          </div>
-          <ion-icon name="chevron-forward-outline" class="popup-chevron"></ion-icon>
-        </button>
-        <button class="popup-option danger" (click)="onPhotoOption('delete')">
-          <div class="popup-icon delete">
-            <ion-icon name="trash-outline"></ion-icon>
-          </div>
-          <div class="popup-text">
-            <strong>Supprimer la photo</strong>
-            <span>Revenir à l'avatar par défaut</span>
-          </div>
-          <ion-icon name="chevron-forward-outline" class="popup-chevron"></ion-icon>
-        </button>
+      <div class="editor-title"><div><p>Mon compte</p><h3>Modifier le profil</h3></div><button type="button" (click)="cancelProfileEditing()">Fermer</button></div>
+      <div class="editor-photo">
+        <div class="editor-photo__preview"><img [src]="teacher.avatar" alt="Aperçu de la photo de profil" /></div>
+        <div><strong>Photo de profil</strong><span>Choisissez une image qui vous représente.</span></div>
       </div>
-      <button class="popup-cancel" (click)="closePhotoPopup()">Annuler</button>
-    </div>
+      <div class="photo-actions"><button type="button" (click)="onPhotoOption('camera')"><ion-icon name="camera-outline"></ion-icon>Caméra</button><button type="button" (click)="onPhotoOption('gallery')"><ion-icon name="images-outline"></ion-icon>Galerie</button><button type="button" class="photo-actions__delete" (click)="onPhotoOption('delete')"><ion-icon name="trash-outline"></ion-icon>Supprimer</button></div>
+      <div class="editor-fields">
+        <label>Prénom<input type="text" [(ngModel)]="editProfile.firstName" name="firstName" required></label>
+        <label>Nom<input type="text" [(ngModel)]="editProfile.lastName" name="lastName" required></label>
+        <label>Adresse e-mail<input type="email" [(ngModel)]="editProfile.email" name="email" required></label>
+        <label>Téléphone<input type="tel" [(ngModel)]="editProfile.telephone" name="telephone"></label>
+        <label>Adresse / quartier<textarea [(ngModel)]="editProfile.adresse" name="adresse" rows="2"></textarea></label>
+      </div>
+      <div class="profile-edit-actions"><button type="button" class="cancel-edit-btn" (click)="cancelProfileEditing()">Annuler</button><button type="submit" class="save-profile-btn">Enregistrer</button></div>
+    </form>
   </div>
-  </div>
-
 </ion-content>

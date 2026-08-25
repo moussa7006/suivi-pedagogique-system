@@ -103,6 +103,7 @@ export class ScanQRPage implements OnDestroy {
   qrMismatchError = false;
   searchTerm = '';
   activeSeanceFilter: 'TOUTES' | 'EN_COURS' | 'A_VENIR' = 'TOUTES';
+  showSeancePicker = false;
 
   private mediaStream: MediaStream | null = null;
   private scanTimer: number | null = null;
@@ -201,6 +202,7 @@ export class ScanQRPage implements OnDestroy {
           .sort((a, b) => this.sessionSortKey(a) - this.sessionSortKey(b));
         this.fichesProgression = fiches || [];
         this.selectedSeanceId = this.resolveInitialSeanceId(this.seances);
+        this.showSeancePicker = !this.selectedSeanceId;
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -441,6 +443,7 @@ export class ScanQRPage implements OnDestroy {
 
   private triggerSeanceRequiredError(): void {
     this.seanceRequiredError = true;
+    this.showSeancePicker = true;
     this.cdr.detectChanges();
     this.scrollToSeanceSelect();
   }
@@ -459,6 +462,11 @@ export class ScanQRPage implements OnDestroy {
     this.selectedSeanceId = id ?? null;
     this.seanceRequiredError = false;
     this.qrMismatchError = false;
+    this.showSeancePicker = false;
+  }
+
+  toggleSeancePicker(): void {
+    this.showSeancePicker = !this.showSeancePicker;
   }
 
   setSeanceFilter(filter: 'TOUTES' | 'EN_COURS' | 'A_VENIR'): void {

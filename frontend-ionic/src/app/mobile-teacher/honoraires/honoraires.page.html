@@ -1,39 +1,32 @@
-<ion-content [fullscreen]="true" class="ion-padding honoraires-content">
-  <!-- DECORATIVE BG -->
-  <div class="bg-decoration">
-    <div class="bg-circle bg-circle--1"></div>
-    <div class="bg-circle bg-circle--2"></div>
-  </div>
-
-  <div class="page-wrapper ion-padding honoraires-content">
-    <!-- Header -->
-    <header class="page-header animate-slide-up" style="--delay: 50ms">
-      <ion-button fill="clear" class="back-btn" routerLink="/mobile/tabs/tabs/tab1" [replaceUrl]="true">
+<ion-content [fullscreen]="true" class="honoraires-content">
+  <div class="page-wrapper">
+    <header class="page-header">
+      <ion-button fill="clear" class="back-btn" routerLink="/mobile/tabs/tabs/tab1" [replaceUrl]="true" aria-label="Retour">
         <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
       </ion-button>
-      <div class="header-titles">
-        <h1 class="title">Honoraires</h1>
-      </div>
+
+      <h1>Honoraires</h1>
+
       <div class="header-filter">
-        <div class="modern-filter-btn" id="honoraires-filter-trigger">
+        <button type="button" class="filter-btn" id="honoraires-filter-trigger" aria-label="Filtrer les honoraires">
           <ion-icon name="funnel-outline"></ion-icon>
-          <div class="filter-indicator" *ngIf="filterPeriod !== 'all'"></div>
-        </div>
+          <span class="filter-indicator" *ngIf="filterPeriod !== 'all'"></span>
+        </button>
 
         <ion-popover #popover trigger="honoraires-filter-trigger" triggerAction="click" side="bottom" alignment="end" class="filter-popover">
           <ng-template>
             <div class="filter-menu">
-              <div class="filter-menu__header">Filtrer les honoraires</div>
+              <div class="filter-menu__header">Afficher</div>
               <button type="button" class="filter-option" [class.active]="filterPeriod === 'all'" (click)="selectFilter('all'); popover.dismiss()">
-                <span>Tous</span>
+                <span>Toutes les périodes</span>
                 <ion-icon *ngIf="filterPeriod === 'all'" name="checkmark"></ion-icon>
               </button>
               <button type="button" class="filter-option" [class.active]="filterPeriod === 'current'" (click)="selectFilter('current'); popover.dismiss()">
-                <span>En cours</span>
+                <span>Mois en cours</span>
                 <ion-icon *ngIf="filterPeriod === 'current'" name="checkmark"></ion-icon>
               </button>
               <button type="button" class="filter-option" [class.active]="filterPeriod === 'previous'" (click)="selectFilter('previous'); popover.dismiss()">
-                <span>Précédents</span>
+                <span>Mois précédents</span>
                 <ion-icon *ngIf="filterPeriod === 'previous'" name="checkmark"></ion-icon>
               </button>
             </div>
@@ -46,126 +39,99 @@
       <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
 
-    <div class="server-note animate-slide-up" style="--delay: 100ms">
-      <ion-icon name="checkmark"></ion-icon>
-      <div>
-        <strong>Honoraires synchronisés</strong>
-        <span>Chaque montant provient du calcul serveur après émargement.</span>
-      </div>
-    </div>
-
-    <div class="server-note animate-fade-in">
-      <ion-icon name="checkmark"></ion-icon>
-      <span>Les montants sont calculés après chaque émargement et validés automatiquement en fin de mois.</span>
-    </div>
-
-    <div *ngIf="loading" class="loading-state">
-      <p>Chargement des honoraires...</p>
-    </div>
-
-    <div *ngIf="errorMessage" class="error-state">
-      <ion-icon name="alert-circle-outline"></ion-icon>
-      <p>{{ errorMessage }}</p>
-      <ion-button size="small" fill="clear" (click)="loadHonoraires()">Réessayer</ion-button>
-    </div>
-
-    <!-- Liste -->
-    <div class="timeline-section animate-slide-up" style="--delay: 200ms" *ngIf="!loading">
-      <h2 class="section-title">Historique des paiements</h2>
-
-      <div class="timeline" *ngIf="filteredHonoraires.length > 0">
-        <div class="timeline-line"></div>
-
-        <div *ngFor="let item of filteredHonoraires; let i = index" class="timeline-item" [style.--item-delay]="(i * 50) + 'ms'">
-          <div class="timeline-marker"
-               [class.marker-success]="item.statut === 'PAYE'"
-               [class.marker-warning]="item.statut === 'BROUILLON'"
-               [class.marker-info]="item.statut === 'VALIDE'">
-            <ion-icon [name]="item.statut === 'PAYE' ? 'checkmark' : 'time-outline'"></ion-icon>
-          </div>
-
-          <div class="timeline-card">
-            <div class="card-header" (click)="toggleDetails(item)">
-              <div class="card-date">{{ formatMonth(item.mois) }}</div>
-              <span class="card-status"
-                    [class.status-success]="item.statut === 'PAYE'"
-                    [class.status-warning]="item.statut === 'BROUILLON'"
-                    [class.status-info]="item.statut === 'VALIDE'">
-                {{ getStatutLabel(item.statut) }}
-              </span>
-            </div>
-
-            <div class="card-body" (click)="toggleDetails(item)">
-              <h3 class="card-title">{{ item.montantBrut || 0 | number:'1.0-0' }} FCFA</h3>
-              <div class="course-time">
-                <ion-icon name="time-outline"></ion-icon>
-                <span>{{ item.totalHeures || 0 | number:'1.0-0' }} h pour {{ item.detailsHonoraires?.length || 0 }} séance(s)</span>
-              </div>
-            </div>
-
-            <div class="card-footer" (click)="toggleDetails(item)">
-              <div class="footer-stat">
-                <ion-icon name="calendar-clear-outline"></ion-icon>
-                <span>Calculé le {{ formatDate(item.dateCalcul) }}</span>
-              </div>
-              <ion-icon [name]="expandedId === item.id ? 'chevron-up-outline' : 'chevron-down-outline'" class="expand-icon"></ion-icon>
-            </div>
-
-            <div class="details-pane" *ngIf="expandedId === item.id">
-              <div class="details-summary">
-                <div class="detail-summary-item">
-                  <span class="label">Heures</span>
-                  <strong>{{ item.totalHeures || 0 | number:'1.0-0' }} h</strong>
-                </div>
-                <div class="detail-summary-item" *ngIf="item.detailsHonoraires && item.detailsHonoraires[0]?.tauxHoraire">
-                  <span class="label">Taux/h</span>
-                  <strong>{{ item.detailsHonoraires[0]?.tauxHoraire | number:'1.0-0' }} FCFA</strong>
-                </div>
-                <div class="detail-summary-item">
-                  <span class="label">Montant</span>
-                  <strong>{{ item.montantBrut || 0 | number:'1.0-0' }} FCFA</strong>
-                </div>
-                <div class="detail-summary-item" *ngIf="item.dateValidation">
-                  <span class="label">Validé le</span>
-                  <strong>{{ formatDate(item.dateValidation) }}</strong>
-                </div>
-              </div>
-
-              <h4 class="details-list-title">Détail des séances</h4>
-              <div class="detail-row" *ngFor="let detail of item.detailsHonoraires || []">
-                <div class="detail-col">
-                  <strong>{{ detail.matiereLibelle || ('Séance #' + detail.seanceId) }}</strong>
-                  <span>{{ detail.classeLibelle || 'Classe non définie' }}</span>
-                  <small *ngIf="detail.niveauLibelle" class="detail-niveau">{{ detail.niveauLibelle }}</small>
-                  <small>
-                    <ion-icon name="calendar-outline"></ion-icon>
-                    {{ formatDate(detail.dateCours) }} ({{ formatTime(detail.heureDebut) }} - {{ formatTime(detail.heureFin) }})
-                  </small>
-                </div>
-                <div class="detail-amount">
-                  <strong>{{ detail.montant || 0 | number:'1.0-0' }} F</strong>
-                  <span>{{ detail.nombreHeures || 0 | number:'1.0-2' }} h</span>
-                </div>
-              </div>
-
-              <div *ngIf="!item.detailsHonoraires?.length" class="empty-details">
-                Aucun détail disponible pour ce calcul.
-              </div>
-            </div>
-          </div>
-        </div>
+    <main class="honoraires-list">
+      <div class="list-heading" *ngIf="!loading">
+        <p class="eyebrow">Mes honoraires</p>
+        <h2>Par période</h2>
       </div>
 
-      <div *ngIf="filteredHonoraires.length === 0 && !errorMessage" class="empty-state">
+      <div *ngIf="loading" class="loading-state">
+        <p>Chargement des honoraires...</p>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-state">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <p>{{ errorMessage }}</p>
+        <ion-button size="small" fill="clear" (click)="loadHonoraires()">Réessayer</ion-button>
+      </div>
+
+      <section class="honoraires-sections" *ngIf="!loading && filteredHonoraires.length > 0">
+        <article
+          *ngFor="let item of filteredHonoraires"
+          class="honoraire-section"
+          [class.is-expanded]="expandedId === item.id">
+          <button
+            type="button"
+            class="section-trigger"
+            (click)="toggleDetails(item)"
+            [attr.aria-expanded]="expandedId === item.id"
+            [attr.aria-controls]="'honoraires-details-' + item.id">
+            <span class="period-icon">
+              <ion-icon name="wallet-outline"></ion-icon>
+            </span>
+
+            <span class="section-main">
+              <span class="section-period">{{ formatMonth(item.mois) }}</span>
+              <span class="section-meta">{{ item.totalHeures || 0 | number:'1.0-0' }} h · {{ item.detailsHonoraires?.length || 0 }} séance(s)</span>
+            </span>
+
+            <span class="section-total">
+              <strong>{{ item.montantBrut || 0 | number:'1.0-0' }} <small>FCFA</small></strong>
+              <span class="status-badge" [ngClass]="getStatusClass(item.statut)">{{ getStatutLabel(item.statut) }}</span>
+            </span>
+
+            <ion-icon [name]="expandedId === item.id ? 'chevron-up-outline' : 'chevron-down-outline'" class="expand-icon"></ion-icon>
+          </button>
+
+          <div class="section-details" *ngIf="expandedId === item.id" [id]="'honoraires-details-' + item.id">
+            <div class="details-summary">
+              <div class="summary-item">
+                <span>Heures</span>
+                <strong>{{ item.totalHeures || 0 | number:'1.0-0' }} h</strong>
+              </div>
+              <div class="summary-item" *ngIf="item.detailsHonoraires && item.detailsHonoraires[0]?.tauxHoraire">
+                <span>Taux horaire</span>
+                <strong>{{ item.detailsHonoraires[0]?.tauxHoraire | number:'1.0-0' }} FCFA</strong>
+              </div>
+              <div class="summary-item">
+                <span>Total</span>
+                <strong>{{ item.montantBrut || 0 | number:'1.0-0' }} FCFA</strong>
+              </div>
+              <div class="summary-item" *ngIf="item.dateValidation">
+                <span>Validation</span>
+                <strong>{{ formatDate(item.dateValidation) }}</strong>
+              </div>
+            </div>
+
+            <h3>Détail des séances</h3>
+            <div class="detail-row" *ngFor="let detail of item.detailsHonoraires || []">
+              <div class="detail-info">
+                <strong>{{ detail.matiereLibelle || ('Séance #' + detail.seanceId) }}</strong>
+                <span>{{ detail.classeLibelle || 'Classe non définie' }}</span>
+                <small *ngIf="detail.niveauLibelle">{{ detail.niveauLibelle }}</small>
+                <time>
+                  <ion-icon name="calendar-outline"></ion-icon>
+                  {{ formatDate(detail.dateCours) }} · {{ formatTime(detail.heureDebut) }} – {{ formatTime(detail.heureFin) }}
+                </time>
+              </div>
+              <div class="detail-amount">
+                <strong>{{ detail.montant || 0 | number:'1.0-0' }} F</strong>
+                <span>{{ detail.nombreHeures || 0 | number:'1.0-2' }} h</span>
+              </div>
+            </div>
+
+            <p *ngIf="!item.detailsHonoraires?.length" class="empty-details">Aucune séance pour cette période.</p>
+          </div>
+        </article>
+      </section>
+
+      <div *ngIf="!loading && filteredHonoraires.length === 0 && !errorMessage" class="empty-state">
         <div class="empty-icon-wrapper">
-          <ion-icon name="time-outline"></ion-icon>
+          <ion-icon name="wallet-outline"></ion-icon>
         </div>
         <h3>Aucun honoraire</h3>
-        <p>
-          {{ filterPeriod === 'current' ? 'Aucun honoraire pour le mois en cours.' : filterPeriod === 'previous' ? 'Aucun honoraire pour les mois précédents.' : 'Vos honoraires apparaîtront ici après chaque émargement validé.' }}
-        </p>
+        <p>{{ filterPeriod === 'current' ? 'Aucun honoraire pour le mois en cours.' : filterPeriod === 'previous' ? 'Aucun honoraire pour les mois précédents.' : 'Vos honoraires apparaîtront ici dès qu’ils seront disponibles.' }}</p>
       </div>
-    </div>
-    <div class="bottom-spacer"></div>
+    </main>
   </div>
 </ion-content>
