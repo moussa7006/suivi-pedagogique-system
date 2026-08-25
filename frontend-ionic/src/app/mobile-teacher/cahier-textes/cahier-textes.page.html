@@ -14,10 +14,15 @@
     <div class="header-titles">
       <h1 class="title">Fiche de Progression</h1>
     </div>
-    <div class="header-volume header-volume--red">
-      <ion-icon name="time-outline"></ion-icon>
-      <span>{{ totalHeures | number:'1.0-0' }}h</span>
-    </div>
+    <ion-button
+      fill="solid"
+      class="new-fiche-btn"
+      (click)="showForm = !showForm"
+      [attr.aria-label]="showForm ? 'Fermer le formulaire' : 'Nouvelle fiche'"
+    >
+      <ion-icon slot="start" [name]="showForm ? 'close-outline' : 'add-outline'"></ion-icon>
+      <span>{{ showForm ? 'Fermer' : 'Nouvelle fiche' }}</span>
+    </ion-button>
   </header>
 
   <!-- Quick Stats -->
@@ -51,20 +56,6 @@
     </div>
   </div>
 
-  <!-- Add Button -->
-  <div class="add-section">
-    <ion-button
-      expand="block"
-      (click)="showForm = !showForm"
-      class="toggle-form-btn"
-    >
-      <ion-icon
-        slot="start"
-        [name]="showForm ? 'close-outline' : 'add-outline'"
-      ></ion-icon>
-      {{ showForm ? 'Fermer' : 'Nouvelle séance' }}
-    </ion-button>
-  </div>
 
   <!-- Formulaire -->
   <div class="form-section animate-slide-up" *ngIf="showForm">

@@ -72,36 +72,23 @@
         [class.in-progress]="cours.status === 'in-progress'"
         [style.--delay]="(i * 100) + 'ms'"
       >
-        <!-- Ligne de temps et point -->
-        <div class="timeline-line">
-          <div class="timeline-dot" 
-               [class.completed]="cours.status === 'completed'"
-               [class.in-progress]="cours.status === 'in-progress'">
-            <ion-icon [name]="cours.status === 'completed' ? 'checkmark' : (cours.status === 'in-progress' ? 'play-outline' : 'calendar')"></ion-icon>
-          </div>
-          <div class="timeline-connector"></div>
+        <!-- Créneau du planning -->
+        <div class="course-slot">
+          <span class="slot-start">{{ cours.horaire.split(' - ')[0] }}</span>
+          <span class="slot-line"></span>
+          <span class="slot-end">{{ cours.horaire.split(' - ')[1] }}</span>
         </div>
 
-        <!-- Contenu du cours -->
         <div class="course-content">
           <div class="course-body">
             <div class="course-header-row">
-              <div class="course-time">
-                <ion-icon name="time-outline"></ion-icon>
-                <span>{{ cours.horaire }}</span>
-              </div>
-              <ion-badge class="status-badge"
-                    [color]="cours.status === 'completed' ? 'success' : (cours.status === 'in-progress' ? 'warning' : 'primary')">
+              <h3 class="card-title">{{ cours.matiere }}</h3>
+              <ion-badge class="status-badge" color="medium">
                 {{ cours.statusLabel }}
               </ion-badge>
             </div>
 
-            <h3 class="card-title">{{ cours.matiere }}</h3>
-
             <div class="course-meta">
-              <span class="source-badge" [class.source-badge--real]="cours.source === 'real'">
-                {{ cours.source === 'real' ? 'Séance confirmée' : 'Créneau planifié' }}
-              </span>
               <div class="meta-item">
                 <ion-icon name="location-outline"></ion-icon>
                 <span>{{ cours.salle }}</span>
@@ -115,18 +102,6 @@
                 <span>{{ cours.type }}</span>
               </div>
             </div>
-
-            <ion-button
-              *ngIf="cours.hasQrCode"
-              expand="block"
-              size="small"
-              class="scan-action"
-              routerLink="/mobile/scan-qr"
-              [queryParams]="{ seanceId: cours.seanceId }"
-            >
-              <ion-icon slot="start" name="scan-outline"></ion-icon>
-              Scanner / émarger
-            </ion-button>
           </div>
         </div>
       </div>

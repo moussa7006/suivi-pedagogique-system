@@ -28,7 +28,14 @@ public class FicheProgression {
     private String travaux;
 
     @Column(nullable = false)
-    private Boolean estValideAdmin;
+    private Boolean estValideAdmin = false;
+
+    @PrePersist
+    protected void appliquerValeursParDefaut() {
+        if (estValideAdmin == null) {
+            estValideAdmin = false;
+        }
+    }
 
     @Column(nullable = true)
     private LocalDate dateValidation;

@@ -91,6 +91,26 @@ ion-content {
     }
   }
 
+  .new-fiche-btn {
+    justify-self: end;
+    --background: var(--accent-blue);
+    --background-activated: #3347c7;
+    --color: #ffffff;
+    --border-radius: 13px;
+    --padding-start: 10px;
+    --padding-end: 10px;
+    height: 38px;
+    margin: 0;
+    box-shadow: 0 6px 16px rgba(67, 97, 238, 0.2);
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+
+    ion-icon {
+      font-size: 17px;
+    }
+  }
+
   .header-volume {
     justify-self: end;
     display: inline-flex;
@@ -214,9 +234,10 @@ ion-content {
 }
 
 /* ============================================
-   ADD / TOGGLE BUTTON
+   FORM SECTION
    ============================================ */
 .add-section {
+  display: none;
   margin-bottom: 24px;
 
   .toggle-form-btn {

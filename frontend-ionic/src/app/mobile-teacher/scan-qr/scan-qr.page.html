@@ -37,6 +37,21 @@
         <span class="seance-count">{{ seances.length }}</span>
       </div>
 
+      <div class="seance-tools" *ngIf="seances.length > 0">
+        <ion-input
+          class="seance-search"
+          fill="outline"
+          placeholder="Rechercher une matière, classe ou salle"
+          [(ngModel)]="searchTerm"
+          [clearInput]="true"
+        ></ion-input>
+        <div class="seance-filters" role="tablist" aria-label="Filtrer les séances">
+          <button type="button" [class.active]="activeSeanceFilter === 'TOUTES'" (click)="setSeanceFilter('TOUTES')">Toutes</button>
+          <button type="button" [class.active]="activeSeanceFilter === 'EN_COURS'" (click)="setSeanceFilter('EN_COURS')">En cours</button>
+          <button type="button" [class.active]="activeSeanceFilter === 'A_VENIR'" (click)="setSeanceFilter('A_VENIR')">À venir</button>
+        </div>
+      </div>
+
       <div
         class="seance-empty"
         *ngIf="!isLoading && seances.length === 0"
@@ -45,14 +60,19 @@
         <span>Aucune de vos séances n'est ouverte à l'émargement aujourd'hui.</span>
       </div>
 
+      <div class="seance-empty seance-empty--filtered" *ngIf="seances.length > 0 && filteredSeances.length === 0">
+        <ion-icon name="search-outline"></ion-icon>
+        <span>Aucune séance ne correspond à votre recherche.</span>
+      </div>
+
       <div
         class="seance-list"
-        *ngIf="seances.length > 0"
+        *ngIf="filteredSeances.length > 0"
       >
         <button
           type="button"
           class="seance-list-item"
-          *ngFor="let seance of seances"
+          *ngFor="let seance of filteredSeances"
           [class.selected]="selectedSeanceId === seance.id"
           (click)="selectSeance(seance.id)"
         >
@@ -64,8 +84,8 @@
           <div class="seance-list-item__body">
             <div class="top-line">
               <span class="matiere">{{ seance.matiereLibelle || 'Matière' }}</span>
-              <span class="status-badge" [class]="'status-' + seance.statut">
-                {{ statutLabel(seance.statut) }}
+              <span class="status-badge" [class]="'status-' + displayStatus(seance)">
+                {{ statutLabel(displayStatus(seance)) }}
               </span>
             </div>
             <div class="meta-line">

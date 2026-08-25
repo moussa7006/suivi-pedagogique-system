@@ -4,4 +4,5 @@ export interface AnneeUniversitaire {
   dateDebut: string;
   dateFin: string;
   active?: boolean;
+  archivee?: boolean;
 }

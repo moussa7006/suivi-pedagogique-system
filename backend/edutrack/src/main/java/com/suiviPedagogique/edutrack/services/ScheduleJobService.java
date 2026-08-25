@@ -47,6 +47,9 @@ public class ScheduleJobService {
     @Autowired
     private HonorairesCalculsRepository honorairesCalculsRepository;
 
+    @Autowired
+    private AnneeUniversitaireService anneeUniversitaireService;
+
     /**
      * S'exécute tous les jours à 00:01
      * Génère les séances (Seance) du jour ET des 6 jours suivants
@@ -227,6 +230,7 @@ public class ScheduleJobService {
     @Scheduled(cron = "0 5 0 * * ?")
     @Transactional
     public void updateAnneeUniversitaireStatus() {
+        anneeUniversitaireService.archiveYearsThatHaveEnded();
         List<AnneeUniversitaire> annees = anneeUniversitaireRepository.findAll();
         LocalDate today = LocalDate.now();
         for (AnneeUniversitaire annee : annees) {

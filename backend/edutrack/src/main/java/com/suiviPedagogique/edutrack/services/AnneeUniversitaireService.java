@@ -36,6 +36,7 @@ public class AnneeUniversitaireService {
     public AnneeUniversitaireDto update(Integer id, AnneeUniversitaireDto dto) {
         AnneeUniversitaire annee = anneeUniversitaireRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Année universitaire non trouvée"));
+        ensureNotArchived(annee);
 
         hydrate(annee, dto);
         return toDto(anneeUniversitaireRepository.save(annee));
@@ -44,10 +45,31 @@ public class AnneeUniversitaireService {
     public void delete(Integer id) {
         AnneeUniversitaire annee = anneeUniversitaireRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Année universitaire non trouvée"));
+        ensureNotArchived(annee);
         anneeUniversitaireRepository.delete(annee);
     }
 
+    public void archiveYearsThatHaveEnded() {
+        LocalDate today = LocalDate.now();
+        anneeUniversitaireRepository.findAll().stream()
+                .filter(annee -> Boolean.FALSE.equals(annee.getArchivee()))
+                .filter(annee -> annee.getDateFin() != null && today.isAfter(annee.getDateFin()))
+                .forEach(annee -> {
+                    annee.setArchivee(true);
+                    annee.setActive(false);
+                    anneeUniversitaireRepository.save(annee);
+                });
+    }
+
+    private void ensureNotArchived(AnneeUniversitaire annee) {
+        if (Boolean.TRUE.equals(annee.getArchivee())
+                || (annee.getDateFin() != null && LocalDate.now().isAfter(annee.getDateFin()))) {
+            throw new IllegalStateException("Cette année universitaire est archivée et ne peut plus être modifiée.");
+        }
+    }
+
     private void hydrate(AnneeUniversitaire annee, AnneeUniversitaireDto dto) {
+        if (annee.getArchivee() == null) annee.setArchivee(false);
         if (dto.getLibelle() != null) annee.setLibelle(dto.getLibelle());
         if (dto.getDateDebut() != null) annee.setDateDebut(dto.getDateDebut());
         if (dto.getDateFin() != null) annee.setDateFin(dto.getDateFin());
@@ -82,7 +104,9 @@ public class AnneeUniversitaireService {
                 annee.getLibelle(),
                 annee.getDateDebut(),
                 annee.getDateFin(),
-                active
+                active,
+                Boolean.TRUE.equals(annee.getArchivee())
+                        || (annee.getDateFin() != null && LocalDate.now().isAfter(annee.getDateFin()))
         );
     }
 }

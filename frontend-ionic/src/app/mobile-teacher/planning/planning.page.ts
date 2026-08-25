@@ -46,7 +46,7 @@ interface PlanningCourse {
   statusLabel: string;
   enseignant: string;
   seanceId?: number;
-  hasQrCode: boolean;
+  anneeUniversitaireId?: number;
 }
 
 @Component({
@@ -222,9 +222,12 @@ export class PlanningPage implements OnInit {
         .filter((id): id is number => !!id),
     );
 
-    const realCourses = seancesForDay.map((seance) =>
-      this.mapSeanceToCourse(seance, selectedDate),
-    );
+  const realCourses = seancesForDay
+    .filter((seance) => {
+      const schedule = this.findScheduleForSeance(seance);
+      return !schedule || this.occursOnDate(schedule, selectedDate);
+    })
+    .map((seance) => this.mapSeanceToCourse(seance, selectedDate));
 
     const theoreticalCourses = this.allSchedules
       .filter((schedule) => this.occursOnDate(schedule, selectedDate))
@@ -247,12 +250,12 @@ export class PlanningPage implements OnInit {
       matiere: schedule ? this.getMatiereLabel(schedule) : 'Séance programmée',
       salle: this.getSalleLabel(seance.salleId),
       horaire: `${this.formatTime(seance.heureDebutReelle)} - ${this.formatTime(seance.heureFinReelle)}`,
-      type: seance.qrCodeId ? 'QR Code disponible' : 'Séance générée',
+      type: 'Créneau du planning',
       status,
       statusLabel: this.getStatusLabel(status),
       enseignant: this.getEnseignantLabel(seance.enseignantId),
       seanceId: seance.id,
-      hasQrCode: !!seance.qrCodeId && status !== 'completed',
+      anneeUniversitaireId: schedule?.anneeUniversitaireId,
       source: 'real',
     };
   }
@@ -271,7 +274,7 @@ export class PlanningPage implements OnInit {
       status,
       statusLabel: this.getStatusLabel(status),
       enseignant: this.getEnseignantLabel(edt.enseignantId),
-      hasQrCode: false,
+      anneeUniversitaireId: edt.anneeUniversitaireId,
       source: 'planned',
     };
   }

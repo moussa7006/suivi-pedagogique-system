@@ -35,6 +35,7 @@ import {
   peopleOutline,
   timeOutline,
   closeCircle,
+  searchOutline,
 } from 'ionicons/icons';
 import { Geolocation } from '@capacitor/geolocation';
 import jsQR from 'jsqr';
@@ -100,12 +101,15 @@ export class ScanQRPage implements OnDestroy {
   cameraSupported = true;
   seanceRequiredError = false;
   qrMismatchError = false;
+  searchTerm = '';
+  activeSeanceFilter: 'TOUTES' | 'EN_COURS' | 'A_VENIR' = 'TOUTES';
 
   private mediaStream: MediaStream | null = null;
   private scanTimer: number | null = null;
   private scanCanvas?: HTMLCanvasElement;
   private scanContext?: CanvasRenderingContext2D | null;
   private currentUserId: number | null = null;
+  private statusRefreshTimer: number | null = null;
 
   constructor() {
     addIcons({
@@ -125,13 +129,21 @@ export class ScanQRPage implements OnDestroy {
       peopleOutline,
       timeOutline,
       closeCircle,
+      searchOutline,
     });
 
     this.loadData();
+    this.statusRefreshTimer = window.setInterval(() => {
+      this.cdr.detectChanges();
+    }, 30_000);
   }
 
   ngOnDestroy(): void {
     this.stopCamera();
+    if (this.statusRefreshTimer !== null) {
+      window.clearInterval(this.statusRefreshTimer);
+      this.statusRefreshTimer = null;
+    }
   }
 
   get selectedSeance(): SeanceDisplay | null {
@@ -143,6 +155,29 @@ export class ScanQRPage implements OnDestroy {
 
   get canUseManualFallback(): boolean {
     return !this.cameraSupported;
+  }
+
+  get filteredSeances(): SeanceDisplay[] {
+    const search = this.searchTerm.trim().toLocaleLowerCase();
+
+    return this.seances.filter((seance) => {
+      const status = this.displayStatus(seance);
+      const matchesFilter =
+        this.activeSeanceFilter === 'TOUTES' ||
+        (this.activeSeanceFilter === 'EN_COURS' && status === 'EN_COURS') ||
+        (this.activeSeanceFilter === 'A_VENIR' && status === 'PREVUE');
+      const haystack = [
+        seance.matiereLibelle,
+        seance.classeLibelle,
+        seance.salleLibelle,
+        this.formatTime(seance.heureDebutReelle),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLocaleLowerCase();
+
+      return matchesFilter && (!search || haystack.includes(search));
+    });
   }
 
   async loadData(): Promise<void> {
@@ -311,6 +346,14 @@ export class ScanQRPage implements OnDestroy {
     await this.submitToken(tokenQRCode);
   }
 
+  displayStatus(seance: SeanceDisplay): string {
+    if (this.isInProgress(seance)) {
+      return 'EN_COURS';
+    }
+
+    return seance.statut || 'PREVUE';
+  }
+
   statutLabel(statut?: string): string {
     const labels: Record<string, string> = {
       PREVUE: 'Prévue',
@@ -416,6 +459,10 @@ export class ScanQRPage implements OnDestroy {
     this.selectedSeanceId = id ?? null;
     this.seanceRequiredError = false;
     this.qrMismatchError = false;
+  }
+
+  setSeanceFilter(filter: 'TOUTES' | 'EN_COURS' | 'A_VENIR'): void {
+    this.activeSeanceFilter = filter;
   }
 
   dismissQrMismatchError(): void {

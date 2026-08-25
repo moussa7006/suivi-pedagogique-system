@@ -25,4 +25,9 @@ public class AnneeUniversitaire {
 
     @Column(nullable = false)
     private Boolean active;
+
+    /** Une année terminée devient consultable mais ne peut plus être modifiée. */
+    // Nullable pour permettre la migration progressive des années déjà existantes.
+    @Column(nullable = true)
+    private Boolean archivee = false;
 }

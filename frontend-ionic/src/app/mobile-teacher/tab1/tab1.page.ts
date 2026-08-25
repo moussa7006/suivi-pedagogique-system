@@ -82,6 +82,8 @@ export class Tab1Page implements OnInit, OnDestroy {
   completedSeances = 0;
   pendingSeances = 0;
   completionRate = 0;
+  heuresEffectuees = 0;
+  heuresPrevues = 0;
   private seances: Seance[] = [];
 
   // Notifications
@@ -284,6 +286,7 @@ export class Tab1Page implements OnInit, OnDestroy {
         this.completionRate = this.totalSeances
           ? Math.round((this.completedSeances / this.totalSeances) * 100)
           : 0;
+        this.updateHoursSummary(safeSeances);
         this.isCahierFait = this.hasCurrentSeanceCahier(
           safeSeances,
           safeFiches,
@@ -297,6 +300,35 @@ export class Tab1Page implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  private updateHoursSummary(seances: Seance[]): void {
+    const now = new Date();
+    let plannedMinutes = 0;
+    let completedMinutes = 0;
+
+    for (const seance of seances) {
+      const start = this.combineDateAndTime(
+        seance.dateCours,
+        seance.heureDebutReelle,
+      );
+      const end = this.combineDateAndTime(
+        seance.dateCours,
+        seance.heureFinReelle,
+      );
+      if (!start || !end || end <= start) {
+        continue;
+      }
+
+      const duration = (end.getTime() - start.getTime()) / 60000;
+      plannedMinutes += duration;
+      if (end <= now) {
+        completedMinutes += duration;
+      }
+    }
+
+    this.heuresPrevues = Math.round((plannedMinutes / 60) * 10) / 10;
+    this.heuresEffectuees = Math.round((completedMinutes / 60) * 10) / 10;
   }
 
   private hasCurrentSeanceCahier(

@@ -185,9 +185,33 @@
   </div>
 
   <!-- ========================================= -->
+  <!-- VOLUME HORAIRE                            -->
+  <!-- ========================================= -->
+  <section class="hours-summary animate-slide-up" style="--delay: 300ms">
+    <div class="hours-summary__heading">
+      <div>
+        <span class="hours-summary__eyebrow">Suivi du temps</span>
+        <h2>Heures effectuées / prévues</h2>
+      </div>
+      <ion-icon name="time-outline"></ion-icon>
+    </div>
+    <div class="hours-summary__values">
+      <div class="hours-summary__value hours-summary__value--done">
+        <strong>{{ heuresEffectuees | number:'1.1-1' }} h</strong>
+        <span>Effectuées</span>
+      </div>
+      <div class="hours-summary__separator">/</div>
+      <div class="hours-summary__value hours-summary__value--planned">
+        <strong>{{ heuresPrevues | number:'1.1-1' }} h</strong>
+        <span>Prévues</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================= -->
   <!-- SECTION TITLE                             -->
   <!-- ========================================= -->
-  <div class="section-header animate-slide-up" style="--delay: 300ms">
+  <div class="section-header animate-slide-up" style="--delay: 350ms">
     <h2>Résumé pédagogique</h2>
   </div>
 

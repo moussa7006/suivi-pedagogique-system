@@ -451,28 +451,84 @@ ion-content {
     }
   }
 
+  .seance-tools {
+    display: grid;
+    gap: 9px;
+    margin-bottom: 10px;
+  }
+
+  .seance-search {
+    --background: #ffffff;
+    --border-color: #dbe3ef;
+    --border-radius: 12px;
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --color: var(--text-primary);
+    --placeholder-color: #94a3b8;
+    min-height: 42px;
+    font-size: 13px;
+  }
+
+  .seance-filters {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    button {
+      flex: 0 0 auto;
+      padding: 7px 11px;
+      border: 1px solid #dbe3ef;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+
+      &.active {
+        border-color: #4361ee;
+        background: #eef2ff;
+        color: #3730a3;
+      }
+    }
+  }
+
+  .seance-empty--filtered {
+    margin-top: 4px;
+  }
+
   .seance-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 5px;
+    max-height: min(46vh, 430px);
+    overflow-y: auto;
+    padding: 2px 2px 4px;
+    scrollbar-width: thin;
   }
 
   .seance-list-item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 9px;
     width: 100%;
-    padding: 12px 14px;
+    min-height: 58px;
+    padding: 8px 9px;
     background: #ffffff;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
     cursor: pointer;
     text-align: left;
     transition: all 0.2s ease;
     box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
 
     &:active {
-      transform: scale(0.98);
+      transform: scale(0.99);
     }
 
     &.selected {
@@ -492,21 +548,21 @@ ion-content {
       align-items: center;
       justify-content: center;
       gap: 3px;
-      min-width: 56px;
+      min-width: 51px;
       flex-shrink: 0;
-      padding: 8px 6px;
-      border-radius: 14px;
+      padding: 6px 5px;
+      border-radius: 9px;
       background: #f1f5f9;
 
       .time-start {
-        font-size: 15px;
+        font-size: 13px;
         font-weight: 800;
         color: var(--text-primary);
         line-height: 1;
       }
 
       .time-end {
-        font-size: 11.5px;
+        font-size: 10px;
         font-weight: 600;
         color: var(--text-secondary);
         line-height: 1;
@@ -516,7 +572,7 @@ ion-content {
     &__body {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 3px;
       flex: 1;
       min-width: 0;
 
@@ -527,7 +583,7 @@ ion-content {
         gap: 8px;
 
         .matiere {
-          font-size: 14.5px;
+          font-size: 13px;
           font-weight: 800;
           color: var(--text-primary);
           letter-spacing: -0.01em;
