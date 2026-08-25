@@ -993,7 +993,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       bgTint: '#f5f3ff',
       indicator: 'Accès rapide',
       gaugeValue: 0,
-      gaugeLabel: 'En attente',
+      gaugeLabel: 'QR code',
     },
     {
       label: 'Rapports d’Assiduité',
@@ -1306,12 +1306,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.hubTiles[3].indicator = `${totalSeances} séance${totalSeances > 1 ? 's' : ''} · ${sessionsToday} aujourd'hui`;
     this.hubTiles[3].gaugeValue = planningPct;
 
-    // QR : jauge = proportion de seances ou le QR a deja ete scanne (emarge).
-    // pendingEmargements = scanne mais en attente de fiche ; emargementsValides = scanne et valide.
+    // QR : jauge = proportion de séances ayant donné lieu à un émargement.
     const qrScanRate = totalSeances > 0
       ? Math.round(((emargementsValides + pendingEmargements) / totalSeances) * 100)
       : 0;
-    this.hubTiles[4].indicator = `${pendingEmargements} en attente · ${qrScanRate}% scannés`;
+    this.hubTiles[4].indicator = `${emargementsValides + pendingEmargements} émargement${emargementsValides + pendingEmargements > 1 ? 's' : ''} · ${qrScanRate}% scannés`;
     this.hubTiles[4].gaugeValue = qrScanRate;
 
     this.hubTiles[5].indicator = `${emargementsValides} émargement${emargementsValides > 1 ? 's' : ''} · ${Math.round(tauxGlobal)}% assiduité`;

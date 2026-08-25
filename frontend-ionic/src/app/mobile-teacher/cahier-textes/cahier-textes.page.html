@@ -14,15 +14,7 @@
     <div class="header-titles">
       <h1 class="title">Fiche de Progression</h1>
     </div>
-    <ion-button
-      fill="solid"
-      class="new-fiche-btn"
-      (click)="showForm = !showForm"
-      [attr.aria-label]="showForm ? 'Fermer le formulaire' : 'Nouvelle fiche'"
-    >
-      <ion-icon slot="start" [name]="showForm ? 'close-outline' : 'add-outline'"></ion-icon>
-      <span>{{ showForm ? 'Fermer' : 'Nouvelle fiche' }}</span>
-    </ion-button>
+
   </header>
 
   <!-- Quick Stats -->
@@ -42,7 +34,7 @@
       </div>
       <div class="stat-content">
         <span class="stat-value">{{ getValidatedCount }}</span>
-        <span class="stat-label">Validées</span>
+        <span class="stat-label">Enregistrées</span>
       </div>
     </div>
     <div class="stat-card stat-card--orange">
@@ -51,7 +43,7 @@
       </div>
       <div class="stat-content">
         <span class="stat-value">{{ getPendingCount }}</span>
-        <span class="stat-label">À finaliser</span>
+        <span class="stat-label">À compléter</span>
       </div>
     </div>
   </div>
@@ -65,11 +57,8 @@
           <ion-icon name="create-outline"></ion-icon>
         </div>
         <div>
-          <h2>Nouvelle séance</h2>
-          <p>
-            Remplissez les détails du cours pour valider automatiquement
-            l'émargement
-          </p>
+          <h2>Fiche de séance</h2>
+          <p>Renseignez les éléments pédagogiques de la séance.</p>
         </div>
       </div>
 
@@ -135,7 +124,7 @@
           </div>
 
           <span class="error-msg" *ngIf="seancesDisponibles.length === 0">
-            Aucune séance en attente de fiche de progression.
+            Aucune séance disponible pour une fiche de progression.
           </span>
         </div>
 
@@ -192,7 +181,7 @@
         >
           <ion-spinner *ngIf="isSubmitting" name="crescent"></ion-spinner>
           <ng-container *ngIf="!isSubmitting">
-            <span>Enregistrer et valider l'émargement</span>
+            <span>Enregistrer la fiche</span>
             <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
           </ng-container>
         </ion-button>
@@ -218,11 +207,10 @@
       <div class="seance-header">
         <div
           class="seance-badge"
-          [class.validated]="seance.status === 'Validé'"
-          [class.pending]="seance.status === 'En attente'"
+          [class.validated]="true"
         >
           <ion-icon
-            [name]="seance.status === 'Validé' ? 'checkmark-circle' : 'time-outline'"
+            [name]="seance.status === 'Enregistrée' ? 'checkmark-circle' : 'time-outline'"
           ></ion-icon>
         </div>
         <div class="seance-info">
@@ -239,7 +227,7 @@
           </div>
         </div>
         <ion-badge
-          [color]="seance.status === 'Validé' ? 'success' : 'warning'"
+          color="success"
           class="status-tag"
         >
           {{ seance.status }}

@@ -84,11 +84,13 @@ Le backend lit sa configuration depuis `backend/edutrack/src/main/resources/appl
 | `DB_URL` | `jdbc:postgresql://localhost:5432/db_suivipedago` | URL PostgreSQL |
 | `DB_USERNAME` | `postgres` | Utilisateur PostgreSQL |
 | `DB_PASSWORD` | `1234` | Mot de passe PostgreSQL |
-| `JPA_DDL_AUTO` | `update` | Stratégie Hibernate |
-| `APP_JWT_SECRET` | valeur dev | Secret JWT, minimum 32 octets |
+| `JPA_DDL_AUTO` | `validate` | Stratégie Hibernate ; utiliser `update` explicitement en développement |
+| `APP_JWT_SECRET` | obligatoire | Secret JWT, minimum 32 octets |
+| `APP_IMPORT_TEACHER_INITIAL_PASSWORD` | obligatoire pour import | Mot de passe temporaire unique des enseignants importés |
 | `APP_JWT_EXPIRATION_MS` | `86400000` | Durée de validité JWT |
 | `APP_CORS_ALLOWED_ORIGINS` | `http://localhost:4200,http://localhost:8100` | Origines autorisées |
-| `APP_SEED_ADMIN_ENABLED` | `false` | Création automatique d’un admin |
+| `APP_SEED_ADMIN_ENABLED` | `false` | Création automatique d’un admin (développement uniquement) |
+| `APP_INIT_DB_ENABLED` | `false` | Chargement de `data.sql` (développement anonymisé uniquement) |
 | `MAIL_USERNAME` / `MAIL_PASSWORD` | vide | Identifiants SMTP pour réinitialisation de mot de passe |
 
 > En production, ne pas utiliser les valeurs par défaut pour `DB_PASSWORD`, `APP_JWT_SECRET` et le compte admin initial.
@@ -288,7 +290,7 @@ npm --prefix frontend-ionic start
 ## Notes de sécurité
 
 - Ne jamais committer de secrets réels.
-- Définir `APP_JWT_SECRET` en production avec une valeur forte.
-- Définir `DB_PASSWORD`, `MAIL_USERNAME` et `MAIL_PASSWORD` via l’environnement.
-- Désactiver ou contrôler strictement le seed admin en production.
-- Remplacer `spring.jpa.hibernate.ddl-auto=update` par une stratégie maîtrisée (`validate`, Flyway ou Liquibase) en production.
+- Définir `APP_JWT_SECRET` en production avec une valeur forte ; le démarrage échoue s'il est absent ou trop court.
+- Définir `DB_PASSWORD`, `MAIL_USERNAME`, `MAIL_PASSWORD` et `APP_IMPORT_TEACHER_INITIAL_PASSWORD` via l’environnement.
+- Désactiver `APP_SEED_ADMIN_ENABLED` et `APP_INIT_DB_ENABLED` en production.
+- Utiliser une stratégie maîtrisée (`validate`, Flyway ou Liquibase) en production.

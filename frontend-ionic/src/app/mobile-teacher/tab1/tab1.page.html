@@ -50,66 +50,34 @@
     (click)="closeNotifications()"
   ></div>
 
-  <section class="notif-panel" *ngIf="showNotifications">
-    <div class="notif-panel__handle"></div>
-    <div class="notif-panel__header">
-      <div>
-        <h2>Notifications</h2>
-        <p>
-          {{ notificationCount }} élément{{ notificationCount > 1 ? 's' : '' }}
-          à suivre
-        </p>
+  <aside class="notif-popover" *ngIf="showNotifications" aria-label="Notifications">
+    <header class="notif-popover__header">
+      <div class="notif-popover__title">
+        <span class="notif-popover__eyebrow">À consulter</span>
+        <h2>Activité</h2>
+        <span class="notif-popover__count">{{ notificationCount }} notification{{ notificationCount > 1 ? 's' : '' }}</span>
       </div>
-      <ion-button
-        fill="clear"
-        class="notif-panel__close"
-        (click)="closeNotifications()"
-      >
+      <ion-button fill="clear" class="notif-popover__close" (click)="closeNotifications()" aria-label="Fermer les notifications">
         <ion-icon slot="icon-only" name="close-outline"></ion-icon>
       </ion-button>
-    </div>
+    </header>
 
-    <div
-      class="notif-list"
-      *ngIf="pendingNotifications.length > 0; else emptyNotifications"
-    >
-      <article
-        class="notif-card"
-        *ngFor="let notification of pendingNotifications; let i = index"
-        [class.notif-card--warning]="notification.type === 'warning'"
-        [class.notif-card--info]="notification.type === 'info'"
-        [class.notif-card--success]="notification.type === 'success'"
-        [style.--delay]="(i * 70) + 'ms'"
-      >
-        <div class="notif-card__icon">
-          <ion-icon [name]="notification.icon"></ion-icon>
-        </div>
-        <div class="notif-card__content">
-          <h3>{{ notification.title }}</h3>
-          <p>{{ notification.message }}</p>
-          <button
-            *ngIf="notification.actionLabel"
-            type="button"
-            class="notif-card__action"
-            (click)="handleNotificationAction(notification)"
-          >
-            {{ notification.actionLabel }}
-            <ion-icon name="trending-up-outline"></ion-icon>
-          </button>
-        </div>
-      </article>
+    <div class="notif-list" *ngIf="pendingNotifications.length > 0; else emptyNotifications">
+      <button type="button" class="notif-row" *ngFor="let notification of pendingNotifications" [class.notif-row--warning]="notification.type === 'warning'" [class.notif-row--info]="notification.type === 'info'" [class.notif-row--success]="notification.type === 'success'" (click)="handleNotificationAction(notification)" [attr.aria-label]="notification.title">
+        <div class="notif-row__icon"><ion-icon [name]="notification.icon"></ion-icon></div>
+        <div class="notif-row__content"><h3>{{ notification.title }}</h3><p>{{ notification.message }}</p></div>
+        <ion-icon class="notif-row__arrow" name="chevron-forward-outline"></ion-icon>
+      </button>
     </div>
 
     <ng-template #emptyNotifications>
       <div class="notif-empty">
-        <div class="notif-empty__icon">
-          <ion-icon name="checkmark-circle-outline"></ion-icon>
-        </div>
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
         <h3>Tout est à jour</h3>
-        <p>Aucune notification pour le moment. Continuez comme ça !</p>
+        <p>Aucune notification pour le moment.</p>
       </div>
     </ng-template>
-  </section>
+  </aside>
 
   <!-- ========================================= -->
   <!-- QUICK STATS ROW                           -->
@@ -184,27 +152,18 @@
     </div>
   </div>
 
-  <!-- ========================================= -->
-  <!-- VOLUME HORAIRE                            -->
-  <!-- ========================================= -->
-  <section class="hours-summary animate-slide-up" style="--delay: 300ms">
-    <div class="hours-summary__heading">
-      <div>
-        <span class="hours-summary__eyebrow">Suivi du temps</span>
-        <h2>Heures effectuées / prévues</h2>
+  <!-- Suivi horaire compact -->
+  <section class="time-strip animate-slide-up" style="--delay: 300ms" aria-label="Suivi horaire">
+    <div class="time-strip__icon"><ion-icon name="time-outline"></ion-icon></div>
+    <div class="time-strip__main">
+      <div class="time-strip__title-row">
+        <span>Volume horaire</span>
+        <strong>{{ timeProgress }}%</strong>
       </div>
-      <ion-icon name="time-outline"></ion-icon>
-    </div>
-    <div class="hours-summary__values">
-      <div class="hours-summary__value hours-summary__value--done">
-        <strong>{{ heuresEffectuees | number:'1.1-1' }} h</strong>
-        <span>Effectuées</span>
+      <div class="time-strip__track" aria-hidden="true">
+        <span [style.width.%]="timeProgress"></span>
       </div>
-      <div class="hours-summary__separator">/</div>
-      <div class="hours-summary__value hours-summary__value--planned">
-        <strong>{{ heuresPrevues | number:'1.1-1' }} h</strong>
-        <span>Prévues</span>
-      </div>
+      <p><b>{{ heuresEffectuees | number:'1.1-1' }} h</b> réalisées <i>sur</i> {{ heuresPrevues | number:'1.1-1' }} h prévues</p>
     </div>
   </section>
 

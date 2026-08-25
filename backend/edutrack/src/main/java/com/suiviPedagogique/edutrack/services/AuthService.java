@@ -123,18 +123,12 @@ public class AuthService {
     @Transactional
     public Utilisateur authentifier(LoginRequest loginRequest) {
         String emailNormalise = normalizeEmail(loginRequest.getEmail());
-        System.err.println("[AUTH] Recherche: " + emailNormalise);
-        var opt = utilisateurRepository.findByEmail(emailNormalise);
-        System.err.println("[AUTH] Trouve: " + opt.isPresent());
-        Utilisateur utilisateur = opt
+        Utilisateur utilisateur = utilisateurRepository.findByEmail(emailNormalise)
                 .orElseThrow(() -> new RuntimeException("Identifiants invalides"));
-        System.err.println("[AUTH] Classe: " + utilisateur.getClass().getSimpleName() + ", Actif: " + utilisateur.getActif());
         if (!Boolean.TRUE.equals(utilisateur.getActif())) {
             throw new RuntimeException("Compte désactivé. Veuillez contacter l'administration.");
         }
-        boolean match = passwordEncoder.matches(loginRequest.getMotDePasse(), utilisateur.getMotDePasse());
-        System.err.println("[AUTH] Password match: " + match);
-        if (!match) {
+        if (!passwordEncoder.matches(loginRequest.getMotDePasse(), utilisateur.getMotDePasse())) {
             throw new RuntimeException("Identifiants invalides");
         }
         return utilisateur;

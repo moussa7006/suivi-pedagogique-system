@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../core/guards/auth.guard';
-import { guestGuard } from '../core/guards/guest.guard';
+
 
 export const mobileTeacherRoutes: Routes = [
   {
@@ -9,8 +9,9 @@ export const mobileTeacherRoutes: Routes = [
     pathMatch: 'full',
   },
   {
+    // La page doit rester accessible même avec une session mémorisée :
+    // cela permet de se déconnecter ou de changer de compte sans écran blanc.
     path: 'login',
-    canActivate: [guestGuard],
     loadComponent: () =>
       import('./login/login.page').then((m) => m.LoginPage),
   },

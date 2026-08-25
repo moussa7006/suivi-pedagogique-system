@@ -13,651 +13,99 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
   standalone: true,
   imports: [CommonModule, FormsModule, QRCodeComponent, RouterLink],
   template: `
-    <div class="qr-container">
-      <div class="page-header">
-        <h1>Générateur de QR Code Dynamique</h1>
-        <p>Sécurisez l'émargement avec des codes à durée limitée</p>
-      </div>
-
-      <!-- Retour (visibilité premium) -->
-      <div class="qr-back">
-        <a
-          routerLink="/web/dashboard"
-          class="btn-back-arrow"
-          aria-label="Retour au tableau de bord"
-          title="Retour au tableau de bord"
-        >
-          <i class="pi pi-arrow-left"></i>
+    <main class="qr-page">
+      <header class="qr-page__header">
+        <a routerLink="/web/dashboard" class="back-link" aria-label="Retour au tableau de bord">
+          <i class="pi pi-arrow-left"></i><span>Tableau de bord</span>
         </a>
-      </div>
+        <div class="qr-page__title"><p>Émargement</p><h1>QR de séance</h1></div>
+        <div class="auto-status"><span></span>Mise à jour automatique</div>
+      </header>
 
-      <div class="grid-layout">
-        <!-- Section Paramètres -->
-        <div class="card settings-card">
-          <div class="settings-header">
-            <h3><i class="pi pi-cog"></i> Configuration de la Session</h3>
-            <span class="auto-badge"><i class="pi pi-bolt"></i> Mode Auto Activé</span>
-          </div>
-
-          <div class="form-group">
-            <label for="subject"><i class="pi pi-book"></i> Séance Active</label>
+      <section class="qr-workspace">
+        <aside class="session-panel">
+          <div class="panel-kicker"><i class="pi pi-calendar"></i>Séance diffusée</div>
+          <h2>Choisir une séance</h2>
+          <p class="panel-intro">Sélectionnez le cours dont vous souhaitez afficher le QR.</p>
+          <label for="subject">Cours du jour</label>
+          <div class="select-wrap">
             <select id="subject" [(ngModel)]="selectedSeanceId" (change)="onSeanceChange()">
-              <option value="">Sélectionnez une séance</option>
-              <option *ngFor="let s of seances" [value]="s.id">
-                {{ s.dateCours }} - {{ s.heureDebutReelle }} à {{ s.heureFinReelle }}
-              </option>
+              <option value="">Aucune séance sélectionnée</option>
+              <option *ngFor="let s of seances" [value]="s.id">{{ s.dateCours }} · {{ s.heureDebutReelle }} — {{ s.heureFinReelle }}</option>
             </select>
+            <i class="pi pi-chevron-down"></i>
           </div>
 
-          <div class="session-status" [ngClass]="{ active: isRunning }">
-            <div class="status-dot"></div>
-            <span>{{
-              isRunning
-                ? 'QR Code disponible pour le scan'
-                : 'Aucun QR Code disponible pour cette séance'
-            }}</span>
+          <div class="session-details" *ngIf="selectedSeance; else noSelection">
+            <div class="session-details__line"><i class="pi pi-clock"></i><div><span>Horaire</span><strong>{{ selectedSeance.heureDebutReelle }} — {{ selectedSeance.heureFinReelle }}</strong></div></div>
+            <div class="session-details__line"><i class="pi pi-calendar-plus"></i><div><span>Date</span><strong>{{ selectedSeance.dateCours }}</strong></div></div>
           </div>
+          <ng-template #noSelection><div class="session-empty"><i class="pi pi-calendar-times"></i><span>Choisissez une séance pour consulter sa diffusion.</span></div></ng-template>
+        </aside>
 
-          <p class="auto-note">
-            <i class="pi pi-info-circle"></i>
-            La génération du QR Code est automatique. L’administrateur ne peut pas la démarrer ni
-            l’arrêter depuis cet écran.
-          </p>
-        </div>
-
-        <!-- Section QR Code -->
-        <div class="card qr-display-card">
-          <div class="qr-wrapper" [class.blurred]="!isRunning">
-            @if (isRunning && qrData) {
-              <div class="qrcode-box">
-                <qrcode [qrdata]="qrData" [width]="qrWidth" [errorCorrectionLevel]="'M'"></qrcode>
-              </div>
-              <p class="qr-payload" style="text-align: center; margin-top: 15px;">
-                <i class="pi pi-check-circle" style="color: #10b981;"></i> QR Code actif pour toute
-                la durée du cours
-              </p>
-            } @else {
-              <div class="placeholder">
-                <div class="placeholder-icon">
-                  <i class="pi pi-shield"></i>
-                </div>
-                <p class="placeholder-text">Aucun QR Code actif à afficher</p>
-                <p class="placeholder-sub">
-                  Le QR Code apparaîtra ici lorsqu’il sera généré automatiquement par le système
-                </p>
-              </div>
-            }
+        <section class="qr-stage" [class.qr-stage--active]="isRunning">
+          <div class="qr-stage__topline">
+            <div class="live-indicator" [class.live-indicator--active]="isRunning"><span></span>{{ isRunning ? 'Diffusion en cours' : 'En attente de séance' }}</div>
+            <i class="pi pi-qrcode"></i>
           </div>
-        </div>
-      </div>
-
-      <!-- Logs de session -->
-      <div class="card logs-card" *ngIf="false">
-        <div class="logs-header">
-          <h3><i class="pi pi-history"></i> Historique des scans récents</h3>
-          <span class="log-count">{{ todayLogs.length }} événements</span>
-        </div>
-        <div class="log-list">
-          <div class="log-item success">
-            <div class="log-icon">
-              <i class="pi pi-check-circle"></i>
-            </div>
-            <div class="log-content">
-              <span class="log-message"
-                ><strong>K. Keita</strong> a émargé avec succès (Position GPS vérifiée)</span
-              >
-              <span class="log-time">14:32:05</span>
-            </div>
+          <div class="qr-stage__content" *ngIf="isRunning && qrData; else unavailableQr">
+            <p class="qr-stage__eyebrow">Présentez ce code aux enseignants</p>
+            <div class="qrcode-box"><qrcode [qrdata]="qrData" [width]="qrWidth" errorCorrectionLevel="M"></qrcode></div>
+            <div class="qr-stage__footer"><i class="pi pi-check-circle"></i><span>Code disponible pendant le créneau de la séance</span></div>
           </div>
-          <div class="log-item warning">
-            <div class="log-icon">
-              <i class="pi pi-exclamation-triangle"></i>
-            </div>
-            <div class="log-content">
-              <span class="log-message"
-                >Historique non disponible en temps réel ici. Veuillez vérifier le tableau de
-                bord.</span
-              >
-              <span class="log-time">-</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+          <ng-template #unavailableQr><div class="qr-unavailable"><div class="qr-unavailable__icon"><i class="pi pi-qrcode"></i></div><h2>QR non disponible</h2><p>Il apparaîtra automatiquement lorsqu’une séance du jour pourra être émargée.</p></div></ng-template>
+        </section>
+      </section>
+    </main>
   `,
   styles: [
     `
-      .qr-container {
-        display: flex;
-        flex-direction: column;
-        padding: clamp(12px, 3vw, 24px);
-        gap: clamp(12px, 3vw, 24px);
-        max-width: 100%;
-
-        @media (max-width: 480px) {
-          gap: 14px;
-          padding: 12px 8px;
-        }
-      }
-
-      .page-header {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        flex-wrap: wrap;
-
-        h1 {
-          margin: 0;
-          font-size: clamp(1.1rem, 3vw, 1.6rem);
-          font-weight: 800;
-          color: #0f172a;
-          letter-spacing: -0.02em;
-
-          @media (max-width: 480px) {
-            font-size: 1.3rem;
-          }
-        }
-
-        p {
-          margin: 0;
-          color: #64748b;
-          font-size: clamp(0.8rem, 2.5vw, 0.9rem);
-          font-weight: 500;
-        }
-      }
-
-      .grid-layout {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-
-        @media (max-width: 768px) {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .card {
-        background: white;
-        border: 2px solid rgba(226, 232, 240, 0.8);
-        border-radius: 14px;
-        padding: 20px;
-        transition:
-          transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-          box-shadow 0.25s ease,
-          border-color 0.25s ease;
-
-        &:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-          border-color: rgba(59, 130, 246, 0.2);
-        }
-      }
-
-      .settings-card {
-        .settings-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-
-          h3 {
-            margin: 0;
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: #1e293b;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-
-            i {
-              color: var(--primary-color);
-              font-size: 1.1rem;
-            }
-          }
-
-          .auto-badge {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #16a34a;
-            background: rgba(34, 197, 94, 0.15);
-            padding: 4px 10px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-          }
-        }
-      }
-
-      .form-group {
-        margin-bottom: 18px;
-
-        label {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 6px;
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: #475569;
-
-          i {
-            color: #94a3b8;
-            font-size: 0.85rem;
-          }
-        }
-
-        select,
-        input {
-          width: 100%;
-          padding: 10px 14px;
-          border-radius: 10px;
-          border: 2px solid rgba(226, 232, 240, 0.8);
-          background: white;
-          font-size: 0.9rem;
-          color: #0f172a;
-          transition: all 0.2s ease;
-
-          &:focus {
-            outline: none;
-            border-color: rgba(37, 99, 235, 0.6);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-          }
-
-          &:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            background: rgba(241, 245, 249, 0.8);
-          }
-        }
-
-        select {
-          cursor: pointer;
-          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-          background-repeat: no-repeat;
-          background-position: right 12px center;
-          padding-right: 40px;
-        }
-      }
-
-      .session-status {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 20px 0;
-        padding: 10px 14px;
-        border-radius: 10px;
-        background: rgba(241, 245, 249, 0.6);
-        color: #64748b;
-        font-weight: 600;
-        font-size: 0.85rem;
-        border: 1px solid rgba(226, 232, 240, 0.6);
-        transition: all 0.3s ease;
-
-        .status-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #94a3b8;
-          flex-shrink: 0;
-        }
-
-        &.active {
-          background: rgba(220, 252, 231, 0.8);
-          color: #166534;
-          border: 1px solid rgba(187, 240, 208, 0.5);
-
-          .status-dot {
-            background: #22c55e;
-            animation: pulse 1.5s infinite;
-            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
-          }
-        }
-      }
-
-      @keyframes pulse {
-        0% {
-          opacity: 1;
-          transform: scale(1);
-          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
-        }
-        50% {
-          opacity: 0.6;
-          transform: scale(1.15);
-          box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
-        }
-        100% {
-          opacity: 1;
-          transform: scale(1);
-          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-        }
-      }
-
-      .btn {
-        width: 100%;
-        padding: 12px 20px;
-        border-radius: 10px;
-        font-weight: 700;
-        font-size: 0.9rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        border: none;
-        transition:
-          transform 0.2s ease,
-          background-color 0.2s ease,
-          box-shadow 0.2s ease;
-
-        i {
-          font-size: 1.05rem;
-        }
-
-        &.btn-primary {
-          background: var(--primary-color);
-          color: white;
-          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-
-          &:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
-          }
-
-          &:active {
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        &.btn-danger {
-          background: #ef4444;
-          color: white;
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-
-          &:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
-          }
-        }
-      }
-
-      .qr-display-card {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        min-height: clamp(340px, 52vw, 480px);
-        overflow: hidden;
-      }
-
-      .qr-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: clamp(16px, 4vw, 32px);
-        transition: all 0.4s ease;
-        width: 100%;
-        max-width: min(380px, 100%);
-
-        &.blurred {
-          filter: grayscale(0.7) opacity(0.5);
-        }
-      }
-
-      .qrcode-box {
-        width: min(100%, 380px);
-        padding: clamp(10px, 3vw, 20px);
-        border-radius: 14px;
-        border: 2px dashed rgba(226, 232, 240, 0.9);
-        background: #f8fafc;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        transition: all 0.3s ease;
-
-        .session-active & {
-          border: 2px solid rgba(37, 99, 235, 0.3);
-          background: white;
-        }
-      }
-
-      .qr-payload {
-        font-family: 'SF Mono', 'Fira Code', monospace;
-        color: #94a3b8;
-        font-size: 0.78rem;
-        background: rgba(241, 245, 249, 0.6);
-        padding: 6px 14px;
-        border-radius: 8px;
-        border: 1px solid rgba(226, 232, 240, 0.5);
-        letter-spacing: 0.02em;
-      }
-
-      .placeholder {
-        text-align: center;
-        padding: 48px 32px;
-
-        .placeholder-icon {
-          width: 80px;
-          height: 80px;
-          margin: 0 auto 20px;
-          border-radius: 14px;
-          border: 2px dashed rgba(226, 232, 240, 0.9);
-          background: #f8fafc;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          i {
-            font-size: 2.2rem;
-            color: rgba(37, 99, 235, 0.45);
-          }
-        }
-
-        .placeholder-text {
-          font-weight: 600;
-          color: #475569;
-          font-size: 0.95rem;
-          margin: 0 0 6px;
-        }
-
-        .placeholder-sub {
-          font-size: 0.82rem;
-          color: #94a3b8;
-          font-weight: 500;
-          margin: 0;
-        }
-      }
-
-      .timer-ring {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        width: 60px;
-        height: 60px;
-
-        svg {
-          transform: rotate(-90deg);
-          width: 100%;
-          height: 100%;
-        }
-
-        circle {
-          fill: none;
-          stroke-width: 6;
-          stroke-linecap: round;
-        }
-
-        .bg-ring {
-          stroke: rgba(241, 245, 249, 0.7);
-        }
-
-        .progress-ring {
-          stroke: var(--primary-color);
-          stroke-dasharray: 283;
-          transition: stroke-dashoffset 1s linear;
-          filter: drop-shadow(0 2px 3px rgba(37, 99, 235, 0.25));
-        }
-
-        .timer-text {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          font-weight: 700;
-          font-size: 0.85rem;
-          color: var(--primary-color);
-          background: white;
-          border-radius: 50%;
-          width: 38px;
-          height: 38px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-        }
-      }
-
-      .logs-card {
-        padding: 20px;
-
-        .logs-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 16px;
-
-          h3 {
-            margin: 0;
-            font-size: 1rem;
-            font-weight: 700;
-            color: #1e293b;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-
-            i {
-              color: #64748b;
-              font-size: 1.05rem;
-            }
-          }
-
-          .log-count {
-            font-size: 0.75rem;
-            color: #64748b;
-            font-weight: 600;
-            background: rgba(241, 245, 249, 0.6);
-            padding: 4px 10px;
-            border-radius: 999px;
-          }
-        }
-
-        .log-list {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .log-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-          padding: 12px;
-          border-radius: 10px;
-          margin-bottom: 8px;
-          background: rgba(248, 250, 252, 0.5);
-          border: 1px solid transparent;
-          transition:
-            background 0.2s ease,
-            border-color 0.2s ease;
-
-          &:hover {
-            background: rgba(37, 99, 235, 0.03);
-            border-color: rgba(37, 99, 235, 0.08);
-          }
-
-          .log-icon {
-            flex-shrink: 0;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            background: white;
-            border: 1px solid rgba(226, 232, 240, 0.5);
-          }
-
-          .log-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-            min-width: 0;
-
-            .log-message {
-              font-size: 0.85rem;
-              color: #334155;
-              line-height: 1.35;
-
-              strong {
-                color: #0f172a;
-                font-weight: 600;
-              }
-            }
-
-            .log-time {
-              font-size: 0.72rem;
-              color: #94a3b8;
-              font-weight: 600;
-            }
-          }
-
-          &.success {
-            .log-icon {
-              color: #22c55e;
-              border-color: rgba(34, 197, 94, 0.25);
-            }
-          }
-
-          &.warning {
-            .log-icon {
-              color: #f59e0b;
-              border-color: rgba(245, 158, 11, 0.25);
-            }
-          }
-        }
-      }
-
-      @media (max-width: 768px) {
-        .grid-layout {
-          grid-template-columns: 1fr;
-        }
-
-        .settings-card .settings-header {
-          align-items: flex-start;
-          flex-direction: column;
-          gap: 10px;
-        }
-
-        .qr-display-card {
-          min-height: 380px;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .card {
-          padding: 14px;
-        }
-
-        .qr-display-card {
-          min-height: 330px;
-        }
-
-        .placeholder {
-          padding: 32px 12px;
-        }
-      }
+      :host { display: block; }
+      .qr-page { max-width: 1240px; margin: 0 auto; padding: 28px; color: #172033; }
+      .qr-page__header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px; margin-bottom: 30px; }
+      .back-link { display: inline-flex; align-items: center; gap: 9px; width: fit-content; color: #526078; font-size: .86rem; font-weight: 700; text-decoration: none; }
+      .back-link i { font-size: .82rem; }
+      .qr-page__title { text-align: center; }
+      .qr-page__title p { margin: 0 0 3px; color: #7a879b; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+      .qr-page__title h1 { margin: 0; font-size: clamp(1.45rem, 3vw, 2rem); letter-spacing: -.04em; }
+      .auto-status { justify-self: end; display: inline-flex; align-items: center; gap: 8px; color: #27734c; font-size: .78rem; font-weight: 800; }
+      .auto-status span, .live-indicator span { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+      .auto-status span { box-shadow: 0 0 0 4px #e2f5e9; }
+      .qr-workspace { display: grid; grid-template-columns: minmax(270px, .75fr) minmax(0, 1.45fr); min-height: 570px; border: 1px solid #e4e8ef; background: #fff; }
+      .session-panel { padding: 34px; border-right: 1px solid #e4e8ef; }
+      .panel-kicker { display: flex; align-items: center; gap: 8px; color: #526078; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+      .panel-kicker i { color: #3367d6; }
+      .session-panel h2 { margin: 14px 0 8px; font-size: 1.28rem; letter-spacing: -.03em; }
+      .panel-intro { margin: 0 0 30px; color: #718096; font-size: .88rem; line-height: 1.55; }
+      .session-panel label { display: block; margin-bottom: 9px; color: #39465b; font-size: .78rem; font-weight: 800; }
+      .select-wrap { position: relative; }
+      .select-wrap select { appearance: none; width: 100%; padding: 13px 38px 13px 13px; border: 1px solid #cfd7e3; border-radius: 8px; background: #fff; color: #172033; font: inherit; font-size: .86rem; cursor: pointer; }
+      .select-wrap select:focus { outline: 3px solid #dbe7ff; border-color: #3367d6; }
+      .select-wrap i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #607089; font-size: .75rem; }
+      .session-details { margin-top: 32px; border-top: 1px solid #e7ebf1; }
+      .session-details__line { display: flex; gap: 12px; padding: 17px 0; border-bottom: 1px solid #e7ebf1; }
+      .session-details__line > i { margin-top: 3px; color: #65748a; font-size: .9rem; }
+      .session-details__line div { display: grid; gap: 3px; }
+      .session-details__line span { color: #7a879b; font-size: .72rem; font-weight: 700; }
+      .session-details__line strong { color: #293548; font-size: .86rem; }
+      .session-empty { display: flex; gap: 10px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e7ebf1; color: #7a879b; font-size: .84rem; line-height: 1.45; }
+      .qr-stage { display: flex; flex-direction: column; min-width: 0; padding: 26px 34px 34px; background: #172033; color: #fff; }
+      .qr-stage--active { background: linear-gradient(145deg, #14213a 0%, #0e1728 100%); }
+      .qr-stage__topline { display: flex; align-items: center; justify-content: space-between; color: #aab8cf; }
+      .qr-stage__topline > i { font-size: 1.25rem; }
+      .live-indicator { display: inline-flex; align-items: center; gap: 8px; color: #aab8cf; font-size: .74rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+      .live-indicator--active { color: #62dba0; }
+      .live-indicator--active span { box-shadow: 0 0 0 5px rgba(98,219,160,.13); }
+      .qr-stage__content, .qr-unavailable { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      .qr-stage__eyebrow { margin: 0 0 22px; color: #c8d4e7; font-size: .86rem; }
+      .qrcode-box { display: grid; place-items: center; padding: clamp(16px, 3vw, 26px); background: #fff; border-radius: 4px; box-shadow: 0 22px 55px rgba(0,0,0,.3); }
+      .qr-stage__footer { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; color: #b6c5da; font-size: .78rem; }
+      .qr-stage__footer i { color: #62dba0; }
+      .qr-unavailable__icon { display: grid; place-items: center; width: 58px; height: 58px; margin-bottom: 17px; border: 1px solid #3c4b63; border-radius: 50%; color: #9eafc8; font-size: 1.45rem; }
+      .qr-unavailable h2 { margin: 0 0 8px; font-size: 1.22rem; }
+      .qr-unavailable p { max-width: 310px; margin: 0; color: #aab8cf; font-size: .86rem; line-height: 1.55; }
+      @media (max-width: 800px) { .qr-page { padding: 18px; } .qr-page__header { grid-template-columns: 1fr auto; } .qr-page__title { grid-row: 2; grid-column: 1 / -1; text-align: left; } .qr-workspace { grid-template-columns: 1fr; } .session-panel { border-right: 0; border-bottom: 1px solid #e4e8ef; } .qr-stage { min-height: 480px; } }
+      @media (max-width: 480px) { .qr-page { padding: 14px; } .back-link span, .auto-status { font-size: .7rem; } .session-panel, .qr-stage { padding: 24px 20px; } .qr-stage { min-height: 420px; } }
     `,
   ],
 })

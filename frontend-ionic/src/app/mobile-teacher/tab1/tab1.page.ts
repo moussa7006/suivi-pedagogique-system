@@ -101,6 +101,14 @@ export class Tab1Page implements OnInit, OnDestroy {
     );
   }
 
+  get timeProgress(): number {
+    if (this.heuresPrevues <= 0) {
+      return 0;
+    }
+
+    return Math.min(100, Math.round((this.heuresEffectuees / this.heuresPrevues) * 100));
+  }
+
   get greeting(): string {
     const hour = new Date().getHours();
     if (hour < 12) return 'Bonjour';
@@ -438,9 +446,9 @@ export class Tab1Page implements OnInit, OnDestroy {
     if (uncompleted > 0) {
       count += uncompleted;
       notifications.push({
-        title: `${uncompleted} séance(s) à finaliser`,
+        title: `${uncompleted} fiche(s) à renseigner`,
         message:
-          'Complétez la fiche des séances dont l’émargement a déjà été effectué.',
+          'Renseignez la fiche pédagogique des séances déjà émargées.',
         icon: 'calendar-outline',
         type: 'info',
         actionLabel: 'Remplir',

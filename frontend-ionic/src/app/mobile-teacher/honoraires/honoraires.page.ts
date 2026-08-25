@@ -21,7 +21,8 @@ import {
   arrowBackOutline,
   closeCircle,
   funnelOutline,
-  checkmark
+  checkmark,
+  alertCircleOutline
 } from 'ionicons/icons';
 import { finalize } from 'rxjs';
 import { HonorairesCalcul } from '../../core/models/honoraires.model';
@@ -67,7 +68,8 @@ export class HonorairesPage implements OnInit {
       arrowBackOutline,
       closeCircle,
       funnelOutline,
-      checkmark
+      checkmark,
+      alertCircleOutline
     });
   }
 

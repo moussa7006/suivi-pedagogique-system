@@ -24,6 +24,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,12 +54,12 @@ public class ExcelImportService {
     private final EmploiDuTempsRepository emploiDuTempsRepository;
     private final SalleRepository salleRepository;
     private final AnneeUniversitaireRepository anneeUniversitaireRepository;
-    private static final String DEFAULT_TEACHER_PASSWORD = "Intec@2026";
     private static final String DEFAULT_ADDRESS = "Non renseignée";
     private static final String DEFAULT_TEACHER_VALUE = "Non spécifié";
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", Pattern.CASE_INSENSITIVE);
 
     private final PasswordEncoder passwordEncoder;
+    private final String initialTeacherPassword;
 
     public ExcelImportService(EnseignantRepository enseignantRepository,
                               UtilisateurRepository utilisateurRepository,
@@ -67,7 +68,8 @@ public class ExcelImportService {
                               EmploiDuTempsRepository emploiDuTempsRepository,
                               SalleRepository salleRepository,
                               AnneeUniversitaireRepository anneeUniversitaireRepository,
-                              PasswordEncoder passwordEncoder) {
+                              PasswordEncoder passwordEncoder,
+                              @Value("${app.import.teacher-initial-password:}") String initialTeacherPassword) {
         this.enseignantRepository = enseignantRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.classeRepository = classeRepository;
@@ -76,6 +78,7 @@ public class ExcelImportService {
         this.salleRepository = salleRepository;
         this.anneeUniversitaireRepository = anneeUniversitaireRepository;
         this.passwordEncoder = passwordEncoder;
+        this.initialTeacherPassword = initialTeacherPassword;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -89,10 +92,15 @@ public class ExcelImportService {
             throw new IllegalArgumentException("Le fichier Excel est vide ou introuvable.");
         }
 
+        validateExcelFile(file);
+        if (initialTeacherPassword.isBlank()) {
+            throw new IllegalStateException("L'import d'enseignants exige APP_IMPORT_TEACHER_INITIAL_PASSWORD.");
+        }
+
         List<Enseignant> enseignantsToSave = new ArrayList<>();
         List<String> errors = new ArrayList<>();
         DataFormatter formatter = new DataFormatter();
-        String defaultPasswordHash = passwordEncoder.encode(DEFAULT_TEACHER_PASSWORD);
+        String defaultPasswordHash = passwordEncoder.encode(initialTeacherPassword);
         int totalRows = 0;
         LocalDate defaultDateEmbauche = LocalDate.now();
 
@@ -236,6 +244,18 @@ public class ExcelImportService {
         }
 
         return ImportResultDto.success(totalRows, enseignantsToSave.size(), errors);
+    }
+
+    private void validateExcelFile(MultipartFile file) {
+        final long maxFileSize = 5L * 1024 * 1024;
+        if (file.getSize() > maxFileSize) {
+            throw new IllegalArgumentException("Le fichier Excel dépasse la taille maximale autorisée de 5 Mo.");
+        }
+
+        String filename = file.getOriginalFilename();
+        if (filename == null || !filename.toLowerCase(Locale.ROOT).endsWith(".xlsx")) {
+            throw new IllegalArgumentException("Seuls les fichiers Excel au format .xlsx sont autorisés.");
+        }
     }
 
     private String getCellValue(Row row, int cellIndex, DataFormatter formatter) {

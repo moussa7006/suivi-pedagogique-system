@@ -20,15 +20,6 @@
       </ion-button>
     </header>
 
-    <div class="week-navigation animate-slide-up" style="--delay: 75ms">
-      <ion-button fill="clear" (click)="goToPreviousWeek()" aria-label="Semaine précédente">
-        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
-      </ion-button>
-      <button type="button" class="today-button" (click)="goToCurrentWeek()">Aujourd'hui</button>
-      <ion-button fill="clear" (click)="goToNextWeek()" aria-label="Semaine suivante">
-        <ion-icon slot="icon-only" name="arrow-forward-outline"></ion-icon>
-      </ion-button>
-    </div>
 
     <!-- Sélecteur de jour -->
     <div class="week-selector animate-slide-up" style="--delay: 100ms">
@@ -46,13 +37,6 @@
       </div>
     </div>
 
-    <!-- Résumé du jour -->
-    <div class="day-summary animate-fade-in">
-      <div class="summary-badge">
-        <ion-icon name="calendar-outline"></ion-icon>
-        <span>{{ emploisDuTemps.length }} séance{{ emploisDuTemps.length > 1 ? 's' : '' }} pour ce jour</span>
-      </div>
-    </div>
 
     <!-- Loading state -->
     <div *ngIf="isLoading" class="loading-state">

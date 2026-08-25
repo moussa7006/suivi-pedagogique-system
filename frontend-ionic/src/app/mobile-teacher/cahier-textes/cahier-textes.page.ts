@@ -27,8 +27,6 @@ import {
   createOutline,
   arrowForwardOutline,
   listOutline,
-  closeOutline,
-  addOutline,
   checkmarkCircle,
   checkmarkDoneOutline,
   informationCircleOutline,
@@ -90,7 +88,7 @@ export class CahierTextesPage {
     date: string;
     heure: string;
     contenu: string;
-    status: 'Validé' | 'En attente';
+    status: 'Enregistrée';
   }> = [];
   seancesDisponibles: Seance[] = [];
   emploisDuTemps: EmploiDuTemps[] = [];
@@ -119,8 +117,6 @@ export class CahierTextesPage {
       createOutline,
       arrowForwardOutline,
       listOutline,
-      closeOutline,
-      addOutline,
       checkmarkDoneOutline,
       arrowBackOutline,
       chevronUpOutline,
@@ -378,7 +374,7 @@ export class CahierTextesPage {
     date: string;
     heure: string;
     contenu: string;
-    status: 'Validé' | 'En attente';
+    status: 'Enregistrée';
   }> {
     return fiches.map((fiche) => ({
       id: fiche.id,
@@ -386,7 +382,7 @@ export class CahierTextesPage {
       date: fiche.dateSeance || fiche.dateSaisie || '',
       heure: fiche.heureSeance || 'Horaire non précisé',
       contenu: fiche.contenuDetaille || '',
-      status: fiche.estValideAdmin ? 'Validé' : 'En attente',
+      status: 'Enregistrée',
     }));
   }
 
