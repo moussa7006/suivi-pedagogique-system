@@ -279,13 +279,15 @@ export class CahierTextesPage {
               : 'Fiche de progression enregistrée.',
             'success',
           );
-          this.seanceForm.reset();
-          this.showForm = false;
-          this.openedFromScan = false;
-          this.pendingTokenQRCode = null;
-          this.pendingLatitude = null;
-          this.pendingLongitude = null;
-          this.pendingAdresse = null;
+          this.clearSubmissionContext();
+
+          // Les paramètres provenant du scan restent sinon dans l'URL et
+          // rouvrent la fiche vide après le rechargement des données.
+          await this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {},
+            replaceUrl: true,
+          });
           this.loadData();
         },
         error: (error) => {
@@ -298,6 +300,16 @@ export class CahierTextesPage {
           this.presentToast(message, 'danger');
         },
       });
+  }
+
+  private clearSubmissionContext(): void {
+    this.seanceForm.reset();
+    this.showForm = false;
+    this.openedFromScan = false;
+    this.pendingTokenQRCode = null;
+    this.pendingLatitude = null;
+    this.pendingLongitude = null;
+    this.pendingAdresse = null;
   }
 
   trackBySeanceId(_index: number, seance: { id?: number }): number | string {

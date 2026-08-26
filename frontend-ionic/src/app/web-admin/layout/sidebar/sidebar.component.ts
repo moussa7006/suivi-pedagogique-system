@@ -88,6 +88,12 @@ import { AuthService } from '../../core/services/auth.service';
             </a>
           </li>
           <li>
+            <a routerLink="/web/archives" routerLinkActive="active">
+              <i class="pi pi-box"></i>
+              <span>Archives</span>
+            </a>
+          </li>
+          <li>
             <a routerLink="/web/departements" routerLinkActive="active">
               <i class="pi pi-folder"></i>
               <span>Départements</span>
