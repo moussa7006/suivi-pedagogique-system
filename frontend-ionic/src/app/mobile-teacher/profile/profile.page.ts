@@ -1,6 +1,7 @@
-import { ChangeDetectorRef, Component, OnInit, NgZone, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, NgZone, inject } from '@angular/core';
+import { Platform } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+
 
 import { RouterLink } from '@angular/router';
 import {
@@ -37,7 +38,7 @@ import { ScheduleService } from '../../core/services/schedule.service';
 import { UtilisateurService } from '../../core/services/utilisateur.service';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
 
-import { catchError, forkJoin, of, switchMap } from 'rxjs';
+import { Subscription, catchError, forkJoin, of, switchMap } from 'rxjs';
 import { Seance } from '../../core/models/seance.model';
 import { FicheProgression } from '../../core/models/fiche-progression.model';
 
@@ -51,10 +52,9 @@ import { FicheProgression } from '../../core/models/fiche-progression.model';
     IonContent,
     IonButton,
     IonIcon,
-    FormsModule,
   ],
 })
-export class ProfilePage implements OnInit {
+export class ProfilePage implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
   private utilisateurService = inject(UtilisateurService);
@@ -62,16 +62,11 @@ export class ProfilePage implements OnInit {
   private toastController = inject(ToastController);
   private ngZone = inject(NgZone);
   private cdr = inject(ChangeDetectorRef);
+  private readonly platform = inject(Platform);
+  private backButtonSubscription?: Subscription;
 
-
+  // La fiche enseignant est en lecture seule ; seule la photo est modifiable.
   isEditingProfile = false;
-  editProfile = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    telephone: '',
-    adresse: '',
-  };
 
   teacher = {
     id: null as number | null,
@@ -122,6 +117,15 @@ export class ProfilePage implements OnInit {
 
   ngOnInit() {
     void this.loadUserProfile();
+    this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(1000, () => {
+      if (this.isEditingProfile) {
+        this.cancelProfileEditing();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.backButtonSubscription?.unsubscribe();
   }
 
   ionViewWillEnter(): void {
@@ -251,52 +255,23 @@ export class ProfilePage implements OnInit {
     this.teacher.subjects = matieres;
   }
 
-  startProfileEditing(): void {
-    this.editProfile = {
-      firstName: this.teacher.firstName,
-      lastName: this.teacher.lastName,
-      email: this.teacher.email,
-      telephone: this.teacher.telephone,
-      adresse: this.teacher.adresse,
-    };
+  /** Ouvre la fenêtre dédiée à la photo, sans exposer les données personnelles. */
+  changePhoto(): void {
     this.isEditingProfile = true;
   }
 
+  /** Ferme uniquement la fenêtre photo ; la route mobile reste inchangée. */
   cancelProfileEditing(): void {
     this.isEditingProfile = false;
   }
 
-  saveProfileChanges(): void {
-    if (!this.teacher.id) {
-      void this.presentToast('Impossible de retrouver le compte connecté.');
-      return;
+  /** Le bouton retour système ferme d'abord la fenêtre photo ouverte. */
+  @HostListener('window:popstate', ['$event'])
+  onBrowserBack(event: PopStateEvent): void {
+    if (this.isEditingProfile) {
+      event.preventDefault();
+      this.cancelProfileEditing();
     }
-
-    const changes = {
-      prenom: this.editProfile.firstName.trim(),
-      nom: this.editProfile.lastName.trim(),
-      email: this.editProfile.email.trim(),
-      telephone: this.editProfile.telephone.trim(),
-      adresse: this.editProfile.adresse.trim(),
-    };
-
-    this.utilisateurService.modifier(this.teacher.id, changes).subscribe({
-      next: async (updatedUser) => {
-        this.applyUserToTeacher(updatedUser);
-        const currentUser = await this.authService.getUser();
-        if (currentUser) {
-          await this.authService.setUser({ ...currentUser, ...updatedUser });
-        }
-        this.isEditingProfile = false;
-        this.cdr.detectChanges();
-        await this.presentToast('Profil mis à jour.', 'success');
-      },
-      error: () => void this.presentToast('Impossible de mettre à jour le profil.'),
-    });
-  }
-
-  changePhoto(): void {
-    this.startProfileEditing();
   }
 
   onPhotoOption(option: 'camera' | 'gallery' | 'delete') {

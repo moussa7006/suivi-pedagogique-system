@@ -47,9 +47,7 @@
           <span *ngIf="teacher.role"><ion-icon name="business-outline"></ion-icon>{{ teacher.role }}</span>
         </div>
       </div>
-      <button type="button" class="edit-profile-btn" (click)="startProfileEditing()" aria-label="Modifier mon profil">
-        <ion-icon name="create-outline"></ion-icon><span>Modifier</span>
-      </button>
+      <span class="profile-readonly-label">Informations en lecture seule</span>
     </section>
 
     <section class="content-card">
@@ -146,22 +144,22 @@
 
 
   <div class="profile-editor-backdrop" *ngIf="isEditingProfile" (click)="cancelProfileEditing()">
-    <form class="profile-editor" (submit)="saveProfileChanges(); $event.preventDefault()" (click)="$event.stopPropagation()">
+    <section class="profile-editor" role="dialog" aria-modal="true" aria-labelledby="photo-dialog-title" (click)="$event.stopPropagation()">
       <div class="popup-drag-handle"></div>
-      <div class="editor-title"><div><p>Mon compte</p><h3>Modifier le profil</h3></div><button type="button" (click)="cancelProfileEditing()">Fermer</button></div>
+      <div class="editor-title">
+        <div><p>Mon compte</p><h3 id="photo-dialog-title">Photo de profil</h3></div>
+        <button type="button" (click)="cancelProfileEditing()" aria-label="Fermer la fenêtre">Fermer</button>
+      </div>
       <div class="editor-photo">
         <div class="editor-photo__preview"><img [src]="teacher.avatar" alt="Aperçu de la photo de profil" /></div>
-        <div><strong>Photo de profil</strong><span>Choisissez une image qui vous représente.</span></div>
+        <div><strong>Modifier uniquement votre photo</strong><span>Vos informations personnelles sont gérées par l'administration.</span></div>
       </div>
-      <div class="photo-actions"><button type="button" (click)="onPhotoOption('camera')"><ion-icon name="camera-outline"></ion-icon>Caméra</button><button type="button" (click)="onPhotoOption('gallery')"><ion-icon name="images-outline"></ion-icon>Galerie</button><button type="button" class="photo-actions__delete" (click)="onPhotoOption('delete')"><ion-icon name="trash-outline"></ion-icon>Supprimer</button></div>
-      <div class="editor-fields">
-        <label>Prénom<input type="text" [(ngModel)]="editProfile.firstName" name="firstName" required></label>
-        <label>Nom<input type="text" [(ngModel)]="editProfile.lastName" name="lastName" required></label>
-        <label>Adresse e-mail<input type="email" [(ngModel)]="editProfile.email" name="email" required></label>
-        <label>Téléphone<input type="tel" [(ngModel)]="editProfile.telephone" name="telephone"></label>
-        <label>Adresse / quartier<textarea [(ngModel)]="editProfile.adresse" name="adresse" rows="2"></textarea></label>
+      <div class="photo-actions">
+        <button type="button" (click)="onPhotoOption('camera')"><ion-icon name="camera-outline"></ion-icon>Caméra</button>
+        <button type="button" (click)="onPhotoOption('gallery')"><ion-icon name="images-outline"></ion-icon>Galerie</button>
+        <button type="button" class="photo-actions__delete" (click)="onPhotoOption('delete')"><ion-icon name="trash-outline"></ion-icon>Supprimer</button>
       </div>
-      <div class="profile-edit-actions"><button type="button" class="cancel-edit-btn" (click)="cancelProfileEditing()">Annuler</button><button type="submit" class="save-profile-btn">Enregistrer</button></div>
-    </form>
+      <button type="button" class="cancel-edit-btn photo-close-btn" (click)="cancelProfileEditing()">Fermer</button>
+    </section>
   </div>
 </ion-content>
