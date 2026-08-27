@@ -104,6 +104,21 @@ ion-content {
   position: relative;
 }
 
+.profile-avatar-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    outline: 3px solid rgba(67, 97, 238, 0.35);
+    outline-offset: 4px;
+    border-radius: 22px;
+  }
+}
+
 .avatar {
   width: 52px;
   height: 52px;

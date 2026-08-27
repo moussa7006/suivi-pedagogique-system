@@ -14,6 +14,8 @@ export interface Utilisateur {
   specialite?: string;
   dateEmbauche?: string;
   grade?: string;
+  /** Matières déduites des emplois du temps affectés à l'enseignant. */
+  matieres?: string[];
 }
 
 export interface Enseignant extends Utilisateur {

@@ -9,7 +9,12 @@
   <!-- ========================================= -->
   <div class="dashboard-header animate-fade-in">
     <div class="header-left">
-      <div class="avatar-wrapper">
+      <button
+        type="button"
+        class="avatar-wrapper profile-avatar-link"
+        (click)="navigateTo('/mobile/tabs/tabs/tab3')"
+        aria-label="Ouvrir mon profil"
+      >
         <div class="avatar">
           <img
             *ngIf="teacher.avatar; else initialsAvatar"
@@ -21,7 +26,7 @@
           </ng-template>
         </div>
         <div class="status-dot"></div>
-      </div>
+      </button>
       <div class="header-text">
         <p class="greeting">{{ greeting }} 👋</p>
         <h1 class="teacher-name">

@@ -37,9 +37,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { UtilisateurService } from '../../core/services/utilisateur.service';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
+import { MatiereService } from '../../core/services/matiere.service';
 
 import { Subscription, catchError, forkJoin, of, switchMap } from 'rxjs';
 import { Seance } from '../../core/models/seance.model';
+import { EmploiDuTemps } from '../../core/models/schedule.model';
+import { Matiere } from '../../core/models/matiere.model';
 import { FicheProgression } from '../../core/models/fiche-progression.model';
 
 @Component({
@@ -59,6 +62,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   private scheduleService = inject(ScheduleService);
   private utilisateurService = inject(UtilisateurService);
   private ficheProgressionService = inject(FicheProgressionService);
+  private matiereService = inject(MatiereService);
   private toastController = inject(ToastController);
   private ngZone = inject(NgZone);
   private cdr = inject(ChangeDetectorRef);
@@ -162,17 +166,23 @@ export class ProfilePage implements OnInit, OnDestroy {
             fiches: this.ficheProgressionService
               .getFichesProgression()
               .pipe(catchError(() => of([] as FicheProgression[]))),
+            emploisDuTemps: this.scheduleService
+              .getEmploisDuTemps()
+              .pipe(catchError(() => of([] as EmploiDuTemps[]))),
+            matieres: this.matiereService
+              .getAll()
+              .pipe(catchError(() => of([] as Matiere[]))),
           });
         }),
       )
       .subscribe({
-        next: ({ fullUser, seances, fiches }) => {
+        next: ({ fullUser, seances, fiches, emploisDuTemps, matieres }) => {
           if (fullUser) {
             this.applyUserToTeacher(fullUser);
           }
           const teacherSeances = this.filterTeacherSeances(seances || []);
           this.applySeanceStats(teacherSeances);
-          this.applyMatieres(fiches || [], teacherSeances);
+          this.applyMatieres(fiches || [], teacherSeances, emploisDuTemps || [], matieres || []);
           this.cdr.detectChanges();
         },
         error: () => {
@@ -229,13 +239,24 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   }
 
-  private applyMatieres(fiches: FicheProgression[], seances: Seance[]): void {
+  private applyMatieres(
+    fiches: FicheProgression[],
+    seances: Seance[],
+    emploisDuTemps: EmploiDuTemps[],
+    matieresCatalogue: Matiere[],
+  ): void {
     const fullName = `${this.teacher.firstName} ${this.teacher.lastName}`
       .trim()
       .toLowerCase();
     const seanceIds = new Set(
       seances.map((seance) => seance.id).filter(Boolean),
     );
+    const matiereLabels = new Map(
+      matieresCatalogue.map((matiere) => [matiere.id, matiere.libelle]),
+    );
+    const assignedSubjects = emploisDuTemps
+      .filter((emploi) => emploi.enseignantId === this.teacher.id)
+      .map((emploi) => matiereLabels.get(emploi.matiereId) || `Matière #${emploi.matiereId}`);
     const matieres = fiches
       .filter((fiche) => {
         const name = (fiche.enseignantNomPrenom || '').toLowerCase();
@@ -248,7 +269,8 @@ export class ProfilePage implements OnInit, OnDestroy {
         );
       })
       .map((fiche) => fiche.matiereLibelle)
-      .filter((value, index, self) => self.indexOf(value) === index)
+      .concat(assignedSubjects)
+      .filter((value, index, self) => !!value && self.indexOf(value) === index)
       .sort((a, b) => a.localeCompare(b, 'fr'));
 
     this.teacher.matieres = matieres;

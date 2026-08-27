@@ -550,6 +550,67 @@
   }
 }
 
+.assigned-subjects {
+  margin-top: 4px;
+  padding: 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f8fbff, #eff6ff);
+}
+
+.assigned-subjects--form {
+  margin-top: 14px;
+}
+
+.assigned-subjects__heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 9px;
+  color: #1e40af;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+
+  i { font-size: 0.9rem; }
+  strong {
+    margin-left: auto;
+    min-width: 22px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    text-align: center;
+  }
+}
+
+.subject-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.subject-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 9px;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1e3a8a;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.subjects-empty {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
 .card-actions {
   padding: 14px 24px;
   border-top: 1px solid #f1f5f9;

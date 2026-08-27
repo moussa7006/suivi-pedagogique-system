@@ -4,8 +4,13 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../core/services/user.service';
+import { ScheduleService } from '../../core/services/schedule.service';
+import { MatiereService } from '../../core/services/matiere.service';
 import { Teacher } from '../../core/models/teacher.model';
+import { EmploiDuTemps } from '../../core/models/schedule.model';
+import { Matiere } from '../../core/models/matiere.model';
 import { timeout } from 'rxjs/operators';
+import { catchError, forkJoin, of } from 'rxjs';
 import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
@@ -196,6 +201,16 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
                 <input type="date" [(ngModel)]="currentTeacher.dateEmbauche" />
               </div>
             </div>
+            <div class="assigned-subjects assigned-subjects--form">
+              <div class="assigned-subjects__heading">
+                <i class="pi pi-book"></i>
+                <span>Matières assignées</span>
+              </div>
+              <div class="subject-badges" *ngIf="getAssignedSubjects(currentTeacher).length > 0; else noFormSubjects">
+                <span class="subject-badge" *ngFor="let subject of getAssignedSubjects(currentTeacher)">{{ subject }}</span>
+              </div>
+              <ng-template #noFormSubjects><p class="subjects-empty">Aucune matière assignée dans l'emploi du temps.</p></ng-template>
+            </div>
           </div>
 
           <div class="form-actions">
@@ -324,6 +339,17 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
                 <i class="pi pi-calendar"></i>
                 <span>{{ teacher.dateEmbauche || 'Date non renseignée' }}</span>
               </div>
+            </div>
+            <div class="assigned-subjects">
+              <div class="assigned-subjects__heading">
+                <i class="pi pi-book"></i>
+                <span>Matières assignées</span>
+                <strong>{{ getAssignedSubjects(teacher).length }}</strong>
+              </div>
+              <div class="subject-badges" *ngIf="getAssignedSubjects(teacher).length > 0; else noCardSubjects">
+                <span class="subject-badge" *ngFor="let subject of getAssignedSubjects(teacher)">{{ subject }}</span>
+              </div>
+              <ng-template #noCardSubjects><p class="subjects-empty">Aucune matière assignée</p></ng-template>
             </div>
           </div>
           <div class="card-actions">
@@ -501,8 +527,12 @@ export class TeachersComponent implements OnInit {
   importReportErrors: string[] = [];
   isImporting = false;
 
+  private assignedSubjects = new Map<number, string[]>();
+
   constructor(
     private userService: UserService,
+    private scheduleService: ScheduleService,
+    private matiereService: MatiereService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -511,20 +541,47 @@ export class TeachersComponent implements OnInit {
   }
 
   loadTeachers() {
-    this.userService.getUsers().subscribe({
-      next: (data) => {
-        console.log('Données brutes reçues du backend :', data);
+    forkJoin({
+      users: this.userService.getUsers(),
+      schedules: this.scheduleService.getAllSchedules().pipe(catchError(() => of([] as EmploiDuTemps[]))),
+      matieres: this.matiereService.getAll().pipe(catchError(() => of([] as Matiere[]))),
+    }).subscribe({
+      next: ({ users, schedules, matieres }) => {
+        const labels = new Map(
+          matieres.map((matiere) => [matiere.id, matiere.libelle || matiere.code]),
+        );
+        this.assignedSubjects = this.buildAssignedSubjects(schedules, labels);
         this.teachers = sortByAlpha(
-          data,
+          users.map((teacher) => ({
+            ...teacher,
+            matieres: teacher.id ? this.assignedSubjects.get(teacher.id) || [] : [],
+          })),
           (teacher) => `${teacher.nom || ''} ${teacher.prenom || ''}`,
         );
         this.filterTeachers();
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Erreur lors du chargement des utilisateurs:', err);
-      },
+      error: (err) => console.error('Erreur lors du chargement des utilisateurs:', err),
     });
+  }
+
+  private buildAssignedSubjects(
+    schedules: EmploiDuTemps[],
+    labels: Map<number | undefined, string>,
+  ): Map<number, string[]> {
+    const result = new Map<number, Set<string>>();
+    for (const schedule of schedules) {
+      if (!schedule.enseignantId) continue;
+      const label = labels.get(schedule.matiereId) || `Matière #${schedule.matiereId}`;
+      const subjects = result.get(schedule.enseignantId) || new Set<string>();
+      subjects.add(label);
+      result.set(schedule.enseignantId, subjects);
+    }
+    return new Map(Array.from(result.entries()).map(([id, subjects]) => [id, Array.from(subjects).sort((a, b) => a.localeCompare(b, 'fr'))]));
+  }
+
+  getAssignedSubjects(teacher: Partial<Teacher>): string[] {
+    return teacher.matieres || (teacher.id ? this.assignedSubjects.get(teacher.id) || [] : []);
   }
 
   filterTeachers() {

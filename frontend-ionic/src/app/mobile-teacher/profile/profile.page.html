@@ -92,9 +92,15 @@
       <div class="subjects-panel">
         <div class="subjects-title">
           <ion-icon name="book-outline"></ion-icon>
-          <span>Matières enseignées</span>
+          <span>Matières assignées</span>
+          <strong>{{ teacher.matieres.length }}</strong>
         </div>
-        <p>{{ getMatieresLabel() }}</p>
+        <div class="subject-badges" *ngIf="teacher.matieres.length > 0; else noAssignedSubjects">
+          <span class="subject-badge" *ngFor="let matiere of teacher.matieres">{{ matiere }}</span>
+        </div>
+        <ng-template #noAssignedSubjects>
+          <p class="subjects-empty">Aucune matière n’est encore assignée dans l’emploi du temps.</p>
+        </ng-template>
       </div>
     </section>
 
@@ -123,7 +129,7 @@
         <article class="stat-box subjects">
           <ion-icon name="book-outline"></ion-icon>
           <strong>{{ teacher.matieres.length }}</strong>
-          <span>Matières suivies</span>
+          <span>Matières assignées</span>
         </article>
       </div>
 

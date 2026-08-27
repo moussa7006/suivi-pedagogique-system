@@ -206,7 +206,10 @@ ion-content::part(scroll) {
 
 .subjects-panel { margin-top: 15px; padding: 14px; border-radius: 16px; color: #34506f; background: #edf6ff; }
 .subjects-title { display: flex; align-items: center; gap: 7px; color: #2367bb; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
-.subjects-panel p { margin: 7px 0 0; font-size: 0.9rem; font-weight: 650; line-height: 1.45; }
+.subjects-title strong { margin-left: auto; min-width: 22px; padding: 2px 7px; border-radius: 999px; color: #1d4ed8; background: #dbeafe; text-align: center; }
+.subject-badges { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.subject-badge { display: inline-flex; align-items: center; min-height: 25px; padding: 4px 9px; border: 1px solid #bfdbfe; border-radius: 999px; color: #1e3a8a; background: #fff; font-size: 0.75rem; font-weight: 750; }
+.subjects-panel p.subjects-empty { margin: 7px 0 0; color: #64748b; font-size: 0.78rem; font-weight: 600; line-height: 1.4; }
 
 .stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .stat-box { min-height: 132px; padding: 13px 8px; border-radius: 17px; text-align: center; }
