@@ -110,8 +110,8 @@ public class HonorairesService {
      * Ajoute automatiquement une séance devenue payable aux honoraires du mois
      * correspondant. Appelé après la validation de l'émargement et le
      * validation de l'émargement. Idempotent : n'ajoute jamais deux fois
-     * la même séance. Le calcul reste BROUILLON jusqu'à la clôture automatique
-     * du mois.
+     * la même séance. Le calcul est immédiatement VALIDE, car il ne contient
+     * que des séances dont l'émargement a été validé.
      */
     @Transactional
     public void ajouterSeanceAuxHonoraires(Seance seance) {
@@ -136,8 +136,9 @@ public class HonorairesService {
                         HonorairesCalculs c = new HonorairesCalculs();
                         c.setMois(moisCalcul);
                         c.setEnseignant(enseignant);
-                        c.setStatut(StatutHonoraire.BROUILLON);
+                        c.setStatut(StatutHonoraire.VALIDE);
                         c.setDateCalcul(LocalDateTime.now());
+                        c.setDateValidation(LocalDateTime.now());
                         c.setTotalHeures(0F);
                         c.setMontantBrut(0F);
                         return honorairesCalculsRepository.save(c);
@@ -150,8 +151,9 @@ public class HonorairesService {
         float montantBrut = calcul.getMontantBrut() == null ? 0F : calcul.getMontantBrut();
         calcul.setTotalHeures(totalHeures + detail.getNombreHeures());
         calcul.setMontantBrut(montantBrut + detail.getMontant());
-        calcul.setStatut(StatutHonoraire.BROUILLON);
+        calcul.setStatut(StatutHonoraire.VALIDE);
         calcul.setDateCalcul(LocalDateTime.now());
+        calcul.setDateValidation(LocalDateTime.now());
         honorairesCalculsRepository.save(calcul);
     }
 

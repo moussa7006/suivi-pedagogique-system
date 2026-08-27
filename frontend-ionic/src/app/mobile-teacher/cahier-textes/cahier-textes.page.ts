@@ -139,10 +139,12 @@ export class CahierTextesPage {
     this.loadData();
   }
 
+  /** Nombre de fiches réellement enregistrées par l'enseignant. */
   get getValidatedCount(): number {
-    return this.fichesProgression.filter((f) => f.estValideAdmin).length;
+    return this.fichesProgression.length;
   }
 
+  /** Séances émargées qui attendent encore leur fiche de progression. */
   get getPendingCount(): number {
     return this.seancesDisponibles.filter((seance) => !!seance.emargementId)
       .length;
@@ -279,13 +281,10 @@ export class CahierTextesPage {
               : 'Fiche de progression enregistrée.',
             'success',
           );
+          // Fermer explicitement le formulaire avant tout rechargement. Cela
+          // évite qu'un contexte de scan encore présent dans l'URL le rouvre.
           this.clearSubmissionContext();
-
-          // Les paramètres provenant du scan restent sinon dans l'URL et
-          // rouvrent la fiche vide après le rechargement des données.
-          await this.router.navigate([], {
-            relativeTo: this.route,
-            queryParams: {},
+          await this.router.navigateByUrl('/mobile/cahier-textes', {
             replaceUrl: true,
           });
           this.loadData();
@@ -388,14 +387,27 @@ export class CahierTextesPage {
     contenu: string;
     status: 'Enregistrée';
   }> {
-    return fiches.map((fiche) => ({
-      id: fiche.id,
-      matiere: fiche.matiereLibelle || fiche.objectifs || 'Séance',
-      date: fiche.dateSeance || fiche.dateSaisie || '',
-      heure: fiche.heureSeance || 'Horaire non précisé',
-      contenu: fiche.contenuDetaille || '',
-      status: 'Enregistrée',
-    }));
+    return [...fiches]
+      .sort((a, b) => {
+        const dateA = this.getFicheDateTime(a);
+        const dateB = this.getFicheDateTime(b);
+        return dateB - dateA;
+      })
+      .map((fiche) => ({
+        id: fiche.id,
+        matiere: fiche.matiereLibelle || fiche.objectifs || 'Séance',
+        date: fiche.dateSeance || fiche.dateSaisie || '',
+        heure: fiche.heureSeance || 'Horaire non précisé',
+        contenu: fiche.contenuDetaille || '',
+        status: 'Enregistrée',
+      }));
+  }
+
+  private getFicheDateTime(fiche: FicheProgression): number {
+    const date = fiche.dateSeance || fiche.dateSaisie || '';
+    const heure = fiche.heureSeance?.split('-')[0]?.trim() || '00:00';
+    const timestamp = new Date(`${date}T${heure}:00`).getTime();
+    return Number.isNaN(timestamp) ? 0 : timestamp;
   }
 
   private getLoadErrorMessage(error: unknown, resource: string): string {
