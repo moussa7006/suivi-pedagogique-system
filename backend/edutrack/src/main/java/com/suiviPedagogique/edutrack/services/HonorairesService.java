@@ -349,8 +349,7 @@ public class HonorairesService {
     }
 
     private String formatEnseignant(Enseignant enseignant) {
-        return ((enseignant.getPrenom() != null ? enseignant.getPrenom() : "") + " " +
-                (enseignant.getNom() != null ? enseignant.getNom() : "")).trim();
+        return TeacherNameFormatter.format(enseignant);
     }
 
     private void verifyAdmin() {

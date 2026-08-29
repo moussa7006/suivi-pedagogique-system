@@ -307,7 +307,7 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
               </div>
             </div>
             <div class="card-identity">
-              <div class="card-name">{{ teacher.prenom }} {{ teacher.nom }}</div>
+              <div class="card-name">Pr {{ teacher.prenom }} {{ teacher.nom }}</div>
               <span class="badge-role enseignant">{{ teacher.role || 'ENSEIGNANT' }}</span>
             </div>
             <div class="card-details">

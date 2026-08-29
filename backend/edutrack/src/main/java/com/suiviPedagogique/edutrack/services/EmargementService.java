@@ -169,7 +169,7 @@ public class EmargementService {
             Seance seance = e.getSeance();
             if (seance != null) {
                 if (seance.getEnseignant() != null) {
-                    dto.setEnseignantNomPrenom(seance.getEnseignant().getPrenom() + " " + seance.getEnseignant().getNom());
+                    dto.setEnseignantNomPrenom(TeacherNameFormatter.format(seance.getEnseignant()));
                 }
                 if (seance.getSalle() != null) {
                     dto.setLieu(seance.getSalle().getNom());
