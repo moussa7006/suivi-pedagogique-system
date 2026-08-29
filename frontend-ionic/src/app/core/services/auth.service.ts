@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
 import { Observable, firstValueFrom, from, map, switchMap } from 'rxjs';
@@ -88,10 +88,17 @@ export class AuthService {
       try {
         await firstValueFrom(this.getMe());
         return true;
-      } catch {
-        await this.tokenStorage.clearToken();
-        await Preferences.remove({ key: this.userKey });
-        return false;
+      } catch (error) {
+        // Une erreur réseau ne doit jamais déconnecter l'utilisateur.
+        // On efface la session uniquement si le backend a explicitement
+        // rejeté le token (401/403).
+        const status = error instanceof HttpErrorResponse ? error.status : 0;
+        if (status === 401 || status === 403) {
+          await this.tokenStorage.clearToken();
+          await Preferences.remove({ key: this.userKey });
+          return false;
+        }
+        return true;
       }
     }
 

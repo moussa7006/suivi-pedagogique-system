@@ -128,7 +128,7 @@ public class FicheProgressionService {
         if (seance != null) {
             dto.setSeanceId(seance.getId());
             if (seance.getEnseignant() != null) {
-                dto.setEnseignantNomPrenom(seance.getEnseignant().getPrenom() + " " + seance.getEnseignant().getNom());
+                dto.setEnseignantNomPrenom(TeacherNameFormatter.format(seance.getEnseignant()));
             }
             if (seance.getEmploiDuTemps() != null && seance.getEmploiDuTemps().getMatiere() != null) {
                 dto.setMatiereLibelle(seance.getEmploiDuTemps().getMatiere().getLibelle());

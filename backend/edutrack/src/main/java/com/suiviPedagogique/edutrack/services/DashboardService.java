@@ -187,8 +187,7 @@ public class DashboardService {
                     double taux = c[0] == 0 ? 0.0 : Math.round(c[1] * 10000.0 / c[0]) / 100.0;
                     Map<String, Object> row = new LinkedHashMap<>();
                     row.put("id", ens.getId());
-                    row.put("nom", (ens.getPrenom() == null ? "" : ens.getPrenom()) + " "
-                            + (ens.getNom() == null ? "" : ens.getNom()));
+                    row.put("nom", TeacherNameFormatter.format(ens));
                     row.put("matricule", ens.getMatricule());
                     row.put("specialite", ens.getSpecialite() != null ? ens.getSpecialite() : "N/A");
                     row.put("seancesPlanifiees", c[0]);
@@ -301,8 +300,7 @@ public class DashboardService {
                     ? s.getEmploiDuTemps().getMatiere().getLibelle() : "N/A");
             row.put("classe", s.getClasse() != null ? s.getClasse().getLibelle() : "N/A");
             row.put("enseignant", s.getEnseignant() != null
-                    ? ((s.getEnseignant().getPrenom() == null ? "" : s.getEnseignant().getPrenom()) + " "
-                    + (s.getEnseignant().getNom() == null ? "" : s.getEnseignant().getNom())).trim()
+                    ? TeacherNameFormatter.format(s.getEnseignant())
                     : "N/A");
             row.put("statut", getStatutAffichage(s));
             return row;
