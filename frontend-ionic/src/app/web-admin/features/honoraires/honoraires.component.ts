@@ -665,7 +665,7 @@ export class HonorairesComponent implements OnInit {
         this.dropdownOptions = [
           { label: '-- Tous les enseignants --', value: -1, id: -1 },
           ...this.teachers.map((t) => ({
-            label: `Pr ${t.prenom} ${t.nom}`, 
+            label: `Pr. ${t.prenom} ${t.nom}`, 
             value: t.id,
             id: t.id,
             prenom: t.prenom,
