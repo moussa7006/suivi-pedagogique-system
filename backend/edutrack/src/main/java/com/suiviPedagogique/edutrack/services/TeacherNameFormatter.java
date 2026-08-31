@@ -10,13 +10,13 @@ public final class TeacherNameFormatter {
 
     public static String format(Enseignant enseignant) {
         if (enseignant == null) {
-            return "Pr";
+            return "Pr.";
         }
 
         String prenom = enseignant.getPrenom() == null ? "" : enseignant.getPrenom().trim();
         String nom = enseignant.getNom() == null ? "" : enseignant.getNom().trim();
         String fullName = (prenom + " " + nom).trim();
 
-        return fullName.isEmpty() ? "Pr" : "Pr " + fullName;
+        return fullName.isEmpty() ? "Pr." : "Pr. " + fullName;
     }
 }

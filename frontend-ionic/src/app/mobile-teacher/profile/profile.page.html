@@ -41,7 +41,7 @@
     <section class="identity-card" aria-label="Identité de l'enseignant">
       <div>
         <p class="identity-label">Bienvenue</p>
-        <h2>{{ teacher.firstName }} {{ teacher.lastName }}</h2>
+        <h2>Pr. {{ teacher.firstName }} {{ teacher.lastName }}</h2>
         <div class="identity-meta">
           <span *ngIf="teacher.matricule"><ion-icon name="person-circle-outline"></ion-icon>{{ teacher.matricule }}</span>
           <span *ngIf="teacher.role"><ion-icon name="business-outline"></ion-icon>{{ teacher.role }}</span>
@@ -56,7 +56,7 @@
         <div><p>Coordonnées</p><h3>Informations personnelles</h3></div>
       </div>
       <div class="info-list">
-        <div class="info-row"><div class="icon-box"><ion-icon name="person-outline"></ion-icon></div><div class="item-content"><label>Nom complet</label><p>{{ teacher.firstName }} {{ teacher.lastName }}</p></div></div>
+        <div class="info-row"><div class="icon-box"><ion-icon name="person-outline"></ion-icon></div><div class="item-content"><label>Nom complet</label><p>Pr. {{ teacher.firstName }} {{ teacher.lastName }}</p></div></div>
         <div class="info-row"><div class="icon-box"><ion-icon name="mail-outline"></ion-icon></div><div class="item-content"><label>Adresse e-mail</label><p class="breakable">{{ teacher.email || 'Non renseigné' }}</p></div></div>
         <div class="info-row"><div class="icon-box"><ion-icon name="call-outline"></ion-icon></div><div class="item-content"><label>Téléphone</label><p>{{ teacher.telephone || 'Non renseigné' }}</p></div></div>
         <div class="info-row"><div class="icon-box"><ion-icon name="location-outline"></ion-icon></div><div class="item-content"><label>Adresse / quartier</label><p class="breakable">{{ teacher.adresse || 'Non renseigné' }}</p></div></div>

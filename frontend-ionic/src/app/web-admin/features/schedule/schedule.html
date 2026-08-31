@@ -153,10 +153,10 @@
         placeholder="Sélectionnez un enseignant"
       >
         <ng-template let-teacher pTemplate="item">
-          <div>{{teacher.prenom}} {{teacher.nom}}</div>
+          <div>Pr. {{teacher.prenom}} {{teacher.nom}}</div>
         </ng-template>
         <ng-template let-teacher pTemplate="selectedItem">
-          <div *ngIf="teacher">{{teacher.prenom}} {{teacher.nom}}</div>
+          <div *ngIf="teacher">Pr. {{teacher.prenom}} {{teacher.nom}}</div>
         </ng-template>
       </p-dropdown>
     </div>

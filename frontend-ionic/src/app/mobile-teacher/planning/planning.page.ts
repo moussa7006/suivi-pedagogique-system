@@ -117,7 +117,7 @@ export class PlanningPage implements OnInit {
     const user = await this.authService.getUser();
     if (user) {
       this.currentUserId = user.id ?? null;
-      this.currentUserLabel = `Pr ${user.prenom || ''} ${user.nom || ''}`.trim();
+      this.currentUserLabel = `Pr. ${user.prenom || ''} ${user.nom || ''}`.trim();
       this.cdr.detectChanges();
     }
   }
