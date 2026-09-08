@@ -118,7 +118,6 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    void this.loadUserProfile();
     this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(1000, () => {
       if (this.isEditingProfile) {
         this.cancelProfileEditing();

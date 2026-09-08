@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay, tap } from 'rxjs';
 import { ApiConfigService } from './api-config.service';
 import {
   EmargementRequest,
@@ -17,10 +17,23 @@ export class EmargementService {
     return this.http.post<EmargementScanResponse>(
       this.apiConfig.buildUrl('emargements/scan'),
       payload,
+    ).pipe(
+      tap(() => this.invalidateCache()),
     );
   }
 
   getEmargements(): Observable<Emargement[]> {
-    return this.http.get<Emargement[]>(this.apiConfig.buildUrl('emargements'));
+    if (!this.cachedEmargements$) {
+      this.cachedEmargements$ = this.http
+        .get<Emargement[]>(this.apiConfig.buildUrl('emargements'))
+        .pipe(shareReplay({ bufferSize: 1, refCount: true }));
+    }
+    return this.cachedEmargements$;
   }
+
+  invalidateCache(): void {
+    this.cachedEmargements$ = undefined;
+  }
+
+  private cachedEmargements$?: Observable<Emargement[]>;
 }

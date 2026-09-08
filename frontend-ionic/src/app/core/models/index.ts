@@ -16,3 +16,4 @@ export * from './fiche-progression.model';
 export * from './piece-jointe.model';
 export * from './justificatif.model';
 export * from './qr-code.model';
+export * from './archive.model';

@@ -82,21 +82,70 @@ ion-content {
    HEADER STICKY
    ============================================ */
 .dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky; /* Rendu collant */
+  position: sticky;
   top: 0;
   z-index: 100;
-  background: #ffffff; /* Fond blanc opaque */
-  padding: var(--ion-safe-area-top, 0px) 20px 16px 20px;
-  margin: 0 -20px 20px -20px; /* S'étend sur les bords pour annuler le padding de ion-content */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Ombre douce pour séparer du contenu */
+  isolation: isolate;
+  overflow: hidden;
+  margin: 0 -20px 20px;
+  padding: calc(var(--ion-safe-area-top, 0px) + 12px) 20px 20px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #243c9b 0%, #4361ee 55%, #6750c9 100%);
+  box-shadow: 0 10px 28px rgba(55, 70, 180, 0.28);
 }
 
-.header-left {
+.header-orb {
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+
+  &--one {
+    width: 190px;
+    height: 190px;
+    top: -118px;
+    right: -48px;
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  &--two {
+    width: 120px;
+    height: 120px;
+    bottom: -80px;
+    left: 42%;
+    background: rgba(142, 219, 255, 0.15);
+  }
+}
+
+.header-topline,
+.welcome-row {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
+}
+
+.header-topline {
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.app-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+
+  ion-icon {
+    font-size: 15px;
+  }
+}
+
+.welcome-row {
   gap: 14px;
 }
 
@@ -120,10 +169,11 @@ ion-content {
 }
 
 .avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #4361ee, #7c3aed);
+  width: 56px;
+  height: 56px;
+  border: 2px solid rgba(255, 255, 255, 0.82);
+  border-radius: 19px;
+  background: linear-gradient(135deg, #7dd3fc, #a78bfa);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -131,7 +181,7 @@ ion-content {
   font-size: 18px;
   font-weight: 800;
   letter-spacing: 0.02em;
-  box-shadow: 0 4px 16px rgba(67, 97, 238, 0.3);
+  box-shadow: 0 8px 20px rgba(20, 31, 104, 0.28);
   position: relative;
   overflow: hidden;
 
@@ -165,12 +215,12 @@ ion-content {
 
 .status-dot {
   position: absolute;
-  bottom: 0;
+  bottom: -1px;
   right: -2px;
   width: 14px;
   height: 14px;
-  background: #10b981;
-  border: 3px solid #ffffff;
+  background: #34d399;
+  border: 3px solid #354bb7;
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
   animation: pulse-dot 2s ease-in-out infinite;
@@ -189,36 +239,42 @@ ion-content {
 }
 
 .header-text {
-  .greeting {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin: 0 0 2px 0;
-    font-weight: 500;
+  min-width: 0;
+
+  .greeting,
+  .header-date {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.78);
+
+    ion-icon {
+      font-size: 14px;
+    }
   }
 
   .teacher-name {
-    font-size: 20px;
+    overflow: hidden;
+    margin: 3px 0 4px;
+    color: #ffffff;
+    font-size: 21px;
     font-weight: 800;
-    color: var(--text-primary);
-    margin: 0;
-    letter-spacing: -0.03em;
-    line-height: 1.2;
+    letter-spacing: -0.035em;
+    line-height: 1.16;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .header-date {
-    display: block;
-    margin-top: 3px;
-    font-size: 11.5px;
-    font-weight: 600;
-    color: var(--text-secondary);
     text-transform: capitalize;
-    letter-spacing: 0.01em;
   }
 }
 
-.header-right {
-  .notif-btn {
-    --background: rgba(255, 255, 255, 0.92);
+.notif-btn {
+    --background: rgba(255, 255, 255, 0.16);
     --border-radius: 18px;
     --box-shadow: 0 10px 28px rgba(67, 97, 238, 0.14);
     --padding-start: 0;
@@ -235,14 +291,13 @@ ion-content {
 
     ion-icon {
       font-size: 22px;
-      color: var(--accent-blue);
+      color: #ffffff;
     }
 
     &::part(native) {
       backdrop-filter: blur(14px);
     }
   }
-}
 
 .notif-badge {
   position: absolute;

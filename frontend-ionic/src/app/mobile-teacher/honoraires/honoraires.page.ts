@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
@@ -44,7 +44,7 @@ import { HonorairesService } from '../../core/services/honoraires.service';
     IonPopover
   ],
 })
-export class HonorairesPage implements OnInit {
+export class HonorairesPage {
   private readonly honorairesService = inject(HonorairesService);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -112,9 +112,6 @@ export class HonorairesPage implements OnInit {
     return s.length >= 7 ? s.substring(0, 7) : s;
   }
 
-  ngOnInit(): void {
-    this.loadHonoraires();
-  }
 
   ionViewWillEnter(): void {
     this.loadHonoraires();

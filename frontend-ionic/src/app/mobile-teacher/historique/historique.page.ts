@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -70,7 +70,7 @@ interface HistoriqueItem {
     IonPopover
   ],
 })
-export class HistoriquePage implements OnInit {
+export class HistoriquePage {
   private readonly authService = inject(AuthService);
   private readonly scheduleService = inject(ScheduleService);
   private readonly emargementService = inject(EmargementService);
@@ -171,9 +171,6 @@ export class HistoriquePage implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.loadHistorique();
-  }
 
   ionViewWillEnter(): void {
     this.loadHistorique();

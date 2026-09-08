@@ -10,6 +10,11 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_emargement_enseignant", columnList = "enseignant_id"),
+        @Index(name = "idx_emargement_date_scan", columnList = "date_heure_scan"),
+        @Index(name = "idx_emargement_statut", columnList = "statut")
+})
 @Getter
 @Setter
 @AllArgsConstructor

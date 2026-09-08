@@ -7,36 +7,13 @@
   <!-- ========================================= -->
   <!-- TOP HEADER                                -->
   <!-- ========================================= -->
-  <div class="dashboard-header animate-fade-in">
-    <div class="header-left">
-      <button
-        type="button"
-        class="avatar-wrapper profile-avatar-link"
-        (click)="navigateTo('/mobile/tabs/tabs/tab3')"
-        aria-label="Ouvrir mon profil"
-      >
-        <div class="avatar">
-          <img
-            *ngIf="teacher.avatar; else initialsAvatar"
-            [src]="teacher.avatar"
-            [alt]="teacher.firstName + ' ' + teacher.lastName"
-          />
-          <ng-template #initialsAvatar>
-            <span>{{ teacherInitials }}</span>
-          </ng-template>
-        </div>
-        <div class="status-dot"></div>
-      </button>
-      <div class="header-text">
-        <p class="greeting">{{ greeting }} 👋</p>
-        <h1 class="teacher-name">
-          {{ teacher.firstName }} {{ teacher.lastName }}
-        </h1>
-        <span class="header-date">{{ todayLabel }}</span>
-      </div>
-    </div>
-    <div class="header-right">
-      <ion-button fill="clear" class="notif-btn" (click)="openNotifications()">
+  <header class="dashboard-header animate-fade-in">
+    <div class="header-orb header-orb--one"></div>
+    <div class="header-orb header-orb--two"></div>
+
+    <div class="header-topline">
+      <span class="app-mark"><ion-icon name="school-outline"></ion-icon> EduTrack</span>
+      <ion-button fill="clear" class="notif-btn" (click)="openNotifications()" aria-label="Voir les notifications">
         <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
         <ion-badge
           *ngIf="notificationCount > 0"
@@ -47,7 +24,34 @@
         </ion-badge>
       </ion-button>
     </div>
-  </div>
+
+    <div class="welcome-row">
+      <button
+        type="button"
+        class="avatar-wrapper profile-avatar-link"
+        (click)="navigateTo('/mobile/tabs/tabs/tab3')"
+        aria-label="Ouvrir mon profil"
+      >
+        <div class="avatar">
+          <img
+            *ngIf="teacher.avatar; else initialsAvatar"
+            [src]="teacher.avatar"
+            [alt]="'Photo de Pr. ' + teacher.firstName + ' ' + teacher.lastName"
+          />
+          <ng-template #initialsAvatar>
+            <span>{{ teacherInitials }}</span>
+          </ng-template>
+        </div>
+        <span class="status-dot" aria-label="Compte actif"></span>
+      </button>
+
+      <div class="header-text">
+        <p class="greeting"><ion-icon name="person-outline"></ion-icon>{{ greeting }}</p>
+        <h1 class="teacher-name">Pr. {{ teacher.firstName }} {{ teacher.lastName }}</h1>
+        <span class="header-date"><ion-icon name="calendar-outline"></ion-icon>{{ todayLabel }}</span>
+      </div>
+    </div>
+  </header>
 
   <div
     class="notif-overlay"

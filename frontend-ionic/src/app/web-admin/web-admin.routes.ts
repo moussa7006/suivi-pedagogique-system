@@ -130,6 +130,14 @@ export const webAdminRoutes: Routes = [
           import('./features/salles/salles.component').then((m) => m.SallesComponent),
       },
       {
+        path: 'archives/:id',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/archive-detail/archive-detail.component').then(
+            (m) => m.ArchiveDetailComponent,
+          ),
+      },
+      {
         path: 'archives',
         canActivate: [adminGuard],
         loadComponent: () =>
