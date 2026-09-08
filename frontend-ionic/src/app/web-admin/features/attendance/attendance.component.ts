@@ -43,16 +43,20 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
       </div>
 
       <div class="stats-row">
-        <div class="mini-stat">
+        <div class="mini-stat attendance-total-card">
           <div class="stat-icon green">
             <i class="pi pi-check-circle"></i>
           </div>
           <div class="stat-content">
-            <span class="val">{{ getStats().valides }}</span>
-            <span class="lab">Émargés</span>
+            <span class="stat-kicker">Présence enregistrée</span>
+            <div class="stat-value-line">
+              <span class="val">{{ getStats().valides }}</span>
+              <span class="lab">émargement{{ getStats().valides > 1 ? 's' : '' }}</span>
+            </div>
+            <span class="stat-caption">{{ todayLogs.length }} enregistrement{{ todayLogs.length > 1 ? 's' : '' }} au total</span>
           </div>
+          <div class="stat-trend"><i class="pi pi-chart-line"></i><span>Suivi en temps réel</span></div>
         </div>
-
       </div>
 
       <div class="table-card">
@@ -286,6 +290,19 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
 
         @media (max-width: 480px) {
           flex-direction: column;
+
+          .attendance-total-card {
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 18px;
+
+            .stat-trend {
+              width: 100%;
+              margin-left: 0;
+              justify-content: center;
+            }
+          }
         }
 
         .mini-stat {
@@ -300,6 +317,96 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
           align-items: center;
           gap: 16px;
           transition: all 0.2s;
+
+          &.attendance-total-card {
+            position: relative;
+            overflow: hidden;
+            min-height: 106px;
+            padding: 20px 24px;
+            border-color: #ccebdc;
+            background: linear-gradient(115deg, #ffffff 0%, #f4fcf7 100%);
+            box-shadow: 0 10px 26px rgba(22, 101, 52, 0.08);
+
+            &::after {
+              content: '';
+              position: absolute;
+              top: -44px;
+              right: -25px;
+              width: 150px;
+              height: 150px;
+              border-radius: 50%;
+              background: rgba(34, 197, 94, 0.08);
+            }
+
+            .stat-icon {
+              position: relative;
+              z-index: 1;
+              width: 58px;
+              height: 58px;
+              border-radius: 17px;
+              background: #dcfce7;
+              color: #15803d;
+              font-size: 1.55rem;
+              box-shadow: inset 0 0 0 1px rgba(22, 101, 52, 0.08);
+            }
+
+            .stat-content {
+              position: relative;
+              z-index: 1;
+              gap: 3px;
+            }
+
+            .stat-kicker {
+              color: #4b8060;
+              font-size: 0.72rem;
+              font-weight: 800;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+            }
+
+            .stat-value-line {
+              display: flex;
+              align-items: baseline;
+              gap: 8px;
+            }
+
+            .stat-value-line .val {
+              color: #14532d;
+              font-size: clamp(2rem, 4vw, 2.55rem);
+              letter-spacing: -0.06em;
+            }
+
+            .stat-value-line .lab {
+              color: #356449;
+              font-size: 0.88rem;
+              font-weight: 700;
+            }
+
+            .stat-caption {
+              color: #73917f;
+              font-size: 0.74rem;
+              font-weight: 500;
+            }
+
+            .stat-trend {
+              position: relative;
+              z-index: 1;
+              display: inline-flex;
+              align-items: center;
+              gap: 7px;
+              margin-left: auto;
+              padding: 8px 11px;
+              border: 1px solid #d8f1df;
+              border-radius: 999px;
+              background: rgba(255, 255, 255, 0.8);
+              color: #4b8060;
+              font-size: 0.72rem;
+              font-weight: 700;
+              white-space: nowrap;
+            }
+
+            .stat-trend i { color: #16a34a; }
+          }
 
           &:hover {
             transform: translateY(-2px);
