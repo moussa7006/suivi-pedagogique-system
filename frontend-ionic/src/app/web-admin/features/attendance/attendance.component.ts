@@ -52,15 +52,7 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
             <span class="lab">Émargés</span>
           </div>
         </div>
-        <div class="mini-stat">
-          <div class="stat-icon blue">
-            <i class="pi pi-file"></i>
-          </div>
-          <div class="stat-content">
-            <span class="val">{{ getStats().justifies }}</span>
-            <span class="lab">Justifiés</span>
-          </div>
-        </div>
+
       </div>
 
       <div class="table-card">
@@ -88,7 +80,7 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
             >
               <option value="">Tous les statuts</option>
               <option value="VALIDE">Émargé</option>
-              <option value="JUSTIFIE">Justifié</option>
+
             </select>
 
             <!-- Centered Search Bar -->
@@ -710,8 +702,7 @@ export class AttendanceComponent implements OnInit {
 
   getStats() {
     const valides = this.todayLogs.filter((l) => l.statut === 'VALIDE').length;
-    const justifies = this.todayLogs.filter((l) => l.statut === 'JUSTIFIE').length;
-    return { valides, justifies };
+    return { valides };
   }
 
   async exportExcel(): Promise<void> {
@@ -769,8 +760,7 @@ export class AttendanceComponent implements OnInit {
         return 'Scan émargé - fiche attendue';
       case 'VALIDE':
         return 'Émargé';
-      case 'JUSTIFIE':
-        return 'Justifié';
+
       default:
         return statut || 'N/A';
     }
