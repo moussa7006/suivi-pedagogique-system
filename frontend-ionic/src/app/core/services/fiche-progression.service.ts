@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay, tap } from 'rxjs';
 import { ApiConfigService } from './api-config.service';
 import {
   FicheProgressionRequest,
@@ -11,6 +11,7 @@ import {
 export class FicheProgressionService {
   private readonly http = inject(HttpClient);
   private readonly apiConfig = inject(ApiConfigService);
+  private cachedFiches$?: Observable<FicheProgression[]>;
 
   createFicheProgression(
     seanceId: number,
@@ -19,12 +20,21 @@ export class FicheProgressionService {
     return this.http.post<FicheProgression>(
       this.apiConfig.buildUrl(`fiche-progression/${seanceId}`),
       payload,
+    ).pipe(
+      tap(() => this.invalidateCache()),
     );
   }
 
   getFichesProgression(): Observable<FicheProgression[]> {
-    return this.http.get<FicheProgression[]>(
-      this.apiConfig.buildUrl('fiche-progression'),
-    );
+    if (!this.cachedFiches$) {
+      this.cachedFiches$ = this.http
+        .get<FicheProgression[]>(this.apiConfig.buildUrl('fiche-progression'))
+        .pipe(shareReplay({ bufferSize: 1, refCount: true }));
+    }
+    return this.cachedFiches$;
+  }
+
+  invalidateCache(): void {
+    this.cachedFiches$ = undefined;
   }
 }

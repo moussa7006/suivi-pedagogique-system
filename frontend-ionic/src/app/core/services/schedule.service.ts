@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay } from 'rxjs';
 import { ApiConfigService } from './api-config.service';
 import { EmploiDuTemps } from '../models/schedule.model';
 import { Seance } from '../models/seance.model';
@@ -9,14 +9,29 @@ import { Seance } from '../models/seance.model';
 export class ScheduleService {
   private readonly http = inject(HttpClient);
   private readonly apiConfig = inject(ApiConfigService);
+  private cachedEmploisDuTemps$?: Observable<EmploiDuTemps[]>;
+  private cachedSeances$?: Observable<Seance[]>;
 
   getEmploisDuTemps(): Observable<EmploiDuTemps[]> {
-    return this.http.get<EmploiDuTemps[]>(
-      this.apiConfig.buildUrl('emploi-du-temps'),
-    );
+    if (!this.cachedEmploisDuTemps$) {
+      this.cachedEmploisDuTemps$ = this.http
+        .get<EmploiDuTemps[]>(this.apiConfig.buildUrl('emploi-du-temps'))
+        .pipe(shareReplay({ bufferSize: 1, refCount: true }));
+    }
+    return this.cachedEmploisDuTemps$;
   }
 
   getSeances(): Observable<Seance[]> {
-    return this.http.get<Seance[]>(this.apiConfig.buildUrl('seances'));
+    if (!this.cachedSeances$) {
+      this.cachedSeances$ = this.http
+        .get<Seance[]>(this.apiConfig.buildUrl('seances'))
+        .pipe(shareReplay({ bufferSize: 1, refCount: true }));
+    }
+    return this.cachedSeances$;
+  }
+
+  invalidateCache(): void {
+    this.cachedEmploisDuTemps$ = undefined;
+    this.cachedSeances$ = undefined;
   }
 }

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 @Repository
 public interface EmploiDuTempsRepository extends JpaRepository<EmploiDuTemps, Integer> {
@@ -13,6 +14,9 @@ public interface EmploiDuTempsRepository extends JpaRepository<EmploiDuTemps, In
     // We can add queries here if we need to find active EmploiDuTemps for a specific date
     @Query("SELECT e FROM EmploiDuTemps e WHERE e.dateDebutValidite <= CURRENT_DATE AND (e.dateFinValidite IS NULL OR e.dateFinValidite >= CURRENT_DATE)")
     List<EmploiDuTemps> findAllActive();
+
+    @EntityGraph(attributePaths = {"salle", "enseignant", "classe", "matiere", "anneeUniversitaire"})
+    List<EmploiDuTemps> findByAnneeUniversitaireId(Integer anneeUniversitaireId);
 
     List<EmploiDuTemps> findByEnseignantId(Integer enseignantId);
 

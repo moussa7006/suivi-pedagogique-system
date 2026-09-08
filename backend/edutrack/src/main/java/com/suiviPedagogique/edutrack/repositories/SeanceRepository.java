@@ -1,6 +1,7 @@
 package com.suiviPedagogique.edutrack.repositories;
 
 import com.suiviPedagogique.edutrack.Entities.Seance;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,16 +16,85 @@ import java.util.Optional;
 @Repository
 public interface SeanceRepository extends JpaRepository<Seance, Integer> {
 
+    @EntityGraph(attributePaths = {
+            "enseignant",
+            "classe.filiere",
+            "classe.niveauEnseignement",
+            "emploiDuTemps.matiere.departement",
+            "emargement",
+            "ficheProgression",
+            "qrCode"
+    })
+    @Query("SELECT s FROM Seance s")
+    List<Seance> findAllForDashboard();
+
+    @EntityGraph(attributePaths = {
+            "enseignant",
+            "classe",
+            "emploiDuTemps.matiere",
+            "emargement",
+            "ficheProgression",
+            "qrCode"
+    })
+    List<Seance> findTop8ByOrderByDateCoursDescHeureDebutReelleDesc();
+
+    @EntityGraph(attributePaths = {
+            "enseignant",
+            "classe",
+            "salle",
+            "emploiDuTemps.matiere",
+            "emargement",
+            "ficheProgression",
+            "qrCode"
+    })
     List<Seance> findByEnseignantId(Integer enseignantId);
 
+    @EntityGraph(attributePaths = {
+            "enseignant",
+            "classe",
+            "salle",
+            "emploiDuTemps.matiere",
+            "emargement",
+            "ficheProgression",
+            "qrCode"
+    })
+    List<Seance> findAll();
+
+    @EntityGraph(attributePaths = {
+            "enseignant",
+            "classe",
+            "salle",
+            "emploiDuTemps.matiere",
+            "emargement",
+            "ficheProgression",
+            "qrCode"
+    })
     List<Seance> findByDateCours(LocalDate dateCours);
 
-    List<Seance> findTop8ByOrderByDateCoursDescHeureDebutReelleDesc();
+    @EntityGraph(attributePaths = {
+            "enseignant",
+            "classe",
+            "salle",
+            "emploiDuTemps.matiere",
+            "emargement",
+            "ficheProgression",
+            "qrCode"
+    })
+    Optional<Seance> findById(Integer id);
 
     long countByDateCours(LocalDate dateCours);
 
     List<Seance> findByEnseignantIdAndDateCoursBetween(Integer enseignantId, LocalDate startDate, LocalDate endDate);
 
+    @EntityGraph(attributePaths = {
+            "enseignant",
+            "classe",
+            "salle",
+            "emploiDuTemps.matiere",
+            "emargement",
+            "ficheProgression",
+            "qrCode"
+    })
     @Query("SELECT s FROM Seance s WHERE s.qrCode.code = :token")
     Optional<Seance> findByTokenQRCode(String token);
 
@@ -32,6 +102,13 @@ public interface SeanceRepository extends JpaRepository<Seance, Integer> {
     List<Seance> findSeancesForTodayWithoutToken();
 
     boolean existsByEmploiDuTempsIdAndDateCours(Integer emploiDuTempsId, LocalDate dateCours);
+
+    @EntityGraph(attributePaths = {
+            "enseignant", "classe.niveauEnseignement", "salle",
+            "emploiDuTemps.matiere", "emargement", "ficheProgression", "qrCode"
+    })
+    @Query("SELECT s FROM Seance s WHERE s.emploiDuTemps.anneeUniversitaire.id = :anneeUniversitaireId ORDER BY s.dateCours DESC, s.heureDebutReelle DESC")
+    List<Seance> findByAnneeUniversitaireId(@Param("anneeUniversitaireId") Integer anneeUniversitaireId);
 
     List<Seance> findByEmploiDuTempsId(Integer emploiDuTempsId);
 

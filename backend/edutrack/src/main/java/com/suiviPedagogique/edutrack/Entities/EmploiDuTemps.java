@@ -13,6 +13,11 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_emploi_enseignant", columnList = "enseignant_id"),
+        @Index(name = "idx_emploi_salle", columnList = "salle_id"),
+        @Index(name = "idx_emploi_dates_validite", columnList = "date_debut_validite,date_fin_validite")
+})
 @Getter
 @Setter
 @NoArgsConstructor

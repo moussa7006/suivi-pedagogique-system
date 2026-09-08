@@ -48,7 +48,7 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
       </div>
 
       <section class="archive-grid" *ngIf="!isLoading && !errorMessage && archivedYears.length">
-        <article class="archive-item" *ngFor="let year of archivedYears">
+        <article class="archive-item" *ngFor="let year of archivedYears" [routerLink]="['/web/archives', year.id]">
           <div class="item-topline">
             <span class="archive-badge"><i class="pi pi-lock"></i> Clôturée</span>
             <i class="pi pi-calendar-times muted-icon"></i>
@@ -65,7 +65,8 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
               <strong>{{ year.dateFin | date: 'dd MMMM yyyy' }}</strong>
             </div>
           </div>
-          <p>Cette année est clôturée automatiquement. Ses données restent consultables, mais ne peuvent plus être modifiées.</p>
+          <p>Cette année est clôturée automatiquement. Toutes ses données restent consultables en lecture seule.</p>
+          <span class="consult-link">Consulter toutes les données <i class="pi pi-arrow-right"></i></span>
         </article>
       </section>
 
@@ -94,7 +95,7 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
     .summary strong { font-size: 22px; line-height: 1; color: #123d61; }
     .summary span { color: #5d7185; font-size: 12px; font-weight: 600; }
     .archive-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(285px, 1fr)); gap: 18px; }
-    .archive-item { position: relative; overflow: hidden; padding: 22px; min-height: 235px; border: 1px solid #e2eaf1; border-radius: 16px; background: #fff; box-shadow: 0 8px 24px rgba(15, 54, 81, .045); }
+    .archive-item { position: relative; overflow: hidden; padding: 22px; cursor: pointer; min-height: 235px; border: 1px solid #e2eaf1; border-radius: 16px; background: #fff; box-shadow: 0 8px 24px rgba(15, 54, 81, .045); }
     .archive-item::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 4px; background: #4c9acb; }
     .item-topline { display: flex; justify-content: space-between; align-items: center; }
     .archive-badge { display: inline-flex; gap: 6px; align-items: center; color: #486174; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
@@ -107,6 +108,7 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
     .date-range strong { color: #365166; font-size: 11px; white-space: nowrap; }
     .date-range i { color: #88a2b4; font-size: 12px; }
     .archive-item p { margin: 17px 0 0; color: #6a7e90; font-size: 12px; line-height: 1.55; }
+    .consult-link { display: inline-flex; align-items: center; gap: 7px; margin-top: 16px; color: #176baf; font-size: 12px; font-weight: 800; }
     .loading, .error-state { display: flex; align-items: center; gap: 10px; min-height: 120px; justify-content: center; color: #60778b; }
     .error-state { color: #b42318; flex-wrap: wrap; }
     .error-state button { border: 0; background: #b42318; color: #fff; border-radius: 7px; padding: 7px 11px; cursor: pointer; }

@@ -3,7 +3,6 @@ import {
   Component,
   inject,
   OnDestroy,
-  OnInit,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
@@ -59,7 +58,7 @@ interface NotificationItem {
   styleUrls: ['tab1.page.scss'],
   imports: [CommonModule, IonContent, IonButton, IonIcon, IonBadge],
 })
-export class Tab1Page implements OnInit, OnDestroy {
+export class Tab1Page implements OnDestroy {
   private router = inject(Router);
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
@@ -208,9 +207,6 @@ export class Tab1Page implements OnInit, OnDestroy {
     });
   }
 
-  ngOnInit() {
-    this.refresh();
-  }
 
   ionViewWillEnter(): void {
     this.refresh();

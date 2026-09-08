@@ -1,31 +1,10 @@
-import { HttpErrorResponse, HttpInterceptorFn } from "@angular/common/http";
-import { inject } from "@angular/core";
-import { Router } from "@angular/router";
-import { throwError } from "rxjs";
-import { catchError } from "rxjs/operators";
-import { TokenStorageService } from "../services/token-storage.service";
+import { HttpInterceptorFn } from '@angular/common/http';
 
-export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  const tokenStorage = inject(TokenStorageService);
-  const router = inject(Router);
-
-  return next(req).pipe(
-    catchError((error: HttpErrorResponse) => {
-      const isUnauthorized = error.status === 401;
-      const isLoginEndpoint = req.url.includes("/auth/login");
-
-      if (isUnauthorized && !isLoginEndpoint) {
-        void tokenStorage.clearToken();
-
-        if (router.url.startsWith("/web")) {
-          sessionStorage.removeItem("user");
-          void router.navigate(["/web/login"]);
-        } else {
-          void router.navigate(["/mobile/login"]);
-        }
-      }
-
-      return throwError(() => error);
-    }),
-  );
-};
+/**
+ * Laisse les erreurs HTTP à la page qui a déclenché la requête.
+ *
+ * Une requête de données peut échouer temporairement au retour sur l'accueil.
+ * Elle ne doit jamais effacer la session mobile. La validité de la session est
+ * contrôlée explicitement par AuthService et le guard de navigation.
+ */
+export const errorInterceptor: HttpInterceptorFn = (_req, next) => next(_req);

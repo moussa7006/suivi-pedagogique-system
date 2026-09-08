@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
@@ -56,7 +56,7 @@ interface PlanningCourse {
   standalone: true,
   imports: [CommonModule, RouterLink, IonContent, IonButton, IonIcon, IonBadge],
 })
-export class PlanningPage implements OnInit {
+export class PlanningPage {
   private readonly scheduleService = inject(ScheduleService);
   private readonly salleService = inject(SalleService);
   private readonly matiereService = inject(MatiereService);
@@ -100,9 +100,6 @@ export class PlanningPage implements OnInit {
     this.generateWeekDays();
   }
 
-  ngOnInit(): void {
-    void this.refreshPlanningData();
-  }
 
   ionViewWillEnter(): void {
     void this.refreshPlanningData();
@@ -157,6 +154,7 @@ export class PlanningPage implements OnInit {
   }
 
   refreshPlanning(): void {
+    this.scheduleService.invalidateCache();
     this.loadEmploisDuTemps();
   }
 

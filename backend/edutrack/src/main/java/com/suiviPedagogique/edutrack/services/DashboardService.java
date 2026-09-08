@@ -48,7 +48,7 @@ public class DashboardService {
     public DashboardDataDto getDashboardData() {
         DashboardDataDto dto = new DashboardDataDto();
 
-        List<Seance> allSeances = seanceRepository.findAll();
+        List<Seance> allSeances = seanceRepository.findAllForDashboard();
         List<Matiere> allMatieres = matiereRepository.findAll();
 
         dto.setTotalTeachers(utilisateurRepository.countByRole(Role.ENSEIGNANT));
