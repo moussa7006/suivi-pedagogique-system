@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { timeout } from 'rxjs/operators';
 import { AnneeUniversitaire } from '../../core/models/annee-universitaire.model';
 import { AnneeUniversitaireService } from '../../core/services/annee-universitaire.service';
+import { NotificationService } from '../../shared/notification/notification.service';
 import { sortByAlpha } from '../../core/utils/sort-utils';
 
 @Component({
@@ -164,6 +165,7 @@ export class AnneesUniversitairesComponent implements OnInit {
 
   constructor(
     private anneeService: AnneeUniversitaireService,
+    private notificationService: NotificationService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -231,7 +233,15 @@ export class AnneesUniversitairesComponent implements OnInit {
     }
 
     if (new Date(anneeToSave.dateDebut) >= new Date(anneeToSave.dateFin)) {
-      this.errorMessage = 'La date de début doit être antérieure à la date de fin.';
+      this.showValidationError('La date de début doit être antérieure à la date de fin.');
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dateFin = new Date(`${anneeToSave.dateFin}T00:00:00`);
+    if (dateFin < today) {
+      this.showValidationError('La date de fin est dépassée. Veuillez saisir aujourd’hui ou une date future.');
       return;
     }
 
@@ -243,6 +253,10 @@ export class AnneesUniversitairesComponent implements OnInit {
     request$.pipe(timeout(12000)).subscribe({
       next: () => {
         this.isSaving = false;
+        this.notificationService.success(
+          this.editingId ? 'L’année universitaire a été modifiée avec succès.' : 'L’année universitaire a été créée avec succès.',
+          'Enregistrement réussi',
+        );
         this.displayForm = false;
         this.editingId = null;
         this.currentAnnee = {};
@@ -329,11 +343,17 @@ export class AnneesUniversitairesComponent implements OnInit {
     return today >= start && today <= end ? 'Active' : 'Inactive';
   }
 
+  private showValidationError(message: string): void {
+    this.errorMessage = message;
+    this.notificationService.warning(message, 'Date invalide');
+  }
+
   private handleSaveError(error: any, fallback: string): void {
     this.isSaving = false;
     this.errorMessage =
       error?.name === 'TimeoutError'
         ? 'Le serveur met trop de temps à répondre.'
         : error?.error?.error || error?.error?.message || fallback;
+    this.notificationService.error(this.errorMessage, 'Échec de l’enregistrement');
   }
 }
