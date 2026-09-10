@@ -208,6 +208,60 @@
     color: #dc2626;
     font-size: 0.78rem;
     font-weight: 600;
+
+    &.neutral {
+      color: #64748b;
+      font-weight: 500;
+    }
+  }
+}
+
+.days-field {
+  grid-column: 1 / -1;
+}
+
+.days-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.day-option {
+  position: relative;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 92px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    color: #475569;
+    font-size: 0.82rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+  }
+
+  &:hover span {
+    border-color: #818cf8;
+    background: #eef2ff;
+  }
+
+  input:checked + span {
+    border-color: #4f46e5;
+    background: #eef2ff;
+    color: #3730a3;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
   }
 }
 

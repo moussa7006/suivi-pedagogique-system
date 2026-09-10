@@ -118,11 +118,19 @@ import { forkJoin } from 'rxjs';
               <span>Période de validité & Récurrence</span>
             </div>
             <div class="section-grid">
-              <div class="input-group" *ngIf="currentSchedule.typeRecurrence === 'HEBDOMADAIRE'">
-                <label>Jour de la semaine</label>
-                <select [(ngModel)]="currentSchedule.jourSemaine">
-                  <option *ngFor="let j of jours" [value]="j">{{ j }}</option>
-                </select>
+              <div class="input-group days-field" *ngIf="currentSchedule.typeRecurrence === 'HEBDOMADAIRE'">
+                <label>Jours de la semaine</label>
+                <small class="field-hint neutral">Sélectionnez un ou plusieurs jours pour cette matière.</small>
+                <div class="days-selector" role="group" aria-label="Jours de la semaine">
+                  <label class="day-option" *ngFor="let j of jours">
+                    <input
+                      type="checkbox"
+                      [checked]="selectedDays.includes(j)"
+                      (change)="toggleDay(j)"
+                    />
+                    <span>{{ j | titlecase }}</span>
+                  </label>
+                </div>
               </div>
               <div class="input-group" *ngIf="currentSchedule.typeRecurrence === 'MENSUEL'">
                 <label>Jour du mois</label>
@@ -341,8 +349,16 @@ export class Schedule implements OnInit, OnDestroy {
   selectedClasseId: number | null = null;
   selectedMatiereId: number | null = null;
   selectedTeacherId: number | null = null;
+  selectedDays: NonNullable<EmploiDuTemps['jourSemaine']>[] = ['LUNDI'];
 
-  jours = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
+  jours: NonNullable<EmploiDuTemps['jourSemaine']>[] = [
+    'LUNDI',
+    'MARDI',
+    'MERCREDI',
+    'JEUDI',
+    'VENDREDI',
+    'SAMEDI',
+  ];
   private refreshInterval: any;
 
   constructor(
@@ -526,7 +542,18 @@ export class Schedule implements OnInit, OnDestroy {
     this.selectedClasseId = null;
     this.selectedMatiereId = null;
     this.selectedTeacherId = null;
+    this.selectedDays = ['LUNDI'];
     this.displayForm = true;
+  }
+
+  toggleDay(day: NonNullable<EmploiDuTemps['jourSemaine']>): void {
+    if (this.selectedDays.includes(day)) {
+      this.selectedDays = this.selectedDays.filter((selectedDay) => selectedDay !== day);
+    } else {
+      this.selectedDays = [...this.selectedDays, day];
+    }
+
+    this.currentSchedule.jourSemaine = this.selectedDays[0];
   }
 
   save() {
@@ -542,6 +569,15 @@ export class Schedule implements OnInit, OnDestroy {
     ) {
       this.errorMessage =
         'Veuillez renseigner la classe, la matière, l’enseignant, la salle et les horaires avant de planifier.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (
+      this.currentSchedule.typeRecurrence === 'HEBDOMADAIRE' &&
+      this.selectedDays.length === 0
+    ) {
+      this.errorMessage = 'Veuillez sélectionner au moins un jour de la semaine.';
       this.cdr.detectChanges();
       return;
     }
@@ -572,12 +608,16 @@ export class Schedule implements OnInit, OnDestroy {
       return;
     }
 
-    const scheduleToSave: EmploiDuTemps = {
+    const selectedDays =
+      this.currentSchedule.typeRecurrence === 'HEBDOMADAIRE'
+        ? this.selectedDays
+        : [this.currentSchedule.jourSemaine || 'LUNDI'];
+    const schedulesToSave: EmploiDuTemps[] = selectedDays.map((day) => ({
       titre: this.currentSchedule.titre,
       typeRecurrence: this.currentSchedule.typeRecurrence as any,
       dateDebutValidite: this.currentSchedule.dateDebutValidite || '',
       dateFinValidite: this.currentSchedule.dateFinValidite || '',
-      jourSemaine: this.currentSchedule.jourSemaine as any,
+      jourSemaine: day as any,
       jourDuMois: this.currentSchedule.jourDuMois,
       dateSpecifique: this.currentSchedule.dateSpecifique,
       heureDebut: this.currentSchedule.heureDebut!,
@@ -587,12 +627,17 @@ export class Schedule implements OnInit, OnDestroy {
       classeId: Number(this.selectedClasseId),
       matiereId: Number(this.selectedMatiereId),
       anneeUniversitaireId: Number(this.currentSchedule.anneeUniversitaireId),
-    };
+    }));
 
-    this.scheduleService.createSchedule(scheduleToSave).subscribe({
+    this.scheduleService.createSchedules(schedulesToSave).subscribe({
       next: () => {
         this.errorMessage = '';
         this.displayForm = false;
+        this.notificationService.success(
+          schedulesToSave.length > 1
+            ? `${schedulesToSave.length} jours ont été planifiés avec succès.`
+            : 'Planification créée avec succès.',
+        );
         this.loadData();
         this.cdr.detectChanges();
       },
