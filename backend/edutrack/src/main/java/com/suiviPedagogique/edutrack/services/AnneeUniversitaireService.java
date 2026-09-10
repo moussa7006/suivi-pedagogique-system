@@ -80,6 +80,9 @@ public class AnneeUniversitaireService {
         if (!annee.getDateDebut().isBefore(annee.getDateFin())) {
             throw new IllegalArgumentException("La date de début doit être antérieure à la date de fin");
         }
+        if (annee.getDateFin().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("La date de fin doit être aujourd'hui ou une date future. Veuillez saisir une date valide.");
+        }
 
         // Vérification de chevauchement
         if (anneeUniversitaireRepository.existsOverlapping(annee.getDateDebut(), annee.getDateFin(), annee.getId())) {
