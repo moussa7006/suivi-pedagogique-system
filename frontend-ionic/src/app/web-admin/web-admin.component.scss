@@ -32,7 +32,10 @@
   padding: 0 40px;
   position: sticky;
   top: 0;
-  z-index: 900;
+  z-index: 1000;
+  flex-shrink: 0;
+  isolation: isolate;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
 
   .header-left {
     display: flex;
