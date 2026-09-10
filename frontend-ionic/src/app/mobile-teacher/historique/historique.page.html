@@ -118,18 +118,22 @@
           <div class="timeline-marker"
                [class.marker-success]="seance.status === 'completed'"
                [class.marker-warning]="seance.status === 'in_progress'"
+               [class.marker-danger]="seance.status === 'passed' || seance.status === 'missing_attendance' || seance.status === 'missing_fiche'"
                [class.marker-info]="seance.status === 'planned'">
-            <ion-icon [name]="seance.status === 'completed' ? 'checkmark' : (seance.status === 'in_progress' ? 'ellipsis-horizontal' : 'calendar')"></ion-icon>
+            <ion-icon [name]="seance.status === 'completed' ? 'checkmark' : (seance.status === 'in_progress' ? 'ellipsis-horizontal' : (seance.status === 'planned' ? 'calendar' : 'alert-circle-outline'))"></ion-icon>
           </div>
           
-          <div class="timeline-card">
+          <div class="timeline-card"
+               [class.card-passed]="seance.status === 'passed' || seance.status === 'missing_attendance'"
+               [class.card-missing-fiche]="seance.status === 'missing_fiche'">
             <div class="card-header">
               <span class="card-date">{{ seance.date | date:'EEEE d MMM y' }}</span>
               <span class="card-status"
                     [class.status-success]="seance.status === 'completed'"
                     [class.status-warning]="seance.status === 'in_progress'"
+                    [class.status-danger]="seance.status === 'passed' || seance.status === 'missing_attendance' || seance.status === 'missing_fiche'"
                     [class.status-info]="seance.status === 'planned'">
-                {{ seance.status === 'completed' ? 'Terminée' : seance.status === 'in_progress' ? 'En cours' : 'Prévue' }}
+                {{ seance.status === 'completed' ? 'Terminée' : seance.status === 'in_progress' ? 'En cours' : seance.status === 'planned' ? 'Prévue' : seance.status === 'missing_attendance' ? 'Émargement manquant' : seance.status === 'missing_fiche' ? 'Fiche à renseigner' : 'Séance passée' }}
               </span>
             </div>
             
@@ -141,6 +145,11 @@
             </div>
             
             <p class="card-content">{{ seance.contenu }}</p>
+
+            <div class="card-alert" *ngIf="seance.status === 'missing_attendance' || seance.status === 'missing_fiche'">
+              <ion-icon name="alert-circle-outline"></ion-icon>
+              <span>{{ seance.status === 'missing_attendance' ? 'Cette séance est déjà passée : pensez à signaler l’émargement manquant.' : 'L’émargement est enregistré, mais la fiche de progression reste à compléter.' }}</span>
+            </div>
             
             <div class="card-footer">
               <div class="footer-stat">

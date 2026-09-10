@@ -48,7 +48,9 @@ interface HistoriqueItem {
   date: Date;
   heure: string;
   contenu: string;
-  status: 'completed' | 'in_progress' | 'planned';
+  status: 'completed' | 'in_progress' | 'planned' | 'passed' | 'missing_attendance' | 'missing_fiche';
+  hasEmargement: boolean;
+  hasFiche: boolean;
   presents: number;
   total: number;
   duree: number;
@@ -247,7 +249,9 @@ export class HistoriquePage {
           date: this.parseDate(seance.dateCours),
           heure: `${this.formatTime(seance.heureDebutReelle)} - ${this.formatTime(seance.heureFinReelle)}`,
           contenu: this.getContenuSeance(seance, fiche, emargement),
-          status: this.mapStatus(seance.statut, fiche, emargement),
+          status: this.mapStatus(seance, fiche, emargement),
+          hasEmargement: Boolean(emargement),
+          hasFiche: Boolean(fiche),
           presents: emargement ? 1 : 0,
           total: 1,
           duree,
@@ -371,26 +375,50 @@ export class HistoriquePage {
       return parts.join(' • ');
     }
 
-    if (emargement) {
-      return `Émargement ${emargement.statut?.toString().toLowerCase() || 'enregistré'}${emargement.lieu ? ` à ${emargement.lieu}` : ''}.`;
+    if (!emargement) {
+      return 'Émargement non effectué pour cette séance.';
     }
 
-    return `Statut de la séance : ${seance.statut}`;
+    if (!fiche) {
+      return 'Fiche de progression non renseignée.';
+    }
+
+    return 'Séance passée et enregistrée.';
   }
 
   private mapStatus(
-    statut: string,
+    seance: Seance,
     fiche?: FicheProgression,
     emargement?: EmargementModel,
-  ): 'completed' | 'in_progress' | 'planned' {
+  ): 'completed' | 'in_progress' | 'planned' | 'passed' | 'missing_attendance' | 'missing_fiche' {
+    const sessionState = this.getSessionState(seance);
+
+    if (sessionState === 'passed' && !emargement) {
+      return 'missing_attendance';
+    }
+    if (sessionState === 'passed' && !fiche) {
+      return 'missing_fiche';
+    }
     if (
-      statut === 'TERMINEE' ||
-      fiche?.estValideAdmin ||
-      emargement?.statut === 'VALIDE'
+      sessionState === 'passed' &&
+      (seance.statut === 'TERMINEE' || fiche?.estValideAdmin || emargement?.statut === 'VALIDE')
     ) {
       return 'completed';
     }
-    if (statut === 'EN_COURS' || emargement) return 'in_progress';
+    if (sessionState === 'passed') return 'passed';
+    if (sessionState === 'in_progress') return 'in_progress';
+    return 'planned';
+  }
+
+  private getSessionState(seance: Seance): 'passed' | 'in_progress' | 'planned' {
+    const start = this.parseDateTime(seance.dateCours, seance.heureDebutReelle);
+    const end = this.parseDateTime(seance.dateCours, seance.heureFinReelle);
+    const now = new Date();
+
+    if (end && now.getTime() > end.getTime()) return 'passed';
+    if (start && now.getTime() >= start.getTime() && (!end || now.getTime() <= end.getTime())) {
+      return 'in_progress';
+    }
     return 'planned';
   }
 
@@ -414,6 +442,15 @@ export class HistoriquePage {
     return year && month && day
       ? new Date(year, month - 1, day)
       : new Date(value);
+  }
+
+  private parseDateTime(date?: string, time?: string): Date | null {
+    if (!date) return null;
+    const parsedDate = this.parseDate(date);
+    const minutes = this.toMinutes(time);
+    if (minutes === null) return null;
+    parsedDate.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+    return parsedDate;
   }
 
   private toDateKey(date: Date): string {
