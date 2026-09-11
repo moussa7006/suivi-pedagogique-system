@@ -1014,7 +1014,7 @@ export class ProfileComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
-    const savedUser = sessionStorage.getItem('user');
+    const savedUser = localStorage.getItem('user');
 
     if (!savedUser) {
       return;
@@ -1159,7 +1159,7 @@ export class ProfileComponent implements OnInit {
         next: (updatedUser) => {
           this.isUpdatingProfile = false;
 
-          const savedUser = sessionStorage.getItem('user');
+          const savedUser = localStorage.getItem('user');
           const currentUser = savedUser ? JSON.parse(savedUser) : {};
           const nextUser = {
             ...currentUser,
@@ -1218,18 +1218,18 @@ export class ProfileComponent implements OnInit {
         this.newPassword = '';
         this.confirmPassword = '';
 
-        const savedUser = sessionStorage.getItem('user');
+        const savedUser = localStorage.getItem('user');
         if (savedUser) {
           try {
             const user = JSON.parse(savedUser);
             user.forcePasswordChange = false;
-            sessionStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('user', JSON.stringify(user));
             this.profile = {
               ...this.profile,
               forcePasswordChange: false,
             };
           } catch {
-            sessionStorage.removeItem('user');
+            localStorage.removeItem('user');
           }
         }
         this.cdr.detectChanges();
@@ -1290,7 +1290,7 @@ export class ProfileComponent implements OnInit {
       .patch<any>(`${environment.apiUrl}/utilisateurs/${this.profile.id}/photo`, { photoUrl })
       .subscribe({
         next: (updatedUser) => {
-          const savedUser = sessionStorage.getItem('user');
+          const savedUser = localStorage.getItem('user');
           const currentUser = savedUser ? JSON.parse(savedUser) : {};
           const nextUser = {
             ...currentUser,

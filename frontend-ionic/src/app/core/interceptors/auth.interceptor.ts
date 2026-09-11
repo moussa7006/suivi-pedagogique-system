@@ -45,11 +45,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 function getWebAdminToken(): string | null {
-  if (typeof sessionStorage === 'undefined') {
+  if (typeof localStorage === 'undefined') {
     return null;
   }
 
-  const storedUser = sessionStorage.getItem('user');
+  const storedUser = localStorage.getItem('user');
   if (!storedUser) {
     return null;
   }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
@@ -13,11 +13,9 @@ export class AuthService {
 
   private apiUrl = `${environment.apiUrl}/auth`;
 
-  // Clé utilisée pour stocker la session web-admin.
-  // sessionStorage (et non localStorage) : la session survit au refresh de la
-  // page mais est purgée à la fermeture du navigateur, ce qui exige une
-  // reconnexion à chaque nouvelle ouverture.
+  // La session web doit survivre à la fermeture puis à la réouverture du navigateur.
   private static readonly STORAGE_KEY = 'user';
+  private static readonly LEGACY_STORAGE = 'user';
 
   constructor(private http: HttpClient) {
     const savedUser = this.readStoredUser();
@@ -64,7 +62,7 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/reset-password`, { email, code, newPassword });
   }
 
-  logout() {
+  logout(): void {
     this.clearStoredUser();
     this.currentUserSubject.next(null);
   }
@@ -93,17 +91,41 @@ export class AuthService {
     return true;
   }
 
-  // --- Persistance session (sessionStorage) ---
+  // --- Persistance session web ---
   private readStoredUser(): string | null {
-    return sessionStorage.getItem(AuthService.STORAGE_KEY);
+    if (typeof localStorage === 'undefined') {
+      return null;
+    }
+
+    const storedUser = localStorage.getItem(AuthService.STORAGE_KEY);
+    if (storedUser) {
+      return storedUser;
+    }
+
+    // Migration transparente des anciennes sessions créées avec sessionStorage.
+    if (typeof sessionStorage !== 'undefined') {
+      const legacyUser = sessionStorage.getItem(AuthService.LEGACY_STORAGE);
+      if (legacyUser) {
+        localStorage.setItem(AuthService.STORAGE_KEY, legacyUser);
+        sessionStorage.removeItem(AuthService.LEGACY_STORAGE);
+        return legacyUser;
+      }
+    }
+
+    return null;
   }
 
   private storeUser(user: any): void {
-    sessionStorage.setItem(AuthService.STORAGE_KEY, JSON.stringify(user));
+    localStorage.setItem(AuthService.STORAGE_KEY, JSON.stringify(user));
   }
 
   private clearStoredUser(): void {
-    sessionStorage.removeItem(AuthService.STORAGE_KEY);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(AuthService.STORAGE_KEY);
+    }
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem(AuthService.LEGACY_STORAGE);
+    }
   }
 
   /**
@@ -128,11 +150,20 @@ export class AuthService {
 
     try {
       const user = await firstValueFrom(this.http.get<any>(`${this.apiUrl}/me`));
-      return user;
-    } catch {
-      // Token rejeté par le serveur (401/expiré/révoqué/fabriqué).
-      this.logout();
-      return null;
+      const confirmedUser = { ...currentUser, ...user, token: currentUser.token };
+      this.storeUser(confirmedUser);
+      this.currentUserSubject.next(confirmedUser);
+      return confirmedUser;
+    } catch (error) {
+      const status = error instanceof HttpErrorResponse ? error.status : 0;
+      // Seuls les rejets explicites du token doivent fermer la session.
+      if (status === 401 || status === 403) {
+        this.logout();
+        return null;
+      }
+
+      // Une panne réseau ou serveur temporaire ne doit pas déconnecter l'admin.
+      return currentUser;
     }
   }
 

@@ -1524,7 +1524,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadAdminProfile(): void {
-    const savedUser = sessionStorage.getItem('user');
+    const savedUser = localStorage.getItem('user');
 
     if (!savedUser) {
       return;
