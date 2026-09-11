@@ -1,30 +1,21 @@
-import { Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import {
-  IonApp,
-  IonRouterOutlet,
-  ToastController,
-} from '@ionic/angular/standalone';
-import { App as CapacitorApp } from '@capacitor/app';
-import type { PluginListenerHandle } from '@capacitor/core';
+import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { Platform } from '@ionic/angular';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { AuthService } from './core/services/auth.service';
+
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   imports: [IonApp, IonRouterOutlet],
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit {
   hasScrolled = false;
-  private backButtonListener?: PluginListenerHandle;
-  
 
   constructor(
-    private readonly ngZone: NgZone,
+    private readonly platform: Platform,
     private readonly router: Router,
-    private readonly authService: AuthService,
-    private readonly toastController: ToastController,
   ) {}
 
   @HostListener('window:scroll')
@@ -37,9 +28,6 @@ onWindowScroll(): void {
     void this.configureAndroidBackButton();
   }
 
-  ngOnDestroy(): void {
-    void this.backButtonListener?.remove();
-  }
 
   private async configureStatusBar(): Promise<void> {
     try {
@@ -51,41 +39,32 @@ onWindowScroll(): void {
     }
   }
 
-  private async configureAndroidBackButton(): Promise<void> {
-    this.backButtonListener = await CapacitorApp.addListener(
-      'backButton',
-      async () => {
-        await this.ngZone.run(async () => {
-          const currentUrl = this.router.url.split('?')[0];
+  private configureAndroidBackButton(): void {
+    // Priorité élevée : consomme le bouton retour avant le WebView/Ionic.
+    // Ainsi, un retour ne peut jamais dépiler l'historique jusqu'au login.
+    this.platform.backButton.subscribeWithPriority(10000, async () => {
+      const currentUrl = this.router.url.split('?')[0];
 
-          if (currentUrl === '/mobile/login' || currentUrl === '/login') {
-            await this.showAlreadyHomeToast();
-            return;
-          }
+      if (currentUrl === '/mobile/login' || currentUrl === '/login' || this.isMenuUrl(currentUrl)) {
+        return;
+      }
 
-          if (this.isSecondaryTabUrl(currentUrl)) {
-            await this.router.navigateByUrl('/mobile/tabs/tabs/tab1', {
-              replaceUrl: true,
-            });
-            return;
-          }
-
-          if (this.isMenuUrl(currentUrl)) {
-            await this.showAlreadyHomeToast();
-            return;
-          }
-
-          if (this.isPublicAuthUrl(currentUrl)) {
-            await this.router.navigateByUrl('/mobile/login', { replaceUrl: true });
-            return;
-          }
-
-          await this.router.navigateByUrl('/mobile/tabs/tabs/tab1', {
-            replaceUrl: true,
-          });
+      if (this.isSecondaryTabUrl(currentUrl)) {
+        await this.router.navigateByUrl('/mobile/tabs/tabs/tab1', {
+          replaceUrl: true,
         });
-      },
-    );
+        return;
+      }
+
+      if (this.isPublicAuthUrl(currentUrl)) {
+        await this.router.navigateByUrl('/mobile/login', { replaceUrl: true });
+        return;
+      }
+
+      await this.router.navigateByUrl('/mobile/tabs/tabs/tab1', {
+        replaceUrl: true,
+      });
+    });
   }
 
   private isSecondaryTabUrl(url: string): boolean {
@@ -117,13 +96,4 @@ onWindowScroll(): void {
     );
   }
 
-  private async showAlreadyHomeToast(): Promise<void> {
-    const toast = await this.toastController.create({
-      message: 'Vous êtes déjà sur l’accueil.',
-      duration: 1400,
-      position: 'bottom',
-      color: 'medium',
-    });
-    await toast.present();
-  }
 }
