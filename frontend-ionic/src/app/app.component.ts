@@ -18,7 +18,6 @@ import { AuthService } from './core/services/auth.service';
 export class AppComponent implements OnInit, OnDestroy {
   hasScrolled = false;
   private backButtonListener?: PluginListenerHandle;
-  private lastLoginBackPress = 0;
   
 
   constructor(
@@ -60,7 +59,7 @@ onWindowScroll(): void {
           const currentUrl = this.router.url.split('?')[0];
 
           if (currentUrl === '/mobile/login' || currentUrl === '/login') {
-            await this.exitAppAfterDoublePress();
+            await this.showAlreadyHomeToast();
             return;
           }
 
@@ -128,21 +127,4 @@ onWindowScroll(): void {
     await toast.present();
   }
 
-  private async exitAppAfterDoublePress(): Promise<void> {
-    const now = Date.now();
-
-    if (now - this.lastLoginBackPress < 1800) {
-      await CapacitorApp.exitApp();
-      return;
-    }
-
-    this.lastLoginBackPress = now;
-    const toast = await this.toastController.create({
-      message: 'Appuyez encore une fois pour quitter EduTrack.',
-      duration: 1600,
-      position: 'bottom',
-      color: 'medium',
-    });
-    await toast.present();
-  }
-}
+  private async showAlreadyHomeToast
