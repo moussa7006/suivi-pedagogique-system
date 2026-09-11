@@ -72,7 +72,7 @@ onWindowScroll(): void {
           }
 
           if (this.isMenuUrl(currentUrl)) {
-            await this.exitAppAfterDoublePress();
+            await this.showAlreadyHomeToast();
             return;
           }
 
@@ -116,6 +116,16 @@ onWindowScroll(): void {
       url === '/forgot-password' ||
       url === '/reset-password'
     );
+  }
+
+  private async showAlreadyHomeToast(): Promise<void> {
+    const toast = await this.toastController.create({
+      message: 'Vous êtes déjà sur l’accueil.',
+      duration: 1400,
+      position: 'bottom',
+      color: 'medium',
+    });
+    await toast.present();
   }
 
   private async exitAppAfterDoublePress(): Promise<void> {
