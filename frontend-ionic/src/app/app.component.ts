@@ -126,5 +126,4 @@ onWindowScroll(): void {
     });
     await toast.present();
   }
-
-  private async showAlreadyHomeToast
+}
