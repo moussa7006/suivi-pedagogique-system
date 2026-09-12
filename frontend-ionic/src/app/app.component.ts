@@ -2,6 +2,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { Platform } from '@ionic/angular';
+import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 
 
@@ -45,7 +46,13 @@ onWindowScroll(): void {
     this.platform.backButton.subscribeWithPriority(10000, async () => {
       const currentUrl = this.router.url.split('?')[0];
 
-      if (currentUrl === '/mobile/login' || currentUrl === '/login' || this.isMenuUrl(currentUrl)) {
+      if (this.isMenuUrl(currentUrl)) {
+        // Depuis l'accueil, le retour ferme l'application sans déconnecter l'utilisateur.
+        await CapacitorApp.exitApp();
+        return;
+      }
+
+      if (currentUrl === '/mobile/login' || currentUrl === '/login') {
         return;
       }
 
