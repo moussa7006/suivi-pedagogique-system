@@ -25,6 +25,10 @@ export class ScheduleService {
     return this.http.post<EmploiDuTemps>(this.scheduleUrl, schedule);
   }
 
+  createSchedules(schedules: EmploiDuTemps[]): Observable<EmploiDuTemps[]> {
+    return this.http.post<EmploiDuTemps[]>(`${this.scheduleUrl}/batch`, schedules);
+  }
+
   updateSchedule(id: number, schedule: EmploiDuTemps): Observable<EmploiDuTemps> {
     return this.http.put<EmploiDuTemps>(`${this.scheduleUrl}/${id}`, schedule);
   }

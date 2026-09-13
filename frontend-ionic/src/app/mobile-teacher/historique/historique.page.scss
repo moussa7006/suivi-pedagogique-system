@@ -363,8 +363,9 @@ ion-content {
     color: #ffffff;
   }
 
-  &.marker-success { background: #2563eb; }
-  &.marker-warning { background: #2563eb; }
+  &.marker-success { background: #059669; }
+  &.marker-warning { background: #f59e0b; }
+  &.marker-danger { background: #dc2626; }
   &.marker-info { background: #2563eb; }
 }
 
@@ -377,6 +378,18 @@ ion-content {
   transition: all 0.3s var(--ease-spring);
 
   &:active { transform: scale(0.97); }
+
+  &.card-passed {
+    border-color: #fecaca;
+    background: linear-gradient(145deg, #ffffff, #fff7f7);
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.09);
+  }
+
+  &.card-missing-fiche {
+    border-color: #fdba74;
+    background: linear-gradient(145deg, #ffffff, #fffaf2);
+    box-shadow: 0 8px 24px rgba(234, 88, 12, 0.09);
+  }
 
   .card-header {
     display: flex;
@@ -401,6 +414,7 @@ ion-content {
 
       &.status-success { background: rgba(16, 185, 129, 0.12); color: #059669; }
       &.status-warning { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+      &.status-danger { background: #fee2e2; color: #b91c1c; }
       &.status-info { background: rgba(67, 97, 238, 0.12); color: #3b55d9; }
     }
   }
@@ -429,6 +443,33 @@ ion-content {
     line-height: 1.5;
     color: var(--text-secondary);
     margin: 0 0 16px 0;
+  }
+
+  .card-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #fff1f2;
+    color: #b91c1c;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.4;
+
+    ion-icon {
+      flex-shrink: 0;
+      margin-top: 1px;
+      font-size: 17px;
+    }
+  }
+
+  &.card-missing-fiche {
+    .card-alert {
+      background: #fff7ed;
+      color: #c2410c;
+    }
   }
 
   .card-footer {

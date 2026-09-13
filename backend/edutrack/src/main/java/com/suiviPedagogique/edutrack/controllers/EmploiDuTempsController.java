@@ -28,6 +28,13 @@ public class EmploiDuTempsController {
         return ResponseEntity.ok(emploiDuTempsService.create(dto));
     }
 
+    @PostMapping("/batch")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
+    @Operation(summary = "Créer plusieurs emplois du temps", description = "Crée atomiquement une planification pour chacun des jours sélectionnés")
+    public ResponseEntity<List<EmploiDuTempsDto>> createBatch(@RequestBody List<EmploiDuTempsDto> dtos) {
+        return ResponseEntity.ok(emploiDuTempsService.createBatch(dtos));
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRATEUR')")
     @Operation(summary = "Modifier un emploi du temps", description = "Seul l'administrateur peut modifier")

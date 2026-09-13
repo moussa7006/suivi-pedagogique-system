@@ -54,17 +54,36 @@ public class EmploiDuTempsService {
     }
 
     public EmploiDuTempsDto create(EmploiDuTempsDto dto) {
-        Utilisateur currentUser = getCurrentUser();
-        if (currentUser.getRole() != Role.ADMINISTRATEUR) {
-            throw new AccessDeniedException("Seul l'administrateur peut créer un emploi du temps");
+        checkAdministratorCanCreate();
+        return createSchedule(dto);
+    }
+
+    @Transactional
+    public List<EmploiDuTempsDto> createBatch(List<EmploiDuTempsDto> dtos) {
+        checkAdministratorCanCreate();
+        if (dtos == null || dtos.isEmpty()) {
+            throw new IllegalArgumentException("Sélectionnez au moins un jour à planifier.");
         }
 
+        return dtos.stream()
+                .map(this::createSchedule)
+                .collect(Collectors.toList());
+    }
+
+    private EmploiDuTempsDto createSchedule(EmploiDuTempsDto dto) {
         EmploiDuTemps emploi = new EmploiDuTemps();
         hydrateEntity(emploi, dto, null);
 
         EmploiDuTemps saved = emploiDuTempsRepository.save(emploi);
         scheduleJobService.checkAndGenerateSeanceForDate(saved, LocalDate.now());
         return convertToDto(saved);
+    }
+
+    private void checkAdministratorCanCreate() {
+        Utilisateur currentUser = getCurrentUser();
+        if (currentUser.getRole() != Role.ADMINISTRATEUR) {
+            throw new AccessDeniedException("Seul l'administrateur peut créer un emploi du temps");
+        }
     }
 
     public EmploiDuTempsDto update(Integer id, EmploiDuTempsDto dto) {

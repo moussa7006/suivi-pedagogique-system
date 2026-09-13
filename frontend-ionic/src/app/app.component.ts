@@ -1,31 +1,22 @@
-import { Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import {
-  IonApp,
-  IonRouterOutlet,
-  ToastController,
-} from '@ionic/angular/standalone';
+import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { Platform } from '@ionic/angular';
 import { App as CapacitorApp } from '@capacitor/app';
-import type { PluginListenerHandle } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { AuthService } from './core/services/auth.service';
+
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   imports: [IonApp, IonRouterOutlet],
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit {
   hasScrolled = false;
-  private backButtonListener?: PluginListenerHandle;
-  private lastLoginBackPress = 0;
-  
 
   constructor(
-    private readonly ngZone: NgZone,
+    private readonly platform: Platform,
     private readonly router: Router,
-    private readonly authService: AuthService,
-    private readonly toastController: ToastController,
   ) {}
 
   @HostListener('window:scroll')
@@ -38,9 +29,6 @@ onWindowScroll(): void {
     void this.configureAndroidBackButton();
   }
 
-  ngOnDestroy(): void {
-    void this.backButtonListener?.remove();
-  }
 
   private async configureStatusBar(): Promise<void> {
     try {
@@ -52,41 +40,38 @@ onWindowScroll(): void {
     }
   }
 
-  private async configureAndroidBackButton(): Promise<void> {
-    this.backButtonListener = await CapacitorApp.addListener(
-      'backButton',
-      async () => {
-        await this.ngZone.run(async () => {
-          const currentUrl = this.router.url.split('?')[0];
+  private configureAndroidBackButton(): void {
+    // Priorité élevée : consomme le bouton retour avant le WebView/Ionic.
+    // Ainsi, un retour ne peut jamais dépiler l'historique jusqu'au login.
+    this.platform.backButton.subscribeWithPriority(10000, async () => {
+      const currentUrl = this.router.url.split('?')[0];
 
-          if (currentUrl === '/mobile/login' || currentUrl === '/login') {
-            await this.exitAppAfterDoublePress();
-            return;
-          }
+      if (this.isMenuUrl(currentUrl)) {
+        // Depuis l'accueil, le retour ferme l'application sans déconnecter l'utilisateur.
+        await CapacitorApp.exitApp();
+        return;
+      }
 
-          if (this.isSecondaryTabUrl(currentUrl)) {
-            await this.router.navigateByUrl('/mobile/tabs/tabs/tab1', {
-              replaceUrl: true,
-            });
-            return;
-          }
+      if (currentUrl === '/mobile/login' || currentUrl === '/login') {
+        return;
+      }
 
-          if (this.isMenuUrl(currentUrl)) {
-            await this.exitAppAfterDoublePress();
-            return;
-          }
-
-          if (this.isPublicAuthUrl(currentUrl)) {
-            await this.router.navigateByUrl('/mobile/login', { replaceUrl: true });
-            return;
-          }
-
-          await this.router.navigateByUrl('/mobile/tabs/tabs/tab1', {
-            replaceUrl: true,
-          });
+      if (this.isSecondaryTabUrl(currentUrl)) {
+        await this.router.navigateByUrl('/mobile/tabs/tabs/tab1', {
+          replaceUrl: true,
         });
-      },
-    );
+        return;
+      }
+
+      if (this.isPublicAuthUrl(currentUrl)) {
+        await this.router.navigateByUrl('/mobile/login', { replaceUrl: true });
+        return;
+      }
+
+      await this.router.navigateByUrl('/mobile/tabs/tabs/tab1', {
+        replaceUrl: true,
+      });
+    });
   }
 
   private isSecondaryTabUrl(url: string): boolean {
@@ -118,21 +103,4 @@ onWindowScroll(): void {
     );
   }
 
-  private async exitAppAfterDoublePress(): Promise<void> {
-    const now = Date.now();
-
-    if (now - this.lastLoginBackPress < 1800) {
-      await CapacitorApp.exitApp();
-      return;
-    }
-
-    this.lastLoginBackPress = now;
-    const toast = await this.toastController.create({
-      message: 'Appuyez encore une fois pour quitter EduTrack.',
-      duration: 1600,
-      position: 'bottom',
-      color: 'medium',
-    });
-    await toast.present();
-  }
 }

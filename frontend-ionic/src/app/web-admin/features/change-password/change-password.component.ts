@@ -212,7 +212,7 @@ export class ChangePasswordComponent {
 
   private getCurrentUser(): any | null {
     try {
-      const saved = sessionStorage.getItem('user');
+      const saved = localStorage.getItem('user');
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
