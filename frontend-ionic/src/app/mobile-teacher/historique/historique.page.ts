@@ -82,6 +82,7 @@ export class HistoriquePage {
 
   filterPeriod = 'all';
   selectedDate = '';
+  selectedMonth = '';
   isLoading = false;
   errorMessage = '';
 
@@ -110,45 +111,56 @@ export class HistoriquePage {
 
     if (this.filterPeriod === 'all') {
       if (this.selectedDate) {
-        result = result.filter(
-          (s) => this.toDateKey(s.date) === this.selectedDate,
-        );
+        result = result.filter((s) => this.toDateKey(s.date) === this.selectedDate);
       }
       return result;
     }
 
-    const cutoff = new Date();
-    if (this.filterPeriod === 'week') {
-      cutoff.setDate(now.getDate() - 7);
-    } else if (this.filterPeriod === 'month') {
-      cutoff.setMonth(now.getMonth() - 1);
+    if (this.filterPeriod === 'month') {
+      return this.selectedMonth
+        ? result.filter((s) => this.toDateKey(s.date).startsWith(this.selectedMonth))
+        : result;
     }
 
+    const cutoff = new Date();
+    cutoff.setDate(now.getDate() - 7);
     return result.filter((s) => s.date >= cutoff);
   }
 
   get formattedSelectedMonth(): string {
-    if (!this.selectedDate) return 'Sélectionner une date';
-    const parts = this.selectedDate.split('-');
-    if (parts.length < 3) return 'Sélectionner une date';
-    const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const value = this.filterPeriod === 'month' ? this.selectedMonth : this.selectedDate;
+    if (!value) return this.filterPeriod === 'month' ? 'Sélectionner un mois' : 'Sélectionner une date';
+    const parts = value.split('-');
+    if (parts.length < 2) return 'Sélectionner une période';
+    const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2] || 1));
+    return date.toLocaleDateString('fr-FR', this.filterPeriod === 'month'
+      ? { month: 'long', year: 'numeric' }
+      : { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
   get selectedDatetime(): string | undefined {
+    if (this.filterPeriod === 'month' && this.selectedMonth) {
+      return `${this.selectedMonth}-01T00:00:00`;
+    }
     return this.selectedDate ? `${this.selectedDate}T00:00:00` : undefined;
   }
 
   onMonthSelect(event: any): void {
     const val = event.detail.value;
     if (val) {
-      this.selectedDate = typeof val === 'string' ? val.substring(0, 10) : val[0].substring(0, 10);
+      const dateValue = typeof val === 'string' ? val.substring(0, 10) : val[0].substring(0, 10);
+      if (this.filterPeriod === 'month') {
+        this.selectedMonth = dateValue.substring(0, 7);
+      } else {
+        this.selectedDate = dateValue;
+      }
       this.cdr.detectChanges();
     }
   }
 
   clearSelectedMonth(): void {
     this.selectedDate = '';
+    this.selectedMonth = '';
     this.cdr.detectChanges();
   }
   constructor() {
@@ -179,8 +191,9 @@ export class HistoriquePage {
   }
 
   filterByPeriod(): void {
-    if (this.filterPeriod !== 'all') {
+    if (this.filterPeriod === 'week') {
       this.selectedDate = '';
+      this.selectedMonth = '';
     }
     // Filtrage géré par le getter filteredSeances.
     this.cdr.detectChanges();
@@ -188,6 +201,12 @@ export class HistoriquePage {
 
   selectFilter(period: 'all' | 'week' | 'month'): void {
     this.filterPeriod = period;
+    if (period !== 'month') {
+      this.selectedMonth = '';
+    }
+    if (period !== 'all') {
+      this.selectedDate = '';
+    }
     this.filterByPeriod();
   }
 

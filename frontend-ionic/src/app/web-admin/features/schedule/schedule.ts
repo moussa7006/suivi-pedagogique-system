@@ -216,7 +216,7 @@ import { forkJoin } from 'rxjs';
                   </option>
                 </select>
                 <small class="field-hint" *ngIf="selectedClasseId && filteredMatieres.length === 0">
-                  Aucune matière liée à la classe sélectionnée.
+                  Aucune matière disponible.
                 </small>
               </div>
               <div class="input-group">
@@ -490,19 +490,9 @@ export class Schedule implements OnInit, OnDestroy {
   }
 
   get filteredMatieres(): Matiere[] {
-    if (!this.selectedClasseId) {
-      return [];
-    }
-
-    const departementId = this.getSelectedClasseDepartementId();
-    if (!departementId) {
-      return [];
-    }
-
-    return sortByAlpha(
-      this.matieres.filter((matiere) => matiere.departementId === departementId),
-      (matiere) => matiere.libelle,
-    );
+    // Une classe peut suivre des matières d'autres départements (ex. économie
+    // en Informatique L1). La classe ne doit donc pas filtrer cette liste.
+    return sortByAlpha(this.matieres || [], (matiere) => matiere.libelle);
   }
 
   onClasseChange(): void {

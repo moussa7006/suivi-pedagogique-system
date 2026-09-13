@@ -61,13 +61,13 @@
     <!-- Filters Segment removed -->
 
     <!-- Filters Date Picker (Si période !== 'all') -->
-      <div class="date-filter animate-fade-in" *ngIf="filterPeriod === 'all'">
+      <div class="date-filter animate-fade-in" *ngIf="filterPeriod === 'all' || filterPeriod === 'month'">
         <div class="date-input-wrapper" id="open-month-picker">
           <ion-icon name="calendar-outline" class="input-icon"></ion-icon>
           <div class="fake-input">
             {{ formattedSelectedMonth }}
           </div>
-          <ion-button *ngIf="selectedDate" fill="clear" size="small" class="clear-btn" (click)="clearSelectedMonth(); $event.stopPropagation()">
+          <ion-button *ngIf="selectedDate || selectedMonth" fill="clear" size="small" class="clear-btn" (click)="clearSelectedMonth(); $event.stopPropagation()">
             <ion-icon name="close-circle" slot="icon-only"></ion-icon>
           </ion-button>
         </div>
@@ -79,7 +79,7 @@
                 <h3>Choisir une date</h3>
               </div>
                 <ion-datetime
-                  presentation="date"
+                  [presentation]="filterPeriod === 'month' ? 'month-year' : 'date'"
                   locale="fr-FR"
                   [value]="selectedDatetime"
                   (ionChange)="onMonthSelect($event); monthModal.dismiss()"
