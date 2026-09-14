@@ -34,6 +34,10 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
 
       <div class="form-card" *ngIf="displayForm">
         <div class="form-card-header">
+          <button type="button" class="form-cancel-button" (click)="displayForm = false" [disabled]="isSaving" aria-label="Annuler">
+            <i class="pi pi-times"></i>
+            <span>Annuler</span>
+          </button>
           <h3>{{ editingId ? 'Modifier l’Année' : 'Nouvelle Année' }}</h3>
         </div>
         <div class="form-card-body">

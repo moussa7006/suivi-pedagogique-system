@@ -68,6 +68,10 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
       <!-- ── Form Card ── -->
       <div class="form-card" *ngIf="displayForm">
         <div class="form-card-header">
+          <button type="button" class="form-cancel-button" (click)="displayForm = false" [disabled]="isSaving" aria-label="Annuler">
+            <i class="pi pi-times"></i>
+            <span>Annuler</span>
+          </button>
           <h3 *ngIf="editingId">Modifier l'utilisateur</h3>
           <h3 *ngIf="!editingId">Nouvel utilisateur</h3>
         </div>

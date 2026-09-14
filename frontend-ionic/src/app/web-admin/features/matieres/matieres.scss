@@ -86,9 +86,33 @@
 
 .form-card-header {
   background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  padding: 14px 20px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  .form-cancel-button {
+    order: 2;
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 8px;
+    padding: 7px 10px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+    &:hover:not(:disabled) { background: #dc2626; border-color: #fecaca; transform: translateY(-1px); }
+    &:disabled { opacity: 0.55; cursor: not-allowed; }
+  }
 
   h3 {
+    order: 1;
     margin: 0;
     color: white;
     font-weight: 700;
