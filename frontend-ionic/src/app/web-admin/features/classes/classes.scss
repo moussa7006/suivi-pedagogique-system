@@ -88,6 +88,8 @@
   gap: 14px;
 
   .form-cancel-button {
+    order: 2;
+    margin-left: auto;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -106,6 +108,7 @@
   }
 
   h3 {
+    order: 1;
     margin: 0;
     color: white;
     font-weight: 700;
