@@ -30,6 +30,10 @@ export class ScheduleService {
     return this.cachedSeances$;
   }
 
+  getSeanceById(id: number): Observable<Seance> {
+    return this.http.get<Seance>(this.apiConfig.buildUrl(`seances/${id}`));
+  }
+
   invalidateCache(): void {
     this.cachedEmploisDuTemps$ = undefined;
     this.cachedSeances$ = undefined;

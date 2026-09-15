@@ -39,7 +39,7 @@ import {
 } from 'ionicons/icons';
 import { Geolocation } from '@capacitor/geolocation';
 import jsQR from 'jsqr';
-import { forkJoin } from 'rxjs';
+import { forkJoin, firstValueFrom } from 'rxjs';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ScheduleService } from '../../core/services/schedule.service';
@@ -535,9 +535,22 @@ export class ScanQRPage implements OnDestroy {
       return false;
     }
 
+    let expectedToken = selectedSeance.qrCodeToken;
+    
+    // Si le token n'est pas dans le cache, on récupère la version la plus récente de la séance depuis le backend
+    if (!expectedToken) {
+      try {
+        const freshSeance = await firstValueFrom(this.scheduleService.getSeanceById(selectedSeance.id!));
+        expectedToken = freshSeance.qrCodeToken;
+        selectedSeance.qrCodeToken = expectedToken; // Mettre à jour le cache local
+      } catch (e) {
+        console.error('Erreur lors de la récupération de la séance à jour', e);
+      }
+    }
+
     if (
-      selectedSeance.qrCodeToken &&
-      selectedSeance.qrCodeToken.trim() !== tokenQRCode.trim()
+      !expectedToken ||
+      expectedToken.trim() !== tokenQRCode.trim()
     ) {
       this.qrMismatchError = true;
       this.cdr.detectChanges();
