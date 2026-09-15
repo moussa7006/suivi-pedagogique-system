@@ -226,9 +226,9 @@ import { forkJoin } from 'rxjs';
               <div class="input-group">
                 <label>Enseignant</label>
                 <select [(ngModel)]="selectedTeacherId">
-                  <option [value]="null" disabled>Sélectionnez un enseignant</option>
-                  <option *ngFor="let t of teachers" [value]="t.id">
-                    {{ t.prenom }} {{ t.nom }}
+                  <option [ngValue]="null" disabled>Sélectionnez un enseignant</option>
+                  <option *ngFor="let t of teachers" [ngValue]="t.id">
+                    {{ getEnseignantLibelle(t) }}
                   </option>
                 </select>
               </div>
@@ -487,10 +487,22 @@ export class Schedule implements OnInit, OnDestroy {
     return m ? m.libelle || 'N/A' : 'N/A';
   }
 
+  getEnseignantLibelle(teacher: Teacher | undefined): string {
+    if (!teacher) return 'Enseignant inconnu';
+
+    const name = `${teacher.prenom || ''} ${teacher.nom || ''}`.trim();
+    const identifier =
+      teacher.matricule || teacher.email || (teacher.id ? `ID ${teacher.id}` : '');
+
+    return identifier ? `${name || 'Enseignant'} — ${identifier}` : name || 'Enseignant';
+  }
+
   getEnseignantNom(enseignantId: number | undefined): string {
     if (!enseignantId || !this.teachers) return 'N/A';
-    const t = this.teachers.find((teacher) => teacher && teacher.id === enseignantId);
-    return t ? `${t.prenom || ''} ${t.nom || ''}` : 'N/A';
+    const t = this.teachers.find(
+      (teacher) => teacher && teacher.id === Number(enseignantId),
+    );
+    return t ? this.getEnseignantLibelle(t) : 'N/A';
   }
 
   get filteredMatieres(): Matiere[] {
