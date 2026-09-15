@@ -536,7 +536,7 @@ export class ScanQRPage implements OnDestroy {
     }
 
     let expectedToken = selectedSeance.qrCodeToken;
-    
+
     // Si le token n'est pas dans le cache, on récupère la version la plus récente de la séance depuis le backend
     if (!expectedToken) {
       try {
