@@ -174,6 +174,21 @@ ion-content.ion-padding {
 }
 
 /* ============================================
+   DESACTIVATION DU BOUNCE / OVERSCROLL (mobile)
+   Supprime l'effet d'elasticite (rebond) quand on
+   atteint le haut ou le bas d'une page, tout en
+   conservant un defilement vertical normal et fluide.
+   ============================================ */
+ion-content::part(scroll) {
+  overscroll-behavior-y: none;
+}
+
+/* Le web admin (interface bureau) conserve le comportement de scroll par defaut */
+ion-router-outlet > .ion-page:has(.web-admin-scope) ion-content::part(scroll) {
+  overscroll-behavior-y: auto;
+}
+
+/* ============================================
    TAB BAR STYLES - Navigation moderne
    Remplacement du noir par des couleurs modernes
    ============================================ */

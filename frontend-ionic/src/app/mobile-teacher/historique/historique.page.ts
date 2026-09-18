@@ -92,6 +92,20 @@ export class HistoriquePage {
     dureeTotale: 0,
   };
 
+  /** Durée totale formatée pour l'affichage : "45 min", "2 h" ou "2 h 30". */
+  get dureeTotaleLabel(): string {
+    const total = this.stats.dureeTotale;
+    if (!total || total <= 0) {
+      return '0 min';
+    }
+    const heures = Math.floor(total / 60);
+    const minutes = total % 60;
+    if (heures === 0) {
+      return `${minutes} min`;
+    }
+    return minutes === 0 ? `${heures} h` : `${heures} h ${minutes}`;
+  }
+
   seances: HistoriqueItem[] = [];
   private seancesData: Seance[] = [];
   private emargementsData: EmargementModel[] = [];

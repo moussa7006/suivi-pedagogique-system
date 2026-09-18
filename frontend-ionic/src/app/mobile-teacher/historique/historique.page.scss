@@ -163,10 +163,10 @@ ion-content {
   flex-direction: column; /* Empile l'icône au-dessus du texte */
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 12px 4px;
+  gap: 5px;
+  padding: 10px 4px;
   border-radius: 16px;
-  font-size: 11px; /* Texte adapté aux petits écrans */
+  font-size: 10.5px; /* Texte adapté aux petits écrans */
   font-weight: 600;
   text-align: center;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
@@ -178,7 +178,7 @@ ion-content {
   }
 
   ion-icon {
-    font-size: 22px;
+    font-size: 20px;
     opacity: 1;
   }
 
