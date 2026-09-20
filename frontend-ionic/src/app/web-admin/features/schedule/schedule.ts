@@ -19,6 +19,7 @@ import { Filiere } from '../../core/models/filiere.model';
 import { NotificationService } from '../../shared/notification/notification.service';
 import { ConfirmationService } from '../../shared/confirmation/confirmation.service';
 import { sortByAlpha } from '../../core/utils/sort-utils';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-schedule',
@@ -68,6 +69,10 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
       <!-- ── Form Card ── -->
       <div class="form-card" *ngIf="displayForm">
         <div class="form-card-header">
+          <button type="button" class="form-cancel-button" (click)="displayForm = false" aria-label="Annuler">
+            <i class="pi pi-times"></i>
+            <span>Annuler</span>
+          </button>
           <h3>Nouvelle Planification</h3>
         </div>
         <div class="form-card-body">
@@ -117,11 +122,19 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
               <span>Période de validité & Récurrence</span>
             </div>
             <div class="section-grid">
-              <div class="input-group" *ngIf="currentSchedule.typeRecurrence === 'HEBDOMADAIRE'">
-                <label>Jour de la semaine</label>
-                <select [(ngModel)]="currentSchedule.jourSemaine">
-                  <option *ngFor="let j of jours" [value]="j">{{ j }}</option>
-                </select>
+              <div class="input-group days-field" *ngIf="currentSchedule.typeRecurrence === 'HEBDOMADAIRE'">
+                <label>Jours de la semaine</label>
+                <small class="field-hint neutral">Sélectionnez un ou plusieurs jours pour cette matière.</small>
+                <div class="days-selector" role="group" aria-label="Jours de la semaine">
+                  <label class="day-option" *ngFor="let j of jours">
+                    <input
+                      type="checkbox"
+                      [checked]="selectedDays.includes(j)"
+                      (change)="toggleDay(j)"
+                    />
+                    <span>{{ j | titlecase }}</span>
+                  </label>
+                </div>
               </div>
               <div class="input-group" *ngIf="currentSchedule.typeRecurrence === 'MENSUEL'">
                 <label>Jour du mois</label>
@@ -207,15 +220,15 @@ import { sortByAlpha } from '../../core/utils/sort-utils';
                   </option>
                 </select>
                 <small class="field-hint" *ngIf="selectedClasseId && filteredMatieres.length === 0">
-                  Aucune matière liée à la classe sélectionnée.
+                  Aucune matière disponible.
                 </small>
               </div>
               <div class="input-group">
                 <label>Enseignant</label>
                 <select [(ngModel)]="selectedTeacherId">
-                  <option [value]="null" disabled>Sélectionnez un enseignant</option>
-                  <option *ngFor="let t of teachers" [value]="t.id">
-                    {{ t.prenom }} {{ t.nom }}
+                  <option [ngValue]="null" disabled>Sélectionnez un enseignant</option>
+                  <option *ngFor="let t of teachers" [ngValue]="t.id">
+                    {{ getEnseignantLibelle(t) }}
                   </option>
                 </select>
               </div>
@@ -340,8 +353,16 @@ export class Schedule implements OnInit, OnDestroy {
   selectedClasseId: number | null = null;
   selectedMatiereId: number | null = null;
   selectedTeacherId: number | null = null;
+  selectedDays: NonNullable<EmploiDuTemps['jourSemaine']>[] = ['LUNDI'];
 
-  jours = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
+  jours: NonNullable<EmploiDuTemps['jourSemaine']>[] = [
+    'LUNDI',
+    'MARDI',
+    'MERCREDI',
+    'JEUDI',
+    'VENDREDI',
+    'SAMEDI',
+  ];
   private refreshInterval: any;
 
   constructor(
@@ -359,9 +380,11 @@ export class Schedule implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadData();
+    // Les données de planning changent rarement : 60 secondes suffisent
+    // et évitent de recharger tous les référentiels en boucle.
     this.refreshInterval = setInterval(() => {
-      this.loadData();
-    }, 10000); // 10 seconds auto-refresh
+      this.loadSchedules();
+    }, 60000);
   }
 
   ngOnDestroy() {
@@ -371,40 +394,54 @@ export class Schedule implements OnInit, OnDestroy {
   }
 
   loadData() {
-    this.scheduleService.getAllSchedules().subscribe({
-      next: (s) => {
-        this.schedules = sortByAlpha(s, (schedule) => schedule.titre);
-        this.filterSchedules();
+    forkJoin({
+      schedules: this.scheduleService.getAllSchedules(),
+      classes: this.classeService.getAll(),
+      matieres: this.matiereService.getAll(),
+      filieres: this.filiereService.getAll(),
+      teachers: this.teacherService.getTeachers(),
+      salles: this.salleService.getAll(),
+      annees: this.anneeUniversitaireService.getAll(),
+    }).subscribe({
+      next: ({ schedules, classes, matieres, filieres, teachers, salles, annees }) => {
+        this.applySchedules(schedules);
+        this.classes = sortByAlpha(classes || [], (classe) => classe.libelle);
+        this.matieres = sortByAlpha(matieres || [], (matiere) => matiere.libelle);
+        this.filieres = sortByAlpha(filieres || [], (filiere) => filiere.libelle);
+        this.teachers = sortByAlpha(
+          teachers || [],
+          (teacher) => `${teacher.nom || ''} ${teacher.prenom || ''}`,
+        );
+        this.salles = sortByAlpha(
+          salles || [],
+          (salle) => `${salle.nom || ''} ${salle.batiment || ''}`,
+        );
+        this.anneesUniversitaires = sortByAlpha(
+          annees || [],
+          (annee) => annee.libelle,
+          'desc',
+        );
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Erreur chargement emplois du temps:', err);
+        console.error('Erreur chargement des données du planning:', err);
       },
     });
-    this.classeService.getAll().subscribe((c) => {
-      this.classes = sortByAlpha(c, (classe) => classe.libelle);
-      this.cdr.detectChanges();
+  }
+
+  private loadSchedules(): void {
+    this.scheduleService.getAllSchedules().subscribe({
+      next: (schedules) => {
+        this.applySchedules(schedules);
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Erreur chargement emplois du temps:', err),
     });
-    this.matiereService.getAll().subscribe((m) => {
-      this.matieres = sortByAlpha(m, (matiere) => matiere.libelle);
-      this.cdr.detectChanges();
-    });
-    this.filiereService.getAll().subscribe((f) => {
-      this.filieres = sortByAlpha(f, (filiere) => filiere.libelle);
-      this.cdr.detectChanges();
-    });
-    this.teacherService.getTeachers().subscribe((t) => {
-      this.teachers = sortByAlpha(t, (teacher) => `${teacher.nom || ''} ${teacher.prenom || ''}`);
-      this.cdr.detectChanges();
-    });
-    this.salleService.getAll().subscribe((s) => {
-      this.salles = sortByAlpha(s, (salle) => `${salle.nom || ''} ${salle.batiment || ''}`);
-      this.cdr.detectChanges();
-    });
-    this.anneeUniversitaireService.getAll().subscribe((a) => {
-      this.anneesUniversitaires = sortByAlpha(a, (annee) => annee.libelle, 'desc');
-      this.cdr.detectChanges();
-    });
+  }
+
+  private applySchedules(schedules: EmploiDuTemps[] | null | undefined): void {
+    this.schedules = sortByAlpha(schedules || [], (schedule) => schedule.titre);
+    this.filterSchedules();
   }
 
   filterSchedules() {
@@ -450,26 +487,28 @@ export class Schedule implements OnInit, OnDestroy {
     return m ? m.libelle || 'N/A' : 'N/A';
   }
 
+  getEnseignantLibelle(teacher: Teacher | undefined): string {
+    if (!teacher) return 'Enseignant inconnu';
+
+    const name = `${teacher.prenom || ''} ${teacher.nom || ''}`.trim();
+    const identifier =
+      teacher.matricule || teacher.email || (teacher.id ? `ID ${teacher.id}` : '');
+
+    return identifier ? `${name || 'Enseignant'} — ${identifier}` : name || 'Enseignant';
+  }
+
   getEnseignantNom(enseignantId: number | undefined): string {
     if (!enseignantId || !this.teachers) return 'N/A';
-    const t = this.teachers.find((teacher) => teacher && teacher.id === enseignantId);
-    return t ? `${t.prenom || ''} ${t.nom || ''}` : 'N/A';
+    const t = this.teachers.find(
+      (teacher) => teacher && teacher.id === Number(enseignantId),
+    );
+    return t ? this.getEnseignantLibelle(t) : 'N/A';
   }
 
   get filteredMatieres(): Matiere[] {
-    if (!this.selectedClasseId) {
-      return [];
-    }
-
-    const departementId = this.getSelectedClasseDepartementId();
-    if (!departementId) {
-      return [];
-    }
-
-    return sortByAlpha(
-      this.matieres.filter((matiere) => matiere.departementId === departementId),
-      (matiere) => matiere.libelle,
-    );
+    // Une classe peut suivre des matières d'autres départements (ex. économie
+    // en Informatique L1). La classe ne doit donc pas filtrer cette liste.
+    return sortByAlpha(this.matieres || [], (matiere) => matiere.libelle);
   }
 
   onClasseChange(): void {
@@ -509,7 +548,18 @@ export class Schedule implements OnInit, OnDestroy {
     this.selectedClasseId = null;
     this.selectedMatiereId = null;
     this.selectedTeacherId = null;
+    this.selectedDays = ['LUNDI'];
     this.displayForm = true;
+  }
+
+  toggleDay(day: NonNullable<EmploiDuTemps['jourSemaine']>): void {
+    if (this.selectedDays.includes(day)) {
+      this.selectedDays = this.selectedDays.filter((selectedDay) => selectedDay !== day);
+    } else {
+      this.selectedDays = [...this.selectedDays, day];
+    }
+
+    this.currentSchedule.jourSemaine = this.selectedDays[0];
   }
 
   save() {
@@ -525,6 +575,15 @@ export class Schedule implements OnInit, OnDestroy {
     ) {
       this.errorMessage =
         'Veuillez renseigner la classe, la matière, l’enseignant, la salle et les horaires avant de planifier.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (
+      this.currentSchedule.typeRecurrence === 'HEBDOMADAIRE' &&
+      this.selectedDays.length === 0
+    ) {
+      this.errorMessage = 'Veuillez sélectionner au moins un jour de la semaine.';
       this.cdr.detectChanges();
       return;
     }
@@ -555,12 +614,16 @@ export class Schedule implements OnInit, OnDestroy {
       return;
     }
 
-    const scheduleToSave: EmploiDuTemps = {
+    const selectedDays =
+      this.currentSchedule.typeRecurrence === 'HEBDOMADAIRE'
+        ? this.selectedDays
+        : [this.currentSchedule.jourSemaine || 'LUNDI'];
+    const schedulesToSave: EmploiDuTemps[] = selectedDays.map((day) => ({
       titre: this.currentSchedule.titre,
       typeRecurrence: this.currentSchedule.typeRecurrence as any,
       dateDebutValidite: this.currentSchedule.dateDebutValidite || '',
       dateFinValidite: this.currentSchedule.dateFinValidite || '',
-      jourSemaine: this.currentSchedule.jourSemaine as any,
+      jourSemaine: day as any,
       jourDuMois: this.currentSchedule.jourDuMois,
       dateSpecifique: this.currentSchedule.dateSpecifique,
       heureDebut: this.currentSchedule.heureDebut!,
@@ -570,12 +633,17 @@ export class Schedule implements OnInit, OnDestroy {
       classeId: Number(this.selectedClasseId),
       matiereId: Number(this.selectedMatiereId),
       anneeUniversitaireId: Number(this.currentSchedule.anneeUniversitaireId),
-    };
+    }));
 
-    this.scheduleService.createSchedule(scheduleToSave).subscribe({
+    this.scheduleService.createSchedules(schedulesToSave).subscribe({
       next: () => {
         this.errorMessage = '';
         this.displayForm = false;
+        this.notificationService.success(
+          schedulesToSave.length > 1
+            ? `${schedulesToSave.length} jours ont été planifiés avec succès.`
+            : 'Planification créée avec succès.',
+        );
         this.loadData();
         this.cdr.detectChanges();
       },

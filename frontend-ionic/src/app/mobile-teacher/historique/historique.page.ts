@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -48,7 +48,9 @@ interface HistoriqueItem {
   date: Date;
   heure: string;
   contenu: string;
-  status: 'completed' | 'in_progress' | 'planned';
+  status: 'completed' | 'in_progress' | 'planned' | 'passed' | 'missing_attendance' | 'missing_fiche';
+  hasEmargement: boolean;
+  hasFiche: boolean;
   presents: number;
   total: number;
   duree: number;
@@ -70,7 +72,7 @@ interface HistoriqueItem {
     IonPopover
   ],
 })
-export class HistoriquePage implements OnInit {
+export class HistoriquePage {
   private readonly authService = inject(AuthService);
   private readonly scheduleService = inject(ScheduleService);
   private readonly emargementService = inject(EmargementService);
@@ -80,6 +82,7 @@ export class HistoriquePage implements OnInit {
 
   filterPeriod = 'all';
   selectedDate = '';
+  selectedMonth = '';
   isLoading = false;
   errorMessage = '';
 
@@ -88,6 +91,20 @@ export class HistoriquePage implements OnInit {
     seancesEmargees: 0,
     dureeTotale: 0,
   };
+
+  /** Durée totale formatée pour l'affichage : "45 min", "2 h" ou "2 h 30". */
+  get dureeTotaleLabel(): string {
+    const total = this.stats.dureeTotale;
+    if (!total || total <= 0) {
+      return '0 min';
+    }
+    const heures = Math.floor(total / 60);
+    const minutes = total % 60;
+    if (heures === 0) {
+      return `${minutes} min`;
+    }
+    return minutes === 0 ? `${heures} h` : `${heures} h ${minutes}`;
+  }
 
   seances: HistoriqueItem[] = [];
   private seancesData: Seance[] = [];
@@ -108,45 +125,56 @@ export class HistoriquePage implements OnInit {
 
     if (this.filterPeriod === 'all') {
       if (this.selectedDate) {
-        result = result.filter(
-          (s) => this.toDateKey(s.date) === this.selectedDate,
-        );
+        result = result.filter((s) => this.toDateKey(s.date) === this.selectedDate);
       }
       return result;
     }
 
-    const cutoff = new Date();
-    if (this.filterPeriod === 'week') {
-      cutoff.setDate(now.getDate() - 7);
-    } else if (this.filterPeriod === 'month') {
-      cutoff.setMonth(now.getMonth() - 1);
+    if (this.filterPeriod === 'month') {
+      return this.selectedMonth
+        ? result.filter((s) => this.toDateKey(s.date).startsWith(this.selectedMonth))
+        : result;
     }
 
+    const cutoff = new Date();
+    cutoff.setDate(now.getDate() - 7);
     return result.filter((s) => s.date >= cutoff);
   }
 
   get formattedSelectedMonth(): string {
-    if (!this.selectedDate) return 'Sélectionner une date';
-    const parts = this.selectedDate.split('-');
-    if (parts.length < 3) return 'Sélectionner une date';
-    const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const value = this.filterPeriod === 'month' ? this.selectedMonth : this.selectedDate;
+    if (!value) return this.filterPeriod === 'month' ? 'Sélectionner un mois' : 'Sélectionner une date';
+    const parts = value.split('-');
+    if (parts.length < 2) return 'Sélectionner une période';
+    const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2] || 1));
+    return date.toLocaleDateString('fr-FR', this.filterPeriod === 'month'
+      ? { month: 'long', year: 'numeric' }
+      : { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
   get selectedDatetime(): string | undefined {
+    if (this.filterPeriod === 'month' && this.selectedMonth) {
+      return `${this.selectedMonth}-01T00:00:00`;
+    }
     return this.selectedDate ? `${this.selectedDate}T00:00:00` : undefined;
   }
 
   onMonthSelect(event: any): void {
     const val = event.detail.value;
     if (val) {
-      this.selectedDate = typeof val === 'string' ? val.substring(0, 10) : val[0].substring(0, 10);
+      const dateValue = typeof val === 'string' ? val.substring(0, 10) : val[0].substring(0, 10);
+      if (this.filterPeriod === 'month') {
+        this.selectedMonth = dateValue.substring(0, 7);
+      } else {
+        this.selectedDate = dateValue;
+      }
       this.cdr.detectChanges();
     }
   }
 
   clearSelectedMonth(): void {
     this.selectedDate = '';
+    this.selectedMonth = '';
     this.cdr.detectChanges();
   }
   constructor() {
@@ -171,17 +199,15 @@ export class HistoriquePage implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.loadHistorique();
-  }
 
   ionViewWillEnter(): void {
     this.loadHistorique();
   }
 
   filterByPeriod(): void {
-    if (this.filterPeriod !== 'all') {
+    if (this.filterPeriod === 'week') {
       this.selectedDate = '';
+      this.selectedMonth = '';
     }
     // Filtrage géré par le getter filteredSeances.
     this.cdr.detectChanges();
@@ -189,6 +215,12 @@ export class HistoriquePage implements OnInit {
 
   selectFilter(period: 'all' | 'week' | 'month'): void {
     this.filterPeriod = period;
+    if (period !== 'month') {
+      this.selectedMonth = '';
+    }
+    if (period !== 'all') {
+      this.selectedDate = '';
+    }
     this.filterByPeriod();
   }
 
@@ -250,7 +282,9 @@ export class HistoriquePage implements OnInit {
           date: this.parseDate(seance.dateCours),
           heure: `${this.formatTime(seance.heureDebutReelle)} - ${this.formatTime(seance.heureFinReelle)}`,
           contenu: this.getContenuSeance(seance, fiche, emargement),
-          status: this.mapStatus(seance.statut, fiche, emargement),
+          status: this.mapStatus(seance, fiche, emargement),
+          hasEmargement: Boolean(emargement),
+          hasFiche: Boolean(fiche),
           presents: emargement ? 1 : 0,
           total: 1,
           duree,
@@ -374,26 +408,50 @@ export class HistoriquePage implements OnInit {
       return parts.join(' • ');
     }
 
-    if (emargement) {
-      return `Émargement ${emargement.statut?.toString().toLowerCase() || 'enregistré'}${emargement.lieu ? ` à ${emargement.lieu}` : ''}.`;
+    if (!emargement) {
+      return 'Émargement non effectué pour cette séance.';
     }
 
-    return `Statut de la séance : ${seance.statut}`;
+    if (!fiche) {
+      return 'Fiche de progression non renseignée.';
+    }
+
+    return 'Séance passée et enregistrée.';
   }
 
   private mapStatus(
-    statut: string,
+    seance: Seance,
     fiche?: FicheProgression,
     emargement?: EmargementModel,
-  ): 'completed' | 'in_progress' | 'planned' {
+  ): 'completed' | 'in_progress' | 'planned' | 'passed' | 'missing_attendance' | 'missing_fiche' {
+    const sessionState = this.getSessionState(seance);
+
+    if (sessionState === 'passed' && !emargement) {
+      return 'missing_attendance';
+    }
+    if (sessionState === 'passed' && !fiche) {
+      return 'missing_fiche';
+    }
     if (
-      statut === 'TERMINEE' ||
-      fiche?.estValideAdmin ||
-      emargement?.statut === 'VALIDE'
+      sessionState === 'passed' &&
+      (seance.statut === 'TERMINEE' || fiche?.estValideAdmin || emargement?.statut === 'VALIDE')
     ) {
       return 'completed';
     }
-    if (statut === 'EN_COURS' || emargement) return 'in_progress';
+    if (sessionState === 'passed') return 'passed';
+    if (sessionState === 'in_progress') return 'in_progress';
+    return 'planned';
+  }
+
+  private getSessionState(seance: Seance): 'passed' | 'in_progress' | 'planned' {
+    const start = this.parseDateTime(seance.dateCours, seance.heureDebutReelle);
+    const end = this.parseDateTime(seance.dateCours, seance.heureFinReelle);
+    const now = new Date();
+
+    if (end && now.getTime() > end.getTime()) return 'passed';
+    if (start && now.getTime() >= start.getTime() && (!end || now.getTime() <= end.getTime())) {
+      return 'in_progress';
+    }
     return 'planned';
   }
 
@@ -417,6 +475,15 @@ export class HistoriquePage implements OnInit {
     return year && month && day
       ? new Date(year, month - 1, day)
       : new Date(value);
+  }
+
+  private parseDateTime(date?: string, time?: string): Date | null {
+    if (!date) return null;
+    const parsedDate = this.parseDate(date);
+    const minutes = this.toMinutes(time);
+    if (minutes === null) return null;
+    parsedDate.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+    return parsedDate;
   }
 
   private toDateKey(date: Date): string {

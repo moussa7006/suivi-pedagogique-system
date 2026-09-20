@@ -20,11 +20,9 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- */
-@import "@ionic/angular/css/palettes/dark.system.css";
+/* L'application mobile utilise volontairement un thème clair fixe.
+   Ne pas importer dark.system.css : Ionic appliquerait sinon le fond sombre
+   du téléphone à chaque chargement des ressources compilées. */
 
 /* --- Liquid Glass Tab Bar: CSS custom property animee --- */
 @property --active-tab {
@@ -131,6 +129,12 @@
   box-sizing: border-box;
 }
 
+html, body {
+  min-height: 100%;
+  color: #212529;
+  background: #f8f9fa;
+}
+
 body {
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
@@ -167,6 +171,21 @@ ion-content {
 
 ion-content.ion-padding {
   --padding-top: calc(16px + var(--ion-safe-area-top));
+}
+
+/* ============================================
+   DESACTIVATION DU BOUNCE / OVERSCROLL (mobile)
+   Supprime l'effet d'elasticite (rebond) quand on
+   atteint le haut ou le bas d'une page, tout en
+   conservant un defilement vertical normal et fluide.
+   ============================================ */
+ion-content::part(scroll) {
+  overscroll-behavior-y: none;
+}
+
+/* Le web admin (interface bureau) conserve le comportement de scroll par defaut */
+ion-router-outlet > .ion-page:has(.web-admin-scope) ion-content::part(scroll) {
+  overscroll-behavior-y: auto;
 }
 
 /* ============================================
@@ -237,27 +256,6 @@ body.mobile-notifications-open ion-tab-bar.liquid-glass-bar {
   pointer-events: none;
 }
 
-/* Mode sombre pour le tab bar */
-@media (prefers-color-scheme: dark) {
-  ion-tab-bar {
-    --background: #1e1e2e;
-    --box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
-
-    ion-tab-button {
-      &:hover {
-        --background: rgba(67, 97, 238, 0.1);
-      }
-
-      &:active {
-        --background: rgba(67, 97, 238, 0.15);
-      }
-
-      &.tab-selected {
-        --background: rgba(67, 97, 238, 0.15);
-      }
-    }
-  }
-}
 
 /* ============================================
    HEADER / TOOLBAR STYLES
