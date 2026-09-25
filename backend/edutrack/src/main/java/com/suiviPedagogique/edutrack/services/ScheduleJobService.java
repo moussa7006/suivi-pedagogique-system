@@ -60,9 +60,19 @@ public class ScheduleJobService {
     public void generateDailySeances() {
         List<EmploiDuTemps> activeSchedules = emploiDuTempsRepository.findAllActive();
         for (EmploiDuTemps emploi : activeSchedules) {
-            for (int offset = 0; offset <= 6; offset++) {
-                checkAndGenerateSeanceForDate(emploi, LocalDate.now().plusDays(offset));
-            }
+            generateUpcomingSeancesFor(emploi);
+        }
+    }
+
+    /**
+     * Génère immédiatement les séances des 7 prochains jours pour une planification.
+     * Appelée à la création/modification d'un EmploiDuTemps pour qu'un cours planifié
+     * pour demain soit visible sans attendre le cron de 00:01. Idempotent.
+     */
+    @Transactional
+    public void generateUpcomingSeancesFor(EmploiDuTemps emploi) {
+        for (int offset = 0; offset <= 6; offset++) {
+            checkAndGenerateSeanceForDate(emploi, LocalDate.now().plusDays(offset));
         }
     }
 

@@ -75,7 +75,7 @@ public class EmploiDuTempsService {
         hydrateEntity(emploi, dto, null);
 
         EmploiDuTemps saved = emploiDuTempsRepository.save(emploi);
-        scheduleJobService.checkAndGenerateSeanceForDate(saved, LocalDate.now());
+        scheduleJobService.generateUpcomingSeancesFor(saved);
         return convertToDto(saved);
     }
 
@@ -98,7 +98,7 @@ public class EmploiDuTempsService {
         hydrateEntity(emploi, dto, id);
 
         EmploiDuTemps updated = emploiDuTempsRepository.save(emploi);
-        scheduleJobService.checkAndGenerateSeanceForDate(updated, LocalDate.now());
+        scheduleJobService.generateUpcomingSeancesFor(updated);
         return convertToDto(updated);
     }
 
