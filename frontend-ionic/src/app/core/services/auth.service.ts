@@ -154,6 +154,27 @@ export class AuthService {
     }
   }
 
+  /**
+   * Rafraîchit l'utilisateur en cache depuis /auth/me.
+   * Indispensable après une mise à jour de l'app : le cache peut avoir été
+   * écrit par une ancienne version (sans champ id, par exemple) et survivre
+   * à l'installation, ce qui casse les filtres côté Planning/Scan QR.
+   * En cas d'échec réseau, le cache existant est conservé.
+   */
+  async refreshUser(): Promise<any | null> {
+    try {
+      const fresh = await firstValueFrom(this.getMe());
+      if (fresh?.id != null) {
+        const cached = await this.getUser();
+        await this.setUser({ ...cached, ...fresh, token: cached?.token });
+        return this.getUser();
+      }
+    } catch {
+      // Serveur injoignable : on garde le cache existant.
+    }
+    return this.getUser();
+  }
+
   isLoggedIn(): Promise<boolean> {
     return this.isAuthenticated();
   }

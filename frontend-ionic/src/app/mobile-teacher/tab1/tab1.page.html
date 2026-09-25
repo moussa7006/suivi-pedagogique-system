@@ -1,4 +1,13 @@
 <ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Tirer pour actualiser"
+      refreshingSpinner="crescent"
+      refreshingText="Actualisation...">
+    </ion-refresher-content>
+  </ion-refresher>
+
   <div class="bg-decoration">
     <div class="bg-circle bg-circle--1"></div>
     <div class="bg-circle bg-circle--2"></div>
@@ -87,6 +96,18 @@
       </div>
     </ng-template>
   </aside>
+
+  <!-- ========================================= -->
+  <!-- ERREUR DE CHARGEMENT                      -->
+  <!-- ========================================= -->
+  <div class="load-error-banner animate-slide-up" style="--delay: 90ms" *ngIf="loadError">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    <div class="load-error-banner__text">
+      <strong>Connexion au serveur impossible</strong>
+      <p>{{ loadError }}</p>
+    </div>
+    <ion-button fill="outline" size="small" (click)="retryLoad()">Réessayer</ion-button>
+  </div>
 
   <!-- ========================================= -->
   <!-- QUICK STATS ROW                           -->

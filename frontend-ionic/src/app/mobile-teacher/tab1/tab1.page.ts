@@ -11,6 +11,8 @@ import {
   IonButton,
   IonIcon,
   IonBadge,
+  IonRefresher,
+  IonRefresherContent,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -39,6 +41,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
 import { UtilisateurService } from '../../core/services/utilisateur.service';
+import { ApiConfigService } from '../../core/services/api-config.service';
 import { FicheProgression } from '../../core/models/fiche-progression.model';
 import { Seance } from '../../core/models/seance.model';
 import { CommonModule } from '@angular/common';
@@ -56,7 +59,15 @@ interface NotificationItem {
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
-  imports: [CommonModule, IonContent, IonButton, IonIcon, IonBadge],
+  imports: [
+    CommonModule,
+    IonContent,
+    IonButton,
+    IonIcon,
+    IonBadge,
+    IonRefresher,
+    IonRefresherContent,
+  ],
 })
 export class Tab1Page implements OnDestroy {
   private router = inject(Router);
@@ -64,6 +75,7 @@ export class Tab1Page implements OnDestroy {
   private scheduleService = inject(ScheduleService);
   private ficheProgressionService = inject(FicheProgressionService);
   private utilisateurService = inject(UtilisateurService);
+  private apiConfig = inject(ApiConfigService);
   private cdr = inject(ChangeDetectorRef);
 
   isCahierFait = false;
@@ -80,6 +92,8 @@ export class Tab1Page implements OnDestroy {
   totalSeances = 0;
   completedSeances = 0;
   pendingSeances = 0;
+  loadError: string | null = null;
+  isLoadingData = false;
   completionRate = 0;
   heuresEffectuees = 0;
   heuresPrevues = 0;
@@ -212,6 +226,19 @@ export class Tab1Page implements OnDestroy {
     this.refresh();
   }
 
+  retryLoad(): void {
+    this.refresh();
+  }
+
+  handleRefresh(event: Event): void {
+    const target = event.target as HTMLIonRefresherElement;
+    this.scheduleService.invalidateCache();
+    this.ficheProgressionService.invalidateCache();
+
+    const done = () => target.complete();
+    this.loadRealData(done);
+  }
+
   ionViewWillLeave(): void {
     this.closeNotifications();
   }
@@ -255,17 +282,23 @@ export class Tab1Page implements OnDestroy {
     }
   }
 
-  private loadRealData() {
+  private loadRealData(onDone?: () => void) {
+    this.loadError = null;
+    this.isLoadingData = true;
+    let seancesFailed = false;
+    let fichesFailed = false;
     forkJoin({
       seances: this.scheduleService.getSeances().pipe(
         catchError((err: unknown) => {
           console.error('Erreur lors du chargement des séances', err);
+          seancesFailed = true;
           return of([] as Seance[]);
         }),
       ),
       fiches: this.ficheProgressionService.getFichesProgression().pipe(
         catchError((err: unknown) => {
           console.error('Erreur lors du chargement des fiches de progression', err);
+          fichesFailed = true;
           return of([] as FicheProgression[]);
         }),
       ),
@@ -273,6 +306,18 @@ export class Tab1Page implements OnDestroy {
       next: ({ seances, fiches }) => {
         const safeSeances = seances || [];
         const safeFiches = fiches || [];
+        this.isLoadingData = false;
+        onDone?.();
+
+        // Si les appels ont échoué réseau/API, on l'affiche au lieu de
+        // présenter des listes vides qui ressemblent à « aucune séance ».
+        if (seancesFailed || fichesFailed) {
+          this.loadError = this.apiConfig.hasConfiguredBaseUrl()
+            ? 'Impossible de charger vos séances. Vérifiez la connexion puis réessayez.'
+            : 'Serveur non trouvé. Vérifiez le Wi-Fi puis réessayez.';
+          this.cdr.detectChanges();
+          return;
+        }
         const ficheSeanceIds = new Set(
           safeFiches
             .map((fiche) => fiche.seanceId)
@@ -301,6 +346,8 @@ export class Tab1Page implements OnDestroy {
       },
       error: (err: any) => {
         console.error('Erreur lors du chargement des séances', err);
+        this.isLoadingData = false;
+        onDone?.();
         this.cdr.detectChanges();
       },
     });

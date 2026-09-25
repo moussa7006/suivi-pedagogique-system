@@ -39,7 +39,7 @@ import {
 } from 'ionicons/icons';
 import { Geolocation } from '@capacitor/geolocation';
 import jsQR from 'jsqr';
-import { forkJoin, firstValueFrom } from 'rxjs';
+import { forkJoin, firstValueFrom, of, catchError } from 'rxjs';
 import { FicheProgressionService } from '../../core/services/fiche-progression.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ScheduleService } from '../../core/services/schedule.service';
@@ -183,7 +183,16 @@ export class ScanQRPage implements OnDestroy {
 
   async loadData(): Promise<void> {
     this.isLoading = true;
-    const user = await this.authService.getUser();
+    let user = await this.authService.getUser();
+    // Cache potentiellement périmé : sans id, rafraîchir depuis /auth/me
+    if (!user?.id) {
+      user = await firstValueFrom(
+        this.authService.getMe().pipe(catchError(() => of(null))),
+      );
+      if (user) {
+        await this.authService.setUser(user);
+      }
+    }
     this.currentUserId = user?.id ?? null;
     forkJoin({
       seances: this.scheduleService.getSeances(),

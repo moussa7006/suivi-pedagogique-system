@@ -26,7 +26,7 @@ import {
   calendar,
   calendarClearOutline
 } from 'ionicons/icons';
-import { forkJoin, finalize } from 'rxjs';
+import { forkJoin, finalize, of, catchError, firstValueFrom } from 'rxjs';
 import { ScheduleService } from '../../core/services/schedule.service';
 import { SalleService } from '../../core/services/salle.service';
 import { MatiereService } from '../../core/services/matiere.service';
@@ -111,7 +111,18 @@ export class PlanningPage {
   }
 
   private async loadCurrentUser(): Promise<void> {
-    const user = await this.authService.getUser();
+    let user = await this.authService.getUser();
+    // Cache potentiellement périmé (mise à jour de l'app) : sans id, on va le
+    // chercher à la source, sinon le filtre enseignantId === currentUserId
+    // ne garderait aucune séance.
+    if (!user?.id) {
+      user = await firstValueFrom(
+        this.authService.getMe().pipe(catchError(() => of(null))),
+      );
+      if (user) {
+        await this.authService.setUser(user);
+      }
+    }
     if (user) {
       this.currentUserId = user.id ?? null;
       this.currentUserLabel = `Pr. ${user.prenom || ''} ${user.nom || ''}`.trim();

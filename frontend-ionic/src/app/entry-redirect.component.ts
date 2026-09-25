@@ -42,7 +42,14 @@ export class EntryRedirectComponent implements OnInit {
       // sans attendre la détection du serveur local.
       if (Capacitor.isNativePlatform()) {
         if (isAuthenticated) {
-          void this.serverDiscovery.autoDetect();
+          // Attendre la résolution du serveur avant de charger l’accueil :
+          // sinon les premières requêtes partent avec une URL non résolue
+          // (memoryUrl est en RAM et perdu à chaque démarrage de l’app)
+          // et échouent silencieusement, laissant des listes vides.
+          await this.withTimeout(this.serverDiscovery.autoDetect(), 10000, null);
+          // Rafraîchir l’utilisateur en cache (anciens caches peuvent dater
+          // d’une version antérieure de l’app et priver du champ id).
+          await this.withTimeout(this.authService.refreshUser(), 5000, null);
           await this.router.navigateByUrl('/mobile/tabs/tabs/tab1', {
             replaceUrl: true,
           });
